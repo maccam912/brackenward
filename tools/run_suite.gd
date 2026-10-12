@@ -200,6 +200,13 @@ func ui() -> void:
 	touch.position = Vector2(200, 200)
 	touch.pressed = true
 	game.view._gui_input(touch)
+	var emulated_mouse: InputEventMouseButton = InputEventMouseButton.new()
+	emulated_mouse.device = -1
+	emulated_mouse.button_index = MOUSE_BUTTON_LEFT
+	emulated_mouse.pressed = true
+	emulated_mouse.position = touch.position
+	game.view._gui_input(emulated_mouse)
+	check("UI01/touch_mouse_not_second_finger", game.view.gestures.fingers.size() == 1 and not game.view.gestures.multiple)
 	var drag: InputEventScreenDrag = InputEventScreenDrag.new()
 	drag.index = 0
 	drag.position = Vector2(280, 240)

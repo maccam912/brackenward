@@ -73,6 +73,10 @@ func _process(delta: float) -> void:
 	queue_redraw()
 
 func _gui_input(event: InputEvent) -> void:
+	# Godot also emits a device -1 mouse event for a touch. Track the real
+	# touchscreen pointer once; ordinary Controls still use mouse emulation.
+	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == -1:
+		return
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			gestures.begin(event.index, event.position)
