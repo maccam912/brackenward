@@ -42,10 +42,11 @@ jobs:
         run: tools/godot.sh --headless --editor --import
       - name: Unit and deterministic integration checks
         run: |
-          tools/godot.sh --headless --script tools/run_suite.gd -- --suite unit
-          tools/godot.sh --headless --script tools/run_suite.gd -- --suite integration
+          python3 tools/check_suite.py unit
+          python3 tools/check_suite.py integration
+          python3 tools/check_suite.py colony
       - name: Real Control/input/layout suite
-        run: xvfb-run -a tools/godot.sh --script tools/run_suite.gd -- --suite ui
+        run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK
         env:
           DEVELOPMENT_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}

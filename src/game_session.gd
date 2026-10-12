@@ -1,9 +1,9 @@
 class_name GameSession
 extends Control
 
-var world: PrototypeWorld = PrototypeWorld.new()
+var world: RefCounted = ColonyWorld.new(ColonyCatalog.load_data(), Crypto.new().generate_random_bytes(16).hex_encode())
 var runner: SimRunner = SimRunner.new(world)
-var store: PrototypeStore = PrototypeStore.new()
+var store: PrototypeStore = ColonyStore.new()
 var view: WorldView
 var content: Control
 var status: PanelContainer
@@ -41,6 +41,8 @@ var document_pending: bool = false
 var test_insets: Vector4 = Vector4.ZERO
 var controls: Array[Button] = []
 var nav_labels: Array[Label] = []
+var inspector_details: Label
+var rotation_button: Button
 
 func _ready() -> void:
 	Engine.max_fps = 30
@@ -97,6 +99,8 @@ func _box(color: Color, border: Color = Color("77915A")) -> StyleBoxFlat:
 func button(label: String, callback: Callable, parent: Node, width: float = 48.0) -> Button:
 	var result: Button = Button.new()
 	result.text = label
+	result.clip_text = true
+	result.tooltip_text = label
 	result.name = label.validate_node_name()
 	result.custom_minimum_size = Vector2(width, 48)
 	result.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -200,6 +204,8 @@ func _build_placement() -> void:
 	for direction in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 		var title: String = {Vector2i.LEFT: "Left", Vector2i.RIGHT: "Right", Vector2i.UP: "Up", Vector2i.DOWN: "Down"}[direction]
 		button(title, func() -> void:
+			if not view.preview_definition.is_empty():
+				view.preview_start += direction
 			view.preview_end += direction
 			view.preview_end.x = clampi(view.preview_end.x, 0, 127)
 			view.preview_end.y = clampi(view.preview_end.y, 0, 127), placement_nudges)
@@ -210,6 +216,10 @@ func _build_placement() -> void:
 		view.cancel_gesture()
 		view.gestures.mode = "paint" if view.gestures.mode == "pan" else "pan", placement_actions, 64)
 	confirm_button = button("Confirm", confirm_placement, placement_actions, 96)
+	rotation_button = button("Rotate", func() -> void:
+		view.preview_rotation = (view.preview_rotation + 1) % 4
+		view.fit_build_preview(), placement)
+	rotation_button.visible = false
 	placement_wide_row = HBoxContainer.new()
 	placement.add_child(placement_wide_row)
 
@@ -222,17 +232,18 @@ func _process(delta: float) -> void:
 		runner.speed_reduced = false
 	if submitted_command > 0 and world.receipts.has(submitted_command):
 		var receipt: String = world.receipts[submitted_command]
-		notice = "Area accepted. Work simulation follows in M1." if receipt == "accepted" else "Area rejected: " + receipt
+		notice = "Order accepted. Resume to watch the work." if receipt == "accepted" else "Order rejected: " + receipt
 		submitted_command = 0
 		confirm_button.disabled = false
 	var day: int = world.tick / 7200 + 1
 	var hour: int = (world.tick % 7200) / 300
 	var minute: int = (world.tick % 300) / 5
-	clock_label.text = "Spring %d  %02d:%02d\n4 travelers  |  %s" % [day, hour, minute, "Paused" if runner.speed == 0 else "%dx" % runner.speed]
+	clock_label.text = "Spring %d  %02d:%02d\n%s | %s" % [day, hour, minute, ("Meals %d  Wood %d" % [world.available("meal"), world.available("wood")]) if world is ColonyWorld else "4 travelers", "Paused" if runner.speed == 0 else "%dx" % runner.speed]
+	_update_inspector()
 	notice_label.text = notice
 	if is_instance_valid(sheet_feedback):
 		sheet_feedback.text = notice
-	preview_label.text = "%d x %d tiles | %s" % [absi(view.preview_end.x - view.preview_start.x) + 1, absi(view.preview_end.y - view.preview_start.y) + 1, "Pan mode" if view.gestures.mode == "pan" else "Paint preview"]
+	preview_label.text = _preview_text()
 	autosave_elapsed += delta
 	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick:
 		save_local()
@@ -250,6 +261,8 @@ func begin_placement() -> void:
 	view.cancel_gesture()
 	view.follow_id = 0
 	view.preview_visible = true
+	view.preview_definition = ""
+	rotation_button.visible = false
 	view.gestures.mode = "paint"
 	placement.visible = true
 	view.camera_tile = Vector2(77, 55)
@@ -271,8 +284,16 @@ func confirm_placement() -> void:
 		if PrototypeWorld.is_water(tile):
 			notice = "Deep river cannot be designated. Move the preview onto land."
 			return
+	if world is ColonyWorld and not view.preview_definition.is_empty():
+		var error: String = world.placement_error(view.preview_definition, view.preview_start, view.preview_rotation)
+		if not error.is_empty():
+			notice = error
+			return
 	confirm_button.disabled = true
-	submitted_command = world.queue_designation(view.preview_tiles())
+	if world is ColonyWorld and not view.preview_definition.is_empty():
+		submitted_command = world.queue_command("build", {"definition": view.preview_definition, "x": view.preview_start.x, "y": view.preview_start.y, "rotation": view.preview_rotation})
+	else:
+		submitted_command = world.queue_designation(view.preview_tiles())
 	view.cancel_gesture()
 	view.preview_visible = false
 	placement.visible = false
@@ -286,7 +307,7 @@ func _map_intent(action: Dictionary) -> void:
 		return
 	var candidates: Array[Dictionary] = []
 	for citizen in world.citizens:
-		var position_on_screen: Vector2 = view.tile_to_screen(Vector2(citizen.x + 0.5 + float(citizen.progress) / 10000.0 * citizen.direction, citizen.y + 0.5))
+		var position_on_screen: Vector2 = view.tile_to_screen(view.citizen_point(citizen))
 		if position_on_screen.distance_to(action.point) <= maxf(24, view.tile_size * 0.6):
 			candidates.append(citizen)
 	if action.kind == "chooser" or candidates.size() > 1:
@@ -299,7 +320,16 @@ func _map_intent(action: Dictionary) -> void:
 	elif candidates.size() == 1:
 		select_citizen(candidates[0].id)
 	else:
-		notice = "Terrain (%d, %d). Use Build to preview an area." % [action.tile.x, action.tile.y]
+		if world is ColonyWorld:
+			for resource in world.resources:
+				if Vector2i(resource.x, resource.y) == action.tile:
+					_resource_sheet(resource)
+					return
+			for job in world.jobs:
+				if job.kind == "build" and job.state not in ["Complete", "Canceled"] and world.footprint(job).has(action.tile):
+					_job_sheet(job)
+					return
+			notice = "Terrain (%d, %d). Use Build to place a blueprint." % [action.tile.x, action.tile.y]
 
 func select_citizen(id: int) -> void:
 	selected = id
@@ -318,7 +348,8 @@ func select_citizen(id: int) -> void:
 	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(rows)
 	var citizen: Dictionary = world.citizens[id - 1]
-	label("%s - looking around\nPlaceholder movement, one tile per second.\nSkills and needs arrive with the worker loop." % citizen.name, rows)
+	inspector_details = label("", rows)
+	_update_inspector()
 	var actions: HBoxContainer = HBoxContainer.new()
 	inspector_rows.add_child(actions)
 	button("Follow", func() -> void: view.follow_id = id, actions, 80)
@@ -364,29 +395,37 @@ func show_sheet(title: String) -> void:
 	match title:
 		"Welcome":
 			label("Four travelers. A ruined wayhouse. Make a place to stay.", sheet_body)
-			label("M0 touch prototype. Explore, select a traveler, paint an area, try the speeds, and save. Gathering, cooking, building, and survival follow after the phone test.", sheet_body)
+			label("Start paused. Gather berries and wood, place a bed, then resume and watch your residents fetch, carry, work, eat, and sleep.", sheet_body)
+			label("Meals: 3 days of starting food. Cooking needs four raw food units and one wood for two meals. Choose resource orders in Work or tap a plant on the map.", sheet_body)
 			button("Begin", func() -> void:
 				close_sheet()
 				notice = "Tap Mira and Follow. Time starts paused.", sheet_body)
 			button("Look around", close_sheet, sheet_body)
 		"Build":
-			label("Preview an area using taps, a drag, or nudge buttons. Confirmation queues a designation; no supplies are spent in this prototype.", sheet_body)
-			button("Paint area", begin_placement, sheet_body)
+			label("Blueprints require real supplies and worker time. Pause to plan; materials are spent only when construction finishes.", sheet_body)
+			button("Paint stockpile", begin_placement, sheet_body)
+			if world is ColonyWorld:
+				for kind in world.definitions.buildings:
+					var definition: Dictionary = world.definitions.buildings[kind]
+					button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body)
 		"People":
 			for citizen in world.citizens:
 				button(citizen.name, func() -> void:
 					close_sheet()
 					select_citizen(citizen.id), sheet_body)
 		"Work":
-			label("Worker assignment is the next milestone.\nMira: Cooking / Care\nOren: Building\nTavi: Gathering\nSela: Research", sheet_body)
+			_work_sheet()
 		"Valley":
 			label("The regional map and expeditions arrive in M4. This checkpoint tests the local map and mobile storage.", sheet_body)
 		"Journal":
-			label("Confirmed area: %d tiles\nPending actions: %d\nSimulation tick: %d\nThe prototype does not generate colony stories yet." % [world.designations.size(), world.pending_commands.size(), world.tick], sheet_body)
+			if world is ColonyWorld:
+				_tutorial_sheet()
+				for fact in world.facts.slice(maxi(0, world.facts.size() - 30)):
+					label("%02d:%02d - %s" % [(fact.tick % 7200) / 300, (fact.tick % 300) / 5, fact.text], sheet_body)
 		"Menu":
-			label("Brackenward 0.0.1-m0 | Godot 4.7.2\nTouch-prototype saves use a separate format from future campaigns.", sheet_body)
-			button("Save prototype", save_local, sheet_body)
-			button("Load prototype", load_local, sheet_body)
+			label("Brackenward 0.1.0-m1 | Godot 4.7.2\nDevelopment colony saves preserve inventory, jobs, needs and work progress. M0 saves remain separate.", sheet_body)
+			button("Save colony", save_local, sheet_body)
+			button("Load colony", load_local, sheet_body)
 			button("Export save", func() -> void: choose_document(true), sheet_body)
 			button("Import save", func() -> void: choose_document(false), sheet_body)
 			button("Text size: %d%%" % int(text_scale * 100), func() -> void:
@@ -496,7 +535,7 @@ func load_local() -> void:
 	_replace_world(result.world)
 	notice = "Prototype restored. Time stays paused."
 
-func _replace_world(state: PrototypeWorld) -> void:
+func _replace_world(state: RefCounted) -> void:
 	world = state
 	runner = SimRunner.new(world)
 	view.world = world
@@ -516,14 +555,14 @@ func choose_document(export: bool) -> void:
 	exporting = export
 	document_request += 1
 	if export:
-		export_bytes = PrototypeCodec.encode(world)
-		if PrototypeCodec.decode(export_bytes).has("error"):
+		export_bytes = store.encode(world)
+		if store.decode(export_bytes).has("error"):
 			notice = "Snapshot validation failed. Nothing exported."
 			return
 	if native_storage != null:
 		document_pending = true
 		if export:
-			native_storage.chooseExportDestination(document_request, "brackenward-prototype.brackenward")
+			native_storage.chooseExportDestination(document_request, "brackenward-colony.brackenward")
 		else:
 			native_storage.chooseImportDocument(document_request)
 		return
@@ -532,8 +571,8 @@ func choose_document(export: bool) -> void:
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	file_dialog.use_native_dialog = true
 	file_dialog.file_mode = FileDialog.FILE_MODE_SAVE_FILE if export else FileDialog.FILE_MODE_OPEN_FILE
-	file_dialog.filters = PackedStringArray(["*.brackenward ; Brackenward prototype"])
-	file_dialog.current_file = "brackenward-prototype.brackenward" if export else ""
+	file_dialog.filters = PackedStringArray(["*.brackenward ; Brackenward colony"])
+	file_dialog.current_file = "brackenward-colony.brackenward" if export else ""
 	add_child(file_dialog)
 	file_dialog.file_selected.connect(_desktop_selected)
 	file_dialog.canceled.connect(func() -> void:
@@ -552,11 +591,11 @@ func _desktop_selected(path: String) -> void:
 		file.flush()
 		var error: Error = file.get_error()
 		file.close()
-		notice = "Export written and verified." if error == OK and not PrototypeCodec.decode(FileAccess.get_file_as_bytes(path)).has("error") else "Export write/verification failed."
+		notice = "Export written and verified." if error == OK and not store.decode(FileAccess.get_file_as_bytes(path)).has("error") else "Export write/verification failed."
 	else:
 		var file: FileAccess = FileAccess.open(path, FileAccess.READ)
-		if file == null or file.get_length() > PrototypeCodec.MAX_BYTES:
-			notice = "Could not read save, or file exceeds the prototype's 1 MiB limit."
+		if file == null or file.get_length() > ColonyCodec.MAX_BYTES:
+			notice = "Could not read save, or file exceeds the colony's 64 MiB limit."
 			return
 		_accept_import(file.get_buffer(file.get_length()))
 
@@ -567,19 +606,19 @@ func _native_result(request: int, result: String, bytes: PackedByteArray) -> voi
 		document_pending = false
 	match result:
 		"export_selected": native_storage.writeSelectedDocument(request, export_bytes)
-		"import_selected": native_storage.readSelectedDocument(request, PrototypeCodec.MAX_BYTES)
+		"import_selected": native_storage.readSelectedDocument(request, ColonyCodec.MAX_BYTES)
 		"read": _accept_import(bytes)
 		"written": notice = "Export written and verified."
 		"canceled": notice = "Picker canceled. Saves unchanged."
 		_: notice = "Document operation failed: " + result
 
 func _accept_import(bytes: PackedByteArray) -> void:
-	var result: Dictionary = PrototypeCodec.decode(bytes)
+	var result: Dictionary = store.decode(bytes)
 	if result.has("error"):
 		notice = result.error
 		return
 	_replace_world(result.world)
-	notice = "Imported verified prototype. Time stays paused."
+	notice = "Imported verified colony. Time stays paused."
 
 func suspend() -> void:
 	if backgrounded:
@@ -648,3 +687,101 @@ func _input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
 		set_speed(runner.previous_speed if runner.speed == 0 else 0)
 		get_viewport().set_input_as_handled()
+
+func _cost_text(materials: Dictionary) -> String:
+	var parts: Array[String] = []
+	for item in materials:
+		parts.append("%d %s" % [materials[item], item])
+	return ", ".join(parts)
+
+func begin_build(kind: String) -> void:
+	begin_placement()
+	view.preview_definition = kind
+	view.preview_rotation = 0
+	view.preview_start = Vector2i(74, 63)
+	view.fit_build_preview()
+	view.camera_tile = Vector2(74, 63)
+	rotation_button.visible = true
+	notice = "Place %s. Tap a tile or use the arrows; Confirm spends nothing until built." % kind.capitalize()
+	_layout()
+
+func _preview_text() -> String:
+	if world is ColonyWorld and not view.preview_definition.is_empty():
+		var error: String = world.placement_error(view.preview_definition, view.preview_start, view.preview_rotation)
+		var definition: Dictionary = world.definitions.buildings[view.preview_definition]
+		return "%s | %s | %d WU\n%s" % [view.preview_definition.capitalize(), _cost_text(definition.materials), definition.work_milli / 1000, "Valid placement" if error.is_empty() else error]
+	return "%d x %d tiles | %s" % [absi(view.preview_end.x - view.preview_start.x) + 1, absi(view.preview_end.y - view.preview_start.y) + 1, "Pan mode" if view.gestures.mode == "pan" else "Stockpile preview"]
+
+func _update_inspector() -> void:
+	if selected <= 0 or not is_instance_valid(inspector_details):
+		return
+	var citizen: Dictionary = world.citizens[selected - 1]
+	if world is ColonyWorld:
+		var job: Dictionary = world.find(world.jobs, citizen.job)
+		inspector_details.text = "%s - %s\nFood %d/1000 | Rest %d/1000\nHealth %d | %s first\n%s" % [citizen.name, citizen.activity, citizen.fullness, citizen.rest, citizen.health, citizen.preferred,
+			("Work %d/%d WU" % [job.work / 1000, job.required / 1000]) if not job.is_empty() else "Choose orders in Work or Build."]
+	else:
+		inspector_details.text = "%s - looking around\nM0 touch fixture movement." % citizen.name
+
+func _submit(kind: String, args: Dictionary) -> void:
+	if submitted_command > 0:
+		notice = "An order is pending. Resume to apply it before another action."
+		return
+	submitted_command = world.queue_command(kind, args)
+	confirm_button.disabled = true
+	notice = "Order pending. Close the panel and resume to apply it."
+
+func _resource_sheet(resource: Dictionary) -> void:
+	show_sheet(resource.definition.capitalize())
+	var definition: Dictionary = world.definitions.resources[resource.definition]
+	label("%d %s remaining | %d WU %s" % [resource.remaining, definition.item, definition.work_milli / 1000, "per unit" if definition.per_unit else "per harvest"], sheet_body)
+	label("A gatherer works beside the resource. The output appears there and must be hauled into storage.", sheet_body)
+	if resource.remaining > 0:
+		button("Gather", func() -> void:
+			_submit("gather", {"target": resource.id})
+			close_sheet()
+			view.camera_tile = Vector2(resource.x, resource.y), sheet_body)
+
+func _job_sheet(job: Dictionary) -> void:
+	show_sheet("Work order")
+	label("%s: %s\nWork %d/%d WU\n%s" % [job.kind.capitalize(), job.state, job.work / 1000, job.required / 1000, job.reason], sheet_body)
+	if not job.inputs.is_empty():
+		label("Required: " + _cost_text(job.inputs) + "\nDelivered materials remain refundable until completion.", sheet_body)
+	button("Cancel order", func() -> void:
+		_submit("cancel", {"target": job.id})
+		close_sheet(), sheet_body)
+
+func _work_sheet() -> void:
+	if not world is ColonyWorld:
+		label("M0 fixture: real worker loop is in the colony scene.", sheet_body)
+		return
+	label("Gather berries or wood, then resume. Workers fetch their own inputs even with Hauling off. Preferences never override hunger or sleep.", sheet_body)
+	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node"]:
+		var resource: Dictionary = {}
+		for candidate in world.resources:
+			if candidate.definition == kind and candidate.remaining > 0 and not world.jobs.any(func(job: Dictionary) -> bool: return job.kind == "gather" and job.target == candidate.id and job.state not in ["Complete", "Canceled"]):
+				resource = candidate
+				break
+		if not resource.is_empty():
+			button("Gather " + world.definitions.resources[kind].item, func() -> void:
+				_submit("gather", {"target": resource.id})
+				close_sheet()
+				view.camera_tile = Vector2(resource.x, resource.y), sheet_body)
+	for citizen in world.citizens:
+		label(citizen.name + " - " + citizen.activity, sheet_body)
+		for category in ["Cooking", "Gathering", "Building", "Hauling"]:
+			button(category + ": " + ["Off", "Last", "Normal", "First"][citizen.preferences[category]], func() -> void:
+				_submit("preference", {"citizen": citizen.id, "category": category, "value": (citizen.preferences[category] + 1) % 4}), sheet_body)
+	label("Current orders", sheet_body)
+	for job in world.jobs:
+		if job.state not in ["Complete", "Canceled"]:
+			button("%s - %s" % [job.kind.capitalize(), job.state], func() -> void: _job_sheet(job), sheet_body)
+			if not job.reason.is_empty():
+				label(job.reason, sheet_body)
+
+func _tutorial_sheet() -> void:
+	label("First steps", sheet_body)
+	var completed: Array = world.facts.map(func(fact: Dictionary) -> String: return fact.kind)
+	for kind in ["gather", "haul", "build", "cook", "eat", "sleep"]:
+		label(("Done: " if completed.has(kind) else "Next: ") + kind.capitalize(), sheet_body)
+	label("Gather berries and wood in Work. Place a bed in Build. Resume to see materials carried and used. Cooking starts when stored meals fall below 16; hunger and nightfall trigger eating and sleep.", sheet_body)

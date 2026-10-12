@@ -2,7 +2,7 @@ class_name WorldView
 extends Control
 
 signal intent(action: Dictionary)
-var world: PrototypeWorld
+var world: RefCounted
 var gestures: GestureState = GestureState.new()
 var camera_tile: Vector2 = Vector2(68, 63)
 var tile_size: float = 32.0
@@ -10,6 +10,8 @@ var focus_offset: Vector2 = Vector2.ZERO
 var preview_start: Vector2i = Vector2i(74, 54)
 var preview_end: Vector2i = Vector2i(77, 55)
 var preview_visible: bool = false
+var preview_definition: String = ""
+var preview_rotation: int = 0
 var selected_id: int = 0
 var follow_id: int = 0
 var magnifier: Vector2 = Vector2(-100, -100)
@@ -17,7 +19,7 @@ var ground: Node2D
 var terrain: TileMapLayer
 var actors: Array[Sprite2D] = []
 
-func setup(state: PrototypeWorld) -> void:
+func setup(state: RefCounted) -> void:
 	world = state
 	clip_contents = true
 	mouse_filter = Control.MOUSE_FILTER_STOP
@@ -66,7 +68,10 @@ func _process(delta: float) -> void:
 	for i in range(4):
 		var citizen: Dictionary = world.citizens[i]
 		var point: Vector2 = Vector2(citizen.x + 0.5, citizen.y + 0.5)
-		point.x += float(citizen.progress) / 10000.0 * citizen.direction
+		if world is ColonyWorld:
+			point += Vector2(citizen.edge_x - citizen.x, citizen.edge_y - citizen.y) * float(citizen.progress) / 10000.0
+		else:
+			point.x += float(citizen.progress) / 10000.0 * citizen.direction
 		actors[i].position = point * 16.0
 		if citizen.id == follow_id:
 			camera_tile = point
@@ -119,8 +124,14 @@ func _apply_intent(action: Dictionary) -> void:
 		"paint":
 			preview_start = screen_to_tile(action.start)
 			preview_end = screen_to_tile(action.point)
+			if not preview_definition.is_empty():
+				preview_start = preview_end
+				fit_build_preview()
 		"paint_tap":
 			preview_end = screen_to_tile(action.point)
+			if not preview_definition.is_empty():
+				preview_start = preview_end
+				fit_build_preview()
 		"select", "chooser":
 			action["tile"] = screen_to_tile(action.point)
 			intent.emit(action)
@@ -165,13 +176,11 @@ func _update_transform() -> void:
 func _draw() -> void:
 	if world == null:
 		return
-	# Fixture landmarks, no constructed structures/economy implied.
-	for point in [Vector2(62, 59), Vector2(64, 59), Vector2(62, 61), Vector2(64, 61)]:
-		draw_style_box(_bed_style(), Rect2(tile_to_screen(point), Vector2(tile_size, tile_size * 1.6)))
-	var hearth: Vector2 = tile_to_screen(Vector2(70.5, 62.5))
-	draw_circle(hearth, tile_size * 0.45, Color("716D88"))
-	draw_colored_polygon(PackedVector2Array([hearth + Vector2(-8, 5), hearth + Vector2(0, -13), hearth + Vector2(8, 5)]), Color("E9BA67"))
-	draw_rect(Rect2(tile_to_screen(Vector2(66, 63)), Vector2(tile_size * 2, tile_size)), Color("B96C50"))
+	# Fixture landmarks are retained only for the M0 regression scene.
+	if world is ColonyWorld:
+		_draw_colony()
+	else:
+		_draw_fixture()
 	for tile in world.designations:
 		draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color(0.91, 0.73, 0.4, 0.35))
 		draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color("F3E8CC"), false, 2)
@@ -184,7 +193,7 @@ func _draw() -> void:
 			draw_rect(rectangle, Color("263C3B"), false, 2)
 	for citizen in world.citizens:
 		if citizen.id == selected_id:
-			var point: Vector2 = tile_to_screen(Vector2(citizen.x + 0.5 + float(citizen.progress) / 10000.0 * citizen.direction, citizen.y + 0.5))
+			var point: Vector2 = tile_to_screen(citizen_point(citizen))
 			draw_arc(point, maxf(12.0, tile_size * 0.55), 0, TAU, 24, Color("F3E8CC"), 2.0)
 	if magnifier.x >= 0:
 		var position_above: Vector2 = magnifier - Vector2(0, 72)
@@ -197,3 +206,88 @@ func _bed_style() -> StyleBoxFlat:
 	box.border_color = Color("F3E8CC")
 	box.set_border_width_all(2)
 	return box
+
+func _draw_fixture() -> void:
+	for point in [Vector2(62, 59), Vector2(64, 59), Vector2(62, 61), Vector2(64, 61)]:
+		draw_style_box(_bed_style(), Rect2(tile_to_screen(point), Vector2(tile_size, tile_size * 1.6)))
+	var hearth: Vector2 = tile_to_screen(Vector2(70.5, 62.5))
+	draw_circle(hearth, tile_size * 0.45, Color("716D88"))
+	draw_colored_polygon(PackedVector2Array([hearth + Vector2(-8, 5), hearth + Vector2(0, -13), hearth + Vector2(8, 5)]), Color("E9BA67"))
+	draw_rect(Rect2(tile_to_screen(Vector2(66, 63)), Vector2(tile_size * 2, tile_size)), Color("B96C50"))
+
+func fit_build_preview() -> void:
+	if preview_definition.is_empty() or not world is ColonyWorld:
+		return
+	var definition: Dictionary = world.definitions.buildings[preview_definition]
+	var footprint_size: Vector2i = Vector2i(definition.width, definition.height) if preview_rotation % 2 == 0 else Vector2i(definition.height, definition.width)
+	preview_start.x = clampi(preview_start.x, 0, 128 - footprint_size.x)
+	preview_start.y = clampi(preview_start.y, 0, 128 - footprint_size.y)
+	preview_end = preview_start + footprint_size - Vector2i.ONE
+
+func citizen_point(citizen: Dictionary) -> Vector2:
+	var point: Vector2 = Vector2(citizen.x + 0.5, citizen.y + 0.5)
+	if world is ColonyWorld:
+		point += Vector2(citizen.edge_x - citizen.x, citizen.edge_y - citizen.y) * float(citizen.progress) / 10000.0
+	else:
+		point.x += float(citizen.progress) / 10000.0 * citizen.direction
+	return point
+
+func _draw_colony() -> void:
+	for resource in world.resources:
+		if resource.remaining == 0:
+			continue
+		var point: Vector2 = tile_to_screen(Vector2(resource.x + 0.5, resource.y + 0.5))
+		if not Rect2(Vector2.ZERO, size).grow(tile_size).has_point(point):
+			continue
+		if resource.definition == "tree":
+			draw_rect(Rect2(point + Vector2(-tile_size * 0.1, 0), Vector2(tile_size * 0.2, tile_size * 0.4)), Color("B96C50"))
+			draw_colored_polygon(PackedVector2Array([point + Vector2(-tile_size * 0.4, tile_size * 0.1), point + Vector2(0, -tile_size * 0.7), point + Vector2(tile_size * 0.4, tile_size * 0.1)]), Color("263C3B"))
+		elif resource.definition == "stone_node":
+			draw_circle(point, tile_size * 0.4, Color("716D88"))
+			draw_line(point - Vector2(8, 2), point + Vector2(4, -8), Color("F3E8CC"), 2)
+		else:
+			draw_circle(point, tile_size * 0.32, Color("375749"))
+			var color: Color = Color("B96C50") if resource.definition == "berry_bush" else Color("F3E8CC")
+			for offset in [Vector2(-6, -2), Vector2(4, -4), Vector2(0, 5)]:
+				draw_circle(point + offset * tile_size / 32, tile_size * 0.07, color)
+	for structure in world.structures:
+		var tiles: Array[Vector2i] = world.footprint(structure)
+		var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tiles[0])), Vector2(tiles[-1] - tiles[0] + Vector2i.ONE) * tile_size)
+		if not rectangle.intersects(Rect2(Vector2.ZERO, size)):
+			continue
+		var color: Color = Color("B96C50")
+		if structure.definition in ["bed", "bedroll"]:
+			draw_style_box(_bed_style(), rectangle.grow(-tile_size * 0.12))
+			draw_rect(Rect2(rectangle.position + Vector2.ONE * tile_size * 0.15, Vector2.ONE * tile_size * 0.45), Color("F3E8CC"))
+		elif structure.definition == "hearth":
+			var center: Vector2 = rectangle.get_center()
+			draw_circle(center, tile_size * 0.6, Color("716D88"))
+			draw_colored_polygon(PackedVector2Array([center + Vector2(-10, 8), center + Vector2(0, -16), center + Vector2(10, 8)]), Color("E9BA67"))
+		else:
+			draw_rect(rectangle.grow(-tile_size * 0.1), color)
+			draw_rect(rectangle.grow(-tile_size * 0.1), Color("263C3B"), false, 3)
+	for job in world.jobs:
+		if job.state in ["Complete", "Canceled"]:
+			continue
+		if job.kind == "build":
+			for tile in world.footprint(job):
+				var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size)
+				draw_rect(rectangle, Color(0.91, 0.73, 0.4, 0.25))
+				draw_rect(rectangle.grow(-2), Color("E9BA67"), false, 2)
+			var point: Vector2 = tile_to_screen(Vector2(job.x, job.y))
+			draw_rect(Rect2(point, Vector2(tile_size * float(job.work) / job.required, 4)), Color("F3E8CC"))
+	for stack in world.stacks:
+		if stack.count <= 0:
+			continue
+		var point: Vector2 = tile_to_screen(Vector2(stack.x + 0.5, stack.y + 0.5))
+		if stack.location == "carry":
+			var citizen: Dictionary = world.find(world.citizens, stack.owner)
+			point = tile_to_screen(citizen_point(citizen)) - Vector2(0, tile_size * 0.95)
+		elif stack.location == "store":
+			continue # Totals remain inspectable; loose/carried/escrow stacks are visible.
+		if not Rect2(Vector2.ZERO, size).grow(tile_size).has_point(point):
+			continue
+		var color: Color = Color("B96C50") if stack.item == "wood" else (Color("E9BA67") if stack.item == "meal" else Color("716D88"))
+		draw_rect(Rect2(point - Vector2(8, 8), Vector2(16, 16)), color)
+		draw_rect(Rect2(point - Vector2(8, 8), Vector2(16, 16)), Color("263C3B"), false, 2)
+		draw_string(get_theme_default_font(), point + Vector2(9, 5), str(stack.count), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("F3E8CC"))

@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui"]:
-		printerr("Usage: -- --suite unit|integration|ui. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -28,6 +28,7 @@ func run() -> void:
 		"unit": unit()
 		"integration": integration()
 		"ui": await ui()
+		"colony": ColonyTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -39,7 +40,7 @@ func run() -> void:
 	var file: FileAccess = FileAccess.open("res://reports/%s.xml" % suite, FileAccess.WRITE)
 	file.store_string(report)
 	file.close()
-	print("Discovered/run: %d; failures: %d; elapsed: %d ms; engine: %s; content: %s; host: %s" % [cases.size(), failures.size(), Time.get_ticks_msec() - started, Engine.get_version_info().string, PrototypeWorld.CONTENT_VERSION, OS.get_name()])
+	print("Discovered/run: %d; failures: %d; elapsed: %d ms; engine: %s; content: %s; host: %s" % [cases.size(), failures.size(), Time.get_ticks_msec() - started, Engine.get_version_info().string, ColonyWorld.CONTENT_VERSION + " (M0 regression fixture retained)", OS.get_name()])
 	quit(0 if failures.is_empty() and not cases.is_empty() else 1)
 
 func unit() -> void:
@@ -142,6 +143,9 @@ func integration() -> void:
 
 func ui() -> void:
 	var game: GameSession = load("res://scenes/game.tscn").instantiate()
+	game.world = PrototypeWorld.new()
+	game.runner = SimRunner.new(game.world)
+	game.store = PrototypeStore.new()
 	root.add_child(game)
 	await process_frame
 	await process_frame
@@ -261,4 +265,60 @@ func ui() -> void:
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://reports/m0-portrait.png")
 	game.queue_free()
+	await process_frame
+	var colony_game: GameSession = load("res://scenes/game.tscn").instantiate()
+	root.add_child(colony_game)
+	await process_frame
+	colony_game.close_sheet()
+	colony_game.show_sheet("Work")
+	var gather_button: Button
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text == "Gather wood":
+			gather_button = child
+	check("M1/UI_gather_action_exists", gather_button != null)
+	if gather_button != null:
+		gather_button.pressed.emit()
+		colony_game.set_speed(4)
+		colony_game.runner.advance_frame(0.1)
+	check("M1/UI_gather_creates_real_job", colony_game.world.jobs.any(func(job: Dictionary) -> bool: return job.kind == "gather"))
+	colony_game._process(0.0)
+	colony_game.begin_build("bed")
+	colony_game.confirm_placement()
+	colony_game.confirm_placement()
+	check("M1/UI_blueprint_single_submit", colony_game.world.pending_commands.size() == 1)
+	colony_game.set_speed(4)
+	colony_game.runner.advance_frame(0.1)
+	for tick_index in range(1600):
+		colony_game.world.step()
+	check("M1/UI_real_materials_built", colony_game.world.structures.any(func(structure: Dictionary) -> bool: return structure.definition == "bed") and colony_game.world.ledger.consumed.get("wood", 0) == 6)
+	colony_game._process(0.0)
+	for viewport_size in sizes:
+		root.size = viewport_size
+		colony_game.size = Vector2(viewport_size)
+		for scale_factor in [1.0, 1.25, 1.5]:
+			colony_game.text_scale = scale_factor
+			colony_game._build_theme()
+			colony_game.begin_build("bed")
+			await process_frame
+			await process_frame
+			check("M1/UI_build_toolbar_%dx%d_%d" % [viewport_size.x, viewport_size.y, int(scale_factor * 100)], not colony_game.confirm_button.get_global_rect().intersects(colony_game.speeds.get_global_rect()) and colony_game.rotation_button.get_global_rect().end.y <= colony_game.nav.get_global_rect().position.y, str([colony_game.rotation_button.get_global_rect(), colony_game.nav.get_global_rect()]))
+			colony_game.cancel_placement()
+	root.size = Vector2i(960, 600)
+	colony_game.size = Vector2(960, 600)
+	colony_game.text_scale = 1.0
+	colony_game._build_theme()
+	colony_game.view.camera_tile = Vector2(63, 63)
+	colony_game.select_citizen(2)
+	colony_game.set_speed(0)
+	await process_frame
+	if DisplayServer.get_name() != "headless":
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://reports/m1-landscape.png")
+		root.size = Vector2i(390, 844)
+		colony_game.size = Vector2(390, 844)
+		colony_game.view.camera_tile = Vector2(68, 63)
+		await process_frame
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://reports/m1-portrait.png")
+	colony_game.queue_free()
 	await process_frame

@@ -1,14 +1,14 @@
 class_name SimRunner
 extends RefCounted
 
-var world: PrototypeWorld
+var world: RefCounted
 var speed: int = 0
 var previous_speed: int = 1
 var accumulator: float = 0.0
 var behind_seconds: float = 0.0
 var speed_reduced: bool = false
 
-func _init(state: PrototypeWorld) -> void:
+func _init(state: RefCounted) -> void:
 	world = state
 
 func set_speed(value: int) -> void:

@@ -4,7 +4,7 @@ extends RefCounted
 var directory: String = "user://m0"
 var sequence: int = 0
 
-func save(world: PrototypeWorld) -> String:
+func save(world: RefCounted) -> String:
 	var error: Error = DirAccess.make_dir_recursive_absolute(directory)
 	if error != OK:
 		return "Could not create save directory: %s" % error_string(error)
@@ -17,13 +17,13 @@ func save(world: PrototypeWorld) -> String:
 	var file: FileAccess = FileAccess.open(temporary, FileAccess.WRITE)
 	if file == null:
 		return "Could not open save: %s" % error_string(FileAccess.get_open_error())
-	file.store_buffer(PrototypeCodec.encode(world))
+	file.store_buffer(encode(world))
 	file.flush()
 	var write_error: Error = file.get_error()
 	file.close()
 	if write_error != OK:
 		return "Could not write save: %s" % error_string(write_error)
-	var verified: Dictionary = PrototypeCodec.decode(FileAccess.get_file_as_bytes(temporary))
+	var verified: Dictionary = decode(FileAccess.get_file_as_bytes(temporary))
 	if verified.has("error"):
 		return "Save verification failed: " + verified.error
 	error = DirAccess.rename_absolute(temporary, final_path)
@@ -33,7 +33,7 @@ func save(world: PrototypeWorld) -> String:
 	# Prune only valid old generations after a verified replacement exists.
 	var valid: PackedStringArray = []
 	for name in generations:
-		if not PrototypeCodec.decode(FileAccess.get_file_as_bytes(directory.path_join(name))).has("error"):
+		if not decode(FileAccess.get_file_as_bytes(directory.path_join(name))).has("error"):
 			valid.append(name)
 	while valid.size() > 3:
 		DirAccess.remove_absolute(directory.path_join(valid[0]))
@@ -44,7 +44,7 @@ func load_latest() -> Dictionary:
 	var generations: PackedStringArray = _generations()
 	generations.reverse()
 	for name in generations:
-		var decoded: Dictionary = PrototypeCodec.decode(FileAccess.get_file_as_bytes(directory.path_join(name)))
+		var decoded: Dictionary = decode(FileAccess.get_file_as_bytes(directory.path_join(name)))
 		if not decoded.has("error"):
 			return decoded
 	return {"error": "No valid touch-prototype save was found."}
@@ -58,3 +58,9 @@ func _generations() -> PackedStringArray:
 			result.append(name)
 	result.sort()
 	return result
+
+func encode(world: RefCounted) -> PackedByteArray:
+	return PrototypeCodec.encode(world)
+
+func decode(bytes: PackedByteArray) -> Dictionary:
+	return PrototypeCodec.decode(bytes)

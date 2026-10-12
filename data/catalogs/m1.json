@@ -1,0 +1,326 @@
+{
+  "version": "m1-loop-1",
+  "items": [
+    {
+      "id": "wood",
+      "name_key": "wood.name",
+      "description_key": "wood.description",
+      "icon_id": "wood",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 1
+    },
+    {
+      "id": "stone",
+      "name_key": "stone.name",
+      "description_key": "stone.description",
+      "icon_id": "stone",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 1
+    },
+    {
+      "id": "fiber",
+      "name_key": "fiber.name",
+      "description_key": "fiber.description",
+      "icon_id": "fiber",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 1
+    },
+    {
+      "id": "herb",
+      "name_key": "herb.name",
+      "description_key": "herb.description",
+      "icon_id": "herb",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 115200,
+      "barter_value": 2
+    },
+    {
+      "id": "berry",
+      "name_key": "berry.name",
+      "description_key": "berry.description",
+      "icon_id": "berry",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 250,
+      "tags": [
+        "Berry"
+      ],
+      "shelf_ticks": 21600,
+      "barter_value": 1
+    },
+    {
+      "id": "mushroom",
+      "name_key": "mushroom.name",
+      "description_key": "mushroom.description",
+      "icon_id": "mushroom",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 250,
+      "tags": [
+        "Mushroom"
+      ],
+      "shelf_ticks": 28800,
+      "barter_value": 1
+    },
+    {
+      "id": "meal",
+      "name_key": "meal.name",
+      "description_key": "meal.description",
+      "icon_id": "meal",
+      "schema_version": 1,
+      "stack_limit": 20,
+      "fullness": 500,
+      "tags": [],
+      "shelf_ticks": 28800,
+      "barter_value": 3
+    },
+    {
+      "id": "travel_ration",
+      "name_key": "travel_ration.name",
+      "description_key": "travel_ration.description",
+      "icon_id": "travel_ration",
+      "schema_version": 1,
+      "stack_limit": 20,
+      "fullness": 500,
+      "tags": [],
+      "shelf_ticks": 172800,
+      "barter_value": 4
+    }
+  ],
+  "buildings": [
+    {
+      "id": "bed",
+      "name_key": "bed.name",
+      "description_key": "bed.description",
+      "icon_id": "bed",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "wood": 6,
+        "fiber": 2
+      },
+      "work_milli": 15000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0
+    },
+    {
+      "id": "bedroll",
+      "name_key": "bedroll.name",
+      "description_key": "bedroll.description",
+      "icon_id": "bedroll",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "fiber": 2
+      },
+      "work_milli": 5000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0
+    },
+    {
+      "id": "hearth",
+      "name_key": "hearth.name",
+      "description_key": "hearth.description",
+      "icon_id": "hearth",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "wood": 8,
+        "stone": 10
+      },
+      "work_milli": 40000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0
+    },
+    {
+      "id": "table",
+      "name_key": "table.name",
+      "description_key": "table.description",
+      "icon_id": "table",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "wood": 8
+      },
+      "work_milli": 20000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0
+    },
+    {
+      "id": "rack",
+      "name_key": "rack.name",
+      "description_key": "rack.description",
+      "icon_id": "rack",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "wood": 8
+      },
+      "work_milli": 15000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 200
+    },
+    {
+      "id": "wood_wall",
+      "name_key": "wood_wall.name",
+      "description_key": "wood_wall.description",
+      "icon_id": "wood_wall",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 2
+      },
+      "work_milli": 6000,
+      "solid": true,
+      "room_boundary": true,
+      "health": 180,
+      "unlock": "initial",
+      "storage_capacity": 0
+    },
+    {
+      "id": "door",
+      "name_key": "door.name",
+      "description_key": "door.description",
+      "icon_id": "door",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 3
+      },
+      "work_milli": 8000,
+      "solid": false,
+      "room_boundary": true,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0
+    }
+  ],
+  "resources": [
+    {
+      "id": "tree",
+      "name_key": "tree.name",
+      "description_key": "tree.description",
+      "icon_id": "tree",
+      "schema_version": 1,
+      "item": "wood",
+      "yield_count": 8,
+      "work_milli": 16000,
+      "solid": true,
+      "per_unit": false,
+      "regrow_ticks": 0
+    },
+    {
+      "id": "berry_bush",
+      "name_key": "berry_bush.name",
+      "description_key": "berry_bush.description",
+      "icon_id": "berry_bush",
+      "schema_version": 1,
+      "item": "berry",
+      "yield_count": 4,
+      "work_milli": 8000,
+      "solid": false,
+      "per_unit": false,
+      "regrow_ticks": 14400
+    },
+    {
+      "id": "mushroom_patch",
+      "name_key": "mushroom_patch.name",
+      "description_key": "mushroom_patch.description",
+      "icon_id": "mushroom_patch",
+      "schema_version": 1,
+      "item": "mushroom",
+      "yield_count": 3,
+      "work_milli": 8000,
+      "solid": false,
+      "per_unit": false,
+      "regrow_ticks": 21600
+    },
+    {
+      "id": "herb_patch",
+      "name_key": "herb_patch.name",
+      "description_key": "herb_patch.description",
+      "icon_id": "herb_patch",
+      "schema_version": 1,
+      "item": "herb",
+      "yield_count": 2,
+      "work_milli": 8000,
+      "solid": false,
+      "per_unit": false,
+      "regrow_ticks": 28800
+    },
+    {
+      "id": "stone_node",
+      "name_key": "stone_node.name",
+      "description_key": "stone_node.description",
+      "icon_id": "stone_node",
+      "schema_version": 1,
+      "item": "stone",
+      "yield_count": 200,
+      "work_milli": 2000,
+      "solid": true,
+      "per_unit": true,
+      "regrow_ticks": 0
+    }
+  ],
+  "recipes": [
+    {
+      "id": "cook_meals",
+      "name_key": "cook_meals.name",
+      "description_key": "cook_meals.description",
+      "icon_id": "cook_meals",
+      "schema_version": 1,
+      "station": "hearth",
+      "alternatives": [
+        "berry",
+        "mushroom"
+      ],
+      "food_count": 4,
+      "materials": {
+        "wood": 1
+      },
+      "outputs": {
+        "meal": 2
+      },
+      "work_milli": 8000,
+      "skill": "Cooking",
+      "unlock": "initial"
+    }
+  ]
+}
