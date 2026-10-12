@@ -1,0 +1,83 @@
+class_name ColonyJournal
+extends RefCounted
+## Length + exact UTF-8 JSON + SHA256. A torn final frame is ignored, not replayed.
+const MAX_RECORD: int = 2 * 1024 * 1024
+const MAX_JOURNAL: int = 64 * 1024 * 1024
+
+static func frame(record: Dictionary) -> PackedByteArray:
+	var payload: PackedByteArray = JSON.stringify(ColonyState.pack(record), "", true).to_utf8_buffer()
+	var bytes: PackedByteArray = PackedByteArray()
+	bytes.resize(4)
+	bytes.encode_u32(0, payload.size())
+	bytes.append_array(payload)
+	bytes.append_array(_hash(payload))
+	return bytes
+
+static func _hash(bytes: PackedByteArray) -> PackedByteArray:
+	var context: HashingContext = HashingContext.new()
+	context.start(HashingContext.HASH_SHA256)
+	context.update(bytes)
+	return context.finish()
+
+static func read(bytes: PackedByteArray) -> Dictionary:
+	if bytes.size() > MAX_JOURNAL:
+		return {"error": "Journal exceeds recovery bound"}
+	var records: Array[Dictionary] = []
+	var offset: int = 0
+	var sequence: int = 1
+	while offset < bytes.size():
+		if bytes.size() - offset < 4:
+			return {"records": records, "torn_tail": true}
+		var length: int = bytes.decode_u32(offset)
+		if length == 0 or length > MAX_RECORD:
+			return {"error": "Invalid journal frame length"}
+		if offset + 4 + length + 32 > bytes.size():
+			return {"records": records, "torn_tail": true}
+		var payload: PackedByteArray = bytes.slice(offset + 4, offset + 4 + length)
+		var digest: PackedByteArray = bytes.slice(offset + 4 + length, offset + 4 + length + 32)
+		if _hash(payload) != digest:
+			return {"error": "Journal checksum failed before the end; original evidence retained"}
+		var parser: JSON = JSON.new()
+		if parser.parse(payload.get_string_from_utf8()) != OK:
+			return {"error": "Malformed journal record"}
+		var value: Variant = ColonyState.unpack(parser.data)
+		if not value is Dictionary or value.get("sequence", "") != str(sequence) or value.get("kind", "") not in ["command", "tick"] or not value.get("tick") is int:
+			return {"error": "Journal sequence/schema mismatch"}
+		if value.kind == "command" and (value.size() != 4 or not value.get("command") is Dictionary):
+			return {"error": "Invalid journal command"}
+		if value.kind == "tick" and value.size() != 3:
+			return {"error": "Invalid complete-tick marker"}
+		records.append(value)
+		sequence += 1
+		offset += 4 + length + 32
+	return {"records": records, "torn_tail": false}
+
+static func replay(world: ColonyWorld, records: Array[Dictionary]) -> Dictionary:
+	var final_tick: int = world.tick
+	var previous_tick: int = world.tick
+	var commands: Dictionary = {}
+	for record in records:
+		if record.tick < previous_tick or record.tick < world.tick or record.tick - world.tick > 72000:
+			return {"error": "Journal tick order/range mismatch"}
+		previous_tick = record.tick
+		if record.kind == "command":
+			if not commands.has(record.tick):
+				commands[record.tick] = []
+			commands[record.tick].append(record.command)
+		else:
+			final_tick = record.tick
+	while world.tick < final_tick:
+		for command: Dictionary in commands.get(world.tick + 1, []):
+			# Validate command structure through the same snapshot validator before use.
+			world.pending_commands.append(command)
+			if command.get("id") is int:
+				world.next_command_id = maxi(world.next_command_id, command.id + 1)
+		if commands.has(world.tick + 1):
+			var validation: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+			if validation.has("error"):
+				return {"error": validation.error}
+		world.step()
+		var errors: Array[String] = world.invariant_errors()
+		if not errors.is_empty():
+			return {"error": "Replay invariant failed: " + str(errors)}
+	return {"world": world, "recovered_tick": final_tick}

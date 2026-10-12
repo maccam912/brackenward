@@ -110,6 +110,40 @@ static func run(check: Callable) -> void:
 	bad_envelope.payload = bad_text
 	bad_envelope.sha256 = bad_text.sha256_text()
 	check.call("M1/import_rejects_valid_checksum_invalid_state", ColonyCodec.decode(JSON.stringify(bad_envelope).to_utf8_buffer()).has("error"))
+	# Durable commands plus tick markers reconstruct exact acknowledged state.
+	w = world()
+	var store: ColonyStore = ColonyStore.new()
+	store.directory = "user://journal-test-%d" % Time.get_ticks_usec()
+	check.call("M2/journal_base_snapshot", store.save(w).is_empty())
+	w.queue_command("build", {"definition":"bed", "x":74, "y":63, "rotation":0})
+	for i in range(71): w.step()
+	check.call("M2/journal_verified_write", store.checkpoint(w).is_empty())
+	var recovery: Dictionary = store.load_latest()
+	check.call("M2/journal_exact_command_tick_recovery", recovery.has("world") and recovery.world.canonical_hash() == w.canonical_hash(), str(recovery.get("error", "hash differs")))
+	var journal_path: String = store.directory.path_join("journal-%010d.frames" % store.sequence)
+	var bytes: PackedByteArray = FileAccess.get_file_as_bytes(journal_path)
+	var torn: PackedByteArray = bytes.duplicate()
+	torn.append_array(ColonyJournal.frame({"sequence":"3", "kind":"tick", "tick":w.tick + 1}).slice(0, 8))
+	var parsed: Dictionary = ColonyJournal.read(torn)
+	check.call("M2/torn_tail_retains_complete_marker", not parsed.has("error") and parsed.torn_tail and parsed.records.size() == 2)
+	bytes[10] ^= 1
+	check.call("M2/journal_checksum_failure_rejected", ColonyJournal.read(bytes).has("error"))
+	# Corrupt newest journal must recover older generation and preserve evidence.
+	for i in range(10): w.step()
+	store.save(w)
+	for i in range(10): w.step()
+	store.checkpoint(w)
+	var newest: String = store.directory.path_join("journal-%010d.frames" % store.sequence)
+	var bad_bytes: PackedByteArray = FileAccess.get_file_as_bytes(newest)
+	bad_bytes[10] ^= 1
+	var bad_file: FileAccess = FileAccess.open(newest, FileAccess.WRITE)
+	bad_file.store_buffer(bad_bytes)
+	bad_file.close()
+	recovery = store.load_latest()
+	check.call("M2/bad_newest_journal_falls_back_without_overwrite", recovery.has("world") and recovery.world.tick == 1871 and FileAccess.get_file_as_bytes(newest) == bad_bytes)
+	for name in DirAccess.get_files_at(store.directory):
+		DirAccess.remove_absolute(store.directory.path_join(name))
+	DirAccess.remove_absolute(store.directory)
 	# A real loop; setup removes only the initial meal reserve to require new cooking.
 	w = world()
 	for stack in w.stacks:

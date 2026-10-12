@@ -32,6 +32,7 @@ var submitted_command: int = 0
 var backgrounded: bool = false
 var last_saved_tick: int = 1800
 var autosave_elapsed: float = 0.0
+var journal_elapsed: float = 0.0
 var file_dialog: FileDialog
 var native_storage: Object
 var document_request: int = 0
@@ -244,6 +245,13 @@ func _process(delta: float) -> void:
 	if is_instance_valid(sheet_feedback):
 		sheet_feedback.text = notice
 	preview_label.text = _preview_text()
+	journal_elapsed += delta
+	if store is ColonyStore and journal_elapsed >= 2.0:
+		var error: String = store.checkpoint(world)
+		if not error.is_empty():
+			runner.pause()
+			notice = error + ". Retry Save or Export in Menu."
+		journal_elapsed = 0.0
 	autosave_elapsed += delta
 	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick:
 		save_local()

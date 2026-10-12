@@ -25,6 +25,7 @@ var facts: Array[Dictionary] = []
 var ledger: Dictionary = {"produced": {}, "consumed": {}, "spoiled": {}}
 var use_rations: bool = false
 var path_requests: int = 0
+var command_trace: Array[Dictionary] = []
 
 func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 	definitions = catalog.duplicate(true)
@@ -130,6 +131,7 @@ func step() -> void:
 	for command in pending_commands:
 		if not receipts.has(command.id):
 			receipts[command.id] = _command(command) if command.session == session_id else "wrong_session"
+			command_trace.append({"tick": tick, "command": command.duplicate(true)})
 	pending_commands.clear()
 	for citizen in citizens:
 		_needs(citizen)
