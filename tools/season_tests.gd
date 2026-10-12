@@ -96,7 +96,7 @@ static func legacy_and_journal(check: Callable) -> void:
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/m2-fields-and-work.brackenward")
 	var legacy: Dictionary = M2Codec.decode(bytes)
 	var migrated: Dictionary = ColonyCodec.decode(bytes)
-	check.call("SAVE/M2_public_fixture_forward_migration",legacy.has("world") and migrated.has("world") and legacy.world.tick == migrated.world.tick and legacy.world.fields == migrated.world.fields and legacy.world.ledger == migrated.world.ledger,str(migrated.get("error","")))
+	check.call("SAVE/M2_public_fixture_forward_migration",legacy.has("world") and migrated.has("world") and legacy.world.tick == migrated.world.tick and legacy.world.fields == migrated.world.fields and legacy.world.ledger.produced.keys().all(func(item:Variant)->bool:return migrated.world.ledger.produced.get(item) == legacy.world.ledger.produced[item]),str(migrated.get("error","")))
 	var root: String = "user://m3-compat-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(root)
 	var old: M2World = M2World.new(M2Catalog.load_data())

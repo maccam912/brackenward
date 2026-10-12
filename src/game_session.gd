@@ -34,6 +34,7 @@ var last_saved_tick: int = 1800
 var autosave_elapsed: float = 0.0
 var journal_elapsed: float = 0.0
 var file_dialog: FileDialog
+var catalog_strings: Dictionary = {}
 var native_storage: Object
 var document_request: int = 0
 var exporting: bool = false
@@ -421,6 +422,10 @@ func _map_intent(action: Dictionary) -> void:
 				if Vector2i(resource.x, resource.y) == action.tile:
 					_resource_sheet(resource)
 					return
+			for structure in world.structures:
+				if world.footprint(structure).has(action.tile):
+					show_station(structure)
+					return
 			for job in world.jobs:
 				if job.kind == "build" and job.state not in ["Complete", "Canceled"] and world.footprint(job).has(action.tile):
 					_job_sheet(job)
@@ -504,6 +509,7 @@ func show_sheet(title: String) -> void:
 			if world is ColonyWorld:
 				for kind in world.definitions.buildings:
 					var definition: Dictionary = world.definitions.buildings[kind]
+					if not definition.buildable: continue
 					button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body)
 		"People":
 			for citizen in world.citizens:
@@ -916,6 +922,7 @@ func _work_sheet() -> void:
 	label("Choose a resource, drag a rectangle, then Confirm. Workers with Gathering enabled keep taking marked jobs until they are finished.", sheet_body)
 	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node"]:
 		button("Gather " + world.definitions.resources[kind].item, func() -> void: begin_gather(kind), sheet_body)
+	button("Research",show_research,sheet_body)
 	label("Worker assignments",sheet_body)
 	for citizen in world.citizens:
 		button("%s | Gathering %s" % [citizen.name,["Off","Last","Normal","First"][citizen.preferences.Gathering]],func() -> void: show_work_preferences(citizen.id),sheet_body)
@@ -1233,3 +1240,87 @@ func show_person(id: int) -> void:
 				close_sheet(),sheet_body)
 		else:
 			label("Deadline: %s %d at %02d:00 | about %.1f days left" % [["Spring","Summer","Autumn","Winter"][(request.deadline/57600)%4],(request.deadline/7200)%8+1,(request.deadline%7200)/300,maxf(0,float(request.deadline-world.tick)/7200.0)],sheet_body)
+
+func show_research() -> void:
+	show_sheet("Research")
+	label("One active project, up to two desks. Each productive WU adds one point; switching keeps progress. Build a research desk and enable Research work to begin.",sheet_body)
+	label("Active: "+("None" if world.production_state.project.is_empty() else _catalog_name(world.production_state.project))+"\nQueue: "+", ".join(world.production_state.queue.map(_catalog_name))+"\nBanked insight: %d" % world.production_state.insight,sheet_body)
+	for id in world.definitions.research:
+		var definition: Dictionary = world.definitions.research[id]
+		var missing: Array = definition.prerequisites.filter(func(p:Variant)->bool:return not world.researched.has(p))
+		label("%s | %d/%d points\n%s" % [id.capitalize(),world.production_state.progress.get(id,0)/1000,definition.points,"Complete" if world.researched.has(id) else ("Available" if missing.is_empty() else "Requires "+", ".join(missing))],sheet_body)
+		label("Unlocks: "+", ".join(definition.unlocks.map(_catalog_name)),sheet_body)
+		if not world.researched.has(id):
+			if missing.is_empty():
+				button("Study "+id.capitalize(),func() -> void:
+					_submit("research_select",{"definition":id})
+					close_sheet(),sheet_body)
+			button("Queue "+id.capitalize(),func() -> void:
+				_submit("research_queue",{"definition":id})
+				close_sheet(),sheet_body)
+
+func show_station(station: Dictionary) -> void:
+	show_sheet(station.definition.replace("_"," ").capitalize())
+	var definition: Dictionary = world.definitions.buildings[station.definition]
+	label("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body)
+	if station.definition == "research_desk":
+		button("Research projects",show_research,sheet_body)
+	for recipe in world.definitions.recipes.values():
+		if recipe.station != station.definition: continue
+		label("%s\n%s -> %s | %d WU" % [recipe.id.replace("_"," ").capitalize(),_cost_text(recipe.materials)+(" + %d allowed food units" % recipe.food_count if recipe.food_count > 0 else ""),_cost_text(recipe.outputs),recipe.work_milli/1000],sheet_body)
+		if recipe.unlock != "initial" and not world.researched.has(recipe.unlock):
+			label("Requires "+recipe.unlock.capitalize()+" research.",sheet_body)
+			button("Show research",show_research,sheet_body)
+		else:
+			button("Make one batch",func() -> void:
+				_submit("recipe_order",{"target":station.id,"definition":recipe.id,"mode":"Repeat","value":1,"priority":2,"filters":recipe.alternatives.duplicate()})
+				close_sheet(),sheet_body)
+			button("Set production policy",func() -> void: show_recipe_policy(station,recipe),sheet_body)
+	for order in world.production_state.orders:
+		if order.station != station.id: continue
+		label("%s | %s %d | %s" % [order.recipe.replace("_"," "),order.mode,order.quantity,"Enabled" if order.enabled else "Paused"],sheet_body)
+		button("Pause order" if order.enabled else "Resume order",func() -> void:
+			_submit("order_enabled",{"target":order.id,"enabled":not order.enabled})
+			close_sheet(),sheet_body)
+	button("Suspend station" if station.cooking else "Enable station",func() -> void:
+		_submit("station_enabled",{"target":station.id,"enabled":not station.cooking})
+		close_sheet(),sheet_body)
+	if definition.storage_capacity > 0:
+		button("Storage filters and priority",func() -> void: _storage_sheet(world.find(world.stores,station.id)),sheet_body)
+
+func _catalog_name(id: String) -> String:
+	var key: String = id.get_slice(":",1) if id.contains(":") else id
+	if catalog_strings.is_empty(): catalog_strings = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogs/en_colony_v1.json"))
+	return catalog_strings.get(key+".name",key.replace("_"," ").capitalize())
+
+func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
+	show_sheet("Production policy")
+	label(_catalog_name(recipe.id)+" at "+_catalog_name(station.definition),sheet_body)
+	label("Repeat counts completed batches. Maintain counts available home stock and unfinished outputs. One station works on one batch at a time; existing inputs keep their age.",sheet_body)
+	var mode: OptionButton = OptionButton.new()
+	mode.add_item("Repeat batches"); mode.add_item("Maintain quantity")
+	mode.custom_minimum_size = Vector2(48,48)
+	sheet_body.add_child(mode)
+	var quantity: SpinBox = SpinBox.new()
+	quantity.min_value = 1; quantity.max_value = 1000; quantity.value = 4
+	quantity.custom_minimum_size = Vector2(96,48)
+	sheet_body.add_child(quantity)
+	var priority: OptionButton = OptionButton.new()
+	for name in ["Low priority","Normal priority","Urgent priority"]: priority.add_item(name)
+	priority.select(1); priority.custom_minimum_size = Vector2(48,48)
+	sheet_body.add_child(priority)
+	var choices: Dictionary = {}
+	for item in recipe.alternatives:
+		var choice: CheckButton = CheckButton.new()
+		choice.text = "Allow "+_catalog_name(item)
+		choice.button_pressed = true
+		choice.custom_minimum_size = Vector2(48,48)
+		sheet_body.add_child(choice)
+		choices[item] = choice
+	button("Add order",func() -> void:
+		var filters: Array = choices.keys().filter(func(id:Variant)->bool:return choices[id].button_pressed)
+		if recipe.food_count > 0 and filters.is_empty():
+			notice = "Allow at least one food ingredient."
+			return
+		_submit("recipe_order",{"target":station.id,"definition":recipe.id,"mode":"Repeat" if mode.selected == 0 else "Maintain","value":int(quantity.value),"priority":priority.selected+1,"filters":filters})
+		close_sheet(),sheet_body)

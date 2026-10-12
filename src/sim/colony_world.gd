@@ -2,8 +2,8 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "m3-people-seasons-1"
-const SCHEMA_REVISION: int = 2
+const CONTENT_VERSION: String = "colony-v1"
+const SCHEMA_REVISION: int = 4
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -25,6 +25,7 @@ var room_tiles: Dictionary = {}
 var rooms_dirty: bool = true
 var schema_revision: int = SCHEMA_REVISION
 var social_state: Dictionary = {}
+var production_state: Dictionary = {}
 var generator_version: int = 0
 var site_id: String = "meadow_reach"
 var weather_state: Dictionary = {}
@@ -69,7 +70,10 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 			"shift": "Normal", "pending_shift": "", "pinned_job": 0, "yesterday_leisure": 0, "leisure_memory_until": 0, "warm_until": 0, "leisure_ticks": 0, "leisure_day": 0, "bed_sleep_ticks": 0, "bed_memory_until": 0, "raw_memory_until": 0, "preferred_work": 0, "preferred_memory_until": 0, "mood_terms": {}, "food_tags": [], "food_tags_day": 0, "break_clock": 0, "break_until": 0, "break_cooldown": 0, "departure_clock": 0, "departure_until": 0, "departed": false,
 			"food_tag": ["Vegetable", "Grain", "Berry", "Mushroom"][index], "fullness": 750, "rest": 900, "morale": 650,
 			"health": 100, "hunger_rem": 0, "rest_rem": 0, "starving_ticks": 0, "job": 0, "bed": 0,
-			"equipment": {"toolkit": "toolkit", "cloak": "cloak", "weapon": "spear" if index in [0, 3] else "bow"}, "activity": "Looking around"})
+			"equipment": {"toolkit": "toolkit", "cloak": "cloak", "weapon": "spear" if index in [0, 3] else "bow", "vest":""}, "activity": "Looking around"})
+	for citizen in citizens:
+		for item in citizen.equipment.values():
+			if not item.is_empty(): _record("produced",item,1)
 	for index in range(4):
 		var anchor: Vector2i = [Vector2i(62, 59), Vector2i(64, 59), Vector2i(62, 61), Vector2i(64, 61)][index]
 		var bed: Dictionary = _structure("bedroll", anchor, 0)
@@ -91,6 +95,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 
 	ColonyWeather.initialize(self)
 	ColonySocial.initialize(self)
+	ColonyProduction.initialize(self)
 
 func _id() -> int:
 	var result: int = next_id
@@ -210,6 +215,7 @@ func step() -> void:
 		_needs(citizen)
 	if tick % 10 == 0:
 		_create_work()
+		ColonyProduction.create_jobs(self)
 		ColonyAgriculture.create_jobs(self)
 		for citizen in citizens:
 			_assign(citizen)
@@ -220,6 +226,7 @@ func step() -> void:
 func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0) -> String:
 	if not definitions.buildings.has(kind) or rotation not in [0, 1, 2, 3]:
 		return "Unknown building or rotation"
+	if not definitions.buildings[kind].buildable: return "The supply cart cannot be built; move the existing cart instead"
 	var unlock: String = definitions.buildings[kind].unlock
 	if unlock != "initial" and not researched.has(unlock):
 		return "Requires " + unlock.capitalize() + " research"
@@ -330,6 +337,13 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"station_enabled":
+			var station: Dictionary = find(structures,args.target)
+			if station.is_empty(): return "Missing workstation"
+			station.cooking = args.enabled
+			for job in jobs:
+				if job.target == station.id and job.kind in ["cook","craft","research"] and job.worker > 0: _release(job,false)
+		"recipe_order", "order_enabled", "research_select", "research_queue": return ColonyProduction.command(self,command.kind,args)
 		"request_accept", "request_decline", "mediate": return ColonySocial.command(self,command.kind,args)
 		"early_harvest":
 			var field: Dictionary = find(fields,args.target)
@@ -394,7 +408,7 @@ func _job(kind: String, category: String, skill: String, target: int, point: Vec
 	var job: Dictionary = {"id": _id(), "kind": kind, "category": category, "skill": skill, "target": target,
 		"x": point.x, "y": point.y, "definition": "", "rotation": 0, "required": effort, "work": 0,
 		"state": "Ready", "worker": 0, "priority": 2, "created": tick, "inputs": {}, "output": {},
-		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0, "worker_days": {},
+		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0, "worker_days": {}, "order":0,
 		"rate_remainders": {}, "pending_xp": {}}
 	jobs.append(job)
 	return job
@@ -418,6 +432,8 @@ func _create_work() -> void:
 			fuel_job.inputs = {"wood": 8 - hearth.fuel}
 		if not hearth.cooking:
 			continue
+		if production_state.orders.any(func(order:Dictionary)->bool:return order.station == hearth.id):
+			continue
 		var active: bool = false
 		var output_batches: int = 0
 		var in_progress: int = 0
@@ -425,7 +441,7 @@ func _create_work() -> void:
 			if stack.location == "output" and stack.owner == hearth.id:
 				output_batches += 1
 		for job in jobs:
-			if job.kind == "cook" and job.target == hearth.id and job.state not in ["Complete", "Canceled"]:
+			if job.kind in ["cook","craft"] and job.target == hearth.id and job.state not in ["Complete", "Canceled"]:
 				active = true
 				in_progress += 2
 		if not active and output_batches < 2 and available("meal") + in_progress < citizens.size() * 4:
@@ -566,6 +582,15 @@ func _score(job: Dictionary, citizen: Dictionary) -> Array:
 		-absi(citizen.x - job.x) - absi(citizen.y - job.y), -job.id]
 
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if job.kind in ["cook","craft"]: ColonyProduction.replace_food(self,job)
+	if job.kind == "research" and job.definition != production_state.project: return _block(job,"Project inactive: choose it in Research to resume")
+	if job.kind == "craft":
+		var order: Dictionary = find(production_state.orders,job.order)
+		if order.is_empty() or not order.enabled: return _block(job,"Production order paused")
+	if job.kind in ["cook","craft","research"]:
+		if not find(structures,job.target).get("cooking",true): return _block(job,"Station suspended: enable it in the workstation card")
+		for other in jobs:
+			if other.id != job.id and other.target == job.target and other.worker > 0 and other.kind in ["cook","craft","research"]: return _block(job,"Workstation in use by another resident")
 	for resident in citizens:
 		if resident.pinned_job == job.id and resident.id != citizen.id:
 			return false
@@ -573,8 +598,8 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 	var positions: Array[Vector2i] = []
 	if job.kind == "build":
 		positions = _perimeter(footprint(job))
-	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate"]:
-		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["cook","fuel"] else _perimeter([point])
+	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research"]:
+		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["cook","fuel","craft","research"] else _perimeter([point])
 	else:
 		positions.append(point)
 	positions.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
@@ -613,7 +638,9 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 		job.work_y = work_position.y
 		for item in job.inputs:
 			var needed: int = job.inputs[item] - _escrow_count(job.id, item)
-			for stack in stacks:
+			var sources: Array = stacks.filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"])
+			sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(self,a,b,Vector2i(citizen.x,citizen.y)))
+			for stack in sources:
 				if stack.item != item or stack.location not in ["ground", "store", "output"] or (job.kind == "eat" and stack.id != job.source):
 					continue
 				var count: int = mini(needed, stack.count - _reserved(stack))
@@ -707,6 +734,9 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 				if (hour >= 6 and hour < 22 and citizen.rest >= 900) or (hour == 6 and citizen.rest >= 500):
 					_complete(citizen, job)
 				return
+			if job.kind == "research":
+				ColonyProduction.research_work(self,citizen,job)
+				return
 			var work: int = _rate(citizen, job)
 			work = mini(work, job.required - job.work)
 			job.work += work
@@ -758,7 +788,7 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 
 func _rate(citizen: Dictionary, job: Dictionary) -> int:
 	var ratios: Array[int] = [1000 + 100 * citizen.skills.get(job.skill, 0),
-		500 if job.skill in ["Build", "Craft", "Field"] and citizen.equipment.toolkit.is_empty() else 1000,
+		(500 if citizen.equipment.toolkit.is_empty() else (1150 if citizen.equipment.toolkit == "forged_toolkit" else 1000)) if job.skill in ["Build","Craft","Field"] else 1000,
 		1200 if (job.skill == "Care" and citizen.traits.has("Kind")) or (job.skill == "Study" and citizen.traits.has("Curious")) else 1000, 800 if not comfortable(citizen) and not roofed(Vector2i(citizen.x, citizen.y)) else 1000]
 	var remainders: Array = job.rate_remainders.get(citizen.id, [0, 0, 0, 0])
 	var work: int = 100
@@ -826,7 +856,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 						break
 			if definitions.buildings[job.definition].storage_capacity > 0:
 				stores.append({"id": structure.id, "tiles": [Vector2i(structure.x, structure.y)], "capacity": definitions.buildings[job.definition].storage_capacity, "priority": 2, "filters": definitions.items.keys()})
-		"cook":
+		"cook", "craft":
 			for item in job.output:
 				var stack: Dictionary = _make_stack(item, job.output[item], "output", job.target, point, true)
 				for ingredient in job.inputs:
@@ -839,6 +869,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			citizen.starving_ticks = 0
 			if item not in ["meal", "travel_ration"]:
 				citizen.raw_memory_until = tick + 1800
+	if job.kind == "craft": ColonyProduction.completed(self,job)
 	_complete(citizen, job)
 
 func _complete(citizen: Dictionary, job: Dictionary) -> void:
@@ -859,6 +890,10 @@ func _complete(citizen: Dictionary, job: Dictionary) -> void:
 	job.worker = 0
 	citizen.job = 0
 	citizen.activity = "Completed " + job.kind
+	_award_xp(job)
+	facts.append({"tick": tick, "actor": citizen.id, "job": job.id, "kind": job.kind, "text": citizen.name + " completed " + job.kind})
+
+func _award_xp(job: Dictionary) -> void:
 	for worker_id in job.pending_xp:
 		if not job.skill.is_empty():
 			var worker: Dictionary = find(citizens, worker_id)
@@ -866,7 +901,6 @@ func _complete(citizen: Dictionary, job: Dictionary) -> void:
 			for level in range(6):
 				if worker.xp[job.skill] >= THRESHOLDS[level] * 1000:
 					worker.skills[job.skill] = level
-	facts.append({"tick": tick, "actor": citizen.id, "job": job.id, "kind": job.kind, "text": citizen.name + " completed " + job.kind})
 
 func _release(job: Dictionary, cancel: bool) -> void:
 	if job.is_empty():
@@ -932,6 +966,9 @@ func total(item: String) -> int:
 	for structure in structures:
 		if item == "wood":
 			result += structure.fuel
+	for citizen in citizens:
+		for equipped in citizen.equipment.values():
+			if equipped == item: result += 1
 	return result
 
 func _escrow_count(job_id: int, item: String) -> int:
@@ -992,7 +1029,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
 	var all_ids: Dictionary = {}
-	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests]:
+	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders]:
 		for record: Dictionary in records:
 			if all_ids.has(record.id) or record.id < 1 or record.id >= next_id:
 				errors.append("Invalid/duplicate ID")
@@ -1013,12 +1050,12 @@ func invariant_errors() -> Array[String]:
 		if job.worker > 0:
 			var worker: Dictionary = find(citizens, job.worker)
 			var point: Vector2i = Vector2i(job.work_x, job.work_y)
-			var productive: bool = job.kind in ["build", "gather", "cook", "prepare", "sow", "harvest", "replant"]
+			var productive: bool = job.kind in ["build", "gather", "cook", "craft", "research", "prepare", "sow", "harvest", "replant"]
 			if worker.is_empty() or worker.job != job.id or (productive and work_positions.has(point)):
 				errors.append("Invalid worker/work position ownership")
 			if productive:
 				work_positions[point] = job.id
-		if job.kind in ["gather", "cook"] and find(resources if job.kind == "gather" else structures, job.target).is_empty():
+		if job.kind in ["gather", "cook", "craft", "research"] and find(resources if job.kind == "gather" else structures, job.target).is_empty():
 			errors.append("Missing job target")
 	for item in definitions.items:
 		if total(item) != ledger.produced.get(item, 0) - ledger.consumed.get(item, 0) - ledger.spoiled.get(item, 0):
@@ -1039,7 +1076,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}

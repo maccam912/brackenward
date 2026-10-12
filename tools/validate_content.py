@@ -58,7 +58,7 @@ for folder in ("src/sim", "src/generation"):
     if (root / folder).exists():
         for script in (root / folder).rglob("*.gd"):
             assert not re.search(r"\b(randf|randi|randomize|seed|randf_range|randi_range)\s*\(", script.read_text()), script
-print(f"Validated M0 fixture, {len(manifest)} media entries, two fonts and pure RNG boundaries. Full-release catalogs are not implemented.")
+print(f"Validated M0 fixture, {len(manifest)} media entries, two fonts and pure RNG boundaries. Remaining release media are still in progress.")
 
 catalog = json.loads((root / 'data/catalogs/m1.json').read_text())
 assert set(catalog) == {'version','items','buildings','resources','recipes'}
@@ -96,7 +96,7 @@ for r in catalog['recipes']:
  for item,count in r['outputs'].items(): assert item in by_kind['items'] and 0 < count <= by_kind['items'][item]['stack_limit']
 assert by_kind['buildings']['bed']['materials'] == {'wood':6,'fiber':2}
 assert by_kind['recipes']['cook_meals']['outputs'] == {'meal':2}
-print('Validated M1 subset catalogs and translation keys; full M4 catalogs remain pending.')
+print('Validated M1 subset catalogs and translation keys; the complete catalog is checked below.')
 
 m2 = json.loads((root / 'data/catalogs/m2.json').read_text())
 assert set(m2) == {'version','items','buildings','resources','recipes','crops'}
@@ -123,9 +123,46 @@ for d in m2['buildings']:
  for item,count in d['materials'].items(): assert item in m2_ids['items'] and type(count) is int and count>0
 for r in m2['recipes']:
  assert r['station'] in m2_ids['buildings'] and all(i in m2_ids['items'] for i in r['alternatives'])
-print('Validated M2 agriculture/storage subset; full research and release acquisition chains remain pending.')
+print('Validated M2 agriculture/storage subset; release acquisition chains are checked below.')
 
 m3=json.loads((root / 'data/catalogs/m3.json').read_text())
 assert m3['version']=='m3-people-seasons-1'
 assert {k:v for k,v in m3.items() if k!='version'}=={k:v for k,v in m2.items() if k!='version'}, 'M3 weather checkpoint retains the validated crop/job catalog'
 print('Validated immutable M3 weather-checkpoint catalog and M1/M2 compatibility catalogs.')
+
+full=json.loads((root / 'data/catalogs/colony_v1.json').read_text())
+full_text=json.loads((root / 'data/catalogs/en_colony_v1.json').read_text())
+assert full['version']=='colony-v1'
+assert len(full['items'])==28 and len(full['buildings'])==34 and len(full['resources'])==7 and len(full['recipes'])==13 and len(full['crops'])==6 and len(full['research'])==12
+catalog_ids={kind:{d['id']:d for d in defs} for kind,defs in full.items() if isinstance(defs,list)}
+for kind,defs in catalog_ids.items():
+ assert len(defs)==len(full[kind]), 'duplicate catalog ID'
+ for identifier,d in defs.items():
+  assert re.fullmatch('[a-z][a-z0-9_]*',identifier)
+  assert d['name_key'] in full_text and d['description_key'] in full_text
+  if 'unlock' in d: assert d['unlock']=='initial' or d['unlock'] in catalog_ids['research']
+  for item,n in d.get('materials',{}).items(): assert item in catalog_ids['items'] and type(n) is int and n>0
+for recipe in full['recipes']:
+ assert recipe['station'] in catalog_ids['buildings'] and recipe['skill'] in ['Cooking','Craft','Care']
+ assert all(item in catalog_ids['items'] for item in recipe['alternatives'])
+ assert recipe['food_count'] in [0,4] and bool(recipe['alternatives'])==(recipe['food_count']>0)
+ for item,n in recipe['outputs'].items(): assert item in catalog_ids['items'] and 0<n<=catalog_ids['items'][item]['stack_limit']
+for resource in full['resources']: assert resource['item'] in catalog_ids['items'] and resource['yield_count']>0
+assert sum(r['points'] for r in full['research'])==4700
+finished=set()
+while len(finished)<len(full['research']):
+ ready={r['id'] for r in full['research'] if set(r['prerequisites'])<=finished}-finished
+ assert ready, 'research cycle/missing prerequisite'
+ finished |= ready
+for r in full['research']:
+ for unlock in r['unlocks']:
+  kind,identifier=unlock.split(':')
+  assert identifier in catalog_ids[{'building':'buildings','recipe':'recipes','crop':'crops'}[kind]]
+assert not catalog_ids['buildings']['supply_cart']['buildable']
+assert catalog_ids['buildings']['garden_bench']['materials']=={'wood':6}
+for kind in ['items','buildings','resources','recipes','crops']:
+ for old in m3[kind]:
+  for key,value in old.items():
+   if key=='alternatives':assert set(value)<=set(catalog_ids[kind][old['id']][key])
+   else:assert catalog_ids[kind][old['id']][key]==value, (kind,old['id'],key,'released contract changed')
+print('Validated complete 28-item, 34-structure, 13-recipe, 12-research catalog, all references, 4700 points and released numeric contracts.')

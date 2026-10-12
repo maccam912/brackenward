@@ -116,7 +116,7 @@ static func requests(check: Callable) -> void:
 	check.call("REQUEST/expired_promise_only_owner_two_day_penalty",request.state == "Failed" and w.citizens[1].broken_promise_until == w.tick+14400 and w.citizens[0].broken_promise_until == 0)
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/m3-weather.brackenward")
 	var migrated: Dictionary = ColonyCodec.decode(bytes)
-	check.call("SAVE/M3_revision_one_additive_social_migration",migrated.has("world") and migrated.world.schema_revision == 2 and migrated.world.tick == 3135 and migrated.world.social_state.pairs["1:2"].score == 20,str(migrated.get("error","")))
+	check.call("SAVE/M3_revision_one_additive_social_migration",migrated.has("world") and migrated.world.schema_revision == ColonyWorld.SCHEMA_REVISION and migrated.world.tick == 3135 and migrated.world.social_state.pairs["1:2"].score == 20,str(migrated.get("error","")))
 	var directory: String = "user://social-migration-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(directory)
 	var original: FileAccess = FileAccess.open(directory.path_join("snapshot-0000000001.brackenward"),FileAccess.WRITE)
@@ -128,7 +128,7 @@ static func requests(check: Callable) -> void:
 	original.store_buffer(journal); original.close()
 	var store: ColonyStore = ColonyStore.new(); store.directory = directory
 	var restored: Dictionary = store.load_latest()
-	check.call("SAVE/additive_migration_retains_snapshot_and_journal",restored.has("world") and restored.world.schema_revision == 2 and FileAccess.get_file_as_bytes(directory.path_join("migration-backup-snapshot-0000000001.brackenward")) == bytes and FileAccess.get_file_as_bytes(directory.path_join("migration-backup-journal-0000000001.frames")) == journal)
+	check.call("SAVE/additive_migration_retains_snapshot_and_journal",restored.has("world") and restored.world.schema_revision == ColonyWorld.SCHEMA_REVISION and FileAccess.get_file_as_bytes(directory.path_join("migration-backup-snapshot-0000000001.brackenward")) == bytes and FileAccess.get_file_as_bytes(directory.path_join("migration-backup-journal-0000000001.frames")) == journal)
 	CampaignTests.remove_tree(directory)
 
 static func table_leisure(check: Callable) -> void:

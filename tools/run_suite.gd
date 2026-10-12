@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -33,6 +33,7 @@ func run() -> void:
 		"persistence": CampaignTests.run(check)
 		"seasons": SeasonTests.run(check)
 		"people": SocialTests.run(check)
+		"production": ProductionTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -474,6 +475,26 @@ func ui() -> void:
 	for person in colony_game.world.citizens: person.last_request_offer = mini(person.last_request_offer,saved_social_tick)
 	ColonyWeather.initialize(colony_game.world)
 	var weather_hash: String = colony_game.world.canonical_hash()
+	var workstation: Dictionary = colony_game.world._structure("workbench",Vector2i(90,63),0)
+	colony_game._map_intent({"kind":"tap","tile":Vector2i(90,63),"point":colony_game.view.tile_to_screen(Vector2(90.5,63.5))})
+	check("PRODUCTION/UI_map_opens_actual_station",colony_game.sheet_name == "Workbench")
+	colony_game.show_recipe_policy(workstation,colony_game.world.definitions.recipes.make_toolkit)
+	var options: Array = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is OptionButton)
+	options[0].select(1); options[1].select(2)
+	for child in colony_game.sheet_body.get_children():
+		if child is SpinBox: child.value = 2
+		if child is Button and child.text == "Add order": child.pressed.emit()
+	check("PRODUCTION/UI_policy_queues_one_real_order",colony_game.world.pending_commands.size() == 1 and colony_game.world.pending_commands[0].args.mode == "Maintain" and colony_game.world.pending_commands[0].args.priority == 3)
+	colony_game.set_speed(1); colony_game.runner.advance_frame(0.1); colony_game._process(0); colony_game.runner.pause()
+	check("PRODUCTION/UI_policy_applies_on_tick",colony_game.world.production_state.orders.size() == 1 and colony_game.world.production_state.orders[0].quantity == 2)
+	colony_game.show_research()
+	check("RESEARCH/UI_lists_all_twelve_unlocks",colony_game.sheet_name == "Research" and colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Label and n.text.begins_with("Unlocks:")).size() == 12)
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text == "Study Woodcraft": child.pressed.emit(); break
+	check("RESEARCH/UI_select_is_pending",colony_game.world.pending_commands.size() == 1 and colony_game.world.pending_commands[0].kind == "research_select" and colony_game.world.production_state.project == "")
+	colony_game.set_speed(1); colony_game.runner.advance_frame(0.1); colony_game._process(0); colony_game.runner.pause()
+	check("RESEARCH/UI_select_sets_actual_project",colony_game.world.production_state.project == "woodcraft")
+	weather_hash = colony_game.world.canonical_hash()
 	colony_game.show_weather()
 	await process_frame
 	check("WEATHER/UI_forecast_is_paused_read_only",colony_game.sheet_name == "Weather forecast" and colony_game.runner.speed == 0 and colony_game.world.canonical_hash() == weather_hash)

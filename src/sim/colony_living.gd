@@ -27,9 +27,6 @@ static func advance(world: ColonyWorld) -> void:
 				var job: Dictionary = world.find(world.jobs, stack.job if stack.location == "carry" else stack.owner)
 				world._release(job, false)
 				world._block(job, "Held inputs spoiled: gather fresh food")
-				job.work = 0
-				job.pending_xp.clear()
-				job.rate_remainders.clear()
 			stack.reservations.clear()
 	for hearth in world.structures:
 		if hearth.definition != "hearth":
@@ -108,6 +105,8 @@ static func comfortable(world: ColonyWorld, citizen: Dictionary) -> bool:
 
 static func _morale(world: ColonyWorld, citizen: Dictionary, job: Dictionary) -> void:
 	var terms: Dictionary = ColonySocial.mood_terms(world,citizen)
+	if world.production_state.discoveries.get(citizen.id,0) > world.tick:
+		terms["Discovery"] = 60
 	if citizen.bed_memory_until > world.tick:
 		terms["Assigned bed"] = 40 if citizen.traits.has("Restless") else 80
 	if citizen.food_tags.size() >= 3:

@@ -49,6 +49,7 @@ jobs:
           python3 tools/check_suite.py persistence
           python3 tools/check_suite.py seasons
           python3 tools/check_suite.py people
+          python3 tools/check_suite.py production
       - name: Real Control/input/layout suite
         run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK
