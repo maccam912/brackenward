@@ -1,6 +1,6 @@
 # Brackenward game design and build specification
 
-Revision 1.0 · 11 October 2026 · Project directory: `~/dev/brackenward`
+Revision 1.1 · 12 October 2026 · Project directory: `~/dev/brackenward`
 
 **Status: implementation authorized on 12 October 2026.** This is the contract for the complete first release, its intermediate milestones, and its acceptance tests. Implementation evidence and outstanding gates are tracked in `reports/STATUS.md`; planned systems below are not automatically implemented or validated. The current checkpoint is M0, with physical Android testing deferred by the user.
 
@@ -1327,7 +1327,7 @@ The design's balance values are committed starting values, not proven fun or per
 | World generation and story generation | §§16, 18 | Golden/boundary seeds, generation sweep, causal journal tests |
 | Fairness without condescension | §§1, 4, 12–16, 26 | Warning/recovery tests and observed human explanations |
 | Detailed implementable plan and tests | §§20–27 | Milestone gates and traceable acceptance IDs |
-| No implementation yet | Status and §24 | Only this design file is created; no engine project, game code, or imported assets |
+| Original planning boundary | Status and §24 | Initial planning created only this document. Implementation was separately authorized on 12 October 2026; current evidence is in `reports/STATUS.md` |
 
 ## 28 Sources and local asset inventory
 

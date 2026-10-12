@@ -16,7 +16,7 @@ Checkpoint: `0.0.1-m0`, content `m0-touch-1`, prototype save envelope `brackenwa
 | Physical Android installation/input/rotation/storage | Not run | User will test later; emulator does not certify this gate |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at code checkpoint `f8add41` | [Linux checks, Kotlin tests, Android APK, all desktop exports and exported Linux launch](https://github.com/maccam912/brackenward/actions/runs/38249732327); current main adds the rendered-overlay regression; its latest run is available in Actions |
+| Remote CI | Pass at code checkpoint `8030a22` | [Linux checks, Kotlin tests, Android APK, all desktop exports and exported Linux launch](https://github.com/maccam912/brackenward/actions/runs/38251297873); all 111 local/CI checks pass, including rendered-preview and keyboard-focus regressions |
 | Colony work loop (M1) and later milestones | Not implemented | Gather/haul/cook/build/needs, then sustainable colony, people/seasons, production/region, combat/story, campaign and release quality |
 | Production signing / public release / store publication | Not run | Separate later authorization |
 
@@ -24,4 +24,11 @@ Local suites: 19 unit checks, 6 integration checks, 82 UI checks, 4 Kotlin JUnit
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
-Weekly quota policy: read the account limits before work and at build/checkpoint boundaries; stop autonomous work if remaining weekly usage reaches 50% or less, preserving a validated commit first when possible. Latest observed at this checkpoint: 87% remaining. Do not resume past that boundary automatically.
+Weekly quota policy: read the account limits before work and at build/checkpoint boundaries; stop autonomous work if remaining weekly usage reaches 50% or less, preserving a validated commit first when possible. Latest observed at this checkpoint: 86% remaining. Do not resume past that boundary automatically.
+
+Local sideload artifacts (code checkpoint `8030a22`, debug builds):
+
+| Artifact | Bytes | SHA-256 |
+| --- | --- | --- |
+| `build/brackenward-debug.apk` | 84142751 | `0314fe89ca7170690e2bfaee11cc7b1ff5aeac2127ee2207ebff12c483213bab` |
+| `build/brackenward-macos.zip` | 64796343 | `7c077b9866d91b1a684794fdb16a3158918871c163c8b374996dc2d944b4f507` |
