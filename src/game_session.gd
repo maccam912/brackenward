@@ -641,3 +641,10 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		KEY_D, KEY_RIGHT: view.camera_tile += Vector2.RIGHT * 3
 		_: return
 	get_viewport().set_input_as_handled()
+
+func _input(event: InputEvent) -> void:
+	# Space is the global pause shortcut even when a Button owns GUI focus.
+	# Enter remains available to activate the focused button.
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
+		set_speed(runner.previous_speed if runner.speed == 0 else 0)
+		get_viewport().set_input_as_handled()

@@ -20,7 +20,7 @@ Checkpoint: `0.0.1-m0`, content `m0-touch-1`, prototype save envelope `brackenwa
 | Colony work loop (M1) and later milestones | Not implemented | Gather/haul/cook/build/needs, then sustainable colony, people/seasons, production/region, combat/story, campaign and release quality |
 | Production signing / public release / store publication | Not run | Separate later authorization |
 
-Local suites: 19 unit checks, 6 integration checks, 80 UI checks, 4 Kotlin JUnit tests. Test names using release acceptance IDs only cover the stated M0 subset. No release gate is certified merely by those names. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the actual results.
+Local suites: 19 unit checks, 6 integration checks, 82 UI checks, 4 Kotlin JUnit tests. Test names using release acceptance IDs only cover the stated M0 subset. No release gate is certified merely by those names. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the actual results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 

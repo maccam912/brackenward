@@ -238,6 +238,14 @@ func ui() -> void:
 	game.resume_from_background()
 	check("SAVE07/resume_paused", game.world.tick == saved_tick and game.runner.speed == 0 and game.view.gestures.fingers.is_empty())
 	game.close_sheet()
+	game.speeds.get_child(0).grab_focus()
+	var pause_key: InputEventKey = InputEventKey.new()
+	pause_key.keycode = KEY_SPACE
+	pause_key.pressed = true
+	root.push_input(pause_key)
+	check("UI12/space_over_button_focus", game.runner.speed == game.runner.previous_speed)
+	root.push_input(pause_key)
+	check("UI12/space_pauses_once", game.runner.speed == 0)
 	game.select_citizen(1)
 	game.view.follow_id = 1
 	await process_frame
