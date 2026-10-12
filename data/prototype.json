@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "content_version": "m0-touch-1",
+  "map_size": 128,
+  "tick_rate": 10,
+  "start_tick": 1800,
+  "resident_names": [
+    "Mira",
+    "Oren",
+    "Tavi",
+    "Sela"
+  ],
+  "purpose": "M0 touch and platform fixture; no colony economy yet"
+}

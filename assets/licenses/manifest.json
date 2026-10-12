@@ -1,0 +1,82 @@
+[
+  {
+    "id": "mira",
+    "path": "assets/exported/citizens/mira.svg",
+    "source": "assets/exported/citizens/mira.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "b2d583b0bd557f84781b7b7c1db39072ce875907eabdfa99c9c24d475d59d26a",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "oren",
+    "path": "assets/exported/citizens/oren.svg",
+    "source": "assets/exported/citizens/oren.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "f91dad7353bfbaa8e4a15cb41db157dff96628b39d3825c11dfb8c3657682f21",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "sela",
+    "path": "assets/exported/citizens/sela.svg",
+    "source": "assets/exported/citizens/sela.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "8f7ed168f1d8156bc36bb1d9450093bed9a0b396a24e81614412a8d01731b0c2",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "tavi",
+    "path": "assets/exported/citizens/tavi.svg",
+    "source": "assets/exported/citizens/tavi.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "6b238790edad3e100bf06e1b62487de9e028c893ee4db42783051446ec423018",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "kenney_bold",
+    "path": "assets/exported/fonts/kenney_bold.ttf",
+    "source": "Kenney Fonts: Kenney Bold.ttf",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "d46b7795da2c3e214c573e5f92f0c49966d21317faa6862fab746f7fff19f0b6",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_fonts.md"
+  },
+  {
+    "id": "kenney_mini",
+    "path": "assets/exported/fonts/kenney_mini.ttf",
+    "source": "Kenney Fonts: Kenney Mini.ttf",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "47131fc8c02f76c0b8c14c7fd12f741efe569839eb66296a12d4b5d3d3852651",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_fonts.md"
+  },
+  {
+    "id": "m0_atlas",
+    "path": "assets/exported/terrain/m0_atlas.svg",
+    "source": "assets/exported/terrain/m0_atlas.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "3bdb12466893fdc7651d27895f606fad1f8786d63dde33a93641e7a500292354",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "kenney_fonts_preview",
+    "path": "assets/licenses/kenney_fonts_preview.png",
+    "source": "Kenney Fonts/Preview.png",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "af0f6f8c982ad6570e929d0886b1cfb27dffaf4ee22a98a14ed54c37cd0a9693",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_fonts.md"
+  }
+]

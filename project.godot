@@ -1,0 +1,31 @@
+config_version=5
+
+[application]
+config/name="Brackenward"
+config/version="0.0.1-m0"
+run/main_scene="res://scenes/game.tscn"
+config/features=PackedStringArray("4.7", "GL Compatibility")
+config/quit_on_go_back=false
+
+[display]
+window/size/viewport_width=960
+window/size/viewport_height=600
+window/size/window_width_override=1200
+window/size/window_height_override=750
+window/stretch/mode="disabled"
+window/handheld/orientation=6
+
+[rendering]
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/default_filters/use_nearest_mipmap_filter=false
+textures/canvas_textures/default_texture_filter=0
+textures/vram_compression/import_etc2_astc=true
+textures/vram_compression/import_s3tc_bptc=true
+environment/defaults/default_clear_color=Color(0.149, 0.235, 0.231, 1)
+
+[editor_plugins]
+enabled=PackedStringArray("res://addons/android_save/plugin.cfg")
+
+[audio]
+driver/enable_input=false

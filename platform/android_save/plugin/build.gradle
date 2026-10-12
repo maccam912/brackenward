@@ -1,0 +1,34 @@
+plugins {
+    id 'com.android.library'
+    id 'org.jetbrains.kotlin.android'
+}
+
+android {
+    namespace 'dev.brackenward.storage'
+    compileSdk 36
+    buildToolsVersion '36.1.0'
+    defaultConfig { minSdk 29 }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions { jvmTarget = '17' }
+}
+
+dependencies {
+    compileOnly files('../../../android/build/libs/debug/godot-lib.template_debug.aar')
+    testImplementation 'junit:junit:4.13.2'
+}
+
+tasks.register('installPlugin') {
+    dependsOn 'assembleDebug', 'assembleRelease'
+    doLast {
+        ['debug', 'release'].each { variant ->
+            copy {
+                from "build/outputs/aar/plugin-${variant}.aar"
+                into '../../../addons/android_save'
+                rename { "brackenward-save-${variant}.aar" }
+            }
+        }
+    }
+}
