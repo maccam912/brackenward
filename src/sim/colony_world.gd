@@ -2,7 +2,7 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "m2-survival-1"
+const CONTENT_VERSION: String = "m3-people-seasons-1"
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -22,6 +22,12 @@ var fields: Array[Dictionary] = []
 var researched: Array[String] = []
 var room_tiles: Dictionary = {}
 var rooms_dirty: bool = true
+var schema_revision: int = 1
+var generator_version: int = 0
+var site_id: String = "meadow_reach"
+var weather_state: Dictionary = {}
+var flood_cache: Dictionary = {}
+var flood_cache_valid: bool = false
 var weather: String = "clear"
 var navigation_dirty: bool = true
 var solid_tiles: Dictionary = {}
@@ -56,7 +62,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		if index == 0:
 			preferences.Care = 3
 		citizens.append({"id": index + 1, "name": ["Mira", "Oren", "Tavi", "Sela"][index], "x": 65 + index, "y": 65,
-			"progress": 0, "direction": 0, "edge_x": 65 + index, "edge_y": 65, "route": [], "route_goal": [], "move_rem": 0, "injury_rem": 0, "travel_credit": 0,
+			"progress": 0, "direction": 0, "edge_x": 65 + index, "edge_y": 65, "route": [], "route_goal": [], "move_base_rem": 0, "move_rem": 0, "injury_rem": 0, "travel_credit": 0,
 			"skills": skills, "xp": xp, "traits": traits[index], "preferred": preferred, "preferences": preferences,
 			"shift": "Normal", "pending_shift": "", "pinned_job": 0, "yesterday_leisure": 0, "leisure_memory_until": 0, "warm_until": 0, "leisure_ticks": 0, "leisure_day": 0, "bed_sleep_ticks": 0, "bed_memory_until": 0, "raw_memory_until": 0, "preferred_work": 0, "preferred_memory_until": 0, "mood_terms": {}, "food_tags": [], "food_tags_day": 0, "break_clock": 0, "break_until": 0, "break_cooldown": 0, "departure_clock": 0, "departure_until": 0, "departed": false,
 			"food_tag": ["Vegetable", "Grain", "Berry", "Mushroom"][index], "fullness": 750, "rest": 900, "morale": 650,
@@ -80,6 +86,8 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		var kind: String = kinds[0 if index < 30 else (1 if index < 38 else (2 if index < 44 else (3 if index < 46 else 4)))]
 		var point: Vector2i = Vector2i(55 - (index % 6) * 2, 54 + (index / 6) * 3)
 		resources.append({"id": _id(), "definition": kind, "x": point.x, "y": point.y, "remaining": definitions.resources[kind].yield_count, "regrow_at": 0})
+
+	ColonyWeather.initialize(self)
 
 func _id() -> int:
 	var result: int = next_id
@@ -191,6 +199,7 @@ func step() -> void:
 			receipts[command.id] = _command(command) if command.session == session_id else "wrong_session"
 			command_trace.append({"tick": tick, "command": command.duplicate(true)})
 	pending_commands.clear()
+	ColonyWeather.advance(self)
 	ColonyAgriculture.advance(self)
 	ColonyLiving.advance(self)
 	for citizen in citizens:
@@ -317,6 +326,15 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"early_harvest":
+			var field: Dictionary = find(fields,args.target)
+			if field.is_empty() or not field.planted: return "No planted crop on this tile"
+			var definition: Dictionary = definitions.crops[field.crop]
+			if field.growth * 2 < definition.growth: return "Early harvest requires at least 50% growth"
+			if jobs.any(func(job:Dictionary)->bool:return job.kind == "harvest" and job.target == field.id and job.state not in ["Complete","Canceled"]): return "Already ordered"
+			var job: Dictionary = _job("harvest","Growing","Field",field.id,Vector2i(field.x,field.y),definition.harvest_milli)
+			job.definition = "early_harvest"
+			job.priority = 3
 		"clear_field":
 			var field: Dictionary = find(fields, args.target)
 			if field.is_empty():
@@ -709,7 +727,10 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 		var edge: Vector2i = citizen.route.pop_front()
 		citizen.edge_x = edge.x
 		citizen.edge_y = edge.y
-	var speed: int = 1000 if weather not in ["rain", "snow"] or citizen.x == 66 or citizen.y in [63,64] else (666 if weather == "rain" else 833)
+	# Carry the fractional progress in a common denominator across terrain changes.
+	citizen.move_base_rem += 1200000 / tile_move_cost(Vector2i(citizen.edge_x,citizen.edge_y))
+	var speed: int = citizen.move_base_rem / 120
+	citizen.move_base_rem %= 120
 	if citizen.traits.has("Restless"):
 		citizen.move_rem += speed * 1150
 		speed = citizen.move_rem / 1000
@@ -1006,7 +1027,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "site_id":site_id, "weather_state":weather_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}
@@ -1032,3 +1053,24 @@ func _merge_stored(incoming: Dictionary) -> void:
 				other.age_rem = incoming.age_rem
 			incoming.count = 0
 			return
+
+func elevation(tile: Vector2i) -> int:
+	# Authored starter geography; generated maps will store their complete terrain.
+	if tile.x in range(32,36): return 0
+	if tile.x in range(28,32) or tile.x in range(36,40): return 1
+	return 4 if tile.x >= 112 else (3 if tile.x >= 96 else 2)
+
+func is_flooded(tile: Vector2i) -> bool:
+	if not flood_cache_valid:
+		flood_cache.clear()
+		for point in weather_state.flooded: flood_cache[point] = true
+		flood_cache_valid = true
+	return flood_cache.has(tile)
+
+func tile_move_cost(tile: Vector2i) -> int:
+	for structure in structures:
+		if structure.definition == "stone_path" and footprint(structure).has(tile): return 8
+	if is_flooded(tile): return 15
+	if weather == "snow": return 12
+	if weather == "rain" and tile.x != 66 and tile.y not in [63,64]: return 15
+	return 10

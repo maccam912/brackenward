@@ -32,7 +32,7 @@ static func occupied(number: int, root: String = CAMPAIGN_ROOT) -> bool:
 	return false
 
 func encode(world: RefCounted) -> PackedByteArray:
-	return ColonyCodec.encode(world)
+	return ColonyCodec.encode(world,"",sequence)
 
 func decode(bytes: PackedByteArray) -> Dictionary:
 	return ColonyCodec.decode(bytes)
@@ -64,7 +64,7 @@ func checkpoint(world: ColonyWorld) -> String:
 			journal_sequence += 1
 			records.append_array(ColonyJournal.frame({"sequence": str(journal_sequence), "kind": "command", "tick": entry.tick, "command": entry.command}))
 	journal_sequence += 1
-	records.append_array(ColonyJournal.frame({"sequence": str(journal_sequence), "kind": "tick", "tick": world.tick}))
+	records.append_array(ColonyJournal.frame({"sequence": str(journal_sequence), "kind": "tick", "tick": world.tick, "state":world.payload()}))
 	var path: String = directory.path_join("journal-%010d.frames" % sequence)
 	var file: FileAccess = FileAccess.open(path, FileAccess.READ_WRITE if FileAccess.file_exists(path) else FileAccess.WRITE)
 	if file == null:
@@ -104,8 +104,8 @@ func load_latest() -> Dictionary:
 		var snapshot_bytes: PackedByteArray = FileAccess.get_file_as_bytes(directory.path_join(name))
 		var parser: JSON = JSON.new()
 		var header: Variant = parser.data if parser.parse(snapshot_bytes.get_string_from_utf8()) == OK else null
-		var legacy: bool = header is Dictionary and header.get("content") == "m1-loop-1"
-		var decoded: Dictionary = M1Codec.decode(snapshot_bytes) if legacy else decode(snapshot_bytes)
+		var legacy: bool = header is Dictionary and (header.get("version") == 1 or header.get("version") == 2)
+		var decoded: Dictionary = (M1Codec.decode(snapshot_bytes) if header.get("version") == 1 else M2Codec.decode(snapshot_bytes)) if legacy else decode(snapshot_bytes)
 		if decoded.has("error"):
 			earlier_errors.append(name + ": " + decoded.error)
 			continue
@@ -121,7 +121,7 @@ func load_latest() -> Dictionary:
 				earlier_errors.append(decoded.error)
 				continue
 		if legacy:
-			decoded = ColonyCodec.decode(M1Codec.encode(decoded.world))
+			decoded = ColonyCodec.decode(M1Codec.encode(decoded.world) if decoded.world is M1World else M2Codec.encode(decoded.world))
 			if decoded.has("error"):
 				earlier_errors.append(decoded.error)
 				continue

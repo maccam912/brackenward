@@ -49,6 +49,9 @@ static func advance(world: ColonyWorld) -> void:
 		if not field.planted:
 			continue
 		var definition: Dictionary = world.definitions.crops[field.crop]
+		if world.is_flooded(Vector2i(field.x,field.y)):
+			field.reason = "Flooded until 18:00: growth paused"
+			continue
 		if field.ripe_tick > 0:
 			var elapsed: int = world.tick - field.ripe_tick
 			if elapsed > 14400 and (elapsed - 14400) % 7200 == 0:
@@ -102,7 +105,9 @@ static func complete(world: ColonyWorld, _citizen: Dictionary, job: Dictionary) 
 			field.ripe_tick = 0
 			field.yield_count = definition.yield_count
 		"harvest":
-			world._make_stack(definition.item, field.yield_count, "ground", 0, Vector2i(job.work_x, job.work_y), true)
+			var quantity: int = field.yield_count
+			if job.definition == "early_harvest": quantity = mini(quantity,maxi(1,definition.yield_count * field.growth / definition.growth))
+			world._make_stack(definition.item, quantity, "ground", 0, Vector2i(job.work_x, job.work_y), true)
 			field.planted = false
 			field.growth = 0
 			field.ripe_tick = 0

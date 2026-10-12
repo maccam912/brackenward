@@ -124,3 +124,8 @@ for d in m2['buildings']:
 for r in m2['recipes']:
  assert r['station'] in m2_ids['buildings'] and all(i in m2_ids['items'] for i in r['alternatives'])
 print('Validated M2 agriculture/storage subset; full research and release acquisition chains remain pending.')
+
+m3=json.loads((root / 'data/catalogs/m3.json').read_text())
+assert m3['version']=='m3-people-seasons-1'
+assert {k:v for k,v in m3.items() if k!='version'}=={k:v for k,v in m2.items() if k!='version'}, 'M3 weather checkpoint retains the validated crop/job catalog'
+print('Validated immutable M3 weather-checkpoint catalog and M1/M2 compatibility catalogs.')

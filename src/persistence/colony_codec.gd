@@ -2,12 +2,12 @@ class_name ColonyCodec
 extends RefCounted
 const FORMAT: String = "brackenward-development-colony"
 const MAX_BYTES: int = 64 * 1024 * 1024
-const VERSION: int = 2
+const VERSION: int = 3
 
-static func encode(world: ColonyWorld, snapshot_name: String = "") -> PackedByteArray:
+static func encode(world: ColonyWorld, snapshot_name: String = "", sequence: int = 0) -> PackedByteArray:
 	var payload: String = JSON.stringify(ColonyState.pack(world.payload()), "", true)
 	return JSON.stringify({"format": FORMAT, "version": VERSION, "content": ColonyWorld.CONTENT_VERSION,
-		"content_hash":world.definitions.content_hash, "snapshot_name":snapshot_name, "engine": "4.7.2.ed1daf0bf", "payload": payload, "sha256": payload.sha256_text()}, "", true).to_utf8_buffer()
+		"content_hash":world.definitions.content_hash, "snapshot_name":snapshot_name, "engine": "4.7.2.ed1daf0bf", "generator_version":world.generator_version, "campaign_id":world.session_id, "sequence":str(sequence), "timestamp":Time.get_datetime_string_from_system(true), "payload": payload, "sha256": payload.sha256_text()}, "", true).to_utf8_buffer()
 
 static func decode(bytes: PackedByteArray) -> Dictionary:
 	if bytes.is_empty() or bytes.size() > MAX_BYTES:
@@ -16,13 +16,15 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	if parser.parse(bytes.get_string_from_utf8()) != OK or not parser.data is Dictionary:
 		return {"error": "Malformed colony snapshot"}
 	var envelope: Dictionary = parser.data
-	var keys: Array = ["format", "version", "content", "engine", "payload", "sha256"]
-	if envelope.get("version") == VERSION:
-		keys.append("content_hash")
-		if envelope.has("snapshot_name"):
-			keys.append("snapshot_name")
-	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version != 1 and envelope.version != VERSION) or envelope.content not in ["m1-loop-1", ColonyWorld.CONTENT_VERSION]:
-		return {"error": "Unsupported development save format/content. M0 touch fixtures remain separate."}
+	if (envelope.get("version") == 1 or envelope.get("version") == 2):
+		var legacy: Dictionary = M2Codec.decode(bytes)
+		if legacy.has("error"): return legacy
+		return restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash),legacy.get("snapshot_name",""),true)
+	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
+	if not _keys(envelope,keys) or envelope.format != FORMAT or envelope.version != VERSION or envelope.content != ColonyWorld.CONTENT_VERSION:
+		return {"error":"Unsupported save version/content: this build supports version 3 plus M1/M2 migration"}
+	if not envelope.generator_version is float or envelope.generator_version != 0 or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
+		return {"error":"Invalid snapshot metadata"}
 	if not envelope.payload is String or not envelope.sha256 is String or envelope.payload.sha256_text() != envelope.sha256:
 		return {"error": "Snapshot checksum mismatch"}
 	if not envelope.get("snapshot_name","") is String or envelope.get("snapshot_name","").length() > 64:
@@ -33,14 +35,19 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	if not decoded is Dictionary:
 		return {"error": "Invalid integer, coordinate or state encoding"}
 	var data: Dictionary = decoded
-	var catalog: Dictionary = ColonyCatalog.load_data()
-	if envelope.version == 1 and envelope.content == "m1-loop-1":
-		data = ColonyMigrations.from_m1(data,catalog.content_hash)
-	elif envelope.version != VERSION or envelope.content != ColonyWorld.CONTENT_VERSION:
-		return {"error": "Save version and content are incompatible"}
-	elif envelope.content_hash != catalog.content_hash:
-		return {"error":"Catalog hash differs; retain the original save and use its compatible build"}
-	var world: ColonyWorld = ColonyWorld.new(catalog)
+	if envelope.content_hash != ColonyCatalog.load_data().content_hash or data.get("session_id") != envelope.campaign_id:
+		return {"error":"Catalog or campaign identity mismatch; original save retained"}
+	return restore(data,envelope.get("snapshot_name",""))
+
+static func restore(data: Dictionary, snapshot_name: String = "", initialize_weather: bool = false) -> Dictionary:
+	var world: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data())
+	if initialize_weather and data.get("weather_state") == {}:
+		# Only pure legacy migration supplies the empty initial schedule.
+		world.tick = data.tick
+		world.seed = data.seed
+		world.weather = data.weather
+		ColonyWeather.initialize(world)
+		data.weather_state = world.weather_state.duplicate(true)
 	var error: String = _validate(data, world)
 	if not error.is_empty():
 		return {"error": error}
@@ -54,7 +61,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	var errors: Array[String] = world.invariant_errors()
 	if not errors.is_empty():
 		return {"error": "Invalid colony invariants: " + str(errors)}
-	return {"world":world,"snapshot_name":envelope.get("snapshot_name","")}
+	return {"world":world,"snapshot_name":snapshot_name}
 
 static func _keys(record: Dictionary, keys: Array) -> bool:
 	var actual: Array = record.keys().map(func(key: Variant) -> String: return str(key))
@@ -72,10 +79,11 @@ static func _record(value: Variant, template: Dictionary) -> bool:
 	return true
 
 static func _validate(data: Dictionary, world: ColonyWorld) -> String:
-	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80:
+	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80 or data.schema_revision != 1 or data.generator_version != 0 or data.site_id != "meadow_reach" or not ColonyWeather.validate(data.weather_state,data.tick):
 		return "Invalid world header or unknown fields"
 	if data.citizens.size() != 4 or data.fields.size() > 16384 or data.structures.size() > 16384 or data.resources.size() > 16384 or data.stacks.size() > 100000 or data.jobs.size() > 100000 or data.pending_commands.size() > 4096 or data.facts.size() > 100000:
 		return "Invalid record counts"
+	if not ColonyWeather.valid_geometry(world,data.weather_state): return "Forecast flood coverage does not match saved geography"
 	if not data.researched.all(func(value:Variant)->bool:return value is String and value in ["woodcraft","storecraft","farming","herbalism","weaving","masonry","metalwork","trailcraft","husbandry","signalcraft","commonlife","valley_charter"]) or data.weather not in ["clear","rain","fog","snow","drought","flood","cold_snap"]:
 		return "Unknown research/weather state"
 	for index in range(4):
@@ -92,7 +100,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 				return "Invalid job preferences"
 		if citizen.progress < 0 or citizen.progress > 9999 or citizen.edge_x < 0 or citizen.edge_x >= 128 or citizen.edge_y < 0 or citizen.edge_y >= 128 or citizen.health < 0 or citizen.health > 100:
 			return "Invalid citizen movement/health"
-		if citizen.hunger_rem < 0 or citizen.hunger_rem >= 7200 or citizen.rest_rem < 0 or citizen.rest_rem >= 300 or citizen.move_rem < 0 or citizen.move_rem >= 1000 or citizen.injury_rem < 0 or citizen.injury_rem >= 1000 or citizen.travel_credit < 0 or citizen.travel_credit >= 10000 or citizen.starving_ticks < 0:
+		if citizen.hunger_rem < 0 or citizen.hunger_rem >= 7200 or citizen.rest_rem < 0 or citizen.rest_rem >= 300 or citizen.move_base_rem < 0 or citizen.move_base_rem >= 120 or citizen.move_rem < 0 or citizen.move_rem >= 1000 or citizen.injury_rem < 0 or citizen.injury_rem >= 1000 or citizen.travel_credit < 0 or citizen.travel_credit >= 10000 or citizen.starving_ticks < 0:
 			return "Invalid need/movement remainder"
 		if citizen.route_goal.size() not in [0, 2] or citizen.traits.size() != 2:
 			return "Invalid route goal or traits"
@@ -194,7 +202,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if not command is Dictionary or not _keys(command, ["id", "session", "kind", "args"]) or not command.id is int or command.id < 1 or not command.session is String or not command.kind is String or not command.args is Dictionary:
 			return "Invalid pending command"
 		# Preserve only commands generated by the concrete development UI.
-		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
+		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
 		if not schemas.has(command.kind) or not _keys(command.args, schemas[command.kind]):
 			return "Unknown pending command arguments"
 		for key in command.args:

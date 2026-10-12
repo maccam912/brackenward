@@ -133,6 +133,14 @@ func button(label: String, callback: Callable, parent: Node, width: float = 48.0
 	result.name = label.validate_node_name() if not label.is_empty() else "Action"
 	result.custom_minimum_size = Vector2(width, 48)
 	result.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	var ancestor: Node = parent
+	while ancestor != null:
+		if ancestor is ScrollContainer:
+			# Raw touch events must reach the scroll container even when a drag
+			# starts over an actionable row. Emulated clicks still activate it.
+			result.mouse_filter = Control.MOUSE_FILTER_PASS
+			break
+		ancestor = ancestor.get_parent()
 	result.pressed.connect(callback)
 	parent.add_child(result)
 	controls.append(result)
@@ -428,7 +436,7 @@ func select_citizen(id: int) -> void:
 	content.add_child(inspector)
 	var inspector_rows: VBoxContainer = VBoxContainer.new()
 	inspector.add_child(inspector_rows)
-	var scroll: ScrollContainer = ScrollContainer.new()
+	var scroll: ScrollContainer = TouchScrollContainer.new()
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	inspector_rows.add_child(scroll)
@@ -471,7 +479,7 @@ func show_sheet(title: String) -> void:
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var pause_button: Button = button("Pause", func() -> void: runner.pause(), top, 72)
 	pause_button.size_flags_horizontal = Control.SIZE_SHRINK_END
-	var scroll: ScrollContainer = ScrollContainer.new()
+	var scroll: ScrollContainer = TouchScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
 	rows.add_child(scroll)
@@ -512,7 +520,7 @@ func show_sheet(title: String) -> void:
 				for fact in world.facts.slice(maxi(0, world.facts.size() - 30)):
 					label("%02d:%02d - %s" % [(fact.tick % 7200) / 300, (fact.tick % 300) / 5, fact.text], sheet_body)
 		"Menu":
-			label("Brackenward 0.2.0-m2 | Godot 4.7.2\nDevelopment colony saves preserve inventory, jobs, needs and work progress. M0 saves remain separate.", sheet_body)
+			label("Brackenward %s\nCampaigns preserve inventory, work and needs. Time stays paused after recovery." % ProjectSettings.get_setting("application/config/version"), sheet_body)
 			button("Save colony", save_local, sheet_body)
 			button("Load colony", load_local, sheet_body)
 			button("Export save", func() -> void: choose_document(true), sheet_body)
@@ -529,6 +537,7 @@ func show_sheet(title: String) -> void:
 			if world is ColonyWorld:
 				button("Campaign slots",show_campaigns,sheet_body)
 				button("Named snapshots",show_named_snapshots,sheet_body)
+				button("Weather forecast",show_weather,sheet_body)
 				label("Travel rations are expedition reserves. Home use is " + ("on" if world.use_rations else "off") + ".",sheet_body)
 				button("Keep rations for expeditions" if world.use_rations else "Use rations at home",func() -> void: _submit("food_policy", {"enabled":not world.use_rations}),sheet_body)
 			button("Introduction", func() -> void: show_sheet("Welcome"), sheet_body)
@@ -645,6 +654,7 @@ func _replace_world(state: RefCounted) -> void:
 	saving_disabled = false
 	runner = SimRunner.new(world)
 	view.world = world
+	view.forecast_mask.clear()
 	view.cancel_gesture()
 	view.follow_id = 0
 	cancel_placement()
@@ -941,6 +951,14 @@ func _field_sheet(field: Dictionary) -> void:
 	show_sheet(field.crop.capitalize())
 	var definition: Dictionary = world.definitions.crops[field.crop]
 	label("%s\nGrowth %d/%d | Yield %d\nSoil %d%% | %s" % [field.reason,field.growth,definition.growth,field.yield_count,field.fertility/10,"Automatic replanting" if field.replant else "Replant off"],sheet_body)
+	if field.planted:
+		if field.growth * 2 >= definition.growth:
+			label("Early harvest now: about %d units. Workers still need to reach and harvest this crop." % mini(field.yield_count,maxi(1,definition.yield_count * field.growth / definition.growth)),sheet_body)
+			button("Harvest early",func() -> void:
+				_submit("early_harvest",{"target":field.id})
+				close_sheet(),sheet_body)
+		else:
+			label("Early harvest requires 50% growth. Clearing now returns no produce.",sheet_body)
 	label("Clearing removes this field and its unharvested crop. Unconsumed materials and carried goods are retained.",sheet_body)
 	button("Clear field",func() -> void:
 		_submit("clear_field",{"target":field.id})
@@ -1137,3 +1155,28 @@ func _save_settings() -> void:
 	var error: String = settings.save_local()
 	if not error.is_empty():
 		notice = error
+
+func show_weather() -> void:
+	show_sheet("Weather forecast")
+	label("Today: %s, %d C\n%s" % [world.weather.replace("_"," "),ColonyLiving.temperature(world),ColonyWeather.describe(world.weather)],sheet_body)
+	for entry in world.weather_state.days:
+		if entry.day <= world.tick / 7200: continue
+		label("%s %d Y%d: %s\n%s" % [["Spring","Summer","Autumn","Winter"][(entry.day/8)%4],entry.day%8+1,entry.day/32+1,entry.kind.replace("_"," "),ColonyWeather.describe(entry.kind)],sheet_body)
+		if entry.kind == "flood":
+			var food: int = 0
+			var crop: int = 0
+			for stack in world.stacks:
+				if ColonyWeather.vulnerable(world,stack,entry.mask): food += stack.count / 2
+			for field in world.fields:
+				if field.ripe_tick > 0 and entry.mask.has(Vector2i(field.x,field.y)): crop += field.yield_count / 2
+			label("Currently exposed: %d food units and %d ripe crop units. Move food or harvest before 06:00. This count assumes current positions and ripeness." % [food,crop],sheet_body)
+			button("View flood area",func() -> void:
+				view.forecast_mask.assign(entry.mask)
+				view.camera_tile = Vector2(38,64)
+				view.tile_size = 16
+				close_sheet()
+				notice = "Striped low ground floods from 06:00 to 18:00 on the forecast date. High ground is safe.",sheet_body)
+	if not view.forecast_mask.is_empty():
+		button("Hide flood preview",func() -> void:
+			view.forecast_mask.clear()
+			close_sheet(),sheet_body)

@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -31,6 +31,7 @@ func run() -> void:
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
 		"persistence": CampaignTests.run(check)
+		"seasons": SeasonTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -427,6 +428,65 @@ func ui() -> void:
 		await process_frame
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://reports/m2-portrait.png")
+	colony_game.close_inspector()
+	var weather_hash: String = colony_game.world.canonical_hash()
+	colony_game.show_weather()
+	await process_frame
+	check("WEATHER/UI_forecast_is_paused_read_only",colony_game.sheet_name == "Weather forecast" and colony_game.runner.speed == 0 and colony_game.world.canonical_hash() == weather_hash)
+	colony_game.close_sheet()
+	colony_game.show_sheet("Work")
+	await process_frame
+	await process_frame
+	var scroll: ScrollContainer = colony_game.sheet_body.get_parent()
+	var taps: Dictionary = {"count":0}
+	var row: Button = colony_game.button("Scroll gesture test",func()->void:taps.count += 1,colony_game.sheet_body)
+	colony_game.sheet_body.move_child(row,5)
+	await process_frame
+	await process_frame
+	var scrolling_touch: InputEventScreenTouch = InputEventScreenTouch.new()
+	scrolling_touch.index = 0
+	scrolling_touch.pressed = true
+	scrolling_touch.position = row.get_global_rect().get_center()
+	root.push_input(scrolling_touch)
+	var emulated_press: InputEventMouseButton = InputEventMouseButton.new()
+	emulated_press.device = -1
+	emulated_press.button_index = MOUSE_BUTTON_LEFT
+	emulated_press.pressed = true
+	emulated_press.position = scrolling_touch.position
+	root.push_input(emulated_press)
+	var scrolling_drag: InputEventScreenDrag = InputEventScreenDrag.new()
+	scrolling_drag.index = 0
+	scrolling_drag.position = scrolling_touch.position-Vector2(0,100)
+	scrolling_drag.relative = Vector2(0,-100)
+	root.push_input(scrolling_drag)
+	scrolling_touch.pressed = false
+	scrolling_touch.position = scrolling_drag.position
+	root.push_input(scrolling_touch)
+	emulated_press.pressed = false
+	emulated_press.position = scrolling_touch.position
+	root.push_input(emulated_press)
+	check("UI/scrolling_cancels_action_release",taps.count == 0)
+	await process_frame
+	await process_frame
+	emulated_press.position = row.get_global_rect().get_center()
+	emulated_press.pressed = true
+	root.push_input(emulated_press)
+	emulated_press.pressed = false
+	root.push_input(emulated_press)
+	check("UI/tap_after_scroll_activates_once",taps.count == 1,str(taps.count))
+	check("UI/touch_scroll_starts_on_action_row",scroll.scroll_vertical > 0 and colony_game.sheet_name == "Work" and colony_game.world.pending_commands.is_empty(),str(scroll.scroll_vertical))
+	colony_game.close_sheet()
+	var entry: Dictionary = colony_game.world.weather_state.days[-1]
+	entry.kind = "flood"
+	entry.mask = ColonyWeather.flood_mask(colony_game.world)
+	colony_game.show_weather()
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text == "View flood area": child.pressed.emit()
+	check("WEATHER/UI_flood_preview_uses_forecast_mask",colony_game.view.forecast_mask == entry.mask and colony_game.sheet == null and colony_game.runner.speed == 0)
+	if DisplayServer.get_name() != "headless":
+		await process_frame
+		await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://reports/m3-flood-preview.png")
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

@@ -3,8 +3,8 @@ extends RefCounted
 ## I/O boundary. ColonyWorld receives validated immutable definitions as values.
 
 static func load_data() -> Dictionary:
-	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogs/m2.json"))
-	assert(parsed is Dictionary, "Missing M1 catalog")
+	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogs/m3.json"))
+	assert(parsed is Dictionary, "Missing colony catalog")
 	var result: Dictionary = {"version": parsed.version, "content_hash": JSON.stringify(_integers(parsed),"",true).sha256_text()}
 	for kind in ["items", "buildings", "resources", "recipes", "crops"]:
 		result[kind] = {}

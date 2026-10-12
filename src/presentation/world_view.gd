@@ -9,6 +9,7 @@ var tile_size: float = 32.0
 var focus_offset: Vector2 = Vector2.ZERO
 var preview_start: Vector2i = Vector2i(74, 54)
 var preview_end: Vector2i = Vector2i(77, 55)
+var forecast_mask: Array[Vector2i] = []
 var preview_visible: bool = false
 var preview_definition: String = ""
 var preview_resource: String = ""
@@ -194,6 +195,12 @@ func _draw() -> void:
 		_draw_colony()
 	else:
 		_draw_fixture()
+	var flooded: Array = world.weather_state.flooded if world is ColonyWorld else []
+	for tile in flooded + forecast_mask:
+		var point: Vector2 = tile_to_screen(Vector2(tile))
+		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): continue
+		draw_rect(Rect2(point,Vector2.ONE*tile_size),Color(0.25,0.52,0.65,0.35))
+		draw_line(point+Vector2(0,tile_size),point+Vector2(tile_size,0),Color("D8E8DC"),2)
 	for tile in world.designations:
 		draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color(0.91, 0.73, 0.4, 0.35))
 		draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color("F3E8CC"), false, 2)

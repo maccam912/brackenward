@@ -45,7 +45,7 @@ static func read(bytes: PackedByteArray) -> Dictionary:
 			return {"error": "Journal sequence/schema mismatch"}
 		if value.kind == "command" and (value.size() != 4 or not value.get("command") is Dictionary):
 			return {"error": "Invalid journal command"}
-		if value.kind == "tick" and value.size() != 3:
+		if value.kind == "tick" and (value.size() != (4 if value.has("state") else 3) or (value.has("state") and not value.state is Dictionary)):
 			return {"error": "Invalid complete-tick marker"}
 		records.append(value)
 		sequence += 1
@@ -56,6 +56,7 @@ static func replay(world: RefCounted, records: Array[Dictionary]) -> Dictionary:
 	var final_tick: int = world.tick
 	var previous_tick: int = world.tick
 	var commands: Dictionary = {}
+	var final_state: Dictionary = {}
 	for record in records:
 		if record.tick < previous_tick or record.tick < world.tick or record.tick - world.tick > 72000:
 			return {"error": "Journal tick order/range mismatch"}
@@ -66,6 +67,16 @@ static func replay(world: RefCounted, records: Array[Dictionary]) -> Dictionary:
 			commands[record.tick].append(record.command)
 		else:
 			final_tick = record.tick
+			if record.has("state"):
+				if record.state.get("tick") != final_tick or record.state.get("session_id") != world.session_id:
+					return {"error":"Journal checkpoint identity/tick mismatch"}
+				final_state = record.state
+	if not final_state.is_empty():
+		if final_state.tick != final_tick:
+			return {"error":"A later complete-tick marker is missing its recovery state"}
+		var checkpoint: Dictionary = ColonyCodec.restore(final_state)
+		if checkpoint.has("error"): return checkpoint
+		return {"world":checkpoint.world,"recovered_tick":final_tick}
 	while world.tick < final_tick:
 		for command: Dictionary in commands.get(world.tick + 1, []):
 			# Validate command structure through the same snapshot validator before use.
@@ -73,7 +84,7 @@ static func replay(world: RefCounted, records: Array[Dictionary]) -> Dictionary:
 			if command.get("id") is int:
 				world.next_command_id = maxi(world.next_command_id, command.id + 1)
 		if commands.has(world.tick + 1):
-			var validation: Dictionary = M1Codec.decode(M1Codec.encode(world)) if world is M1World else ColonyCodec.decode(ColonyCodec.encode(world))
+			var validation: Dictionary = M1Codec.decode(M1Codec.encode(world)) if world is M1World else (M2Codec.decode(M2Codec.encode(world)) if world is M2World else ColonyCodec.decode(ColonyCodec.encode(world)))
 			if validation.has("error"):
 				return {"error": validation.error}
 		world.step()
