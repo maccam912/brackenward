@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -42,6 +42,7 @@ func run() -> void:
 		"construction": ConstructionTests.run(check)
 		"equipment": EquipmentTests.run(check)
 		"maintenance": MaintenanceTests.run(check)
+		"population": PopulationTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -713,6 +714,18 @@ func ui() -> void:
 	check("CART/UI_quote_full_work_and_retained_goods",colony_game._preview_text().contains("20 WU") and colony_game._preview_text().contains("stay aboard") and not colony_game.rotation_button.visible)
 	colony_game.confirm_placement();colony_game.confirm_placement()
 	check("CART/UI_destination_confirm_submits_once",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="cart_move")
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	var newcomer: Dictionary = ColonyPopulation.offer(colony_game.world)
+	colony_game.show_newcomers()
+	check("POP/UI_shortage_links_to_bed_and_food",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Build sleeping place") and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Food forecast"))
+	colony_game.world._structure("bedroll",Vector2i(74,64),0);colony_game.show_newcomers()
+	var accept_newcomer: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text.begins_with("Accept "))[0]
+	accept_newcomer.pressed.emit()
+	check("POP/UI_accept_queues_exact_candidate",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="newcomer" and colony_game.world.pending_commands[0].args.target==newcomer.id)
+	colony_game.world.step();colony_game.select_citizen(colony_game.world.citizens[-1].id)
+	var newcomer_selected: bool = colony_game.view.selected_id==colony_game.world.citizens[-1].id and colony_game.inspector_details.text.contains(colony_game.world.citizens[-1].name)
+	colony_game.show_person(colony_game.world.citizens[-1].id)
+	check("POP/UI_new_id_is_selectable_and_inspectable",newcomer_selected and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Equipment"))
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

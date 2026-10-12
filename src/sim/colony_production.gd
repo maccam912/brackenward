@@ -194,10 +194,10 @@ static func input_before(world: ColonyWorld, a: Dictionary, b: Dictionary, origi
 	var bd: int = absi(b.x-origin.x)+absi(b.y-origin.y)
 	return ae < be or (ae == be and (ad < bd or (ad == bd and (a.item < b.item or (a.item == b.item and a.id < b.id)))))
 
-static func validate(data: Variant, definitions: Dictionary) -> bool:
+static func validate(data: Variant, definitions: Dictionary, citizen_ids: Array = [1,2,3,4]) -> bool:
 	if not data is Dictionary or not ColonyCodec._keys(data,["orders","project","progress","insight","queue","discoveries"]) or not data.orders is Array or data.orders.size() > 10000 or not data.project is String or not data.progress is Dictionary or not data.insight is int or data.insight < 0 or data.insight > 1000 or not data.queue is Array or data.queue.size() > 3 or not data.discoveries is Dictionary: return false
 	for id in data.discoveries:
-		if not id is int or id not in [1,2,3,4] or not data.discoveries[id] is int or data.discoveries[id] < 0: return false
+		if not id is int or not citizen_ids.has(id) or not data.discoveries[id] is int or data.discoveries[id] < 0: return false
 	var seen: Dictionary = {}
 	if not data.project.is_empty() and not definitions.research.has(data.project): return false
 	for project in data.queue:

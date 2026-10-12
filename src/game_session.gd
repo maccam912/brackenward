@@ -530,7 +530,7 @@ func select_citizen(id: int) -> void:
 	var rows: VBoxContainer = VBoxContainer.new()
 	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(rows)
-	var citizen: Dictionary = world.citizens[id - 1]
+	var citizen: Dictionary = world.find(world.citizens,id) if world is ColonyWorld else world.citizens[id-1]
 	inspector_details = label("", rows)
 	_update_inspector()
 	var actions: HBoxContainer = HBoxContainer.new()
@@ -595,6 +595,7 @@ func show_sheet(title: String) -> void:
 					if not definition.buildable: continue
 					button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body)
 		"People":
+			if world is ColonyWorld: button("Newcomer offers",show_newcomers,sheet_body)
 			if world is ColonyWorld: button("Injuries and care",show_care,sheet_body)
 			for citizen in world.citizens:
 				button(citizen.name, func() -> void:
@@ -993,7 +994,7 @@ func _preview_text() -> String:
 func _update_inspector() -> void:
 	if selected <= 0 or not is_instance_valid(inspector_details):
 		return
-	var citizen: Dictionary = world.citizens[selected - 1]
+	var citizen: Dictionary = world.find(world.citizens,selected) if world is ColonyWorld else world.citizens[selected-1]
 	if world is ColonyWorld:
 		var job: Dictionary = world.find(world.jobs, citizen.job)
 		inspector_details.text = "%s - %s\nFood %d/1000 | Rest %d/1000\nHealth %d | %s first\n%s" % [citizen.name, citizen.activity, citizen.fullness, citizen.rest, citizen.health, citizen.preferred,
@@ -1793,3 +1794,24 @@ func begin_cart_move(cart: Dictionary) -> void:
 	begin_placement();placement_kind="cart_move";moving_target=cart.id
 	view.preview_definition="supply_cart";view.preview_rotation=0;view.preview_start=Vector2i(cart.x+3,cart.y);view.fit_build_preview();view.camera_tile=Vector2(view.preview_start);rotation_button.visible=false
 	notice="Move the supply cart for 20 WU, then push it along a clear two-by-two route. Stored goods keep their age and remain aboard. Canceling a push stops at the current position."
+
+func show_newcomers() -> void:
+	show_sheet("Newcomer offers")
+	label("Adult travelers offer to join every four days from day four. No penalty for declining. Accepting needs one reachable free bed and two stored-food days after adding the resident; population limit twenty. Each arrives wearing a toolkit/cloak and brings four rations to the cart.",sheet_body)
+	var waiting: Array = world.population_state.offers.filter(func(o:Dictionary)->bool:return o.state in ["Offered","Accepted"])
+	if waiting.is_empty(): label("No traveler is waiting. The next offers use game time; time stays paused here.",sheet_body)
+	for request in waiting:
+		var person: Dictionary = request.candidate
+		label("%s · %s first · %s / %s · prefers %s food" % [person.name,person.preferred,person.traits[0],person.traits[1],person.food],sheet_body)
+		var skill_text: Array[String] = []
+		for skill in person.skills: skill_text.append(skill+" "+str(person.skills[skill]))
+		label(", ".join(skill_text),sheet_body)
+		if request.state=="Accepted": label("Walking in from the boundary. The arrival and all supplies are saved exactly once.",sheet_body);continue
+		label("Waits %.1f more game hours. No hidden reputation penalty if this expires." % ((request.deadline-world.tick)/300.0),sheet_body)
+		var check: Dictionary = ColonyPopulation.acceptance(world,request)
+		label("Ready: free sleeping place and at least two days of food for the enlarged household." if check.error.is_empty() else check.error,sheet_body)
+		if check.error.is_empty(): button("Accept "+person.name,func()->void:_submit("newcomer",{"target":request.id,"accept":true});close_sheet(),sheet_body)
+		else:
+			button("Build sleeping place",func()->void:begin_build("bedroll"),sheet_body)
+			button("Food forecast",func()->void:show_sheet("Journal"),sheet_body)
+		button("Decline "+person.name,func()->void:_submit("newcomer",{"target":request.id,"accept":false});close_sheet(),sheet_body)

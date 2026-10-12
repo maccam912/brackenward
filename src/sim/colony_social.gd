@@ -289,6 +289,7 @@ static func mood_terms(world: ColonyWorld, citizen: Dictionary) -> Dictionary:
 
 static func validate(data: Variant, citizens: Array, tick: int) -> bool:
 	if not data is Dictionary or not ColonyCodec._keys(data,["pairs","requests","supper_history","deaths"]) or not data.pairs is Dictionary or not data.requests is Array or data.requests.size() > 10000 or not data.supper_history is Dictionary or not data.deaths is Array: return false
+	if data.pairs.size()!=citizens.size()*(citizens.size()-1)/2: return false
 	var expected: Dictionary = initial_state(citizens,tick).pairs
 	if not ColonyCodec._keys(data.pairs,expected.keys()): return false
 	for name in data.pairs:

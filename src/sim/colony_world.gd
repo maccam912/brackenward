@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 13
+const SCHEMA_REVISION: int = 14
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -28,6 +28,7 @@ var social_state: Dictionary = {}
 var production_state: Dictionary = {}
 var care_state: Dictionary = {}
 var care_destinations: Dictionary = {}
+var population_state: Dictionary = {}
 var equipment_state: Dictionary = {}
 var construction_state: Dictionary = ColonyConstruction.initial_state()
 var domestic_state: Dictionary = ColonyDomestic.initial_state()
@@ -74,13 +75,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		preferences[preferred] = 3
 		if index == 0:
 			preferences.Care = 3
-		citizens.append({"id": index + 1, "name": ["Mira", "Oren", "Tavi", "Sela"][index], "x": 65 + index, "y": 65,
-			"progress": 0, "direction": 0, "edge_x": 65 + index, "edge_y": 65, "route": [], "route_goal": [], "move_base_rem": 0, "move_rem": 0, "injury_rem": 0, "travel_credit": 0,
-			"skills": skills, "xp": xp, "traits": traits[index], "preferred": preferred, "preferences": preferences,
-			"shift": "Normal", "pending_shift": "", "pinned_job": 0, "yesterday_leisure": 0, "leisure_memory_until": 0, "warm_until": 0, "leisure_ticks": 0, "leisure_day": 0, "bed_sleep_ticks": 0, "bed_memory_until": 0, "raw_memory_until": 0, "preferred_work": 0, "preferred_memory_until": 0, "mood_terms": {}, "food_tags": [], "food_tags_day": 0, "break_clock": 0, "break_until": 0, "break_cooldown": 0, "departure_clock": 0, "departure_until": 0, "departed": false,
-			"food_tag": ["Vegetable", "Grain", "Berry", "Mushroom"][index], "fullness": 750, "rest": 900, "morale": 650,
-			"health": 100, "hunger_rem": 0, "rest_rem": 0, "starving_ticks": 0, "job": 0, "bed": 0,
-			"equipment": {"toolkit": "toolkit", "cloak": "cloak", "weapon": "spear" if index in [0, 3] else "bow", "vest":""}, "activity": "Looking around"})
+		citizens.append(citizen_record(index+1,["Mira","Oren","Tavi","Sela"][index],Vector2i(65+index,65),skills,xp,traits[index],preferred,preferences,["Vegetable","Grain","Berry","Mushroom"][index],"spear" if index in [0,3] else "bow"))
 	for citizen in citizens:
 		citizen.merge(ColonyCombat.citizen_defaults())
 		for item in citizen.equipment.values():
@@ -104,6 +99,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		var point: Vector2i = Vector2i(55 - (index % 6) * 2, 54 + (index / 6) * 3)
 		resources.append({"id": _id(), "definition": kind, "x": point.x, "y": point.y, "remaining": definitions.resources[kind].yield_count, "regrow_at": 0})
 
+	population_state=ColonyPopulation.initial_state(seed,generator_version,site_id)
 	equipment_state=ColonyEquipment.initial_state(citizens)
 	ColonyWeather.initialize(self)
 	ColonySocial.initialize(self)
@@ -229,6 +225,7 @@ func step() -> void:
 	ColonyCare.advance(self)
 	ColonyWeather.advance(self)
 	ColonyAgriculture.advance(self)
+	ColonyPopulation.advance(self)
 	ColonyDomestic.advance(self)
 	ColonyWildlife.advance(self)
 	ColonyNature.advance(self)
@@ -379,6 +376,7 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"newcomer": return ColonyPopulation.command(self,args)
 		"cart_move": return ColonyMaintenance.cart_command(self,args)
 		"move_furniture": return ColonyMaintenance.move_command(self,args)
 		"repair", "demolish", "rebuild": return ColonyMaintenance.command(self,command.kind,args)
@@ -573,6 +571,7 @@ func _assign(citizen: Dictionary) -> void:
 		return
 	if ColonyDanger.escape(self,citizen): return
 	if ColonyConstruction.step_aside(self,citizen): return
+	var arrival: Dictionary = jobs.filter(func(j:Dictionary)->bool:return j.kind=="arrival" and j.target==citizen.id and j.state not in ["Complete","Canceled"]).front() if jobs.any(func(j:Dictionary)->bool:return j.kind=="arrival" and j.target==citizen.id and j.state not in ["Complete","Canceled"]) else {}
 	var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
 	var needs_sleep: bool = citizen.rest <= 300 or ((hour >= 22 or hour < 6) and citizen.rest < 900)
 	var current: Dictionary = find(jobs, citizen.job)
@@ -618,6 +617,9 @@ func _assign(citizen: Dictionary) -> void:
 		var recovery: Dictionary = _job("recover","","",destination.id,destination.point,0)
 		recovery.worker = citizen.id; recovery.state = "Moving"
 		citizen.job = recovery.id
+		return
+	if not arrival.is_empty() and _reserve(arrival,citizen):
+		citizen.job=arrival.id
 		return
 	if citizen.departure_until > 0 and tick >= citizen.departure_until:
 		var depart_job: Dictionary = _job("depart", "", "", citizen.id, Vector2i(66,127), 0)
@@ -666,6 +668,7 @@ func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
 	return false
 
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if job.kind=="arrival" and job.target!=citizen.id: return false
 	if job.kind=="cart_move" and job.memo.phase=="prepare":
 		var cart: Dictionary = find(structures,job.target);job.x=cart.x;job.y=cart.y
 	if job.kind in ["repair","demolish","move_furniture"] and not ColonyMaintenance.reserve(self,job): return false
@@ -769,6 +772,9 @@ func _block(job: Dictionary, reason: String) -> bool:
 func _work(citizen: Dictionary, job: Dictionary) -> void:
 	if job.is_empty():
 		citizen.job = 0
+		return
+	if job.kind=="arrival":
+		ColonyPopulation.arrival_work(self,citizen,job)
 		return
 	if job.kind=="cart_move":
 		ColonyMaintenance.cart_work(self,citizen,job)
@@ -1198,7 +1204,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
 	var all_ids: Dictionary = {}
-	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses, domestic_state.pens, domestic_state.animals, construction_state.groups]:
+	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses, domestic_state.pens, domestic_state.animals, construction_state.groups, population_state.offers]:
 		for record: Dictionary in records:
 			if all_ids.has(record.id) or record.id < 1 or record.id >= next_id:
 				errors.append("Invalid/duplicate ID")
@@ -1246,7 +1252,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "equipment_state":equipment_state, "construction_state":construction_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "population_state":population_state, "equipment_state":equipment_state, "construction_state":construction_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}
@@ -1304,3 +1310,14 @@ func can_step(from: Vector2i, to: Vector2i) -> bool:
 	if generator_version == 0: return true
 	if terrain_state.bridges.has(from) or terrain_state.bridges.has(to): return true
 	return absi(elevation(from)-elevation(to)) <= 1
+
+static func citizen_record(id: int, name: String, point: Vector2i, skills: Dictionary, xp: Dictionary, traits: Array, preferred: String, preferences: Dictionary, food: String, weapon: String) -> Dictionary:
+	var result: Dictionary = {"id": id, "name": name, "x": point.x, "y": point.y,
+		"progress": 0, "direction": 0, "edge_x": point.x, "edge_y": point.y, "route": [], "route_goal": [], "move_base_rem": 0, "move_rem": 0, "injury_rem": 0, "travel_credit": 0,
+		"skills": skills, "xp": xp, "traits": traits, "preferred": preferred, "preferences": preferences,
+		"shift": "Normal", "pending_shift": "", "pinned_job": 0, "yesterday_leisure": 0, "leisure_memory_until": 0, "warm_until": 0, "leisure_ticks": 0, "leisure_day": 0, "bed_sleep_ticks": 0, "bed_memory_until": 0, "raw_memory_until": 0, "preferred_work": 0, "preferred_memory_until": 0, "mood_terms": {}, "food_tags": [], "food_tags_day": 0, "break_clock": 0, "break_until": 0, "break_cooldown": 0, "departure_clock": 0, "departure_until": 0, "departed": false,
+		"food_tag": food, "fullness": 750, "rest": 900, "morale": 650,
+		"health": 100, "hunger_rem": 0, "rest_rem": 0, "starving_ticks": 0, "job": 0, "bed": 0,
+		"equipment": {"toolkit": "toolkit", "cloak": "cloak", "weapon": weapon, "vest":""}, "activity": "Looking around"}
+	result.merge(ColonySocial.citizen_defaults());result.merge(ColonyCare.citizen_defaults());result.merge(ColonyCombat.citizen_defaults())
+	return result

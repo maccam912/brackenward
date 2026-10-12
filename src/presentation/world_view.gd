@@ -68,7 +68,10 @@ func _process(delta: float) -> void:
 		_apply_intent(action)
 	if world == null:
 		return
-	for i in range(4):
+	while actors.size()<world.citizens.size():
+		var actor: Sprite2D = Sprite2D.new();actor.texture=load("res://assets/exported/citizens/%s.svg" % ["mira","oren","tavi","sela"][actors.size()%4]);actor.offset=Vector2(0,-8);actor_layer.add_child(actor);actors.append(actor)
+	for i in range(actors.size()):
+		if i>=world.citizens.size(): actors[i].visible=false;continue
 		var citizen: Dictionary = world.citizens[i]
 		var point: Vector2 = Vector2(citizen.x + 0.5, citizen.y + 0.5)
 		if world is ColonyWorld:
