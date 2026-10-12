@@ -13,6 +13,9 @@ var forecast_mask: Array[Vector2i] = []
 var preview_visible: bool = false
 var preview_definition: String = ""
 var preview_resource: String = ""
+var preview_line: bool = false
+var preview_lodge: bool = false
+var rejected_build_tiles: Dictionary = {}
 var preview_rotation: int = 0
 var selected_id: int = 0
 var follow_id: int = 0
@@ -129,12 +132,12 @@ func _apply_intent(action: Dictionary) -> void:
 		"paint":
 			preview_start = screen_to_tile(action.start)
 			preview_end = screen_to_tile(action.point)
-			if not preview_definition.is_empty():
+			if not preview_definition.is_empty() or preview_lodge:
 				preview_start = preview_end
 				fit_build_preview()
 		"paint_tap":
 			preview_end = screen_to_tile(action.point)
-			if not preview_definition.is_empty():
+			if not preview_definition.is_empty() or preview_lodge:
 				preview_start = preview_end
 				fit_build_preview()
 		"select", "chooser":
@@ -164,9 +167,13 @@ func cancel_gesture() -> void:
 	magnifier = Vector2(-100, -100)
 
 func preview_tiles() -> Array[Vector2i]:
+	var end: Vector2i = preview_end
+	if preview_line:
+		if absi(end.x-preview_start.x)>=absi(end.y-preview_start.y): end.y=preview_start.y
+		else: end.x=preview_start.x
 	var result: Array[Vector2i] = []
-	for y in range(mini(preview_start.y, preview_end.y), maxi(preview_start.y, preview_end.y) + 1):
-		for x in range(mini(preview_start.x, preview_end.x), maxi(preview_start.x, preview_end.x) + 1):
+	for y in range(mini(preview_start.y, end.y), maxi(preview_start.y, end.y) + 1):
+		for x in range(mini(preview_start.x, end.x), maxi(preview_start.x, end.x) + 1):
 			result.append(Vector2i(x, y))
 	return result
 
@@ -194,16 +201,23 @@ func _draw() -> void:
 		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): continue
 		draw_rect(Rect2(point,Vector2.ONE*tile_size),Color(0.25,0.52,0.65,0.35))
 		draw_line(point+Vector2(0,tile_size),point+Vector2(tile_size,0),Color("D8E8DC"),2)
+	for tile in rejected_build_tiles:
+		draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size),Color(0.7,0.3,0.3,0.35))
+		draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size),Color("B44F4A"),false,2)
 	for tile in world.designations:
 		draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color(0.91, 0.73, 0.4, 0.35))
 		draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color("F3E8CC"), false, 2)
 	if preview_visible:
 		for tile in preview_tiles():
-			var color: Color = Color("B44F4A") if preview_resource.is_empty() and PrototypeWorld.is_water(tile) else Color("E9BA67")
+			var water: bool = world.is_water(tile) if world is ColonyWorld else PrototypeWorld.is_water(tile)
+			var color: Color = Color("B44F4A") if rejected_build_tiles.has(tile) or (preview_resource.is_empty() and not preview_line and water) else Color("E9BA67")
 			color.a = 0.3
 			var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size)
 			draw_rect(rectangle, color)
 			draw_rect(rectangle, Color("263C3B"), false, 2)
+	if preview_visible and preview_lodge and world is ColonyWorld:
+		for blueprint in ColonyConstruction.lodge(preview_start):
+			for tile in world.footprint(blueprint): draw_rect(Rect2(tile_to_screen(Vector2(tile))+Vector2.ONE*2,Vector2.ONE*(tile_size-4)),Color("F3E8CC"),false,2)
 	if preview_visible and not preview_resource.is_empty() and world is ColonyWorld:
 		for resource in world.gather_targets(preview_resource,preview_tiles()):
 			_draw_gather_mark(Vector2i(resource.x,resource.y),Color("F3E8CC"))
@@ -240,6 +254,9 @@ func _draw_fixture() -> void:
 	draw_rect(Rect2(tile_to_screen(Vector2(66, 63)), Vector2(tile_size * 2, tile_size)), Color("B96C50"))
 
 func fit_build_preview() -> void:
+	if preview_lodge:
+		preview_start.x=clampi(preview_start.x,0,120);preview_start.y=clampi(preview_start.y,0,122)
+		preview_end=preview_start+Vector2i(7,5);return
 	if preview_definition.is_empty() or not world is ColonyWorld:
 		return
 	var definition: Dictionary = world.definitions.buildings[preview_definition]

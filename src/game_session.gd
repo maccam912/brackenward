@@ -50,6 +50,9 @@ var nav_labels: Array[Label] = []
 var inspector_details: Label
 var rotation_button: Button
 var placement_kind: String = "stockpile"
+var paint_build_definition: String = ""
+var placement_cache_key: String = ""
+var placement_cache: Dictionary = {}
 var forecast_elapsed: float = 0.0
 var food_warning_level: int = 0
 var saving_disabled: bool = false
@@ -270,11 +273,12 @@ func _build_placement() -> void:
 	for direction in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 		var title: String = {Vector2i.LEFT: "Left", Vector2i.RIGHT: "Right", Vector2i.UP: "Up", Vector2i.DOWN: "Down"}[direction]
 		direction_button(title, Vector2(direction), func() -> void:
-			if not view.preview_definition.is_empty():
+			if not view.preview_definition.is_empty() or view.preview_lodge:
 				view.preview_start += direction
 			view.preview_end += direction
 			view.preview_end.x = clampi(view.preview_end.x, 0, 127)
-			view.preview_end.y = clampi(view.preview_end.y, 0, 127), placement_nudges)
+			view.preview_end.y = clampi(view.preview_end.y, 0, 127)
+			if view.preview_lodge: view.fit_build_preview(), placement_nudges)
 	placement_actions = HBoxContainer.new()
 	placement_actions.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	placement.add_child(placement_actions)
@@ -369,10 +373,13 @@ func begin_placement() -> void:
 		return
 	close_sheet()
 	runner.pause()
+	confirm_button.disabled = submitted_command>0
 	view.cancel_gesture()
 	view.follow_id = 0
 	view.preview_visible = true
 	view.preview_definition = ""
+	view.preview_line=false;view.preview_lodge=false;view.rejected_build_tiles.clear()
+	paint_build_definition="";placement_cache_key="";placement_cache.clear()
 	view.preview_resource = ""
 	if world is ColonyWorld:
 		view.preview_start = _home_tile(Vector2i(74,54))
@@ -400,7 +407,7 @@ func confirm_placement() -> void:
 	if confirm_button.disabled or not placement.visible:
 		return
 	for tile in view.preview_tiles():
-		if placement_kind != "gather" and view.preview_definition not in ["bridge","fishing_pier"] and (world.is_water(tile) if world is ColonyWorld else PrototypeWorld.is_water(tile)):
+		if placement_kind not in ["gather","build_area"] and view.preview_definition not in ["bridge","fishing_pier"] and (world.is_water(tile) if world is ColonyWorld else PrototypeWorld.is_water(tile)):
 			notice = "Deep river cannot be designated. Move the preview onto land."
 			return
 	if world is ColonyWorld and not view.preview_definition.is_empty():
@@ -408,8 +415,19 @@ func confirm_placement() -> void:
 		if not error.is_empty():
 			notice = error
 			return
+	if placement_kind == "lodge":
+		var error: String = ColonyConstruction.lodge_error(world,view.preview_start)
+		if not error.is_empty(): notice=error;return
+	if placement_kind == "build_area":
+		var preview: Dictionary = ColonyConstruction.paint_preview(world,paint_build_definition,view.preview_tiles())
+		view.rejected_build_tiles=preview.rejected
+		if preview.valid.is_empty(): notice="No valid tiles. Inspect the red cells or clear obstructions.";return
 	confirm_button.disabled = true
-	if world is ColonyWorld and not view.preview_definition.is_empty():
+	if world is ColonyWorld and placement_kind == "lodge":
+		submitted_command=world.queue_command("lodge",{"x":view.preview_start.x,"y":view.preview_start.y})
+	elif world is ColonyWorld and placement_kind == "build_area":
+		submitted_command=world.queue_command("build_area",{"definition":paint_build_definition,"tiles":view.preview_tiles()})
+	elif world is ColonyWorld and not view.preview_definition.is_empty():
 		submitted_command = world.queue_command("build", {"definition": view.preview_definition, "x": view.preview_start.x, "y": view.preview_start.y, "rotation": view.preview_rotation})
 	elif world is ColonyWorld and placement_kind == "gather":
 		if world.gather_targets(view.preview_resource,view.preview_tiles()).is_empty():
@@ -473,6 +491,8 @@ func _map_intent(action: Dictionary) -> void:
 		if world is ColonyWorld:
 			for pen in world.domestic_state.pens:
 				if pen.tiles.has(action.tile): show_pen(pen);return
+		if view.rejected_build_tiles.has(action.tile):
+			show_sheet("Unsubmitted building cell");label(view.rejected_build_tiles[action.tile],sheet_body);return
 		notice="Terrain (%d, %d). Use Build to place a blueprint." % [action.tile.x,action.tile.y]
 
 func _select_map_object(candidate: Dictionary) -> void:
@@ -564,6 +584,7 @@ func show_sheet(title: String) -> void:
 			button("Paint stockpile", begin_placement, sheet_body)
 			button("Plant turnips", begin_field, sheet_body)
 			if world is ColonyWorld:
+				button("Four-bed lodge | W73 F8",begin_lodge,sheet_body)
 				for kind in world.definitions.buildings:
 					var definition: Dictionary = world.definitions.buildings[kind]
 					if not definition.buildable: continue
@@ -901,6 +922,13 @@ func _cost_text(materials: Dictionary) -> String:
 	return ", ".join(parts)
 
 func begin_build(kind: String) -> void:
+	if kind in ColonyConstruction.PAINTABLE:
+		begin_placement();placement_kind="build_area";paint_build_definition=kind
+		view.preview_line=kind not in ColonyConstruction.OVERLAYS
+		view.preview_start=_home_tile(Vector2i(74,63));view.preview_end=view.preview_start+Vector2i(3,0)
+		view.camera_tile=Vector2(view.preview_start);rotation_button.visible=false
+		notice="Paint %s, then Confirm. The preview shows valid cells, total cost and omitted obstructions." % _catalog_name(kind)
+		_layout();return
 	begin_placement()
 	view.preview_definition = kind
 	view.preview_rotation = 0
@@ -925,6 +953,21 @@ func begin_gather(kind: String) -> void:
 	_layout()
 
 func _preview_text() -> String:
+	if placement_kind=="lodge":
+		var key: String = "lodge|%s|%d" % [view.preview_start,world.tick]
+		if key!=placement_cache_key:
+			placement_cache_key=key;placement_cache={"error":ColonyConstruction.lodge_error(world,view.preview_start)}
+		return "Four-bed lodge · 8×6 · W73 F8 · 206 WU\n"+("Valid; beds and door finish before enclosure" if placement_cache.error.is_empty() else placement_cache.error)
+	if placement_kind=="build_area":
+		var key: String = "%s|%s|%s|%d" % [paint_build_definition,view.preview_start,view.preview_end,world.tick]
+		if key!=placement_cache_key:
+			placement_cache_key=key;placement_cache=ColonyConstruction.paint_preview(world,paint_build_definition,view.preview_tiles())
+		view.rejected_build_tiles=placement_cache.rejected
+		var cost: Dictionary = {}
+		for item in world.definitions.buildings[paint_build_definition].materials: cost[item]=world.definitions.buildings[paint_build_definition].materials[item]*placement_cache.valid.size()
+		var tiles: Array = view.preview_tiles()
+		var dimensions: Vector2i = (tiles[-1]-tiles[0]).abs()+Vector2i.ONE
+		return "%s · %d×%d · Confirm %d valid · %s\n%d blocked cells stay unsubmitted%s" % [_catalog_name(paint_build_definition),dimensions.x,dimensions.y,placement_cache.valid.size(),_cost_text(cost),placement_cache.rejected.size(),"" if placement_cache.rejected.is_empty() else ": "+placement_cache.rejected.values()[0]]
 	if placement_kind == "pen": return "Livestock pen | Enclose with fences/gates/solid walls\nFour interior tiles and one barn shelter slot per animal"
 	if placement_kind == "forest": return "Forest zone | Keep 75% of its tree sites mature\nAutomatically cut excess and replant stumps"
 	if placement_kind == "gather":
@@ -1669,3 +1712,8 @@ func show_domestic_animal(animal: Dictionary) -> void:
 		show_sheet("Slaughter "+animal.name)
 		label("Confirm slaughter of %s? Ten WU produces %s. This kills this named animal. Slaughter and breeding are optional; the charter can be completed without them." % [animal.name,_cost_text(definition.slaughter_outputs)],sheet_body)
 		button("Confirm slaughter "+animal.name,func()->void:_submit("slaughter",{"target":animal.id});close_sheet(),sheet_body),sheet_body)
+
+func begin_lodge() -> void:
+	begin_placement();placement_kind="lodge";view.preview_lodge=true
+	view.preview_start=_home_tile(Vector2i(74,54));view.fit_build_preview();view.camera_tile=Vector2(view.preview_start+Vector2i(4,3));rotation_button.visible=false
+	notice="Four beds, 23 walls and a south door. W73 F8; 206 WU. Clear an 8×6 footprint; the preset uses normal blueprints and can be edited individually."

@@ -18,7 +18,7 @@ static func safe(world: ColonyWorld, point: Vector2i) -> bool:
 static func allowed(world: ColonyWorld, citizen: Dictionary, point: Vector2i) -> bool:
 	if not world.walkable(point): return false
 	var job: Dictionary = world.find(world.jobs,citizen.job)
-	if job.get("kind") == "lead_animal" and world.structures.any(func(s:Dictionary)->bool:return s.definition in ["fence","wood_door","stone_door"] and world.footprint(s).has(point)): return false
+	if job.get("kind") == "lead_animal" and world.structures.any(func(s:Dictionary)->bool:return s.definition in ["fence","door"] and world.footprint(s).has(point)): return false
 	return job.get("emergency",false) or job.get("kind") in ["hunt","escort_hunt","escape"] or safe(world,point)
 
 static func escape(world: ColonyWorld, citizen: Dictionary) -> bool:

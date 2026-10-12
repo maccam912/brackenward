@@ -55,6 +55,7 @@ jobs:
           python3 tools/check_suite.py nature
           python3 tools/check_suite.py wildlife
           python3 tools/check_suite.py domestic
+          python3 tools/check_suite.py construction
       - name: Real Control/input/layout suite
         run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK

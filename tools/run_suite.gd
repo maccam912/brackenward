@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -39,6 +39,7 @@ func run() -> void:
 		"nature": NatureTests.run(check)
 		"wildlife": WildlifeTests.run(check)
 		"domestic": DomesticTests.run(check)
+		"construction": ConstructionTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -658,6 +659,22 @@ func ui() -> void:
 	colony_game.runner.set_speed(1);colony_game.runner.advance_frame(0.1);colony_game._process(0);colony_game.runner.pause()
 	colony_game.begin_pen();colony_game.confirm_placement();colony_game.confirm_placement()
 	check("PEN/UI_rectangle_confirm_one_atomic_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="pen")
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.view.refresh_terrain();colony_game.submitted_command=0
+	colony_game.begin_build("wood_wall");colony_game.view.preview_start=Vector2i(74,54);colony_game.view.preview_end=Vector2i(77,56)
+	check("BUILD/UI_drag_uses_axis_aligned_line",colony_game.view.preview_tiles()==[Vector2i(74,54),Vector2i(75,54),Vector2i(76,54),Vector2i(77,54)])
+	check("BUILD/UI_line_shows_count_and_total_cost",colony_game._preview_text().contains("Confirm 4 valid") and colony_game._preview_text().contains("8 wood"))
+	colony_game.confirm_placement();colony_game.confirm_placement()
+	check("BUILD/UI_line_confirm_one_atomic_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="build_area" and colony_game.world.pending_commands[0].args.tiles.size()==4)
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	colony_game.begin_lodge();colony_game.view.preview_start=Vector2i(84,72);colony_game.view.fit_build_preview()
+	check("BUILD/UI_lodge_full_footprint_and_exact_cost",colony_game.view.preview_tiles().size()==48 and colony_game._preview_text().contains("W73 F8") and colony_game._preview_text().contains("206 WU"))
+	colony_game.confirm_placement()
+	check("BUILD/UI_lodge_confirm_one_atomic_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="lodge")
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0;colony_game.world.researched.append("husbandry")
+	colony_game.world._structure("wood_wall",Vector2i(75,63),0)
+	colony_game.begin_build("fence");colony_game.view.preview_start=Vector2i(74,63);colony_game.view.preview_end=Vector2i(76,63)
+	colony_game._preview_text();colony_game.confirm_placement()
+	check("BUILD/UI_omitted_cells_keep_visible_reason",colony_game.view.rejected_build_tiles.has(Vector2i(75,63)) and not colony_game.view.rejected_build_tiles[Vector2i(75,63)].is_empty())
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

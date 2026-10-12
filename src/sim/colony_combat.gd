@@ -15,7 +15,7 @@ static func line_of_sight(world: ColonyWorld, from: Vector2i, to: Vector2i) -> b
 		if twice < dx: error += dx; p.y += sy
 		if p == to: return true
 		for structure in world.structures:
-			if structure.definition in ["wood_wall","stone_wall","wood_door","stone_door","palisade","reinforced_gate"] and world.footprint(structure).has(p): return false
+			if structure.definition in ["wood_wall","stone_wall","door","palisade","reinforced_gate"] and world.footprint(structure).has(p): return false
 	return true
 
 static func weapon(citizen: Dictionary, distance: int) -> Dictionary:
