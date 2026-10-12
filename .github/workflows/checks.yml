@@ -28,6 +28,9 @@ jobs:
         run: python3 tools/bootstrap.py
       - name: Install Android command-line tools
         uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3
+        with:
+          packages: platform-tools
+          log-accepted-android-sdk-licenses: false
       - name: Install Android toolchain packages
         run: sdkmanager 'platforms;android-36' 'build-tools;36.1.0' 'ndk;29.0.14206865' 'cmake;3.10.2.4988404'
       - name: Validate media and prototype contract
