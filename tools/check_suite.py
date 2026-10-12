@@ -17,6 +17,7 @@ except subprocess.TimeoutExpired as error:
     print(error.stdout.decode() if isinstance(error.stdout,bytes) else error.stdout)
     sys.exit('Suite timed out; no passing result.')
 print(result.stdout, end='')
-summary = re.search(r'Discovered/run: ([1-9]\d*); failures: 0;',result.stdout)
-if result.returncode or not summary or re.search(r'(?m)^(SCRIPT ERROR:|ERROR:|FAIL )',result.stdout):
+clean_output = re.sub(r'\x1b\[[0-?]*[ -/]*[@-~]', '', result.stdout)
+summary = re.search(r'Discovered/run: ([1-9]\d*); failures: 0;',clean_output)
+if result.returncode or not summary or re.search(r'(?m)^(SCRIPT ERROR:|ERROR:|FAIL )',clean_output):
     sys.exit(1)

@@ -50,11 +50,17 @@ var food_warning_level: int = 0
 var saving_disabled: bool = false
 var storage_error: String = ""
 var recovery_failed: bool = false
+var settings: DeviceSettings = DeviceSettings.new()
 var pending_import_world: ColonyWorld
 var forecast: Dictionary = {"portions":24,"ticks":21600,"label":"24 portions | 3 days stored runway"}
 
 func _ready() -> void:
 	Engine.max_fps = 30
+	settings.load_local()
+	text_scale = float(settings.values.text_scale)
+	left_handed = settings.values.left_handed
+	if store is ColonyStore and store.root_directory == ColonyStore.CAMPAIGN_ROOT and store.directory == ColonyStore.CAMPAIGN_ROOT.path_join("slot-1"):
+		store.select_slot(settings.values.last_slot)
 	if store is ColonyStore and (not store._generations().is_empty() or (store.directory == ColonyStore.CAMPAIGN_ROOT.path_join("slot-1") and ColonyStore.occupied(1))):
 		var restored: Dictionary = store.load_latest()
 		if restored.has("world"):
@@ -71,10 +77,12 @@ func _ready() -> void:
 		native_storage.document_result.connect(_native_result)
 	_build_theme()
 	content = Control.new()
+	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(content)
 	view = WorldView.new()
 	content.add_child(view)
 	view.setup(world)
+	_restore_camera()
 	view.intent.connect(_map_intent)
 	_build_status()
 	_build_navigation()
@@ -90,7 +98,7 @@ func _ready() -> void:
 func _build_theme() -> void:
 	var ui_theme: Theme = Theme.new()
 	ui_theme.default_font = load("res://assets/exported/fonts/kenney_mini.ttf")
-	ui_theme.default_font_size = int(18 * text_scale)
+	ui_theme.default_font_size = int(16 * text_scale)
 	ui_theme.set_color("font_color", "Label", Color("F8F3E7"))
 	ui_theme.set_color("font_color", "Button", Color("F8F3E7"))
 	ui_theme.set_color("font_disabled_color", "Button", Color("B8BCAD"))
@@ -122,12 +130,25 @@ func button(label: String, callback: Callable, parent: Node, width: float = 48.0
 	result.text = label
 	result.clip_text = true
 	result.tooltip_text = label
-	result.name = label.validate_node_name()
+	result.name = label.validate_node_name() if not label.is_empty() else "Action"
 	result.custom_minimum_size = Vector2(width, 48)
 	result.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	result.pressed.connect(callback)
 	parent.add_child(result)
 	controls.append(result)
+	return result
+
+func direction_button(title: String, direction: Vector2, callback: Callable, parent: Node) -> Button:
+	var result: Button = button("",callback,parent)
+	result.name = title
+	result.tooltip_text = title
+	result.draw.connect(func() -> void:
+		var center: Vector2 = result.size * 0.5
+		var tip: Vector2 = center + direction * 9
+		var side: Vector2 = direction.orthogonal() * 7
+		result.draw_line(center-direction*9,tip,Color("F8F3E7"),3)
+		result.draw_line(tip,center+side,Color("F8F3E7"),3)
+		result.draw_line(tip,center-side,Color("F8F3E7"),3))
 	return result
 
 func label(text: String, parent: Node) -> Label:
@@ -199,38 +220,47 @@ func _build_speed_controls() -> void:
 
 func _build_map_tools() -> void:
 	map_tools = VBoxContainer.new()
+	map_tools.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(map_tools)
 	var zoom: HBoxContainer = HBoxContainer.new()
+	zoom.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	map_tools.add_child(zoom)
 	button("-", func() -> void: view.zoom_at(0.8, view.size * 0.5), zoom)
 	button("+", func() -> void: view.zoom_at(1.25, view.size * 0.5), zoom)
 	var nudge: GridContainer = GridContainer.new()
+	nudge.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	nudge.columns = 2
 	map_tools.add_child(nudge)
 	for direction in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:
 		var title: String = {Vector2.UP: "Up", Vector2.DOWN: "Down", Vector2.LEFT: "Left", Vector2.RIGHT: "Right"}[direction]
-		button(title, func() -> void:
+		direction_button(title, direction, func() -> void:
 			view.follow_id = 0
 			view.camera_tile += direction * 3
 			view._update_transform(), nudge)
 
 func _build_placement() -> void:
 	placement = VBoxContainer.new()
+	# Layout containers can temporarily retain an old minimum height. Their
+	# empty area must never intercept the map; only actual buttons handle input.
+	placement.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	content.add_child(placement)
 	placement.visible = false
 	preview_label = label("", placement)
+	preview_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	preview_label.add_theme_stylebox_override("normal", _box(Color("263C3B")))
 	placement_nudges = HBoxContainer.new()
+	placement_nudges.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	placement.add_child(placement_nudges)
 	for direction in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 		var title: String = {Vector2i.LEFT: "Left", Vector2i.RIGHT: "Right", Vector2i.UP: "Up", Vector2i.DOWN: "Down"}[direction]
-		button(title, func() -> void:
+		direction_button(title, Vector2(direction), func() -> void:
 			if not view.preview_definition.is_empty():
 				view.preview_start += direction
 			view.preview_end += direction
 			view.preview_end.x = clampi(view.preview_end.x, 0, 127)
 			view.preview_end.y = clampi(view.preview_end.y, 0, 127), placement_nudges)
 	placement_actions = HBoxContainer.new()
+	placement_actions.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	placement.add_child(placement_actions)
 	button("Cancel", cancel_placement, placement_actions, 64)
 	button("Pan", func() -> void:
@@ -242,6 +272,7 @@ func _build_placement() -> void:
 		view.fit_build_preview(), placement)
 	rotation_button.visible = false
 	placement_wide_row = HBoxContainer.new()
+	placement_wide_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	placement.add_child(placement_wide_row)
 
 func _process(delta: float) -> void:
@@ -305,6 +336,7 @@ func begin_placement() -> void:
 	view.follow_id = 0
 	view.preview_visible = true
 	view.preview_definition = ""
+	view.preview_resource = ""
 	placement_kind = "stockpile"
 	rotation_button.visible = false
 	view.gestures.mode = "paint"
@@ -325,7 +357,7 @@ func confirm_placement() -> void:
 	if confirm_button.disabled or not placement.visible:
 		return
 	for tile in view.preview_tiles():
-		if PrototypeWorld.is_water(tile):
+		if placement_kind != "gather" and PrototypeWorld.is_water(tile):
 			notice = "Deep river cannot be designated. Move the preview onto land."
 			return
 	if world is ColonyWorld and not view.preview_definition.is_empty():
@@ -336,6 +368,12 @@ func confirm_placement() -> void:
 	confirm_button.disabled = true
 	if world is ColonyWorld and not view.preview_definition.is_empty():
 		submitted_command = world.queue_command("build", {"definition": view.preview_definition, "x": view.preview_start.x, "y": view.preview_start.y, "rotation": view.preview_rotation})
+	elif world is ColonyWorld and placement_kind == "gather":
+		if world.gather_targets(view.preview_resource,view.preview_tiles()).is_empty():
+			confirm_button.disabled = false
+			notice = "No unmarked resources here. Drag over the resources you want."
+			return
+		submitted_command = world.queue_command("gather_area", {"definition":view.preview_resource,"tiles":view.preview_tiles()})
 	elif world is ColonyWorld and placement_kind == "field":
 		submitted_command = world.queue_command("field", {"crop":"turnip", "tiles":view.preview_tiles()})
 	else:
@@ -428,7 +466,7 @@ func show_sheet(title: String) -> void:
 	rows.add_child(top)
 	var heading: Label = label(title, top)
 	heading.add_theme_font_override("font", load("res://assets/exported/fonts/kenney_bold.ttf"))
-	heading.add_theme_font_size_override("font_size", int(22 * text_scale))
+	heading.add_theme_font_size_override("font_size", int(20 * text_scale))
 	var close_button: Button = button("Close", close_sheet, top, 64)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var pause_button: Button = button("Pause", func() -> void: runner.pause(), top, 72)
@@ -481,10 +519,12 @@ func show_sheet(title: String) -> void:
 			button("Import save", func() -> void: choose_document(false), sheet_body)
 			button("Text size: %d%%" % int(text_scale * 100), func() -> void:
 				text_scale = 1.25 if text_scale == 1.0 else (1.5 if text_scale == 1.25 else 1.0)
+				_save_settings()
 				_build_theme()
 				show_sheet("Menu"), sheet_body)
 			button("Handedness: " + ("Left" if left_handed else "Right"), func() -> void:
 				left_handed = not left_handed
+				_save_settings()
 				show_sheet("Menu"), sheet_body)
 			if world is ColonyWorld:
 				button("Campaign slots",show_campaigns,sheet_body)
@@ -520,7 +560,7 @@ func _layout() -> void:
 	var height: float = content.size.y
 	var wrap_navigation: bool = width < 600 and text_scale > 1.0
 	var navigation_height: float = 128 if wrap_navigation else 64
-	var header_height: float = (144.0 if wrap_navigation or width < 600 else 104.0) * text_scale
+	var header_height: float = (104.0 if width < 600 else 88.0) * text_scale
 	status.position = Vector2.ZERO
 	status.size = Vector2(width, header_height)
 	nav.columns = 3 if wrap_navigation else 5
@@ -579,6 +619,7 @@ func save_local() -> String:
 	var error: String = store.save(world)
 	if error.is_empty():
 		last_saved_tick = world.tick
+		_save_settings()
 		saving_disabled = false
 		storage_error = ""
 		notice = "Saved and verified at tick %d." % world.tick
@@ -788,7 +829,23 @@ func begin_build(kind: String) -> void:
 	notice = "Place %s. Tap a tile or use the arrows; Confirm spends nothing until built." % kind.capitalize()
 	_layout()
 
+func begin_gather(kind: String) -> void:
+	begin_placement()
+	placement_kind = "gather"
+	view.preview_resource = kind
+	for resource in world.resources:
+		if resource.definition == kind and resource.remaining > 0:
+			view.preview_start = Vector2i(resource.x,resource.y)
+			view.preview_end = view.preview_start
+			view.camera_tile = Vector2(resource.x,resource.y)
+			break
+	notice = "Drag a rectangle around the resources, then Confirm. Gathering workers finish every marked job."
+	_layout()
+
 func _preview_text() -> String:
+	if placement_kind == "gather":
+		var count: int = world.gather_targets(view.preview_resource,view.preview_tiles()).size()
+		return "Gather %s | %d unmarked %s\nDrag a rectangle, then Confirm" % [world.definitions.resources[view.preview_resource].item,count,"trees" if view.preview_resource == "tree" else "resources"]
 	if world is ColonyWorld and not view.preview_definition.is_empty():
 		var error: String = world.placement_error(view.preview_definition, view.preview_start, view.preview_rotation)
 		var definition: Dictionary = world.definitions.buildings[view.preview_definition]
@@ -844,18 +901,9 @@ func _work_sheet() -> void:
 	if not world is ColonyWorld:
 		label("M0 fixture: real worker loop is in the colony scene.", sheet_body)
 		return
-	label("Gather berries or wood, then resume. Workers fetch their own inputs even with Hauling off. Preferences never override hunger or sleep.", sheet_body)
+	label("Choose a resource, drag a rectangle, then Confirm. Workers with Gathering enabled keep taking marked jobs until they are finished.", sheet_body)
 	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node"]:
-		var resource: Dictionary = {}
-		for candidate in world.resources:
-			if candidate.definition == kind and candidate.remaining > 0 and not world.jobs.any(func(job: Dictionary) -> bool: return job.kind == "gather" and job.target == candidate.id and job.state not in ["Complete", "Canceled"]):
-				resource = candidate
-				break
-		if not resource.is_empty():
-			button("Gather " + world.definitions.resources[kind].item, func() -> void:
-				_submit("gather", {"target": resource.id})
-				close_sheet()
-				view.camera_tile = Vector2(resource.x, resource.y), sheet_body)
+		button("Gather " + world.definitions.resources[kind].item, func() -> void: begin_gather(kind), sheet_body)
 	for citizen in world.citizens:
 		label(citizen.name + " - " + citizen.activity, sheet_body)
 		button(citizen.shift, func() -> void:
@@ -971,7 +1019,9 @@ func _switch_campaign(number: int, exists: bool) -> void:
 		notice = result.error
 		return
 	store = candidate
+	_restore_camera()
 	_replace_world(result.world)
+	_save_settings()
 	close_sheet()
 	notice = "Campaign %d is ready. Time stays paused." % number
 
@@ -1007,7 +1057,9 @@ func _adopt_import(number: int, replace: bool) -> void:
 		notice = error
 		return
 	store = candidate
+	_restore_camera()
 	_replace_world(pending_import_world)
+	_save_settings()
 	pending_import_world = null
 	close_sheet()
 	notice = "Imported verified campaign %d. Time stays paused." % number
@@ -1067,3 +1119,21 @@ func _load_named(index: int) -> void:
 	_replace_world(result.world)
 	close_sheet()
 	notice = "Named snapshot restored. Time stays paused."
+
+func _restore_camera() -> void:
+	if view == null or not store is ColonyStore:
+		return
+	var camera: Array = settings.values.cameras[store.slot-1]
+	view.camera_tile = Vector2(camera[0],camera[1])
+	view.tile_size = camera[2]
+	view._update_transform()
+
+func _save_settings() -> void:
+	settings.values.text_scale = text_scale
+	settings.values.left_handed = left_handed
+	if store is ColonyStore:
+		settings.values.last_slot = store.slot
+		settings.values.cameras[store.slot-1] = [view.camera_tile.x,view.camera_tile.y,view.tile_size]
+	var error: String = settings.save_local()
+	if not error.is_empty():
+		notice = error

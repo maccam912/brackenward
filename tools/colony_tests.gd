@@ -5,6 +5,7 @@ static func world() -> ColonyWorld:
 	return ColonyWorld.new(ColonyCatalog.load_data())
 
 static func run(check: Callable) -> void:
+	area_gathering(check)
 	var initial: ColonyWorld = world()
 	check.call("M1/starting_supply_and_equipment", initial.total("wood") == 44 and initial.available("meal") == 24 and initial.stores[0].capacity == 300 and initial.invariant_errors().is_empty())
 	var route: Array[Vector2i] = ColonyNavigation.path(Vector2i(0, 0), Vector2i(2, 2), func(p: Vector2i) -> bool: return ColonyWorld.inside(p))
@@ -184,3 +185,45 @@ static func run(check: Callable) -> void:
 			runner.advance_frame(0.1)
 		hashes.append(w.canonical_hash())
 	check.call("SIM01/colony_72000_ticks_speeds", hashes[0] == hashes[1] and hashes[1] == hashes[2], str(hashes))
+
+static func area_gathering(check: Callable) -> void:
+	var w: ColonyWorld = world()
+	var tiles: Array[Vector2i] = []
+	for y in range(54,58):
+		for x in range(51,56): tiles.append(Vector2i(x,y))
+	for citizen in w.citizens: citizen.preferences.Gathering = 0
+	w.queue_command("gather_area",{"definition":"tree","tiles":tiles})
+	var pending: Dictionary = ColonyCodec.decode(ColonyCodec.encode(w))
+	check.call("WORK/area_pending_command_roundtrip",pending.has("world") and pending.world.canonical_hash() == w.canonical_hash(),str(pending.get("error","")))
+	w.step()
+	var marked: Array = w.jobs.filter(func(j:Dictionary)->bool:return j.kind == "gather")
+	check.call("WORK/rectangle_marks_only_six_matching_trees",marked.size() == 6 and marked.all(func(j:Dictionary)->bool:return w.find(w.resources,j.target).definition == "tree"))
+	for i in range(100): w.step()
+	check.call("WORK/off_category_keeps_orders_waiting",marked.all(func(j:Dictionary)->bool:return j.worker == 0 and j.work == 0))
+	w.queue_command("gather_area",{"definition":"tree","tiles":tiles})
+	w.step()
+	check.call("WORK/repeated_area_does_not_duplicate_jobs",w.jobs.filter(func(j:Dictionary)->bool:return j.kind == "gather").size() == 6)
+	w.queue_command("preference",{"citizen":3,"category":"Gathering","value":3})
+	var restored: Dictionary = ColonyCodec.decode(ColonyCodec.encode(w))
+	for i in range(4000):
+		w.step()
+		if restored.has("world"): restored.world.step()
+	check.call("WORK/eligible_worker_finishes_entire_rectangle",marked.all(func(j:Dictionary)->bool:return j.state == "Complete") and w.ledger.produced.wood == 92 and w.invariant_errors().is_empty(),str(marked.map(func(j:Dictionary)->Array:return [j.state,j.reason])))
+	check.call("WORK/area_save_continues_exactly",restored.has("world") and restored.world.canonical_hash() == w.canonical_hash())
+	w = world()
+	w.queue_command("gather_area",{"definition":"tree","tiles":[Vector2i(55,54),Vector2i(-1,0)]})
+	w.step()
+	check.call("WORK/invalid_area_is_atomic",w.jobs.filter(func(j:Dictionary)->bool:return j.kind == "gather").is_empty() and w.receipts[1] == "invalid_tile")
+	w = world()
+	var node: Dictionary = w.resources[-1]
+	node.remaining = 3
+	w.queue_command("gather_area",{"definition":"stone_node","tiles":[Vector2i(node.x,node.y)]})
+	for i in range(1500): w.step()
+	check.call("WORK/mining_area_repeats_unit_jobs_until_empty",node.remaining == 0 and w.ledger.produced.stone == 33 and w.jobs.filter(func(j:Dictionary)->bool:return j.kind == "gather" and j.state == "Complete").size() == 3 and w.invariant_errors().is_empty())
+	w = world()
+	w.queue_command("gather_area",{"definition":"tree","tiles":tiles})
+	w.step()
+	marked = w.jobs.filter(func(j:Dictionary)->bool:return j.kind == "gather")
+	w.queue_command("cancel",{"target":marked[0].id})
+	for i in range(2500): w.step()
+	check.call("WORK/canceled_tree_stays_unharvested",marked[0].state == "Canceled" and w.find(w.resources,marked[0].target).remaining == 8 and marked.slice(1).all(func(j:Dictionary)->bool:return j.state == "Complete"))

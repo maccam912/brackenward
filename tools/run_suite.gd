@@ -151,6 +151,7 @@ func ui() -> void:
 	game.runner = SimRunner.new(game.world)
 	game.store = PrototypeStore.new()
 	game.store.directory = ui_m0_directory
+	game.settings.path = ui_m0_directory.path_join("settings.json")
 	root.add_child(game)
 	await process_frame
 	await process_frame
@@ -274,6 +275,7 @@ func ui() -> void:
 	var colony_game: GameSession = load("res://scenes/game.tscn").instantiate()
 	colony_game.store.root_directory = ui_colony_directory
 	colony_game.store.select_slot(1)
+	colony_game.settings.path = ui_colony_directory.path_join("settings.json")
 	root.add_child(colony_game)
 	await process_frame
 	colony_game.close_sheet()
@@ -285,9 +287,39 @@ func ui() -> void:
 	check("M1/UI_gather_action_exists", gather_button != null)
 	if gather_button != null:
 		gather_button.pressed.emit()
+		check("UI/gather_button_opens_preview_without_job",colony_game.placement.visible and colony_game.placement_kind == "gather" and colony_game.world.pending_commands.is_empty())
+		var start: Vector2 = colony_game.view.tile_to_screen(Vector2(51.5,54.5))
+		var end: Vector2 = colony_game.view.tile_to_screen(Vector2(55.5,57.5))
+		colony_game.view.gestures.begin(0,start)
+		colony_game.view._apply_intent(colony_game.view.gestures.move(0,end))
+		colony_game.view._apply_intent(colony_game.view.gestures.end(0,end))
+		check("UI/gather_rectangle_selects_six_trees",colony_game.world.gather_targets("tree",colony_game.view.preview_tiles()).size() == 6 and colony_game.world.pending_commands.is_empty(),colony_game._preview_text())
+		await process_frame
+		await process_frame
+		colony_game.view.preview_start = Vector2i(55,54)
+		colony_game.view.preview_end = colony_game.view.preview_start
+		var routed_start: Vector2 = colony_game.view.get_global_transform() * start
+		var routed_end: Vector2 = colony_game.view.get_global_transform() * end
+		var native_touch: InputEventScreenTouch = InputEventScreenTouch.new()
+		native_touch.index = 0
+		native_touch.pressed = true
+		native_touch.position = routed_start
+		root.push_input(native_touch)
+		var native_drag: InputEventScreenDrag = InputEventScreenDrag.new()
+		native_drag.index = 0
+		native_drag.position = routed_end
+		native_drag.relative = routed_end-routed_start
+		root.push_input(native_drag)
+		native_touch.position = routed_end
+		native_touch.pressed = false
+		root.push_input(native_touch)
+		check("UI/viewport_routes_touch_rectangle",colony_game.world.gather_targets("tree",colony_game.view.preview_tiles()).size() == 6,colony_game._preview_text())
+		colony_game.confirm_placement()
+		colony_game.confirm_placement()
+		check("UI/gather_rectangle_single_transaction",colony_game.world.pending_commands.size() == 1 and colony_game.world.pending_commands[0].kind == "gather_area")
 		colony_game.set_speed(4)
 		colony_game.runner.advance_frame(0.1)
-	check("M1/UI_gather_creates_real_job", colony_game.world.jobs.any(func(job: Dictionary) -> bool: return job.kind == "gather"))
+	check("M1/UI_gather_creates_real_job", colony_game.world.jobs.filter(func(job: Dictionary) -> bool: return job.kind == "gather").size() == 6)
 	colony_game._process(0.0)
 	colony_game.begin_build("bed")
 	colony_game.confirm_placement()

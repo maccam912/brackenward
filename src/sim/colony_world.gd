@@ -235,6 +235,21 @@ func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job
 	var work: Array[Vector2i] = _perimeter(footprint(blueprint))
 	return "No work position" if work.is_empty() else ""
 
+func gather_targets(definition: String, tiles: Array) -> Array[Dictionary]:
+	var area: Dictionary = {}
+	for tile in tiles:
+		area[tile] = true
+	var ordered: Dictionary = {}
+	for job in jobs:
+		if job.kind == "gather" and job.state not in ["Complete", "Canceled"]:
+			ordered[job.target] = true
+	var targets: Array[Dictionary] = []
+	for resource in resources:
+		if resource.definition == definition and resource.remaining > 0 and area.has(Vector2i(resource.x,resource.y)) and not ordered.has(resource.id):
+			targets.append(resource)
+	targets.sort_custom(func(a: Dictionary,b: Dictionary)->bool:return a.id < b.id)
+	return targets
+
 func _command(command: Dictionary) -> String:
 	var args: Dictionary = command.args
 	match command.kind:
@@ -272,6 +287,19 @@ func _command(command: Dictionary) -> String:
 					return "already_ordered"
 			var definition: Dictionary = definitions.resources[resource.definition]
 			_job("gather", "Gathering", "Field", resource.id, Vector2i(resource.x, resource.y), definition.work_milli)
+		"gather_area":
+			if not definitions.resources.has(args.definition) or args.tiles.is_empty():
+				return "invalid_gather_area"
+			for tile in args.tiles:
+				if not tile is Vector2i or not inside(tile):
+					return "invalid_tile"
+			var targets: Array[Dictionary] = gather_targets(args.definition, args.tiles)
+			if targets.is_empty():
+				return "No unmarked resources in this area"
+			for resource in targets:
+				var job: Dictionary = _job("gather", "Gathering", "Field", resource.id, Vector2i(resource.x, resource.y), definitions.resources[args.definition].work_milli)
+				# A mining designation repeats unit work until the marked deposit is empty.
+				job.definition = resource.definition
 		"cancel":
 			var job: Dictionary = find(jobs, args.target)
 			if job.is_empty():
@@ -750,6 +778,10 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			_make_stack(definition.item, quantity, "ground", 0, point, true)
 			if resource.remaining == 0 and definition.regrow_ticks > 0:
 				resource.regrow_at = tick + definition.regrow_ticks
+			elif definition.per_unit and resource.remaining > 0 and job.definition == resource.definition:
+				var continuation: Dictionary = _job("gather", "Gathering", "Field", resource.id, Vector2i(resource.x,resource.y), definition.work_milli)
+				continuation.definition = resource.definition
+				continuation.priority = job.priority
 		"build":
 			var structure: Dictionary = _structure(job.definition, Vector2i(job.x, job.y), job.rotation)
 			if job.definition == "bed":
