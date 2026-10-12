@@ -23,6 +23,7 @@ func setup(state: PrototypeWorld) -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	ground = Node2D.new()
 	ground.y_sort_enabled = true
+	ground.show_behind_parent = true
 	add_child(ground)
 	terrain = TileMapLayer.new()
 	var tile_set: TileSet = TileSet.new()

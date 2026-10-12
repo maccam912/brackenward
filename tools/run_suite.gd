@@ -195,6 +195,17 @@ func ui() -> void:
 	game.size = Vector2(960, 600)
 	await process_frame
 	await process_frame
+	if DisplayServer.get_name() != "headless":
+		var sample: Vector2 = game.view.get_global_transform() * game.view.tile_to_screen(Vector2(75.5, 54.5))
+		game.view.preview_visible = false
+		game.view.queue_redraw()
+		await RenderingServer.frame_post_draw
+		var before: Color = root.get_texture().get_image().get_pixelv(Vector2i(sample))
+		game.view.preview_visible = true
+		game.view.queue_redraw()
+		await RenderingServer.frame_post_draw
+		var after: Color = root.get_texture().get_image().get_pixelv(Vector2i(sample))
+		check("UI03/preview_visible_over_terrain", before != after, str([before, after]))
 	var touch: InputEventScreenTouch = InputEventScreenTouch.new()
 	touch.index = 0
 	touch.position = Vector2(200, 200)

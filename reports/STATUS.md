@@ -16,11 +16,11 @@ Checkpoint: `0.0.1-m0`, content `m0-touch-1`, prototype save envelope `brackenwa
 | Physical Android installation/input/rotation/storage | Not run | User will test later; emulator does not certify this gate |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at code checkpoint `54d8f7f` | [Linux checks, Kotlin tests, Android APK, all desktop exports and exported Linux launch](https://github.com/maccam912/brackenward/actions/runs/38248959751); final touch-event fix is being checked separately |
+| Remote CI | Pass at code checkpoint `f8add41` | [Linux checks, Kotlin tests, Android APK, all desktop exports and exported Linux launch](https://github.com/maccam912/brackenward/actions/runs/38249732327); current main adds the rendered-overlay regression; its latest run is available in Actions |
 | Colony work loop (M1) and later milestones | Not implemented | Gather/haul/cook/build/needs, then sustainable colony, people/seasons, production/region, combat/story, campaign and release quality |
 | Production signing / public release / store publication | Not run | Separate later authorization |
 
-Local suites: 19 unit checks, 6 integration checks, 79 UI checks, 4 Kotlin JUnit tests. Test names using release acceptance IDs only cover the stated M0 subset. No release gate is certified merely by those names. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the actual results.
+Local suites: 19 unit checks, 6 integration checks, 80 UI checks, 4 Kotlin JUnit tests. Test names using release acceptance IDs only cover the stated M0 subset. No release gate is certified merely by those names. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the actual results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
