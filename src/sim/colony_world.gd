@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v1"
-const SCHEMA_REVISION: int = 6
+const SCHEMA_REVISION: int = 7
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -28,6 +28,7 @@ var social_state: Dictionary = {}
 var production_state: Dictionary = {}
 var care_state: Dictionary = {}
 var care_destinations: Dictionary = {}
+var terrain_state: Dictionary = ColonyGeneration.empty_state()
 var generator_version: int = 0
 var site_id: String = "meadow_reach"
 var weather_state: Dictionary = {}
@@ -108,7 +109,8 @@ func _id() -> int:
 static func inside(point: Vector2i) -> bool:
 	return point.x >= 0 and point.y >= 0 and point.x < SIZE and point.y < SIZE
 
-static func is_water(point: Vector2i) -> bool:
+func is_water(point: Vector2i) -> bool:
+	if generator_version > 0 and inside(point): return terrain_state.elevation[point.y*128+point.x] == 0 and not terrain_state.bridges.has(point) and not structures.any(func(s:Dictionary)->bool:return s.definition == "bridge" and s.x == point.x and s.y == point.y)
 	return point.x >= 32 and point.x <= 35 and point.y not in [63, 64]
 
 func walkable(point: Vector2i) -> bool:
@@ -144,7 +146,7 @@ func accessible(point: Vector2i) -> bool:
 			cursor += 1
 			for delta in ColonyNavigation.NEIGHBORS:
 				var neighbor: Vector2i = tile + delta
-				if not reachable_home.has(neighbor) and walkable(neighbor):
+				if not reachable_home.has(neighbor) and walkable(neighbor) and can_step(tile,neighbor):
 					reachable_home[neighbor] = true
 					queue.append(neighbor)
 		reachability_dirty = false
@@ -165,6 +167,7 @@ func _structure(kind: String, anchor: Vector2i, rotation: int) -> Dictionary:
 	var result: Dictionary = {"id": _id(), "definition": kind, "x": anchor.x, "y": anchor.y, "rotation": rotation,
 		"health": definitions.buildings.get(kind,{}).get("health",200), "user": 0, "fuel": 0, "cooking": true, "heat_ticks": 0}
 	structures.append(result)
+	if kind == "bridge" and generator_version > 0 and not terrain_state.bridges.has(anchor): terrain_state.bridges.append(anchor)
 	rooms_dirty = true
 	navigation_dirty = true
 	return result
@@ -239,7 +242,9 @@ func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job
 		return "Requires " + unlock.capitalize() + " research"
 	var blueprint: Dictionary = {"definition": kind, "x": anchor.x, "y": anchor.y, "rotation": rotation}
 	for point in footprint(blueprint):
-		if not walkable(point):
+		if not inside(point): return "Outside map"
+		if kind == "bridge" and not is_water(point): return "Bridge needs an unbridged river tile"
+		if not walkable(point) and not (kind == "bridge" and is_water(point)):
 			return "Blocked terrain"
 		for structure in structures:
 			if footprint(structure).has(point):
@@ -256,8 +261,9 @@ func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job
 			var start: Vector2i = Vector2i(citizen.x, citizen.y)
 			if blocked.has(start) or (citizen.progress > 0 and blocked.has(Vector2i(citizen.edge_x, citizen.edge_y))):
 				return "A resident occupies this tile"
-			var destination: Vector2i = Vector2i(66, 63)
-			if start != destination and ColonyNavigation.path(start, destination, func(point: Vector2i) -> bool: return walkable(point) and not blocked.has(point)).is_empty():
+			var cart: Dictionary = structures.filter(func(s:Dictionary)->bool:return s.definition == "supply_cart")[0]
+			var destination: Vector2i = Vector2i(cart.x,cart.y)
+			if start != destination and ColonyNavigation.path(start, destination, func(point: Vector2i) -> bool: return walkable(point) and not blocked.has(point),can_step).is_empty():
 				return "Closes a resident's last exit"
 	var work: Array[Vector2i] = _perimeter(footprint(blueprint))
 	return "No work position" if work.is_empty() else ""
@@ -806,7 +812,7 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 			if path_requests >= 4:
 				return false
 			path_requests += 1
-			citizen.route = ColonyNavigation.path(Vector2i(citizen.x, citizen.y), goal, walkable)
+			citizen.route = ColonyNavigation.path(Vector2i(citizen.x, citizen.y), goal, walkable,can_step)
 			citizen.route_goal = [goal.x, goal.y]
 		if citizen.route.is_empty():
 			var job: Dictionary = find(jobs, citizen.job)
@@ -1138,7 +1144,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}
@@ -1166,6 +1172,7 @@ func _merge_stored(incoming: Dictionary) -> void:
 			return
 
 func elevation(tile: Vector2i) -> int:
+	if generator_version > 0: return terrain_state.elevation[tile.y*128+tile.x]
 	# Authored starter geography; generated maps will store their complete terrain.
 	if tile.x in range(32,36): return 0
 	if tile.x in range(28,32) or tile.x in range(36,40): return 1
@@ -1182,6 +1189,15 @@ func tile_move_cost(tile: Vector2i) -> int:
 	for structure in structures:
 		if structure.definition == "stone_path" and footprint(structure).has(tile): return 8
 	if is_flooded(tile): return 15
+	if generator_version > 0 and terrain_state.bridges.has(tile): return 10
 	if weather == "snow": return 12
-	if weather == "rain" and tile.x != 66 and tile.y not in [63,64]: return 15
+	if weather == "rain" and ((generator_version > 0 and not terrain_state.paths.has(tile)) or (generator_version == 0 and tile.x != 66 and tile.y not in [63,64])): return 15
 	return 10
+
+func soil_fertility(tile: Vector2i) -> int:
+	return terrain_state.fertility[tile.y*128+tile.x] if generator_version > 0 else 1000
+
+func can_step(from: Vector2i, to: Vector2i) -> bool:
+	if generator_version == 0: return true
+	if terrain_state.bridges.has(from) or terrain_state.bridges.has(to): return true
+	return absi(elevation(from)-elevation(to)) <= 1

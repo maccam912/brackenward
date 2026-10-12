@@ -148,7 +148,7 @@ static func destination(world: ColonyWorld, patient: Dictionary) -> Dictionary:
 		if origin == Vector2i(bed.x,bed.y): return {"id":bed.id,"point":origin,"distance":0}
 		if occupied_beds.has(bed.id): continue
 		var point: Vector2i = Vector2i(bed.x,bed.y)
-		var route: Array = [] if point == origin else ColonyNavigation.path(origin,point,world.walkable)
+		var route: Array = [] if point == origin else ColonyNavigation.path(origin,point,world.walkable,world.can_step)
 		if point != origin and route.is_empty(): continue
 		candidates.append({"id":bed.id,"point":point,"distance":route.size()})
 	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.distance < b.distance or (a.distance == b.distance and a.id < b.id))
@@ -157,7 +157,7 @@ static func destination(world: ColonyWorld, patient: Dictionary) -> Dictionary:
 		return candidates[0]
 	var cart: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition == "supply_cart")[0]
 	for point in world._perimeter(world.footprint(cart)):
-		var route: Array = [] if point == origin else ColonyNavigation.path(origin,point,world.walkable)
+		var route: Array = [] if point == origin else ColonyNavigation.path(origin,point,world.walkable,world.can_step)
 		if point == origin or not route.is_empty(): return {"id":0,"point":point,"distance":route.size()}
 	return {"id":0,"point":origin,"distance":0}
 

@@ -23,7 +23,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
 	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version != VERSION and envelope.version != 3) or (envelope.content != ColonyWorld.CONTENT_VERSION and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
 		return {"error":"Unsupported save version/content: this build supports version 4 plus M1/M2/M3 migration"}
-	if not envelope.generator_version is float or envelope.generator_version != 0 or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
+	if not envelope.generator_version is float or (envelope.generator_version != 0 and envelope.generator_version != 1) or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
 		return {"error":"Invalid snapshot metadata"}
 	if not envelope.payload is String or not envelope.sha256 is String or envelope.payload.sha256_text() != envelope.sha256:
 		return {"error": "Snapshot checksum mismatch"}
@@ -35,7 +35,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	if not decoded is Dictionary:
 		return {"error": "Invalid integer, coordinate or state encoding"}
 	var data: Dictionary = decoded
-	if envelope.content_hash != data.get("content_hash") or data.get("session_id") != envelope.campaign_id:
+	if envelope.content_hash != data.get("content_hash") or data.get("session_id") != envelope.campaign_id or data.get("generator_version") != int(envelope.generator_version):
 		return {"error":"Catalog or campaign identity mismatch; original save retained"}
 	return restore(data,envelope.get("snapshot_name",""))
 
@@ -86,8 +86,11 @@ static func _record(value: Variant, template: Dictionary) -> bool:
 	return true
 
 static func _validate(data: Dictionary, world: ColonyWorld) -> String:
-	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80 or data.schema_revision != ColonyWorld.SCHEMA_REVISION or data.generator_version != 0 or data.site_id != "meadow_reach" or not ColonyWeather.validate(data.weather_state,data.tick):
+	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80 or data.schema_revision != ColonyWorld.SCHEMA_REVISION or data.generator_version not in [0,1] or not ColonyGeneration.SITES.has(data.site_id) or not ColonyWeather.validate(data.weather_state,data.tick):
 		return "Invalid world header or unknown fields"
+	if not ColonyGeneration.validate_state(data.terrain_state,data.generator_version): return "Invalid generated map data"
+	world.generator_version = data.generator_version; world.terrain_state = data.terrain_state
+	if data.generator_version == 0 and data.site_id != "meadow_reach": return "Invalid legacy site"
 	if data.citizens.size() != 4 or data.fields.size() > 16384 or data.structures.size() > 16384 or data.resources.size() > 16384 or data.stacks.size() > 100000 or data.jobs.size() > 100000 or data.pending_commands.size() > 4096 or data.facts.size() > 100000:
 		return "Invalid record counts"
 	if not ColonyWeather.valid_geometry(world,data.weather_state): return "Forecast flood coverage does not match saved geography"

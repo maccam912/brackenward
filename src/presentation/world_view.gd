@@ -49,18 +49,7 @@ func setup(state: RefCounted) -> void:
 	carried_overlay = Node2D.new()
 	add_child(carried_overlay)
 	carried_overlay.draw.connect(_draw_carried_items)
-	for y in range(128):
-		for x in range(128):
-			var cell: int = (x * 17 + y * 13) % 2
-			if x < 32 or x > 95:
-				cell = 2
-			if PrototypeWorld.is_water(Vector2i(x, y)):
-				cell = 3
-			elif x == 66 or y == 63 or y == 64:
-				cell = 4
-			if x in range(74, 82) and y in range(54, 62):
-				cell = 0
-			terrain.set_cell(Vector2i(x, y), 0, Vector2i(cell, 0))
+	refresh_terrain()
 	for name in ["mira", "oren", "tavi", "sela"]:
 		var actor: Sprite2D = Sprite2D.new()
 		actor.texture = load("res://assets/exported/citizens/%s.svg" % name)
@@ -358,3 +347,20 @@ func _draw_carried_items() -> void:
 		carried_overlay.draw_rect(Rect2(point-Vector2(8,8),Vector2(16,16)),color)
 		carried_overlay.draw_rect(Rect2(point-Vector2(8,8),Vector2(16,16)),Color("263C3B"),false,2)
 		carried_overlay.draw_string(get_theme_default_font(),point+Vector2(9,5),str(stack.count),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("F3E8CC"))
+
+func refresh_terrain() -> void:
+	if terrain == null: return
+	for y in range(128):
+		for x in range(128):
+			var point: Vector2i = Vector2i(x,y)
+			var cell: int = (x*17+y*13)%2
+			if world is ColonyWorld and world.generator_version > 0:
+				if world.soil_fertility(point) == 750: cell = 2
+				if world.is_water(point): cell = 3
+				elif world.terrain_state.paths.has(point): cell = 4
+			else:
+				if x < 32 or x > 95: cell = 2
+				if PrototypeWorld.is_water(point): cell = 3
+				elif x == 66 or y in [63,64]: cell = 4
+				if x in range(74,82) and y in range(54,62): cell = 0
+			terrain.set_cell(point,0,Vector2i(cell,0))

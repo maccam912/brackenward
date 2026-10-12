@@ -47,12 +47,13 @@ static func flood_mask(world: ColonyWorld) -> Array[Vector2i]:
 	var mask: Array[Vector2i] = []
 	var connected: Dictionary = {}
 	var queue: Array[Vector2i] = []
-	# The authored river is the fallback geography until the seeded generator lands.
+	# Bridge tiles remain river sources for the flood overlay.
 	for y in range(128):
-		for x in range(32,36):
+		for x in range(128):
 			var river: Vector2i = Vector2i(x,y)
-			connected[river] = 0
-			queue.append(river)
+			if (world.generator_version > 0 and world.elevation(river) == 0) or (world.generator_version == 0 and x in range(32,36)):
+				connected[river] = 0
+				queue.append(river)
 	var cursor: int = 0
 	while cursor < queue.size():
 		var point: Vector2i = queue[cursor]

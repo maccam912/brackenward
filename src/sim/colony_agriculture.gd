@@ -30,7 +30,7 @@ static func designate(world: ColonyWorld, args: Dictionary) -> String:
 		seen[point] = true
 		world.fields.append({"id": world._id(), "crop": args.crop, "x": point.x, "y": point.y,
 			"prepared": false, "planted": false, "growth": 0, "growth_rem": 0, "ripe_tick": 0,
-			"yield_count": definition.yield_count, "fertility": 1000, "replant": true, "reason": "Waiting for preparation"})
+			"yield_count": definition.yield_count, "fertility": world.soil_fertility(point), "replant": true, "reason": "Waiting for preparation"})
 	return "accepted"
 
 static func season(tick: int) -> int:

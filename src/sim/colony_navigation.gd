@@ -3,7 +3,7 @@ extends RefCounted
 ## Four-neighbor A*, ordered by f, h, then row-major tile ID.
 const NEIGHBORS: Array[Vector2i] = [Vector2i.UP, Vector2i.RIGHT, Vector2i.DOWN, Vector2i.LEFT]
 
-static func path(start: Vector2i, goal: Vector2i, passable: Callable) -> Array[Vector2i]:
+static func path(start: Vector2i, goal: Vector2i, passable: Callable, edge: Callable = Callable()) -> Array[Vector2i]:
 	var empty: Array[Vector2i] = []
 	if not passable.call(goal):
 		return empty
@@ -30,7 +30,7 @@ static func path(start: Vector2i, goal: Vector2i, passable: Callable) -> Array[V
 			return route
 		for delta in NEIGHBORS:
 			var neighbor: Vector2i = point + delta
-			if visited.has(neighbor) or not passable.call(neighbor):
+			if visited.has(neighbor) or not passable.call(neighbor) or (edge.is_valid() and not edge.call(point,neighbor)):
 				continue
 			var cost: int = costs[point] + 1
 			if not costs.has(neighbor) or cost < costs[neighbor]:

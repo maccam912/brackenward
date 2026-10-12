@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -35,6 +35,7 @@ func run() -> void:
 		"people": SocialTests.run(check)
 		"production": ProductionTests.run(check)
 		"care": CareTests.run(check)
+		"generation": GenerationTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -480,7 +481,7 @@ func ui() -> void:
 	colony_game._map_intent({"kind":"tap","tile":Vector2i(90,63),"point":colony_game.view.tile_to_screen(Vector2(90.5,63.5))})
 	check("PRODUCTION/UI_map_opens_actual_station",colony_game.sheet_name == "Workbench")
 	colony_game.show_recipe_policy(workstation,colony_game.world.definitions.recipes.make_toolkit)
-	var options: Array = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is OptionButton)
+	var options: Array = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is CycleChoiceButton)
 	options[0].select(1); options[1].select(2)
 	for child in colony_game.sheet_body.get_children():
 		if child is SpinBox: child.value = 2
@@ -553,6 +554,50 @@ func ui() -> void:
 		await process_frame
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://reports/m3-flood-preview.png")
+	colony_game.show_new_colony(3)
+	var seed_entry: LineEdit
+	var site_options: Array = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is CycleChoiceButton)
+	check("GEN/UI_choice_keeps_large_touch_target",site_options[0].custom_minimum_size.y >= 48)
+	await process_frame
+	await process_frame
+	var choice_touch: InputEventScreenTouch = InputEventScreenTouch.new()
+	choice_touch.index = 0; choice_touch.pressed = true; choice_touch.position = site_options[0].get_global_rect().get_center()
+	root.push_input(choice_touch)
+	var choice_mouse: InputEventMouseButton = InputEventMouseButton.new()
+	choice_mouse.device = -1; choice_mouse.button_index = MOUSE_BUTTON_LEFT; choice_mouse.pressed = true; choice_mouse.position = choice_touch.position
+	root.push_input(choice_mouse)
+	var choice_drag: InputEventScreenDrag = InputEventScreenDrag.new()
+	choice_drag.index = 0; choice_drag.position = choice_touch.position-Vector2(0,50); choice_drag.relative = Vector2(0,-50)
+	root.push_input(choice_drag)
+	choice_touch.pressed = false; choice_touch.position = choice_drag.position; root.push_input(choice_touch)
+	choice_mouse.pressed = false; choice_mouse.position = choice_touch.position; root.push_input(choice_mouse)
+	await process_frame
+	check("UI/swiping_choice_does_not_change_value",site_options[0].selected == 0)
+	choice_touch.pressed = true; choice_touch.position = site_options[0].get_global_rect().get_center(); root.push_input(choice_touch)
+	choice_mouse.pressed = true; choice_mouse.position = choice_touch.position; root.push_input(choice_mouse)
+	choice_touch.pressed = false; root.push_input(choice_touch)
+	choice_mouse.pressed = false; root.push_input(choice_mouse)
+	await process_frame
+	await process_frame
+	check("UI/tapping_choice_after_swipe_changes_once",site_options[0].selected == 1,str(site_options[0].selected))
+	for child in colony_game.sheet_body.get_children():
+		if child is LineEdit: seed_entry = child
+	seed_entry.text = "4294967296"
+	colony_game.sheet_body.get_node("CreateColony").pressed.emit()
+	check("GEN/UI_rejects_out_of_range_seed_without_creation",colony_game.creation_thread == null and colony_game.sheet_name == "New colony")
+	seed_entry.text = "1"; site_options[0].select(1); site_options[1].select(1)
+	colony_game.sheet_body.get_node("CreateColony").pressed.emit()
+	check("GEN/UI_creation_runs_off_ui_thread_paused",colony_game.creation_thread != null and colony_game.runner.speed == 0)
+	colony_game.set_speed(4)
+	check("GEN/UI_generation_cannot_resume_previous_colony",colony_game.runner.speed == 0)
+	for frame in range(180):
+		await process_frame
+		if colony_game.creation_thread == null: break
+	check("GEN/UI_new_site_seed_mode_and_independent_slot",colony_game.creation_thread == null and colony_game.store.slot == 3 and colony_game.world.seed == 1 and colony_game.world.site_id == "pine_shelf" and colony_game.world.care_state.mode == "Hearthside" and colony_game.world.generator_version == 1 and ColonyStore.occupied(2,ui_colony_directory))
+	colony_game.begin_field()
+	check("GEN/UI_field_preview_uses_transformed_starter_patch",colony_game.view.preview_tiles().all(func(p:Vector2i)->bool:return colony_game.world.terrain_state.starter_field.has(p)))
+	colony_game.cancel_placement()
+	colony_game.world.care_state.mode = "Standard"
 	ColonyCare.hurt(colony_game.world,colony_game.world.citizens[2],90,true)
 	colony_game._process(0)
 	check("CARE/UI_critical_alert_opens_paused_care",colony_game.sheet_name == "Injuries and care" and colony_game.runner.speed == 0)

@@ -33,6 +33,7 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		header.erase("social_state")
 		header.erase("production_state")
 		header.erase("care_state")
+		header.erase("terrain_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
 		for key in ColonySocial.citizen_defaults(): citizen_template.erase(key)
@@ -91,4 +92,8 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 				citizen["recovery_windows"] = {}
 				if citizen.recovery_until > 0: citizen.recovery_windows[{2:"stabilize",4:"herb",8:"medicine"}.get(citizen.recovery_rate,"stabilize")] = citizen.recovery_until
 		result.schema_revision = 6
+	if result.get("schema_revision") == 6:
+		result = result.duplicate(true)
+		result["terrain_state"] = ColonyGeneration.empty_state()
+		result.schema_revision = 7
 	return result

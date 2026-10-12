@@ -23,7 +23,7 @@ static func compute(world: ColonyWorld) -> Dictionary:
 				var point: Vector2i = queue[cursor]
 				cursor += 1
 				interior.append(point)
-				open = open or point.x in [0, 127] or point.y in [0, 127] or ColonyWorld.is_water(point)
+				open = open or point.x in [0, 127] or point.y in [0, 127] or world.is_water(point)
 				for delta in ColonyNavigation.NEIGHBORS:
 					var neighbor: Vector2i = point + delta
 					if ColonyWorld.inside(neighbor) and not visited.has(neighbor):

@@ -37,6 +37,8 @@ var file_dialog: FileDialog
 var catalog_strings: Dictionary = {}
 var seen_care_alert: int = -1
 var epilogue_session: String = ""
+var awaiting_first_colony: bool = false
+var creation_thread: Thread
 var native_storage: Object
 var document_request: int = 0
 var exporting: bool = false
@@ -97,6 +99,9 @@ func _ready() -> void:
 	show_sheet("Welcome")
 	if recovery_failed:
 		show_recovery_problem()
+	elif store is ColonyStore and store.root_directory == ColonyStore.CAMPAIGN_ROOT and not ColonyStore.occupied(store.slot):
+		awaiting_first_colony = true
+		show_new_colony(store.slot)
 
 func _build_theme() -> void:
 	var ui_theme: Theme = Theme.new()
@@ -327,17 +332,23 @@ func _process(delta: float) -> void:
 		sheet_feedback.text = notice
 	preview_label.text = _preview_text()
 	journal_elapsed += delta
-	if store is ColonyStore and journal_elapsed >= 2.0 and not saving_disabled and not recovery_failed:
+	if store is ColonyStore and journal_elapsed >= 2.0 and not saving_disabled and not recovery_failed and not awaiting_first_colony:
 		var error: String = store.checkpoint(world)
 		if not error.is_empty():
 			_storage_failed(error)
 		journal_elapsed = 0.0
 	autosave_elapsed += delta
-	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed:
+	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony:
 		save_local()
 		autosave_elapsed = 0.0
 
 func set_speed(value: int) -> void:
+	if value > 0 and creation_thread != null and creation_thread.is_started():
+		notice = "Map generation is still running. Time stays paused."
+		return
+	if value > 0 and awaiting_first_colony:
+		show_new_colony(store.slot)
+		return
 	if value > 0 and world is ColonyWorld and world.care_state.ended:
 		show_epilogue()
 		return
@@ -353,6 +364,9 @@ func set_speed(value: int) -> void:
 	runner.set_speed(value)
 
 func begin_placement() -> void:
+	if awaiting_first_colony:
+		show_new_colony(store.slot)
+		return
 	close_sheet()
 	runner.pause()
 	view.cancel_gesture()
@@ -360,11 +374,14 @@ func begin_placement() -> void:
 	view.preview_visible = true
 	view.preview_definition = ""
 	view.preview_resource = ""
+	if world is ColonyWorld:
+		view.preview_start = _home_tile(Vector2i(74,54))
+		view.preview_end = _home_tile(Vector2i(77,55))
 	placement_kind = "stockpile"
 	rotation_button.visible = false
 	view.gestures.mode = "paint"
 	placement.visible = true
-	view.camera_tile = Vector2(77, 55)
+	view.camera_tile = Vector2(_home_tile(Vector2i(77,55)))
 	notice = "Paint an area, then Confirm. Dragging never submits an order."
 	_layout()
 
@@ -377,10 +394,13 @@ func cancel_placement() -> void:
 	_layout()
 
 func confirm_placement() -> void:
+	if awaiting_first_colony:
+		show_new_colony(store.slot)
+		return
 	if confirm_button.disabled or not placement.visible:
 		return
 	for tile in view.preview_tiles():
-		if placement_kind != "gather" and PrototypeWorld.is_water(tile):
+		if placement_kind != "gather" and view.preview_definition != "bridge" and (world.is_water(tile) if world is ColonyWorld else PrototypeWorld.is_water(tile)):
 			notice = "Deep river cannot be designated. Move the preview onto land."
 			return
 	if world is ColonyWorld and not view.preview_definition.is_empty():
@@ -545,6 +565,7 @@ func show_sheet(title: String) -> void:
 		"Menu":
 			label("Brackenward %s\nCampaigns preserve inventory, work and needs. Time stays paused after recovery." % ProjectSettings.get_setting("application/config/version"), sheet_body)
 			if world is ColonyWorld: button("Mode: "+world.care_state.mode,show_mode,sheet_body)
+			if world is ColonyWorld: button("Map and seed",show_map_details,sheet_body)
 			button("Save colony", save_local, sheet_body)
 			button("Load colony", load_local, sheet_body)
 			button("Export save", func() -> void: choose_document(true), sheet_body)
@@ -647,6 +668,7 @@ func _resize() -> void:
 	_layout()
 
 func save_local() -> String:
+	if awaiting_first_colony: return ""
 	if recovery_failed:
 		return "Recovery failed; original campaign will not be overwritten"
 	var error: String = store.save(world)
@@ -680,6 +702,7 @@ func _replace_world(state: RefCounted) -> void:
 	saving_disabled = false
 	runner = SimRunner.new(world)
 	view.world = world
+	view.refresh_terrain()
 	view.forecast_mask.clear()
 	view.cancel_gesture()
 	view.follow_id = 0
@@ -858,9 +881,9 @@ func begin_build(kind: String) -> void:
 	begin_placement()
 	view.preview_definition = kind
 	view.preview_rotation = 0
-	view.preview_start = Vector2i(74, 63)
+	view.preview_start = _home_tile(Vector2i(74,63))
 	view.fit_build_preview()
-	view.camera_tile = Vector2(74, 63)
+	view.camera_tile = Vector2(view.preview_start)
 	rotation_button.visible = true
 	notice = "Place %s. Tap a tile or use the arrows; Confirm spends nothing until built." % kind.capitalize()
 	_layout()
@@ -900,6 +923,9 @@ func _update_inspector() -> void:
 		inspector_details.text = "%s - looking around\nM0 touch fixture movement." % citizen.name
 
 func _submit(kind: String, args: Dictionary) -> void:
+	if awaiting_first_colony:
+		notice = "Choose a site and create this colony first."
+		return
 	if submitted_command > 0 and kind not in ["preference","schedule","priority","stock_filter","food_policy"]:
 		notice = "An order is pending. Resume to apply it before another action."
 		return
@@ -966,8 +992,10 @@ func _tutorial_sheet() -> void:
 func begin_field() -> void:
 	begin_placement()
 	placement_kind = "field"
-	view.preview_start = Vector2i(74,54)
-	view.preview_end = Vector2i(77,57)
+	view.preview_start = _home_tile(Vector2i(74,54))
+	view.preview_end = _home_tile(Vector2i(77,57))
+	view.camera_tile = Vector2(view.preview_start+view.preview_end)*0.5
+	view._update_transform()
 	notice = "Turnips: prepare 4 WU, sow 1 WU, harvest 2 WU per tile. Two days of growth gives four vegetables."
 
 func _field_sheet(field: Dictionary) -> void:
@@ -1044,6 +1072,9 @@ func show_campaigns() -> void:
 		button(("Load" if exists else "New") + " campaign %d" % number,func() -> void: _switch_campaign(number,exists),sheet_body)
 
 func _switch_campaign(number: int, exists: bool) -> void:
+	if not exists:
+		show_new_colony(number)
+		return
 	if not recovery_failed and not saving_disabled and not save_local().is_empty():
 		return
 	var candidate: ColonyStore = ColonyStore.new()
@@ -1318,7 +1349,7 @@ func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
 	show_sheet("Production policy")
 	label(_catalog_name(recipe.id)+" at "+_catalog_name(station.definition),sheet_body)
 	label("Repeat counts completed batches. Maintain counts available home stock and unfinished outputs. One station works on one batch at a time; existing inputs keep their age.",sheet_body)
-	var mode: OptionButton = OptionButton.new()
+	var mode: CycleChoiceButton = CycleChoiceButton.new()
 	mode.add_item("Repeat batches"); mode.add_item("Maintain quantity")
 	mode.custom_minimum_size = Vector2(48,48)
 	sheet_body.add_child(mode)
@@ -1326,7 +1357,7 @@ func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
 	quantity.min_value = 1; quantity.max_value = 1000; quantity.value = 4
 	quantity.custom_minimum_size = Vector2(96,48)
 	sheet_body.add_child(quantity)
-	var priority: OptionButton = OptionButton.new()
+	var priority: CycleChoiceButton = CycleChoiceButton.new()
 	for name in ["Low priority","Normal priority","Urgent priority"]: priority.add_item(name)
 	priority.select(1); priority.custom_minimum_size = Vector2(48,48)
 	sheet_body.add_child(priority)
@@ -1407,16 +1438,98 @@ func show_seed_restart() -> void:
 			else: _restart_seed(number,false),sheet_body)
 
 func _restart_seed(number: int, replace: bool) -> void:
-	var fresh: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data(),Crypto.new().generate_random_bytes(16).hex_encode())
-	fresh.seed = world.seed
-	fresh.care_state.mode = world.care_state.mode
-	ColonyWeather.initialize(fresh)
+	_create_new_colony(number,world.seed,world.site_id,world.care_state.mode,replace)
+
+func show_new_colony(number: int) -> void:
+	show_sheet("New colony")
+	label("Campaign %d | Mira, Oren, Tavi, Sela\nSafe home, 8 x 8 field, nearby food/deposits.\nFirst days: Clear, Rain, Clear." % number,sheet_body)
+	var site: CycleChoiceButton = CycleChoiceButton.new()
+	for name in ["Meadow Reach","Pine Shelf","Reed Bend"]: site.add_item(name)
+	site.custom_minimum_size = Vector2(48,48)
+	sheet_body.add_child(site)
+	var description: Label = label("",sheet_body)
+	var descriptions: Array[String] = ["Balanced ground. Poor/normal/rich soil 15/65/20%; trees 22%; floodplain width 4.","More forest and four extra stone deposits. Soil 30/60/10%; trees 36%; floodplain width 3.","Fertile ground and three extra clay deposits. Soil 10/45/45%; trees 18%; floodplain width 6."]
+	description.text = descriptions[0]
+	site.item_selected.connect(func(index:int)->void:description.text = descriptions[index])
+	var seed_entry: LineEdit = LineEdit.new()
+	seed_entry.placeholder_text = "Unsigned 32-bit seed"
+	seed_entry.max_length = 10; seed_entry.custom_minimum_size = Vector2(48,48)
+	var random_bytes: PackedByteArray = Crypto.new().generate_random_bytes(4)
+	var seed_value: int = (int(random_bytes[0])<<24)|(int(random_bytes[1])<<16)|(int(random_bytes[2])<<8)|int(random_bytes[3])
+	seed_entry.text = str(seed_value)
+	sheet_body.add_child(seed_entry)
+	label("Seed 0 to 4294967295. Same seed and site give the same map; saves keep their geography.",sheet_body)
+	var mode: CycleChoiceButton = CycleChoiceButton.new()
+	mode.add_item("Standard"); mode.add_item("Hearthside")
+	mode.custom_minimum_size = Vector2(48,48); sheet_body.add_child(mode)
+	label("Standard: raids; untreated injuries can kill.\nHearthside: no raids; at zero health, rest two days and wake at 40. Both retain weather and shortages.",sheet_body)
+	var create: Button = button("Create colony",func()->void:
+		var entered: String = seed_entry.text.strip_edges()
+		if entered.is_empty():
+			var bytes: PackedByteArray = Crypto.new().generate_random_bytes(4)
+			entered = str((int(bytes[0])<<24)|(int(bytes[1])<<16)|(int(bytes[2])<<8)|int(bytes[3]))
+			seed_entry.text = entered
+		if not entered.is_valid_int() or entered.begins_with("-") or entered.begins_with("+") or int(entered) > 4294967295:
+			notice = "Enter a decimal seed from 0 to 4294967295."
+			return
+		var selected_site: String = ["meadow_reach","pine_shelf","reed_bend"][site.selected]
+		_create_new_colony(number,int(entered),selected_site,"Standard" if mode.selected == 0 else "Hearthside",false),sheet_body)
+	create.name = "CreateColony"
+
+func _create_new_colony(number: int, seed_value: int, site: String, mode: String, replace: bool) -> void:
+	if creation_thread != null and creation_thread.is_started(): return
+	if not recovery_failed and not saving_disabled and not save_local().is_empty(): return
+	show_sheet("Growing the valley")
+	label("Preparing and checking seed %d at %s. Time stays paused." % [seed_value,_catalog_name(site)],sheet_body)
+	var definitions: Dictionary = world.definitions.duplicate(true)
+	var campaign_id: String = Crypto.new().generate_random_bytes(16).hex_encode()
+	creation_thread = Thread.new()
+	var error: Error = creation_thread.start(func()->Dictionary:
+		var fresh: ColonyWorld = ColonyWorld.new(definitions,campaign_id)
+		var problem: String = ColonyGeneration.configure(fresh,seed_value,site)
+		fresh.care_state.mode = mode
+		return {"world":fresh} if problem.is_empty() else {"error":problem})
+	if error != OK:
+		creation_thread = null
+		notice = "Could not start generation. Try another seed."
+		return
+	await get_tree().process_frame
+	while creation_thread.is_alive(): await get_tree().process_frame
+	var result: Dictionary = creation_thread.wait_to_finish()
+	creation_thread = null
+	if result.has("error"):
+		show_sheet("Generation problem")
+		label(result.error,sheet_body)
+		button("Choose another seed",func()->void:show_new_colony(number),sheet_body)
+		return
+	if not awaiting_first_colony and not recovery_failed and not saving_disabled and not save_local().is_empty(): return
 	var candidate: ColonyStore = ColonyStore.new()
 	candidate.root_directory = store.root_directory
-	var error: String = candidate.adopt(fresh,number,replace)
-	if not error.is_empty(): notice = error; return
+	var problem: String = candidate.adopt(result.world,number,replace)
+	if not problem.is_empty(): notice = problem; return
 	store = candidate
-	_replace_world(fresh)
-	_restore_camera()
+	awaiting_first_colony = false
+	_replace_world(result.world)
+	var cart: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition == "supply_cart")[0]
+	view.camera_tile = Vector2(cart.x+1,cart.y+1)
 	_save_settings()
-	close_sheet()
+	show_sheet("Welcome")
+	if world.terrain_state.fallback: notice = "This seed uses the verified fallback layout. See generation details in Menu."
+
+func _exit_tree() -> void:
+	if creation_thread != null and creation_thread.is_started(): creation_thread.wait_to_finish()
+
+func _home_tile(point: Vector2i) -> Vector2i:
+	return ColonyGeneration.transformed(point,world.terrain_state.transform) if world is ColonyWorld and world.generator_version > 0 else point
+
+func show_map_details() -> void:
+	show_sheet("Map and seed")
+	label("%s | Seed %d" % [_catalog_name(world.site_id),world.seed],sheet_body)
+	if world.generator_version == 0:
+		label("This campaign keeps its original starter map. New campaigns offer all three sites and a seed choice.",sheet_body)
+	elif world.terrain_state.fallback:
+		label("Verified fallback layout: normal soil, standard floodplain width four, protected starter field and complete resource/habitat guarantees. The selected site's extra deposits remain. The displayed seed is preserved.",sheet_body)
+	else:
+		label("Generated terrain is stored with the campaign and retained across updates. All starter resources, safe home ground and habitat checks passed.",sheet_body)
+		label("Generation attempt %d" % world.terrain_state.attempt,sheet_body)
+	button("Show weather",show_weather,sheet_body)
