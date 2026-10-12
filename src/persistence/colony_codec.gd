@@ -153,6 +153,9 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		for point in world.footprint(structure):
 			if not ColonyWorld.inside(point):
 				return "Building footprint outside map"
+	if not ColonyDomestic.validate(data.domestic_state,world,data.tick): return "Invalid livestock state"
+	for animal in data.domestic_state.animals:
+		if not data.structures.any(func(s:Dictionary)->bool:return s.id==animal.barn and s.definition=="barn") or (animal.handler>0 and not data.citizens.any(func(c:Dictionary)->bool:return c.id==animal.handler)): return "Invalid livestock shelter or handler"
 	for order in data.production_state.orders:
 		var station: Dictionary = {}
 		for structure in data.structures:
@@ -168,14 +171,23 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 			return "Invalid remaining yield"
 	if not ColonyNature.validate(data.nature_state,data.resources,data.structures,data.tick): return "Invalid forestry/fishing state"
 	for stack in data.stacks:
-		if not _record(stack, world.stacks[0]) or not world.definitions.items.has(stack.item) or stack.count < 0 or stack.count > 100000 or not _position(stack) or stack.location not in ["ground", "store", "carry", "escrow", "output"] or stack.age < 0:
+		if not _record(stack, world.stacks[0]) or not world.definitions.items.has(stack.item) or stack.count < 0 or stack.count > 100000 or not _position(stack) or stack.location not in ["ground", "store", "carry", "escrow", "output", "animal_feed"] or stack.age < 0:
 			return "Invalid item stack"
+		if stack.location == "animal_feed" and (not ColonyDomestic.feed_item(world,stack.item) or not data.structures.any(func(s:Dictionary)->bool:return s.id == stack.owner and s.definition == "barn")): return "Invalid barn feed ownership"
 		for reservation in stack.reservations.values():
 			if not reservation is int or reservation < 1:
 				return "Invalid reservation"
+	for barn in data.structures:
+		if barn.definition=="barn":
+			var feed_units: int = 0
+			var output_units: int = 0
+			for stack in data.stacks:
+				if stack.owner==barn.id and stack.location=="animal_feed": feed_units += stack.count
+				if stack.owner==barn.id and stack.location=="output": output_units += stack.count
+			if feed_units>24 or output_units>24: return "Barn buffer exceeds 24 units"
 	var job_template: Dictionary = world._job("gather", "Gathering", "Field", world.resources[0].id, Vector2i(1, 1), 1000)
 	for job in data.jobs:
-		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate", "craft", "research", "rescue", "treat", "feed", "bury", "recover", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "escape"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
+		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate", "craft", "research", "rescue", "treat", "feed", "bury", "recover", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "escape", "stock_feed", "lead_animal", "collect_animal", "slaughter"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
 			return "Invalid job"
 		if job.care_goal.size() not in [0,2] or not job.care_goal.all(func(n:Variant)->bool:return n is int and n >= 0 and n < 128): return "Invalid care destination"
 		if job.emergency and job.kind not in ["rescue","treat"]: return "Invalid emergency work type"
@@ -190,6 +202,10 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if job.kind == "fish" and not data.structures.any(func(s:Dictionary)->bool:return s.id == job.target and s.definition == "fishing_pier"): return "Missing fishing pier"
 		if job.kind in ["hunt","escort_hunt"] and (job.required != 0 or not data.wildlife_state.animals.any(func(a:Dictionary)->bool:return a.id == job.target)): return "Invalid hunting target"
 		if job.kind == "butcher" and (not world.definitions.animals.has(job.definition) or job.required != world.definitions.animals[job.definition].work_milli or not data.wildlife_state.carcasses.any(func(c:Dictionary)->bool:return c.id == job.target)): return "Invalid butchering contract"
+		if job.kind in ["lead_animal","collect_animal","slaughter"] and not data.domestic_state.animals.any(func(a:Dictionary)->bool:return a.id == job.target): return "Missing domestic animal"
+		if job.kind == "lead_animal" and (job.required != 0 or job.care_goal.size() != 2 or not job.inputs.is_empty()): return "Invalid animal leading contract"
+		if job.kind in ["collect_animal","slaughter"] and (job.required != (4000 if job.kind == "collect_animal" else 10000) or not job.inputs.is_empty()): return "Invalid livestock work contract"
+		if job.kind == "stock_feed" and (job.required != 0 or job.inputs.size() != 1 or not job.inputs.keys().all(func(item:Variant)->bool:return ColonyDomestic.feed_item(world,item)) or not data.structures.any(func(s:Dictionary)->bool:return s.id == job.target and s.definition == "barn")): return "Invalid barn feed task"
 		if job.kind == "build" and not world.definitions.buildings.has(job.definition):
 			return "Unknown building definition"
 		if job.kind == "build" and (job.inputs != world.definitions.buildings[job.definition].materials or job.required != world.definitions.buildings[job.definition].work_milli):
@@ -271,7 +287,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if not command is Dictionary or not _keys(command, ["id", "session", "kind", "args"]) or not command.id is int or command.id < 1 or not command.session is String or not command.kind is String or not command.args is Dictionary:
 			return "Invalid pending command"
 		# Preserve only commands generated by the concrete development UI.
-		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "request_accept": ["target"], "request_decline": ["target"], "mediate": ["definition"], "hunt": ["target","solo","citizen"], "forest": ["tiles","value"], "forest_policy": ["target","value","enabled"], "replant_tree": ["target"], "clear_sapling": ["target"], "care_mode": ["mode"], "treat_now": ["target","citizen"], "burial": ["target","x","y"], "recipe_order": ["target","definition","mode","value","priority","filters"], "order_enabled": ["target","enabled"], "research_select": ["definition"], "research_queue": ["definition"], "station_enabled": ["target","enabled"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
+		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "request_accept": ["target"], "request_decline": ["target"], "mediate": ["definition"], "pen": ["tiles"], "breeding": ["target","enabled"], "slaughter": ["target"], "hunt": ["target","solo","citizen"], "forest": ["tiles","value"], "forest_policy": ["target","value","enabled"], "replant_tree": ["target"], "clear_sapling": ["target"], "care_mode": ["mode"], "treat_now": ["target","citizen"], "burial": ["target","x","y"], "recipe_order": ["target","definition","mode","value","priority","filters"], "order_enabled": ["target","enabled"], "research_select": ["definition"], "research_queue": ["definition"], "station_enabled": ["target","enabled"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
 		if not schemas.has(command.kind) or not _keys(command.args, schemas[command.kind]):
 			return "Unknown pending command arguments"
 		for key in command.args:

@@ -417,6 +417,8 @@ func confirm_placement() -> void:
 			notice = "No unmarked resources here. Drag over the resources you want."
 			return
 		submitted_command = world.queue_command("gather_area", {"definition":view.preview_resource,"tiles":view.preview_tiles()})
+	elif world is ColonyWorld and placement_kind == "pen":
+		submitted_command = world.queue_command("pen",{"tiles":view.preview_tiles()})
 	elif world is ColonyWorld and placement_kind == "forest":
 		submitted_command = world.queue_command("forest",{"tiles":view.preview_tiles(),"value":75})
 	elif world is ColonyWorld and placement_kind == "field":
@@ -431,50 +433,61 @@ func confirm_placement() -> void:
 	_layout()
 
 func _map_intent(action: Dictionary) -> void:
-	if action.kind == "notice":
-		notice = action.text
-		return
+	if action.kind == "notice": notice=action.text;return
 	var candidates: Array[Dictionary] = []
 	for citizen in world.citizens:
-		var position_on_screen: Vector2 = view.tile_to_screen(view.citizen_point(citizen))
-		if position_on_screen.distance_to(action.point) <= maxf(24, view.tile_size * 0.6):
-			candidates.append(citizen)
-	if action.kind == "chooser" or candidates.size() > 1:
+		if world is ColonyWorld and (citizen.death_recorded or citizen.departed or citizen.carried_by>0): continue
+		var separation: float = view.tile_to_screen(view.citizen_point(citizen)).distance_to(action.point)
+		if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"citizen","object":citizen,"rank":0,"distance":separation})
+	if world is ColonyWorld:
+		for animal in world.domestic_state.animals:
+			if animal.health<=0 or animal.away: continue
+			var separation: float = view.tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5)).distance_to(action.point)
+			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"domestic","object":animal,"rank":2,"distance":separation})
+		for animal in world.wildlife_state.animals:
+			if animal.health<=0: continue
+			var separation: float = view.tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5)).distance_to(action.point)
+			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"wildlife","object":animal,"rank":2,"distance":separation})
+		for structure in world.structures:
+			if world.footprint(structure).has(action.tile): candidates.append({"kind":"station","object":structure,"rank":3,"distance":0.0})
+		for job in world.jobs:
+			if job.kind=="build" and job.state not in ["Complete","Canceled"] and world.footprint(job).has(action.tile): candidates.append({"kind":"job","object":job,"rank":4,"distance":0.0})
+		for resource in world.resources:
+			if Vector2i(resource.x,resource.y)==action.tile: candidates.append({"kind":"resource","object":resource,"rank":5,"distance":0.0})
+		for field in world.fields:
+			if Vector2i(field.x,field.y)==action.tile: candidates.append({"kind":"field","object":field,"rank":5,"distance":0.0})
+		for carcass in world.wildlife_state.carcasses:
+			if not carcass.done and not carcass.spoiled and Vector2i(carcass.x,carcass.y)==action.tile: candidates.append({"kind":"carcass","object":carcass,"rank":3,"distance":0.0})
+	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
+		if a.rank!=b.rank: return a.rank<b.rank
+		if a.distance!=b.distance: return a.distance<b.distance
+		return a.object.id<b.object.id)
+	if action.kind=="chooser" or candidates.size()>1:
 		show_sheet("Select object")
-		for citizen in candidates:
-			button(citizen.name, func() -> void:
-				close_sheet()
-				select_citizen(citizen.id), sheet_body)
-		label("Terrain (%d, %d)" % [action.tile.x, action.tile.y], sheet_body)
-	elif candidates.size() == 1:
-		select_citizen(candidates[0].id)
+		for candidate in candidates:
+			var title: String = candidate.object.get("name",candidate.kind+": "+candidate.object.get("definition",candidate.object.get("crop","")))
+			button(title,func()->void:close_sheet();_select_map_object(candidate),sheet_body)
+		label("Terrain (%d, %d)" % [action.tile.x,action.tile.y],sheet_body)
+	elif candidates.size()==1: _select_map_object(candidates[0])
 	else:
 		if world is ColonyWorld:
-			for animal in world.wildlife_state.animals:
-				if animal.health>0 and Vector2i(animal.x,animal.y)==action.tile:
-					_wildlife_sheet(animal); return
-			for carcass in world.wildlife_state.carcasses:
-				if not carcass.done and not carcass.spoiled and Vector2i(carcass.x,carcass.y)==action.tile:
-					show_sheet("Carcass")
-					label("%s: %.1f game hours until spoilage. Gathering workers butcher it; outputs need hauling." % [carcass.definition,(carcass.expires-world.tick)/300.0],sheet_body)
-					return
-			for field in world.fields:
-				if Vector2i(field.x,field.y) == action.tile:
-					_field_sheet(field)
-					return
-			for resource in world.resources:
-				if Vector2i(resource.x, resource.y) == action.tile:
-					_resource_sheet(resource)
-					return
-			for structure in world.structures:
-				if world.footprint(structure).has(action.tile):
-					show_station(structure)
-					return
-			for job in world.jobs:
-				if job.kind == "build" and job.state not in ["Complete", "Canceled"] and world.footprint(job).has(action.tile):
-					_job_sheet(job)
-					return
-			notice = "Terrain (%d, %d). Use Build to place a blueprint." % [action.tile.x, action.tile.y]
+			for pen in world.domestic_state.pens:
+				if pen.tiles.has(action.tile): show_pen(pen);return
+		notice="Terrain (%d, %d). Use Build to place a blueprint." % [action.tile.x,action.tile.y]
+
+func _select_map_object(candidate: Dictionary) -> void:
+	var object: Dictionary = candidate.object
+	match candidate.kind:
+		"citizen": select_citizen(object.id)
+		"domestic": show_domestic_animal(object)
+		"wildlife": _wildlife_sheet(object)
+		"station": show_station(object)
+		"job": _job_sheet(object)
+		"resource": _resource_sheet(object)
+		"field": _field_sheet(object)
+		"carcass":
+			show_sheet("Carcass")
+			label("%s: %.1f game hours until spoilage. Gathering workers butcher it; outputs need hauling." % [_catalog_name(object.definition),(object.expires-world.tick)/300.0],sheet_body)
 
 func select_citizen(id: int) -> void:
 	selected = id
@@ -912,6 +925,7 @@ func begin_gather(kind: String) -> void:
 	_layout()
 
 func _preview_text() -> String:
+	if placement_kind == "pen": return "Livestock pen | Enclose with fences/gates/solid walls\nFour interior tiles and one barn shelter slot per animal"
 	if placement_kind == "forest": return "Forest zone | Keep 75% of its tree sites mature\nAutomatically cut excess and replant stumps"
 	if placement_kind == "gather":
 		var count: int = world.gather_targets(view.preview_resource,view.preview_tiles()).size()
@@ -987,6 +1001,7 @@ func _work_sheet() -> void:
 	button("Paint forest zone",begin_forest,sheet_body)
 	button("Research",show_research,sheet_body)
 	button("Wildlife",show_wildlife,sheet_body)
+	button("Livestock pens",show_pens,sheet_body)
 	label("Worker assignments",sheet_body)
 	for citizen in world.citizens:
 		button("%s | Gathering %s" % [citizen.name,["Off","Last","Normal","First"][citizen.preferences.Gathering]],func() -> void: show_work_preferences(citizen.id),sheet_body)
@@ -1615,3 +1630,42 @@ func _wildlife_sheet(animal: Dictionary) -> void:
 			show_sheet("Solo boar hunt")
 			label("A wounded boar deals 12 damage every 25 ticks at one tile, and charges nearby people. A solo hunter has no escort. Retreat begins at health 40; injury may require rescue and treatment.",sheet_body)
 			button("Confirm solo hunt",func()->void:_submit("hunt",{"target":animal.id,"solo":true,"citizen":chosen});close_sheet(),sheet_body),sheet_body)
+
+func begin_pen() -> void:
+	begin_placement();placement_kind="pen"
+	notice="Paint inside completed fences or walls. A gate permits handlers to lead animals. Each animal needs four free tiles and one barn shelter slot."
+
+func show_pens() -> void:
+	show_sheet("Livestock pens")
+	label("Husbandry unlocks pens and animal acquisition. Build fences/gates and a touching or enclosed barn, then paint the interior. Animals workers lead livestock, move real feed and collect products. Each barn holds six animals, 24 feed units and 24 output units.",sheet_body)
+	button("Paint pen",begin_pen,sheet_body)
+	for pen in world.domestic_state.pens:
+		var info: Dictionary = ColonyDomestic.status(world,pen)
+		button("Pen %d · %d/%d animals" % [pen.id,info.count,info.capacity],func()->void:show_pen(pen),sheet_body)
+
+func show_pen(pen: Dictionary) -> void:
+	show_sheet("Livestock pen")
+	var info: Dictionary = ColonyDomestic.status(world,pen)
+	var animals: Array = ColonyDomestic.occupants(world,pen.id)
+	var daily: int = 0
+	for animal in animals:
+		if not animal.away: daily += ColonyDomestic.demand(world,animal,world.tick/7200+1)
+	label("%d/%d animals. Four interior tiles and one shelter slot each; colony limit twelve. Feed demand: %d grain/vegetable units per day, removed at 06:00. Animals Off stops stocking and collection." % [info.count,info.capacity,daily],sheet_body)
+	label(info.error if not info.error.is_empty() else pen.reason,sheet_body)
+	for barn in info.barns:
+		label("Barn %d: feed %d/24 · products %d/24. Fed adults accrue up to two days of products; collection costs 4 WU." % [barn,ColonyDomestic.feed_count(world,barn),ColonyDomestic.output_count(world,barn)],sheet_body)
+	label("Breeding: one juvenile after eight days with two fed adults and spare space/shelter. Blocked births never accumulate. Juveniles mature in four days and eat half adult feed; hens alternate whole-unit feeding days.",sheet_body)
+	button("Disable breeding" if pen.breeding else "Enable breeding",func()->void:_submit("breeding",{"target":pen.id,"enabled":not pen.breeding});close_sheet(),sheet_body)
+	for animal in animals: button(animal.name+" · health "+str(animal.health),func()->void:show_domestic_animal(animal),sheet_body)
+
+func show_domestic_animal(animal: Dictionary) -> void:
+	show_sheet(animal.name)
+	var definition: Dictionary = world.definitions.animals[animal.definition]
+	label("%s · health %d/%d. %s" % [_catalog_name(animal.definition),animal.health,definition.health,"Juvenile: %.1f days until maturity" % ((animal.juvenile_until-world.tick)/7200.0) if animal.juvenile_until>world.tick else "Adult"],sheet_body)
+	label("%d unfed days. Two days of grace; then 10 health/day. Feeding restores 10/day. %d products await collection; no milk from goats away on expedition." % [animal.unfed,animal.pending],sheet_body)
+	button("Inspect pen",func()->void:show_pen(world.find(world.domestic_state.pens,animal.pen)),sheet_body)
+	if animal.away: label("Away on expedition; local work unavailable.",sheet_body);return
+	button("Slaughter…",func()->void:
+		show_sheet("Slaughter "+animal.name)
+		label("Confirm slaughter of %s? Ten WU produces %s. This kills this named animal. Slaughter and breeding are optional; the charter can be completed without them." % [animal.name,_cost_text(definition.slaughter_outputs)],sheet_body)
+		button("Confirm slaughter "+animal.name,func()->void:_submit("slaughter",{"target":animal.id});close_sheet(),sheet_body),sheet_body)

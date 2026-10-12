@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 9
+const SCHEMA_REVISION: int = 10
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -28,6 +28,7 @@ var social_state: Dictionary = {}
 var production_state: Dictionary = {}
 var care_state: Dictionary = {}
 var care_destinations: Dictionary = {}
+var domestic_state: Dictionary = ColonyDomestic.initial_state()
 var wildlife_state: Dictionary = ColonyWildlife.initial_state()
 var danger_cache_tick: int = -1
 var danger_cache: Array[Vector2i] = []
@@ -223,6 +224,7 @@ func step() -> void:
 	ColonyCare.advance(self)
 	ColonyWeather.advance(self)
 	ColonyAgriculture.advance(self)
+	ColonyDomestic.advance(self)
 	ColonyWildlife.advance(self)
 	ColonyNature.advance(self)
 	ColonySocial.advance(self)
@@ -235,6 +237,7 @@ func step() -> void:
 		ColonyAgriculture.create_jobs(self)
 		ColonyCare.create_jobs(self)
 		ColonyNature.create_jobs(self)
+		ColonyDomestic.create_jobs(self)
 		for citizen in citizens:
 			_assign(citizen)
 	for citizen in citizens:
@@ -302,6 +305,7 @@ func _command(command: Dictionary) -> String:
 			if args.tiles.is_empty():
 				return "empty_area"
 			for point: Vector2i in args.tiles:
+				if fields.any(func(f:Dictionary)->bool:return Vector2i(f.x,f.y)==point) or domestic_state.pens.any(func(p:Dictionary)->bool:return p.tiles.has(point)): return "Stockpile overlaps field or pen"
 				if not walkable(point):
 					return "invalid_tile"
 				for store in stores:
@@ -362,6 +366,7 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"pen", "breeding", "slaughter": return ColonyDomestic.command(self,command.kind,args)
 		"hunt": return ColonyWildlife.command(self,args)
 		"forest", "forest_policy", "replant_tree", "clear_sapling": return ColonyNature.command(self,command.kind,args)
 		"care_mode", "treat_now", "burial": return ColonyCare.command(self,command.kind,args)
@@ -642,6 +647,7 @@ func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
 	return false
 
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if job.kind in ["stock_feed","lead_animal","collect_animal","slaughter"] and not ColonyDomestic.reserve(self,job,citizen): return false
 	if job.kind in ["hunt","escort_hunt","butcher"] and not ColonyWildlife.reserve(self,job,citizen): return false
 	if job.kind in ["plant_tree","clear_sapling","fish"] and not ColonyNature.reserve(self,job): return false
 	if job.kind in ["rescue","treat","feed","bury"] and not ColonyCare.reserve(self,job,citizen): return false
@@ -661,7 +667,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 	var positions: Array[Vector2i] = []
 	if job.kind == "build":
 		positions = _perimeter(footprint(job))
-	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher"]:
+	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "stock_feed", "lead_animal", "collect_animal", "slaughter"]:
 		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["cook","fuel","craft","research","fish"] else _perimeter([point])
 	else:
 		positions.append(point)
@@ -732,6 +738,9 @@ func _block(job: Dictionary, reason: String) -> bool:
 func _work(citizen: Dictionary, job: Dictionary) -> void:
 	if job.is_empty():
 		citizen.job = 0
+		return
+	if job.kind == "lead_animal":
+		ColonyDomestic.lead_work(self,citizen,job)
 		return
 	if job.kind in ["hunt","escort_hunt"]:
 		ColonyWildlife.hunt_work(self,citizen,job)
@@ -888,6 +897,8 @@ func _rate(citizen: Dictionary, job: Dictionary) -> int:
 	return work
 
 func _finish(citizen: Dictionary, job: Dictionary) -> void:
+	if job.kind in ["stock_feed","collect_animal","slaughter"] and not ColonyDomestic.ready_complete(self,job):
+		_release(job,false); _block(job,"Animal buffer full or conditions changed: haul goods or restore the barn"); return
 	if job.kind == "mediate":
 		if not ColonySocial.complete_mediation(self,job):
 			_release(job,false)
@@ -907,6 +918,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			return
 	for stack in stacks:
 		if stack.location == "escrow" and stack.owner == job.id:
+			if job.kind == "stock_feed": continue
 			if job.kind in ["eat","feed"]:
 				var eater: Dictionary = citizen if job.kind == "eat" else find(citizens,job.target)
 				for tag in stack.tags:
@@ -919,6 +931,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			stack.count = 0
 	var point: Vector2i = Vector2i(job.work_x, job.work_y)
 	match job.kind:
+		"stock_feed", "collect_animal", "slaughter": ColonyDomestic.complete(self,job)
 		"butcher": ColonyWildlife.butcher(self,job)
 		"plant_tree", "clear_sapling", "fish": ColonyNature.complete(self,job)
 		"treat", "feed", "bury": ColonyCare.complete(self,citizen,job)
@@ -1002,6 +1015,9 @@ func _release(job: Dictionary, cancel: bool) -> void:
 	if cancel and job.kind == "hunt":
 		for escort in jobs:
 			if escort.kind == "escort_hunt" and escort.order == job.id and escort.state not in ["Complete","Canceled"]: _release(escort,true)
+	if job.kind == "lead_animal":
+		var animal: Dictionary = find(domestic_state.animals,job.target)
+		if not animal.is_empty(): animal.handler = 0
 	ColonyCare.released(self,job)
 	for stack in stacks:
 		stack.reservations.erase(job.id)
@@ -1127,7 +1143,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
 	var all_ids: Dictionary = {}
-	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses]:
+	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses, domestic_state.pens, domestic_state.animals]:
 		for record: Dictionary in records:
 			if all_ids.has(record.id) or record.id < 1 or record.id >= next_id:
 				errors.append("Invalid/duplicate ID")
@@ -1175,7 +1191,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}

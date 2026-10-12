@@ -257,6 +257,18 @@ func citizen_point(citizen: Dictionary) -> Vector2:
 	return point
 
 func _draw_colony() -> void:
+	for pen in world.domestic_state.pens:
+		for tile in pen.tiles:
+			var point: Vector2 = tile_to_screen(Vector2(tile))
+			if Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): draw_rect(Rect2(point,Vector2.ONE*tile_size),Color(0.7,0.7,0.45,0.12))
+	for animal in world.domestic_state.animals:
+		if animal.health<=0 or animal.away: continue
+		var point: Vector2 = tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5))
+		var color: Color = Color("E9BA67") if animal.definition=="hen" else Color("B96C50")
+		draw_circle(point,tile_size*(0.18 if animal.definition=="hen" else 0.28),color)
+		draw_circle(point+Vector2(0.22,-0.1)*tile_size,tile_size*0.12,color)
+		if animal.definition=="hen": draw_circle(point+Vector2(0.2,-0.25)*tile_size,tile_size*0.06,Color("B96C50"))
+		else: draw_line(point+Vector2(0.2,-0.2)*tile_size,point+Vector2(0.1,-0.45)*tile_size,Color("F3E8CC"),2)
 	for source in ColonyDanger.sources(world):
 		var center: Vector2 = tile_to_screen(Vector2(source)+Vector2(0.5,0.5))
 		var radius: float = tile_size*8

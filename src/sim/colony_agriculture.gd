@@ -12,6 +12,7 @@ static func designate(world: ColonyWorld, args: Dictionary) -> String:
 	if args.tiles.is_empty():
 		return "empty_field"
 	for point: Vector2i in args.tiles:
+		if world.domestic_state.pens.any(func(p:Dictionary)->bool:return p.tiles.has(point)): return "Field overlaps pen"
 		if not world.walkable(point) or world.roofed(point) != definition.roof:
 			return "Requires roofed soil" if definition.roof else "Requires open soil"
 		for store in world.stores:

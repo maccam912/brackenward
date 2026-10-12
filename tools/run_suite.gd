@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -38,6 +38,7 @@ func run() -> void:
 		"generation": GenerationTests.run(check)
 		"nature": NatureTests.run(check)
 		"wildlife": WildlifeTests.run(check)
+		"domestic": DomesticTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -638,6 +639,25 @@ func ui() -> void:
 	check("DEATH/UI_return_menu_stays_available",colony_game.sheet_name == "Menu" and colony_game.world.care_state.ended)
 	colony_game.set_speed(4)
 	check("DEATH/UI_terminal_colony_cannot_resume",colony_game.runner.speed == 0 and colony_game.sheet_name == "Colony epilogue")
+	colony_game.world=DomesticTests.setup();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.view.refresh_terrain();colony_game.submitted_command=0
+	var domestic_pen: Dictionary = colony_game.world.domestic_state.pens[0]
+	var ui_hen: Dictionary = ColonyDomestic.acquire(colony_game.world,"hen",domestic_pen.id,domestic_pen.tiles[0]).animal
+	var ui_goat: Dictionary = ColonyDomestic.acquire(colony_game.world,"pack_goat",domestic_pen.id,domestic_pen.tiles[0]).animal
+	colony_game.show_pen(domestic_pen)
+	check("PEN/UI_capacity_feed_and_collection_explained",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("2/6 animals") and n.text.contains("06:00")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("4 WU")))
+	colony_game.view.tile_size=8
+	colony_game._map_intent({"kind":"chooser","tile":domestic_pen.tiles[0],"point":colony_game.view.tile_to_screen(Vector2(domestic_pen.tiles[0])+Vector2(0.5,0.5))})
+	check("UI02/overlapping_domestic_animals_have_named_choices",colony_game.sheet_name=="Select object" and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text==ui_hen.name) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text==ui_goat.name))
+	colony_game.show_domestic_animal(ui_goat)
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Slaughter…": child.pressed.emit();break
+	check("ANIMALS/UI_slaughter_names_animal_before_confirmation",colony_game.sheet_name=="Slaughter "+ui_goat.name and colony_game.world.pending_commands.is_empty())
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Confirm slaughter "+ui_goat.name: child.pressed.emit();break
+	check("ANIMALS/UI_slaughter_confirmation_submits_once",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="slaughter" and colony_game.world.pending_commands[0].args.target==ui_goat.id)
+	colony_game.runner.set_speed(1);colony_game.runner.advance_frame(0.1);colony_game._process(0);colony_game.runner.pause()
+	colony_game.begin_pen();colony_game.confirm_placement();colony_game.confirm_placement()
+	check("PEN/UI_rectangle_confirm_one_atomic_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="pen")
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

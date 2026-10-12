@@ -36,6 +36,7 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		header.erase("terrain_state")
 		header.erase("nature_state")
 		header.erase("wildlife_state")
+		header.erase("domestic_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
 		for key in ColonySocial.citizen_defaults(): citizen_template.erase(key)
@@ -112,4 +113,8 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 			if not citizen is Dictionary: return data
 			citizen.merge(ColonyCombat.citizen_defaults())
 		result.schema_revision = 9
+	if result.get("schema_revision") == 9:
+		result = result.duplicate(true)
+		result["domestic_state"] = ColonyDomestic.initial_state()
+		result.schema_revision = 10
 	return result
