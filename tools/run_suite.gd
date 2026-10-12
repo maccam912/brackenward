@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -36,6 +36,7 @@ func run() -> void:
 		"production": ProductionTests.run(check)
 		"care": CareTests.run(check)
 		"generation": GenerationTests.run(check)
+		"nature": NatureTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -598,6 +599,16 @@ func ui() -> void:
 	check("GEN/UI_field_preview_uses_transformed_starter_patch",colony_game.view.preview_tiles().all(func(p:Vector2i)->bool:return colony_game.world.terrain_state.starter_field.has(p)))
 	colony_game.cancel_placement()
 	colony_game.world.care_state.mode = "Standard"
+	colony_game.begin_forest()
+	colony_game.confirm_placement(); colony_game.confirm_placement()
+	check("NATURE/UI_forest_rectangle_single_command",colony_game.world.pending_commands.size() == 1 and colony_game.world.pending_commands[0].kind == "forest")
+	colony_game.set_speed(1); colony_game.runner.advance_frame(0.1); colony_game._process(0); colony_game.runner.pause()
+	colony_game.show_forest(colony_game.world.nature_state.forests[0])
+	check("NATURE/UI_forest_shows_reserve_and_replanting",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("eight non-winter days")))
+	var pier_card: Dictionary = colony_game.world._structure("fishing_pier",Vector2i(31,48),0)
+	colony_game.show_station(pier_card)
+	check("NATURE/UI_pier_exposes_both_limits_and_recovery",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("entire river") and n.text.contains("06:00")))
+	colony_game.close_sheet()
 	ColonyCare.hurt(colony_game.world,colony_game.world.citizens[2],90,true)
 	colony_game._process(0)
 	check("CARE/UI_critical_alert_opens_paused_care",colony_game.sheet_name == "Injuries and care" and colony_game.runner.speed == 0)

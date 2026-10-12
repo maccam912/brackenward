@@ -400,7 +400,7 @@ func confirm_placement() -> void:
 	if confirm_button.disabled or not placement.visible:
 		return
 	for tile in view.preview_tiles():
-		if placement_kind != "gather" and view.preview_definition != "bridge" and (world.is_water(tile) if world is ColonyWorld else PrototypeWorld.is_water(tile)):
+		if placement_kind != "gather" and view.preview_definition not in ["bridge","fishing_pier"] and (world.is_water(tile) if world is ColonyWorld else PrototypeWorld.is_water(tile)):
 			notice = "Deep river cannot be designated. Move the preview onto land."
 			return
 	if world is ColonyWorld and not view.preview_definition.is_empty():
@@ -417,6 +417,8 @@ func confirm_placement() -> void:
 			notice = "No unmarked resources here. Drag over the resources you want."
 			return
 		submitted_command = world.queue_command("gather_area", {"definition":view.preview_resource,"tiles":view.preview_tiles()})
+	elif world is ColonyWorld and placement_kind == "forest":
+		submitted_command = world.queue_command("forest",{"tiles":view.preview_tiles(),"value":75})
 	elif world is ColonyWorld and placement_kind == "field":
 		submitted_command = world.queue_command("field", {"crop":"turnip", "tiles":view.preview_tiles()})
 	else:
@@ -902,6 +904,7 @@ func begin_gather(kind: String) -> void:
 	_layout()
 
 func _preview_text() -> String:
+	if placement_kind == "forest": return "Forest zone | Keep 75% of its tree sites mature\nAutomatically cut excess and replant stumps"
 	if placement_kind == "gather":
 		var count: int = world.gather_targets(view.preview_resource,view.preview_tiles()).size()
 		return "Gather %s | %d unmarked %s\nDrag a rectangle, then Confirm" % [world.definitions.resources[view.preview_resource].item,count,"trees" if view.preview_resource == "tree" else "resources"]
@@ -938,6 +941,13 @@ func _resource_sheet(resource: Dictionary) -> void:
 	var definition: Dictionary = world.definitions.resources[resource.definition]
 	label("%d %s remaining | %d WU %s" % [resource.remaining, definition.item, definition.work_milli / 1000, "per unit" if definition.per_unit else "per harvest"], sheet_body)
 	label("A gatherer works beside the resource. The output appears there and must be hauled into storage.", sheet_body)
+	if resource.definition == "tree" and resource.remaining == 0:
+		var state: Dictionary = ColonyNature.tree(world,resource.id)
+		label("Growing: %.1f of eight non-winter days. Winter pauses growth." % (float(state.age)/7200.0) if state.planted else "Stump. Replant for 4 WU; no material cost. Eight non-winter days to maturity.",sheet_body)
+		button("Clear sapling (2 WU)" if state.planted else "Replant tree (4 WU)",func()->void:
+			_submit("clear_sapling" if state.planted else "replant_tree",{"target":resource.id})
+			close_sheet(),sheet_body)
+
 	if resource.remaining > 0:
 		button("Gather", func() -> void:
 			_submit("gather", {"target": resource.id})
@@ -964,12 +974,15 @@ func _work_sheet() -> void:
 		label("M0 fixture: real worker loop is in the colony scene.", sheet_body)
 		return
 	label("Choose a resource, drag a rectangle, then Confirm. Workers with Gathering enabled keep taking marked jobs until they are finished.", sheet_body)
-	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node"]:
+	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node", "clay_bank", "iron_seam"]:
 		button("Gather " + world.definitions.resources[kind].item, func() -> void: begin_gather(kind), sheet_body)
+	button("Paint forest zone",begin_forest,sheet_body)
 	button("Research",show_research,sheet_body)
 	label("Worker assignments",sheet_body)
 	for citizen in world.citizens:
 		button("%s | Gathering %s" % [citizen.name,["Off","Last","Normal","First"][citizen.preferences.Gathering]],func() -> void: show_work_preferences(citizen.id),sheet_body)
+	for zone in world.nature_state.forests:
+		button("Forest | Keep %d%% mature" % zone.reserve,func()->void:show_forest(zone),sheet_body)
 	label("Storage",sheet_body)
 	for store in world.stores:
 		button("Storage " + str(store.id),func() -> void: _storage_sheet(store),sheet_body)
@@ -1315,6 +1328,9 @@ func show_station(station: Dictionary) -> void:
 	label("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body)
 	if station.definition == "hearth":
 		label("Without production orders, cooking keeps four meals per living resident. Adding a policy replaces that default; Repeat stops after its batch count. Choose Maintain for a steady meal reserve.",sheet_body)
+	if station.definition == "fishing_pier":
+		var fish: Dictionary = world.nature_state.fishing
+		label("Fishing: 12 WU for two fish. Pier %d/8, entire river %d/16 caught this day. Limits recover at 06:00; output must be hauled and cooked." % [fish.piers.get(station.id,0),fish.river],sheet_body)
 	if station.definition == "research_desk":
 		button("Research projects",show_research,sheet_body)
 	for recipe in world.definitions.recipes.values():
@@ -1533,3 +1549,23 @@ func show_map_details() -> void:
 		label("Generated terrain is stored with the campaign and retained across updates. All starter resources, safe home ground and habitat checks passed.",sheet_body)
 		label("Generation attempt %d" % world.terrain_state.attempt,sheet_body)
 	button("Show weather",show_weather,sheet_body)
+
+func begin_forest() -> void:
+	begin_placement()
+	placement_kind = "forest"
+	view.preview_start = _home_tile(Vector2i(48,54)); view.preview_end = _home_tile(Vector2i(55,69))
+	view.camera_tile = Vector2(view.preview_start+view.preview_end)*0.5
+	view._update_transform()
+	notice = "Drag around trees. The forest keeps 75% mature and replants cut cells; individual cuts can go below that reserve."
+
+func show_forest(zone: Dictionary) -> void:
+	show_sheet("Forest zone")
+	var trees: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition == "tree" and zone.tiles.has(Vector2i(r.x,r.y)))
+	var mature: int = trees.filter(func(r:Dictionary)->bool:return r.remaining > 0).size()
+	label("%d mature / %d tree sites. Automatic cutting keeps at least %d mature, rounded up. Explicit cuts may go below the reserve. Replanting costs 4 WU; maturity takes eight non-winter days." % [mature,trees.size(),(trees.size()*zone.reserve+99)/100],sheet_body)
+	button("Reserve: %d%%" % zone.reserve,func()->void:
+		_submit("forest_policy",{"target":zone.id,"value":100 if zone.reserve == 75 else (50 if zone.reserve == 100 else 75),"enabled":zone.enabled})
+		close_sheet(),sheet_body)
+	button("Pause forest" if zone.enabled else "Enable forest",func()->void:
+		_submit("forest_policy",{"target":zone.id,"value":zone.reserve,"enabled":not zone.enabled})
+		close_sheet(),sheet_body)

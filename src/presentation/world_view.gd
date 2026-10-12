@@ -265,16 +265,21 @@ func _draw_colony() -> void:
 			for offset in [Vector2(0.25,0.25),Vector2(0.75,0.25),Vector2(0.25,0.75),Vector2(0.75,0.75)]:
 				draw_circle(rectangle.position+offset*tile_size,radius,Color("E9BA67") if field.ripe_tick>0 else Color("375749"))
 	for resource in world.resources:
+		var point: Vector2 = tile_to_screen(Vector2(resource.x+0.5,resource.y+0.5))
+		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): continue
 		if resource.remaining == 0:
-			continue
-		var point: Vector2 = tile_to_screen(Vector2(resource.x + 0.5, resource.y + 0.5))
-		if not Rect2(Vector2.ZERO, size).grow(tile_size).has_point(point):
+			if resource.definition == "tree":
+				var state: Dictionary = ColonyNature.tree(world,resource.id)
+				draw_circle(point,tile_size*0.12,Color("B96C50"))
+				if state.planted:
+					draw_line(point,point-Vector2(0,tile_size*0.4),Color("375749"),3)
+					draw_circle(point-Vector2(0,tile_size*0.35),tile_size*0.15,Color("77915A"))
 			continue
 		if resource.definition == "tree":
 			draw_rect(Rect2(point + Vector2(-tile_size * 0.1, 0), Vector2(tile_size * 0.2, tile_size * 0.4)), Color("B96C50"))
 			draw_colored_polygon(PackedVector2Array([point + Vector2(-tile_size * 0.4, tile_size * 0.1), point + Vector2(0, -tile_size * 0.7), point + Vector2(tile_size * 0.4, tile_size * 0.1)]), Color("263C3B"))
-		elif resource.definition == "stone_node":
-			draw_circle(point, tile_size * 0.4, Color("716D88"))
+		elif resource.definition in ["stone_node","clay_bank","iron_seam"]:
+			draw_circle(point, tile_size * 0.4, Color("B96C50") if resource.definition == "clay_bank" else (Color("263C3B") if resource.definition == "iron_seam" else Color("716D88")))
 			draw_line(point - Vector2(8, 2), point + Vector2(4, -8), Color("F3E8CC"), 2)
 		else:
 			draw_circle(point, tile_size * 0.32, Color("375749"))
