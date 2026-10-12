@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Fail closed on GDScript parse/runtime errors, hangs, and zero-test suites."""
-import argparse, re, subprocess, sys
+import argparse, os, re, subprocess, sys
 from pathlib import Path
 parser = argparse.ArgumentParser()
 parser.add_argument('suite', choices=['unit','integration','colony','ui'])
@@ -9,6 +9,7 @@ args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]
 command = [str(root/'tools/godot.sh')]
 if args.headless or args.suite != 'ui': command += ['--headless']
+if os.environ.get('CI') == 'true': command += ['--audio-driver','Dummy']
 command += ['--script','tools/run_suite.gd','--','--suite',args.suite]
 try:
     result = subprocess.run(command, cwd=root, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=120)
