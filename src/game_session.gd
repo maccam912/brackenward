@@ -447,6 +447,7 @@ func _layout() -> void:
 	placement.position = Vector2(8, header_height + 8)
 	if (width >= 600 and height < 500) or (text_scale > 1.0 and height < 700):
 		placement.position.y = 8
+	status.visible = not (placement.visible and placement.position.y < header_height)
 	var placement_parent: Node = placement_wide_row if width >= 600 else placement
 	if placement_nudges.get_parent() != placement_parent:
 		placement_nudges.reparent(placement_parent)
