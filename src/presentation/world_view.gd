@@ -257,6 +257,29 @@ func citizen_point(citizen: Dictionary) -> Vector2:
 	return point
 
 func _draw_colony() -> void:
+	for source in ColonyDanger.sources(world):
+		var center: Vector2 = tile_to_screen(Vector2(source)+Vector2(0.5,0.5))
+		var radius: float = tile_size*8
+		draw_polyline(PackedVector2Array([center+Vector2(0,-radius),center+Vector2(radius,0),center+Vector2(0,radius),center+Vector2(-radius,0),center+Vector2(0,-radius)]),Color("E9BA67"),2)
+	for animal in world.wildlife_state.animals:
+		if animal.health<=0: continue
+		var point: Vector2 = tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5))
+		if not animal.route.is_empty(): point += Vector2(animal.route[0]-Vector2i(animal.x,animal.y))*tile_size*float(animal.progress)/10000.0
+		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): continue
+		var color: Color = {"hare":Color("D9CEAB"),"deer":Color("B96C50"),"boar":Color("716D88"),"marsh_goose":Color("F3E8CC")}[animal.definition]
+		draw_circle(point,tile_size*(0.18 if animal.definition in ["hare","marsh_goose"] else 0.3),color)
+		draw_circle(point+Vector2(tile_size*0.2,-tile_size*0.08),tile_size*0.12,color)
+		if animal.definition == "hare":
+			for x in [-0.1,0.1]: draw_line(point+Vector2(x,-0.2)*tile_size,point+Vector2(x,-0.45)*tile_size,color,3)
+		elif animal.definition == "deer":
+			draw_line(point+Vector2(0.2,-0.2)*tile_size,point+Vector2(0.3,-0.5)*tile_size,color,2)
+		elif animal.definition == "boar":
+			draw_line(point+Vector2(0.25,0.05)*tile_size,point+Vector2(0.4,-0.05)*tile_size,Color("F3E8CC"),2)
+		if world.jobs.any(func(j:Dictionary)->bool:return j.kind == "hunt" and j.target == animal.id and j.state not in ["Complete","Canceled"]): _draw_gather_mark(Vector2i(animal.x,animal.y),Color("E9BA67"))
+	for carcass in world.wildlife_state.carcasses:
+		if carcass.done or carcass.spoiled: continue
+		var point: Vector2 = tile_to_screen(Vector2(carcass.x+0.5,carcass.y+0.5))
+		draw_rect(Rect2(point-Vector2(tile_size*0.3,tile_size*0.12),Vector2(tile_size*0.6,tile_size*0.24)),Color("716D88"))
 	for field in world.fields:
 		var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(field.x,field.y)),Vector2.ONE*tile_size)
 		draw_rect(rectangle.grow(-1),Color("B96C50") if field.prepared else Color(0.72,0.42,0.31,0.25))

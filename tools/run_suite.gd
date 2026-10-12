@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -37,6 +37,7 @@ func run() -> void:
 		"care": CareTests.run(check)
 		"generation": GenerationTests.run(check)
 		"nature": NatureTests.run(check)
+		"wildlife": WildlifeTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -609,6 +610,18 @@ func ui() -> void:
 	colony_game.show_station(pier_card)
 	check("NATURE/UI_pier_exposes_both_limits_and_recovery",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("entire river") and n.text.contains("06:00")))
 	colony_game.close_sheet()
+	colony_game.show_wildlife()
+	check("ANIMAL/UI_all_sixteen_wildlife_selectable",colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button).size()==16)
+	var boar_card: Dictionary = colony_game.world.wildlife_state.animals.filter(func(a:Dictionary)->bool:return a.definition=="boar")[0]
+	colony_game._wildlife_sheet(boar_card)
+	check("HUNT/UI_boar_risk_and_escort_explained",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("12 damage")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Hunt with armed escort"))
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Solo hunt risk…": child.pressed.emit(); break
+	check("HUNT/UI_solo_requires_separate_confirmation",colony_game.sheet_name=="Solo boar hunt" and colony_game.world.pending_commands.is_empty())
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Confirm solo hunt": child.pressed.emit(); break
+	check("HUNT/UI_confirmation_retains_chosen_hunter",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="hunt" and colony_game.world.pending_commands[0].args.solo and colony_game.world.pending_commands[0].args.citizen>0)
+	colony_game.set_speed(1); colony_game.runner.advance_frame(0.1); colony_game._process(0); colony_game.runner.pause()
 	ColonyCare.hurt(colony_game.world,colony_game.world.citizens[2],90,true)
 	colony_game._process(0)
 	check("CARE/UI_critical_alert_opens_paused_care",colony_game.sheet_name == "Injuries and care" and colony_game.runner.speed == 0)

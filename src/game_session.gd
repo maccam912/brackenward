@@ -450,6 +450,14 @@ func _map_intent(action: Dictionary) -> void:
 		select_citizen(candidates[0].id)
 	else:
 		if world is ColonyWorld:
+			for animal in world.wildlife_state.animals:
+				if animal.health>0 and Vector2i(animal.x,animal.y)==action.tile:
+					_wildlife_sheet(animal); return
+			for carcass in world.wildlife_state.carcasses:
+				if not carcass.done and not carcass.spoiled and Vector2i(carcass.x,carcass.y)==action.tile:
+					show_sheet("Carcass")
+					label("%s: %.1f game hours until spoilage. Gathering workers butcher it; outputs need hauling." % [carcass.definition,(carcass.expires-world.tick)/300.0],sheet_body)
+					return
 			for field in world.fields:
 				if Vector2i(field.x,field.y) == action.tile:
 					_field_sheet(field)
@@ -978,6 +986,7 @@ func _work_sheet() -> void:
 		button("Gather " + world.definitions.resources[kind].item, func() -> void: begin_gather(kind), sheet_body)
 	button("Paint forest zone",begin_forest,sheet_body)
 	button("Research",show_research,sheet_body)
+	button("Wildlife",show_wildlife,sheet_body)
 	label("Worker assignments",sheet_body)
 	for citizen in world.citizens:
 		button("%s | Gathering %s" % [citizen.name,["Off","Last","Normal","First"][citizen.preferences.Gathering]],func() -> void: show_work_preferences(citizen.id),sheet_body)
@@ -1358,7 +1367,7 @@ func show_station(station: Dictionary) -> void:
 
 func _catalog_name(id: String) -> String:
 	var key: String = id.get_slice(":",1) if id.contains(":") else id
-	if catalog_strings.is_empty(): catalog_strings = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogs/en_colony_v1.json"))
+	if catalog_strings.is_empty(): catalog_strings = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogs/en_colony_v2.json"))
 	return catalog_strings.get(key+".name",key.replace("_"," ").capitalize())
 
 func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
@@ -1569,3 +1578,40 @@ func show_forest(zone: Dictionary) -> void:
 	button("Pause forest" if zone.enabled else "Enable forest",func()->void:
 		_submit("forest_policy",{"target":zone.id,"value":zone.reserve,"enabled":not zone.enabled})
 		close_sheet(),sheet_body)
+
+func show_wildlife() -> void:
+	show_sheet("Wildlife")
+	label("Wild animals forage and flee. Mark a hunt after reviewing its weapon and escort needs. Carcasses require butchering and spoil in two days.",sheet_body)
+	for animal in world.wildlife_state.animals:
+		if animal.health<=0: continue
+		button("%s · health %d" % [_catalog_name(animal.definition),animal.health],func()->void:
+			view.camera_tile = Vector2(animal.x,animal.y); _wildlife_sheet(animal),sheet_body)
+
+func _wildlife_sheet(animal: Dictionary) -> void:
+	show_sheet(_catalog_name(animal.definition))
+	var definition: Dictionary = world.definitions.animals[animal.definition]
+	label("Health %d/%d. %s" % [animal.health,definition.health,catalog_strings.get(animal.definition+".description","")],sheet_body)
+	label("After butchering (%d WU): %s. Carcass spoils in two days; outputs need hauling. Hunters retreat at health 40." % [definition.work_milli/1000,_cost_text(definition.outputs)],sheet_body)
+	if world.jobs.any(func(j:Dictionary)->bool:return j.kind == "hunt" and j.target == animal.id and j.state not in ["Complete","Canceled"]):
+		label("Hunt marked. Eligible armed Gathering workers take this job; an armed Guard worker escorts a boar hunt.",sheet_body)
+		for job in world.jobs:
+			if job.kind == "hunt" and job.target == animal.id and job.state not in ["Complete","Canceled"]: button("Inspect hunt",func()->void:_job_sheet(job),sheet_body)
+		return
+	label("Bows can reach fleeing wildlife from six tiles. Spear hunters must catch it at one tile. Choose a hunter, or leave assignment automatic.",sheet_body)
+	var hunter_ids: Array = [0]
+	var hunter: CycleChoiceButton = CycleChoiceButton.new()
+	hunter.add_item("Hunter: automatic")
+	var recommended: int = 0
+	for citizen in world.citizens:
+		if citizen.death_recorded or citizen.departed or citizen.downed or citizen.equipment.weapon.is_empty() or citizen.preferences.Gathering==0: continue
+		hunter_ids.append(citizen.id); hunter.add_item("Hunter: "+citizen.name+" ("+citizen.equipment.weapon+")")
+		if citizen.equipment.weapon == "bow" and recommended == 0: recommended = hunter_ids.size()-1
+	hunter.select(recommended); hunter.custom_minimum_size.y = 48; sheet_body.add_child(hunter)
+	button("Hunt with armed escort" if animal.definition == "boar" else "Hunt",func()->void:
+		_submit("hunt",{"target":animal.id,"solo":false,"citizen":hunter_ids[hunter.selected]}); close_sheet(),sheet_body)
+	if animal.definition == "boar":
+		button("Solo hunt risk…",func()->void:
+			var chosen: int = hunter_ids[hunter.selected]
+			show_sheet("Solo boar hunt")
+			label("A wounded boar deals 12 damage every 25 ticks at one tile, and charges nearby people. A solo hunter has no escort. Retreat begins at health 40; injury may require rescue and treatment.",sheet_body)
+			button("Confirm solo hunt",func()->void:_submit("hunt",{"target":animal.id,"solo":true,"citizen":chosen});close_sheet(),sheet_body),sheet_body)

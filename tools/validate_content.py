@@ -166,3 +166,23 @@ for kind in ['items','buildings','resources','recipes','crops']:
    if key=='alternatives':assert set(value)<=set(catalog_ids[kind][old['id']][key])
    else:assert catalog_ids[kind][old['id']][key]==value, (kind,old['id'],key,'released contract changed')
 print('Validated complete 28-item, 34-structure, 13-recipe, 12-research catalog, all references, 4700 points and released numeric contracts.')
+
+next_catalog=json.loads((root / 'data/catalogs/colony_v2.json').read_text())
+next_text=json.loads((root / 'data/catalogs/en_colony_v2.json').read_text())
+assert next_catalog['version']=='colony-v2'
+for kind in ['items','buildings','resources','recipes','crops','research']:
+ assert next_catalog[kind]==full[kind], 'released numeric contract changed'
+new_ids={kind:{d['id']:d for d in next_catalog[kind]} for kind in ['animals','enemies','expeditions','communities','events','charter']}
+assert [len(new_ids[k]) for k in new_ids]==[6,3,8,3,4,5]
+for kind,definitions in new_ids.items():
+ assert len(definitions)==len(next_catalog[kind])
+ for d in definitions.values():
+  assert d['name_key'] in next_text and d['description_key'] in next_text
+  for field in ['outputs','slaughter_outputs','rewards','payment','delivery']:
+   for item,n in d.get(field,{}).items(): assert item in catalog_ids['items'] and type(n) is int and n>0
+  for faction in d.get('reputation',{}) if isinstance(d.get('reputation'),dict) else []: assert faction in new_ids['communities']
+for d in new_ids['communities'].values():
+ for item,n in d['stock'].items():assert (item in catalog_ids['items'] or item in new_ids['animals']) and type(n) is int and n>0
+assert sum(d.get('initial_count',0) for d in new_ids['animals'].values())==16
+assert sum(d['cost'] for d in new_ids['enemies'].values())==7
+print('Validated additive wildlife, enemy, expedition, community, event and charter catalogs; released v1 contracts remain immutable.')

@@ -44,6 +44,7 @@ static func configure(world: ColonyWorld, entered_seed: int, site: String) -> St
   world.record_indexes.clear(); world.navigation_dirty = true; world.rooms_dirty = true
   world.flood_cache.clear(); world.flood_cache_valid = false
   ColonyWeather.initialize(world)
+  ColonyWildlife.initialize(world)
   return ""
  return "Map generation failed: authored fallback did not satisfy " + ", ".join(failures)
 

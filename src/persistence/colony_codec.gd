@@ -21,7 +21,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		if legacy.has("error"): return legacy
 		return restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
-	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version != VERSION and envelope.version != 3) or (envelope.content != ColonyWorld.CONTENT_VERSION and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
+	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version != VERSION and envelope.version != 3) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content != "colony-v1" and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
 		return {"error":"Unsupported save version/content: this build supports version 4 plus M1/M2/M3 migration"}
 	if not envelope.generator_version is float or (envelope.generator_version != 0 and envelope.generator_version != 1) or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
 		return {"error":"Invalid snapshot metadata"}
@@ -47,6 +47,10 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/m3.json")
 		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown M3 catalog; original files retained"}
 		data = ColonyMigrations.catalog_v1(data,world.definitions,previous.items.keys())
+	if data.get("content") == "colony-v1":
+		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/colony_v1.json")
+		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released catalog; original files retained"}
+		data = ColonyMigrations.catalog_v1(data,world.definitions,previous.items.keys())
 	if initialize_weather and data.get("weather_state") == {}:
 		# Only pure legacy migration supplies the empty initial schedule.
 		world.tick = data.tick
@@ -54,6 +58,7 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 		world.weather = data.weather
 		ColonyWeather.initialize(world)
 		data.weather_state = world.weather_state.duplicate(true)
+	var introduce_wildlife: bool = data.get("schema_revision",0) is int and data.get("schema_revision",0)<9
 	data = ColonyMigrations.upgrade_current(data,world)
 	var error: String = _validate(data, world)
 	if not error.is_empty():
@@ -68,6 +73,7 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 	var errors: Array[String] = world.invariant_errors()
 	if not errors.is_empty():
 		return {"error": "Invalid colony invariants: " + str(errors)}
+	if introduce_wildlife: ColonyWildlife.introduce_on_saved_map(world)
 	return {"world":world,"snapshot_name":snapshot_name}
 
 static func _keys(record: Dictionary, keys: Array) -> bool:
@@ -133,6 +139,9 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		for point in citizen.route:
 			if not point is Vector2i:
 				return "Invalid route"
+	if not ColonyWildlife.validate(data.wildlife_state,world,data.tick): return "Invalid wildlife state"
+	for citizen in data.citizens:
+		if citizen.attack_ready < 0 or citizen.attack_ready > data.tick+30: return "Invalid attack cooldown"
 	if not ColonyProduction.validate(data.production_state,world.definitions): return "Invalid production/research state"
 	if not ColonyCare.validate(data.care_state,data.citizens,data.tick): return "Invalid injury/care state"
 	if not ColonySocial.validate(data.social_state,data.citizens,data.tick): return "Invalid relationship/request state"
@@ -166,7 +175,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 				return "Invalid reservation"
 	var job_template: Dictionary = world._job("gather", "Gathering", "Field", world.resources[0].id, Vector2i(1, 1), 1000)
 	for job in data.jobs:
-		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate", "craft", "research", "rescue", "treat", "feed", "bury", "recover", "plant_tree", "clear_sapling", "fish"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
+		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate", "craft", "research", "rescue", "treat", "feed", "bury", "recover", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "escape"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
 			return "Invalid job"
 		if job.care_goal.size() not in [0,2] or not job.care_goal.all(func(n:Variant)->bool:return n is int and n >= 0 and n < 128): return "Invalid care destination"
 		if job.emergency and job.kind not in ["rescue","treat"]: return "Invalid emergency work type"
@@ -179,6 +188,8 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if job.kind in ["plant_tree","clear_sapling","fish"] and job.required != {"plant_tree":4000,"clear_sapling":2000,"fish":12000}[job.kind]: return "Invalid nature work contract"
 		if job.kind in ["plant_tree","clear_sapling"] and not data.resources.any(func(r:Dictionary)->bool:return r.id == job.target and r.definition == "tree"): return "Missing tree work target"
 		if job.kind == "fish" and not data.structures.any(func(s:Dictionary)->bool:return s.id == job.target and s.definition == "fishing_pier"): return "Missing fishing pier"
+		if job.kind in ["hunt","escort_hunt"] and (job.required != 0 or not data.wildlife_state.animals.any(func(a:Dictionary)->bool:return a.id == job.target)): return "Invalid hunting target"
+		if job.kind == "butcher" and (not world.definitions.animals.has(job.definition) or job.required != world.definitions.animals[job.definition].work_milli or not data.wildlife_state.carcasses.any(func(c:Dictionary)->bool:return c.id == job.target)): return "Invalid butchering contract"
 		if job.kind == "build" and not world.definitions.buildings.has(job.definition):
 			return "Unknown building definition"
 		if job.kind == "build" and (job.inputs != world.definitions.buildings[job.definition].materials or job.required != world.definitions.buildings[job.definition].work_milli):
@@ -260,7 +271,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if not command is Dictionary or not _keys(command, ["id", "session", "kind", "args"]) or not command.id is int or command.id < 1 or not command.session is String or not command.kind is String or not command.args is Dictionary:
 			return "Invalid pending command"
 		# Preserve only commands generated by the concrete development UI.
-		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "request_accept": ["target"], "request_decline": ["target"], "mediate": ["definition"], "forest": ["tiles","value"], "forest_policy": ["target","value","enabled"], "replant_tree": ["target"], "clear_sapling": ["target"], "care_mode": ["mode"], "treat_now": ["target","citizen"], "burial": ["target","x","y"], "recipe_order": ["target","definition","mode","value","priority","filters"], "order_enabled": ["target","enabled"], "research_select": ["definition"], "research_queue": ["definition"], "station_enabled": ["target","enabled"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
+		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "request_accept": ["target"], "request_decline": ["target"], "mediate": ["definition"], "hunt": ["target","solo","citizen"], "forest": ["tiles","value"], "forest_policy": ["target","value","enabled"], "replant_tree": ["target"], "clear_sapling": ["target"], "care_mode": ["mode"], "treat_now": ["target","citizen"], "burial": ["target","x","y"], "recipe_order": ["target","definition","mode","value","priority","filters"], "order_enabled": ["target","enabled"], "research_select": ["definition"], "research_queue": ["definition"], "station_enabled": ["target","enabled"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
 		if not schemas.has(command.kind) or not _keys(command.args, schemas[command.kind]):
 			return "Unknown pending command arguments"
 		for key in command.args:
@@ -269,7 +280,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 				return "Invalid command quantity"
 			if key in ["definition", "category", "crop", "shift", "mode"] and not value is String:
 				return "Invalid command definition"
-			if key == "enabled" and not value is bool:
+			if key in ["enabled","solo"] and not value is bool:
 				return "Invalid policy toggle"
 			if key == "filters" and (not value is Array or not value.all(func(item: Variant)->bool:return item is String and world.definitions.items.has(item))):
 				return "Invalid storage filter"

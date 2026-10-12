@@ -35,10 +35,12 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		header.erase("care_state")
 		header.erase("terrain_state")
 		header.erase("nature_state")
+		header.erase("wildlife_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
 		for key in ColonySocial.citizen_defaults(): citizen_template.erase(key)
 		for key in ColonyCare.citizen_defaults(): citizen_template.erase(key)
+		for key in ColonyCombat.citizen_defaults(): citizen_template.erase(key)
 		for citizen in result.citizens:
 			if not ColonyCodec._record(citizen,citizen_template): return data
 		result = result.duplicate(true)
@@ -102,4 +104,12 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		result = result.duplicate(true)
 		result["nature_state"] = ColonyNature.initial_state(result.tick)
 		result.schema_revision = 8
+	if result.get("schema_revision") == 8:
+		if not result.get("citizens") is Array: return data
+		result = result.duplicate(true)
+		result["wildlife_state"] = ColonyWildlife.initial_state()
+		for citizen in result.citizens:
+			if not citizen is Dictionary: return data
+			citizen.merge(ColonyCombat.citizen_defaults())
+		result.schema_revision = 9
 	return result

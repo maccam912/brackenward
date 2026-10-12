@@ -108,7 +108,7 @@ func load_latest() -> Dictionary:
 		var migrating: bool = legacy or (header is Dictionary and header.get("version") == 3)
 		if header is Dictionary and header.get("version") == ColonyCodec.VERSION and header.get("payload") is String:
 			var original_state: Variant = JSON.parse_string(header.payload)
-			migrating = original_state is Dictionary and original_state.get("schema_revision",0) < ColonyWorld.SCHEMA_REVISION
+			migrating = original_state is Dictionary and (original_state.get("schema_revision",0) < ColonyWorld.SCHEMA_REVISION or original_state.get("content") != ColonyWorld.CONTENT_VERSION)
 		var decoded: Dictionary = (M1Codec.decode(snapshot_bytes) if header.get("version") == 1 else M2Codec.decode(snapshot_bytes)) if legacy else decode(snapshot_bytes)
 		if decoded.has("error"):
 			earlier_errors.append(name + ": " + decoded.error)

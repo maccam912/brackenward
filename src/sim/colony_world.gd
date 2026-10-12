@@ -2,8 +2,8 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v1"
-const SCHEMA_REVISION: int = 8
+const CONTENT_VERSION: String = "colony-v2"
+const SCHEMA_REVISION: int = 9
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -28,6 +28,9 @@ var social_state: Dictionary = {}
 var production_state: Dictionary = {}
 var care_state: Dictionary = {}
 var care_destinations: Dictionary = {}
+var wildlife_state: Dictionary = ColonyWildlife.initial_state()
+var danger_cache_tick: int = -1
+var danger_cache: Array[Vector2i] = []
 var nature_state: Dictionary = ColonyNature.initial_state()
 var terrain_state: Dictionary = ColonyGeneration.empty_state()
 var generator_version: int = 0
@@ -76,6 +79,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 			"health": 100, "hunger_rem": 0, "rest_rem": 0, "starving_ticks": 0, "job": 0, "bed": 0,
 			"equipment": {"toolkit": "toolkit", "cloak": "cloak", "weapon": "spear" if index in [0, 3] else "bow", "vest":""}, "activity": "Looking around"})
 	for citizen in citizens:
+		citizen.merge(ColonyCombat.citizen_defaults())
 		for item in citizen.equipment.values():
 			if not item.is_empty(): _record("produced",item,1)
 	for index in range(4):
@@ -219,6 +223,7 @@ func step() -> void:
 	ColonyCare.advance(self)
 	ColonyWeather.advance(self)
 	ColonyAgriculture.advance(self)
+	ColonyWildlife.advance(self)
 	ColonyNature.advance(self)
 	ColonySocial.advance(self)
 	ColonyLiving.advance(self)
@@ -235,6 +240,7 @@ func step() -> void:
 	for citizen in citizens:
 		if citizen.job > 0:
 			_work(citizen, find(jobs, citizen.job))
+	ColonyCombat.resolve(self)
 
 func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0) -> String:
 	if not definitions.buildings.has(kind) or rotation not in [0, 1, 2, 3]:
@@ -356,6 +362,7 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"hunt": return ColonyWildlife.command(self,args)
 		"forest", "forest_policy", "replant_tree", "clear_sapling": return ColonyNature.command(self,command.kind,args)
 		"care_mode", "treat_now", "burial": return ColonyCare.command(self,command.kind,args)
 		"station_enabled":
@@ -541,6 +548,7 @@ func _assign(citizen: Dictionary) -> void:
 	if citizen.downed:
 		citizen.activity = "Hearthside recovery" if citizen.hearthside_until > tick else ("Downed: bleeding, needs care" if not citizen.stabilized else "Downed: recovering")
 		return
+	if ColonyDanger.escape(self,citizen): return
 	var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
 	var needs_sleep: bool = citizen.rest <= 300 or ((hour >= 22 or hour < 6) and citizen.rest < 900)
 	var current: Dictionary = find(jobs, citizen.job)
@@ -634,6 +642,7 @@ func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
 	return false
 
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if job.kind in ["hunt","escort_hunt","butcher"] and not ColonyWildlife.reserve(self,job,citizen): return false
 	if job.kind in ["plant_tree","clear_sapling","fish"] and not ColonyNature.reserve(self,job): return false
 	if job.kind in ["rescue","treat","feed","bury"] and not ColonyCare.reserve(self,job,citizen): return false
 	if job.kind in ["cook","craft"]: ColonyProduction.replace_food(self,job)
@@ -652,7 +661,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 	var positions: Array[Vector2i] = []
 	if job.kind == "build":
 		positions = _perimeter(footprint(job))
-	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "fish"]:
+	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher"]:
 		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["cook","fuel","craft","research","fish"] else _perimeter([point])
 	else:
 		positions.append(point)
@@ -671,6 +680,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 			break
 	if work_position.x < 0:
 		return _block(job, "No free work position")
+	if job.kind not in ["hunt","escort_hunt"] and not job.emergency and not ColonyDanger.safe(self,work_position): return _block(job,"Unsafe route: work avoids eight tiles around dangerous hunts")
 	var requests: Array[Dictionary] = []
 	if job.kind == "haul":
 		var source: Dictionary = find(stacks, job.source)
@@ -722,6 +732,9 @@ func _block(job: Dictionary, reason: String) -> bool:
 func _work(citizen: Dictionary, job: Dictionary) -> void:
 	if job.is_empty():
 		citizen.job = 0
+		return
+	if job.kind in ["hunt","escort_hunt"]:
+		ColonyWildlife.hunt_work(self,citizen,job)
 		return
 	if job.kind == "rescue":
 		ColonyCare.rescue_work(self,citizen,job)
@@ -781,7 +794,9 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 					job.state = "Fetching"
 		"Moving":
 			if _walk(citizen, Vector2i(job.work_x, job.work_y)):
-				if job.kind == "depart":
+				if job.kind == "escape":
+					_complete(citizen,job)
+				elif job.kind == "depart":
 					citizen.departed = true
 					_complete(citizen, job)
 				else:
@@ -820,14 +835,16 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 			if path_requests >= 4:
 				return false
 			path_requests += 1
-			citizen.route = ColonyNavigation.path(Vector2i(citizen.x, citizen.y), goal, walkable,can_step)
+			citizen.route = ColonyNavigation.path(Vector2i(citizen.x, citizen.y), goal, func(p:Vector2i)->bool:return ColonyDanger.allowed(self,citizen,p),can_step)
 			citizen.route_goal = [goal.x, goal.y]
 		if citizen.route.is_empty():
 			var job: Dictionary = find(jobs, citizen.job)
 			_release(job, false)
 			_block(job, "No route: remove a blocking wall or choose another worksite")
 			return false
-		var edge: Vector2i = citizen.route.pop_front()
+		var edge: Vector2i = citizen.route[0]
+		if not ColonyDanger.allowed(self,citizen,edge): citizen.route.clear();citizen.route_goal.clear();return false
+		citizen.route.pop_front()
 		citizen.edge_x = edge.x
 		citizen.edge_y = edge.y
 	# Carry the fractional progress in a common denominator across terrain changes.
@@ -902,6 +919,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			stack.count = 0
 	var point: Vector2i = Vector2i(job.work_x, job.work_y)
 	match job.kind:
+		"butcher": ColonyWildlife.butcher(self,job)
 		"plant_tree", "clear_sapling", "fish": ColonyNature.complete(self,job)
 		"treat", "feed", "bury": ColonyCare.complete(self,citizen,job)
 		"prepare", "sow", "harvest", "replant": ColonyAgriculture.complete(self, citizen, job)
@@ -980,6 +998,10 @@ func _award_xp(job: Dictionary) -> void:
 func _release(job: Dictionary, cancel: bool) -> void:
 	if job.is_empty():
 		return
+	if job.kind == "hunt": danger_cache_tick = -1
+	if cancel and job.kind == "hunt":
+		for escort in jobs:
+			if escort.kind == "escort_hunt" and escort.order == job.id and escort.state not in ["Complete","Canceled"]: _release(escort,true)
 	ColonyCare.released(self,job)
 	for stack in stacks:
 		stack.reservations.erase(job.id)
@@ -1105,7 +1127,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
 	var all_ids: Dictionary = {}
-	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests]:
+	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses]:
 		for record: Dictionary in records:
 			if all_ids.has(record.id) or record.id < 1 or record.id >= next_id:
 				errors.append("Invalid/duplicate ID")
@@ -1153,7 +1175,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}
