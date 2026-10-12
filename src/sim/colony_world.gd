@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 11
+const SCHEMA_REVISION: int = 12
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -28,6 +28,7 @@ var social_state: Dictionary = {}
 var production_state: Dictionary = {}
 var care_state: Dictionary = {}
 var care_destinations: Dictionary = {}
+var equipment_state: Dictionary = {}
 var construction_state: Dictionary = ColonyConstruction.initial_state()
 var domestic_state: Dictionary = ColonyDomestic.initial_state()
 var wildlife_state: Dictionary = ColonyWildlife.initial_state()
@@ -103,6 +104,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		var point: Vector2i = Vector2i(55 - (index % 6) * 2, 54 + (index / 6) * 3)
 		resources.append({"id": _id(), "definition": kind, "x": point.x, "y": point.y, "remaining": definitions.resources[kind].yield_count, "regrow_at": 0})
 
+	equipment_state=ColonyEquipment.initial_state(citizens)
 	ColonyWeather.initialize(self)
 	ColonySocial.initialize(self)
 	ColonyProduction.initialize(self)
@@ -240,6 +242,7 @@ func step() -> void:
 		ColonyNature.create_jobs(self)
 		ColonyDomestic.create_jobs(self)
 		ColonyConstruction.create_helpers(self)
+		ColonyEquipment.create_jobs(self)
 		for citizen in citizens:
 			_assign(citizen)
 	for citizen in citizens:
@@ -371,6 +374,7 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"equip", "equipment_policy": return ColonyEquipment.command(self,command.kind,args)
 		"build_area", "lodge": return ColonyConstruction.command(self,command.kind,args)
 		"pen", "breeding", "slaughter": return ColonyDomestic.command(self,command.kind,args)
 		"hunt": return ColonyWildlife.command(self,args)
@@ -654,6 +658,7 @@ func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
 	return false
 
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if job.kind == "equip" and not ColonyEquipment.reserve(self,job,citizen): return false
 	if job.kind in ["build","build_helper"] and not ColonyConstruction.ready(self,job): return false
 	if job.kind in ["stock_feed","lead_animal","collect_animal","slaughter"] and not ColonyDomestic.reserve(self,job,citizen): return false
 	if job.kind in ["hunt","escort_hunt","butcher"] and not ColonyWildlife.reserve(self,job,citizen): return false
@@ -929,7 +934,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			return
 	for stack in stacks:
 		if stack.location == "escrow" and stack.owner == job.id:
-			if job.kind == "stock_feed": continue
+			if job.kind in ["stock_feed","equip"]: continue
 			if job.kind in ["eat","feed"]:
 				var eater: Dictionary = citizen if job.kind == "eat" else find(citizens,job.target)
 				for tag in stack.tags:
@@ -942,6 +947,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			stack.count = 0
 	var point: Vector2i = Vector2i(job.work_x, job.work_y)
 	match job.kind:
+		"equip": ColonyEquipment.complete(self,citizen,job)
 		"stock_feed", "collect_animal", "slaughter": ColonyDomestic.complete(self,job)
 		"butcher": ColonyWildlife.butcher(self,job)
 		"plant_tree", "clear_sapling", "fish": ColonyNature.complete(self,job)
@@ -1204,7 +1210,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "construction_state":construction_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "equipment_state":equipment_state, "construction_state":construction_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}

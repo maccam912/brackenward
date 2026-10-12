@@ -1342,6 +1342,7 @@ func show_person(id: int) -> void:
 	if citizen.health < 100: button("Care and recovery",show_care,sheet_body)
 	label("Active morale causes",sheet_body)
 	for term in citizen.mood_terms: label("%s: %+d" % [term,citizen.mood_terms[term]],sheet_body)
+	button("Equipment",func()->void:show_equipment(id),sheet_body)
 	button("Work preferences",func() -> void:show_work_preferences(id),sheet_body)
 	button("View on map",func() -> void:
 		close_sheet()
@@ -1717,3 +1718,24 @@ func begin_lodge() -> void:
 	begin_placement();placement_kind="lodge";view.preview_lodge=true
 	view.preview_start=_home_tile(Vector2i(74,54));view.fit_build_preview();view.camera_tile=Vector2(view.preview_start+Vector2i(4,3));rotation_button.visible=false
 	notice="Four beds, 23 walls and a south door. W73 F8; 206 WU. Clear an 8×6 footprint; the preset uses normal blueprints and can be edited individually."
+
+func show_equipment(id: int) -> void:
+	var person: Dictionary = world.find(world.citizens,id)
+	show_sheet(person.name+" · Equipment")
+	button("Work preferences",func()->void:show_work_preferences(id),sheet_body)
+	label("The wearer fetches each item and equips it for 2 WU. Hauling must be enabled; health needs and higher-priority work can delay this task. Old equipment returns as a real ground stack. Tools do not wear out.",sheet_body)
+	label("Missing toolkit: half Build/Craft/Field speed. Forged toolkit: +15% to those skills. Cloak: +8°C comfort. Vest: 2 armor. Bows reach six tiles; spears reach one. Weapons have different uses rather than an automatic upgrade ranking.",sheet_body)
+	for slot in ColonyEquipment.SLOTS:
+		var policy: Dictionary = world.equipment_state[id][slot]
+		label(slot.capitalize()+": "+("Empty" if person.equipment[slot].is_empty() else _catalog_name(person.equipment[slot])),sheet_body)
+		button(slot.capitalize()+" replacements: "+("On" if policy.replacements else "Off"),func()->void:
+			_submit("equipment_policy",{"target":id,"slot":slot,"replacements":not policy.replacements,"upgrades":policy.upgrades});close_sheet(),sheet_body)
+		if slot=="toolkit":
+			button("Toolkit upgrades: "+("On" if policy.upgrades else "Off"),func()->void:
+				_submit("equipment_policy",{"target":id,"slot":slot,"replacements":policy.replacements,"upgrades":not policy.upgrades});close_sheet(),sheet_body)
+		for item in ColonyEquipment.SLOTS[slot]:
+			if person.equipment[slot]==item: continue
+			var stock: Dictionary = ColonyEquipment.source(world,person,item)
+			if stock.is_empty(): label(_catalog_name(item)+": no accessible unreserved stock; craft it or free reserved goods.",sheet_body)
+			else: button("Equip "+_catalog_name(item),func()->void:_submit("equip",{"target":id,"slot":slot,"item":item});close_sheet(),sheet_body)
+		if not person.equipment[slot].is_empty(): button("Remove "+slot+"; stop replacements",func()->void:_submit("equip",{"target":id,"slot":slot,"item":""});close_sheet(),sheet_body)

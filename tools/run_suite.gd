@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -40,6 +40,7 @@ func run() -> void:
 		"wildlife": WildlifeTests.run(check)
 		"domestic": DomesticTests.run(check)
 		"construction": ConstructionTests.run(check)
+		"equipment": EquipmentTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -675,6 +676,19 @@ func ui() -> void:
 	colony_game.begin_build("fence");colony_game.view.preview_start=Vector2i(74,63);colony_game.view.preview_end=Vector2i(76,63)
 	colony_game._preview_text();colony_game.confirm_placement()
 	check("BUILD/UI_omitted_cells_keep_visible_reason",colony_game.view.rejected_build_tiles.has(Vector2i(75,63)) and not colony_game.view.rejected_build_tiles[Vector2i(75,63)].is_empty())
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	colony_game.show_person(1)
+	check("GEAR/UI_person_links_equipment",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Equipment"))
+	colony_game.world._make_stack("forged_toolkit",1,"store",colony_game.world.stores[0].id,Vector2i(66,63),true)
+	colony_game.show_equipment(1)
+	check("GEAR/UI_fetch_work_policy_and_gear_effects_explained",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("2 WU") and n.text.contains("Hauling")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Toolkit upgrades: Off"))
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Equip Forged toolkit": child.pressed.emit();break
+	check("GEAR/UI_named_equip_submits_one_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="equip" and colony_game.world.pending_commands[0].args.target==1 and colony_game.world.pending_commands[0].args.item=="forged_toolkit")
+	colony_game.runner.set_speed(1);colony_game.runner.advance_frame(0.1);colony_game._process(0);colony_game.runner.pause();colony_game.show_equipment(1)
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Toolkit upgrades: Off": child.pressed.emit();break
+	check("GEAR/UI_upgrade_is_explicit_policy_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="equipment_policy" and colony_game.world.pending_commands[0].args.upgrades)
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():
