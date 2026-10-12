@@ -10,17 +10,17 @@ Checkpoint: `0.0.1-m0`, content `m0-touch-1`, prototype save envelope `brackenwa
 | Portrait / landscape / large text | Pass, local subset | Real Controls at 360x640, 390x844, 640x360, 800x1280, 1280x800, 960x600; 100/125/150% text; nonzero safe insets; visible buttons >=48 logical units; native screenshots inspected |
 | Prototype save recovery | Pass, local subset | Checksum/schema/bounds rejection, pending command and movement round trip, three verified immutable generations, interrupted temp ignored, damaged latest falls back |
 | Background / return | Pass, local subset | Simulation stops, gestures canceled, resume paused; OS/device task battery still Not run |
-| Android storage plugin | Pass, build/unit subset | Original Kotlin v2 plugin; 4 JUnit bounded-stream tests; source builds debug/release AARs; native picker round trip pending |
-| Android arm64 APK | In progress | Sideload/debug build being installed and exercised in an emulator |
+| Android storage plugin | Pass, build/unit/emulator subset | Original Kotlin v2 plugin; 4 JUnit bounded-stream tests; source builds debug/release AARs; Android 35 arm64 emulator picker export/import passed: checksum verified, tick 1861 restored to exported tick 1800; Home froze the imported state |
+| Android arm64 APK | Pass, debug/emulator subset | 80 MiB; min SDK 29 / target 36; arm64-v8a only; merged manifest requests no permissions; installed and launched on Android 35 emulator (SwiftShader/ANGLE), not a physical phone |
 | macOS native launch | Pass | macOS Apple Silicon, Apple M5 Pro, OpenGL 4.1 Compatibility via Metal 90.5; native scene/UI runner launched |
 | Physical Android installation/input/rotation/storage | Not run | User will test later; emulator does not certify this gate |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
-| Other desktop native launches / replay parity | Not run | Later platform gates; no inference from macOS |
+| Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
 | Colony work loop (M1) and later milestones | Not implemented | Gather/haul/cook/build/needs, then sustainable colony, people/seasons, production/region, combat/story, campaign and release quality |
 | Production signing / public release / store publication | Not run | Separate later authorization |
 
-Local suites: 19 unit checks, 6 integration checks, 58 UI checks, 4 Kotlin JUnit tests. Test names using release acceptance IDs only cover the stated M0 subset. No release gate is certified merely by those names. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the actual results.
+Local suites: 19 unit checks, 6 integration checks, 60 UI checks, 4 Kotlin JUnit tests. Test names using release acceptance IDs only cover the stated M0 subset. No release gate is certified merely by those names. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the actual results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
-Weekly quota policy: read the account limits before work and at build/checkpoint boundaries; stop autonomous work if remaining weekly usage reaches 50% or less, preserving a validated commit first when possible. Latest observed at this checkpoint: 88% remaining. Do not resume past that boundary automatically.
+Weekly quota policy: read the account limits before work and at build/checkpoint boundaries; stop autonomous work if remaining weekly usage reaches 50% or less, preserving a validated commit first when possible. Latest observed at this checkpoint: 87% remaining. Do not resume past that boundary automatically.

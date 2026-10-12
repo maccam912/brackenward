@@ -14,14 +14,18 @@ LOCK = json.loads((ROOT / "toolchain.lock.json").read_text())
 CACHE = Path(os.environ.get("BRACKENWARD_TOOLCHAIN", Path.home() / ".local/share/brackenward/toolchain"))
 CACHE.mkdir(parents=True, exist_ok=True)
 
+def digest(path):
+    with path.open("rb") as stream:
+        return hashlib.file_digest(stream, "sha512").hexdigest()
+
 def archive(name):
     info = LOCK["archives"][name]
     path = CACHE / name
-    if not path.exists() or hashlib.sha512(path.read_bytes()).hexdigest() != info["sha512"]:
+    if not path.exists() or digest(path) != info["sha512"]:
         print("Downloading", name, flush=True)
         temp = path.with_suffix(path.suffix + ".partial")
         urllib.request.urlretrieve(info["url"], temp)
-        if hashlib.sha512(temp.read_bytes()).hexdigest() != info["sha512"]:
+        if digest(temp) != info["sha512"]:
             raise SystemExit("Archive checksum mismatch: " + name)
         temp.replace(path)
     return path
@@ -44,5 +48,13 @@ with zipfile.ZipFile(templates) as source:
         target = template_root / Path(entry.filename).name
         with source.open(entry) as incoming, target.open("wb") as output:
             shutil.copyfileobj(incoming, output)
+(binary.parent / "_sc_").touch()
+editor_data = (binary.parents[3] if sys.platform == "darwin" else binary.parent) / "editor_data"
+editor_data.mkdir(exist_ok=True)
+isolated_templates = editor_data / "export_templates"
+isolated_templates.mkdir(exist_ok=True)
+link = isolated_templates / "4.7.2.stable"
+if not link.exists():
+    link.symlink_to(template_root, target_is_directory=True)
 print("Verified Godot 4.7.2:", binary)
 print("Set BRACKENWARD_GODOT to this executable on Linux.")

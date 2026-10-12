@@ -78,5 +78,65 @@
     "sha256": "af0f6f8c982ad6570e929d0886b1cfb27dffaf4ee22a98a14ed54c37cd0a9693",
     "edited": false,
     "evidence": "assets/licenses/kenney_fonts.md"
+  },
+  {
+    "id": "app_icon",
+    "path": "assets/exported/ui/app_icon.svg",
+    "source": "assets/exported/ui/app_icon.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "cc08ec3b9c0fe05a4a8eafc867b6cbf32f21abf6ff734c9f87417aa72b53b3fe",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "build",
+    "path": "assets/exported/ui/build.svg",
+    "source": "assets/exported/ui/build.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "f3738e6534298d4e40355dab7bee639cc70f3491042c4bcc8bcedb407726ec43",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "journal",
+    "path": "assets/exported/ui/journal.svg",
+    "source": "assets/exported/ui/journal.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "77d142d7207fcc81bc0f6e1ee36ae4618c2b4669bc368e8f1af78f6e2510f67f",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "people",
+    "path": "assets/exported/ui/people.svg",
+    "source": "assets/exported/ui/people.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "ca26cf8502dd5fd625e363ce1328c44f3f0dd25d46d1f8ca708eddf0065a1fe7",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "valley",
+    "path": "assets/exported/ui/valley.svg",
+    "source": "assets/exported/ui/valley.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "5251d059dd364da8756306384530091bb754549ec384f3813c74a4fa1791384d",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "work",
+    "path": "assets/exported/ui/work.svg",
+    "source": "assets/exported/ui/work.svg",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "79f2fa2f039fcdab0407f77364f83ecf4d2edd3c6435807f9ce5e9b751447069",
+    "edited": false,
+    "evidence": "assets/licenses/original_media.md"
   }
 ]

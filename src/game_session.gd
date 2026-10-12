@@ -37,6 +37,7 @@ var export_bytes: PackedByteArray = PackedByteArray()
 var document_pending: bool = false
 var test_insets: Vector4 = Vector4.ZERO
 var controls: Array[Button] = []
+var nav_labels: Array[Label] = []
 
 func _ready() -> void:
 	Engine.max_fps = 30
@@ -56,7 +57,7 @@ func _ready() -> void:
 	_build_speed_controls()
 	_build_map_tools()
 	_build_placement()
-	resized.connect(_layout)
+	resized.connect(_resize)
 	_layout()
 	show_sheet("Welcome")
 
@@ -130,7 +131,30 @@ func _build_navigation() -> void:
 	content.add_child(nav)
 	for title in ["Build", "Work", "People", "Valley", "Journal"]:
 		var entry: Button = button(title, func() -> void: show_sheet(title), nav)
+		entry.text = ""
+		entry.tooltip_text = title
 		entry.custom_minimum_size.y = 64
+		var art: VBoxContainer = VBoxContainer.new()
+		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		entry.add_child(art)
+		art.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		art.offset_top = 4
+		art.offset_bottom = -4
+		art.add_theme_constant_override("separation", 2)
+		var icon: TextureRect = TextureRect.new()
+		icon.texture = load("res://assets/exported/ui/%s.svg" % title.to_lower())
+		icon.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		icon.custom_minimum_size = Vector2(24, 24)
+		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		art.add_child(icon)
+		var caption: Label = Label.new()
+		caption.text = title
+		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		caption.add_theme_font_size_override("font_size", int(16 * text_scale))
+		art.add_child(caption)
+		nav_labels.append(caption)
 		entry.add_theme_font_size_override("font_size", int(16 * text_scale))
 		for state in ["normal", "hover", "pressed", "focus"]:
 			var box: StyleBoxFlat = entry.get_theme_stylebox(state).duplicate()
@@ -315,12 +339,13 @@ func show_sheet(title: String) -> void:
 	sheet.add_child(rows)
 	var top: HBoxContainer = HBoxContainer.new()
 	rows.add_child(top)
-	label(title, top)
-	button("Close", close_sheet, top, 64)
-	button("Pause", func() -> void: runner.pause(), top, 72)
-	sheet_feedback = label(notice, rows)
-	sheet_feedback.max_lines_visible = 2
-	sheet_feedback.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	var heading: Label = label(title, top)
+	heading.add_theme_font_override("font", load("res://assets/exported/fonts/kenney_bold.ttf"))
+	heading.add_theme_font_size_override("font_size", int(22 * text_scale))
+	var close_button: Button = button("Close", close_sheet, top, 64)
+	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
+	var pause_button: Button = button("Pause", func() -> void: runner.pause(), top, 72)
+	pause_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var scroll: ScrollContainer = ScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
@@ -328,6 +353,8 @@ func show_sheet(title: String) -> void:
 	sheet_body = VBoxContainer.new()
 	sheet_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(sheet_body)
+	sheet_feedback = label(notice, sheet_body)
+	sheet_feedback.visible = title != "Welcome"
 	match title:
 		"Welcome":
 			label("Four travelers. A ruined wayhouse. Make a place to stay.", sheet_body)
@@ -366,6 +393,7 @@ func show_sheet(title: String) -> void:
 			button("Introduction", func() -> void: show_sheet("Welcome"), sheet_body)
 	_layout()
 	get_viewport().gui_release_focus()
+	call_deferred("_layout")
 
 func close_sheet() -> void:
 	if sheet != null:
@@ -399,6 +427,8 @@ func _layout() -> void:
 	for child: Button in nav.get_children():
 		child.custom_minimum_size.x = width / nav.columns
 		child.add_theme_font_size_override("font_size", int(16 * text_scale))
+	for caption in nav_labels:
+		caption.add_theme_font_size_override("font_size", int(16 * text_scale))
 	nav.reset_size()
 	nav.size = Vector2(width, navigation_height)
 	speeds.position = Vector2(8 if left_handed else maxf(8, width - 248), height - navigation_height - 56)
@@ -412,6 +442,7 @@ func _layout() -> void:
 	placement.size = Vector2(width - 16, 160)
 	if sheet != null:
 		sheet.position = Vector2(8, 8)
+		sheet.reset_size()
 		sheet.size = Vector2(width - 16, maxf(120, height - navigation_height - 72))
 		sheet.move_to_front()
 	if inspector != null:
@@ -419,7 +450,15 @@ func _layout() -> void:
 		inspector.position = Vector2(width - 328, header_height + 8) if wide else Vector2(8, maxf(header_height, height - navigation_height - 248))
 		inspector.size = Vector2(320 if wide else width - 16, 184)
 		inspector.move_to_front()
+		view.focus_offset = Vector2(-164, 0) if wide else Vector2(0, -120)
+	else:
+		view.focus_offset = Vector2.ZERO
 	speeds.move_to_front()
+
+func _resize() -> void:
+	if view != null:
+		view.cancel_gesture()
+	_layout()
 
 func save_local() -> void:
 	var error: String = store.save(world)

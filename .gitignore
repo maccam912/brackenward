@@ -17,3 +17,4 @@ addons/android_save/*.aar
 *.keystore
 *.jks
 .DS_Store
+__pycache__/

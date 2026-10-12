@@ -1,0 +1,57 @@
+name: Prototype checks and exports
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  prototype:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      BRACKENWARD_GODOT: /home/runner/.local/share/brackenward/toolchain/4.7.2/Godot_v4.7.2-stable_linux.x86_64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Install verified engine/templates
+        run: python3 tools/bootstrap.py
+      - name: Install Android toolchain packages
+        run: sdkmanager 'platforms;android-36' 'build-tools;36.1.0' 'ndk;29.0.14206865' 'cmake;3.10.2.4988404'
+      - name: Validate media and prototype contract
+        run: python3 tools/validate_content.py
+      - name: Import project
+        run: tools/godot.sh --headless --editor --import
+      - name: Unit and deterministic integration checks
+        run: |
+          tools/godot.sh --headless --script tools/run_suite.gd -- --suite unit
+          tools/godot.sh --headless --script tools/run_suite.gd -- --suite integration
+      - name: Real Control/input/layout suite
+        run: xvfb-run -a tools/godot.sh --script tools/run_suite.gd -- --suite ui
+      - name: Build/test Kotlin plugin and Android debug APK
+        run: tools/build_android.sh
+      - name: Export desktop prototypes
+        run: |
+          tools/godot.sh --headless --export-debug Windows build/brackenward.exe
+          tools/godot.sh --headless --export-debug macOS build/brackenward-macos.zip
+          tools/godot.sh --headless --export-debug Linux build/brackenward-linux
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prototype-evidence
+          path: |
+            reports/*.xml
+            reports/*.png
+            platform/android_save/plugin/build/test-results/testDebugUnitTest/*.xml
+            build/
+          if-no-files-found: error

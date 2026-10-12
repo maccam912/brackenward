@@ -169,7 +169,7 @@ func ui() -> void:
 			game.show_sheet("Menu")
 			await process_frame
 			await process_frame
-			check("UI05/sheet_%dx%d_%d" % [viewport_size.x, viewport_size.y, int(scale_factor * 100)], game.sheet.size.x <= game.content.size.x and game.sheet.size.y <= game.content.size.y - 64)
+			check("UI05/sheet_%dx%d_%d" % [viewport_size.x, viewport_size.y, int(scale_factor * 100)], game.sheet.size.x <= game.content.size.x and game.sheet.size.y <= game.content.size.y - 64, str([game.sheet.size, game.sheet.get_combined_minimum_size(), game.content.size, game.sheet.get_child(0).get_child(0).get_child(0).size]))
 			game.close_sheet()
 	root.size = Vector2i(960, 600)
 	game.size = Vector2(960, 600)
@@ -178,6 +178,18 @@ func ui() -> void:
 	game._build_theme()
 	game._layout()
 	game.begin_placement()
+	var original_start: Vector2i = game.view.preview_start
+	var original_end: Vector2i = game.view.preview_end
+	game.view.gestures.begin(0, Vector2(100, 100))
+	root.size = Vector2i(390, 844)
+	game.size = Vector2(390, 844)
+	await process_frame
+	await process_frame
+	check("UI06/rotation_preserves_preview", game.view.preview_start == original_start and game.view.preview_end == original_end and game.world.pending_commands.is_empty() and game.runner.speed == 0 and game.view.gestures.fingers.is_empty())
+	root.size = Vector2i(960, 600)
+	game.size = Vector2(960, 600)
+	await process_frame
+	await process_frame
 	var touch: InputEventScreenTouch = InputEventScreenTouch.new()
 	touch.index = 0
 	touch.position = Vector2(200, 200)
@@ -207,6 +219,7 @@ func ui() -> void:
 	game.view.follow_id = 1
 	await process_frame
 	await process_frame
+	check("UI05/inspector_inside_viewport", game.inspector.position.y + game.inspector.size.y <= game.content.size.y - game.nav.size.y)
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://reports/m0-landscape.png")

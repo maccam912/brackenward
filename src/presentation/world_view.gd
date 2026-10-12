@@ -6,6 +6,7 @@ var world: PrototypeWorld
 var gestures: GestureState = GestureState.new()
 var camera_tile: Vector2 = Vector2(68, 63)
 var tile_size: float = 32.0
+var focus_offset: Vector2 = Vector2.ZERO
 var preview_start: Vector2i = Vector2i(74, 54)
 var preview_end: Vector2i = Vector2i(77, 55)
 var preview_visible: bool = false
@@ -125,16 +126,16 @@ func _apply_intent(action: Dictionary) -> void:
 	queue_redraw()
 
 func screen_to_tile(point: Vector2) -> Vector2i:
-	var tile: Vector2 = (point - size * 0.5) / tile_size + camera_tile
+	var tile: Vector2 = (point - size * 0.5 - focus_offset) / tile_size + camera_tile
 	return Vector2i(clampi(int(floor(tile.x)), 0, 127), clampi(int(floor(tile.y)), 0, 127))
 
 func tile_to_screen(tile: Vector2) -> Vector2:
-	return (tile - camera_tile) * tile_size + size * 0.5
+	return (tile - camera_tile) * tile_size + size * 0.5 + focus_offset
 
 func zoom_at(ratio: float, point: Vector2) -> void:
-	var anchor: Vector2 = (point - size * 0.5) / tile_size + camera_tile
+	var anchor: Vector2 = (point - size * 0.5 - focus_offset) / tile_size + camera_tile
 	tile_size = clampf(tile_size * ratio, 16.0, 64.0)
-	camera_tile = anchor - (point - size * 0.5) / tile_size
+	camera_tile = anchor - (point - size * 0.5 - focus_offset) / tile_size
 	_update_transform()
 
 func cancel_gesture() -> void:
@@ -154,7 +155,7 @@ func _update_transform() -> void:
 	camera_tile.x = clampf(camera_tile.x, 0.0, 128.0)
 	camera_tile.y = clampf(camera_tile.y, 0.0, 128.0)
 	ground.scale = Vector2.ONE * tile_size / 16.0
-	ground.position = size * 0.5 - camera_tile * tile_size
+	ground.position = size * 0.5 + focus_offset - camera_tile * tile_size
 
 func _draw() -> void:
 	if world == null:

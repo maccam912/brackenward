@@ -17,7 +17,8 @@ if not (android / "config.gradle").is_file():
         archive.extractall(android)
 if hashlib.sha256((android / "config.gradle").read_bytes()).hexdigest() != lock["template_config_sha256"]:
     raise SystemExit("Android template config differs from toolchain.lock.json; refusing an unpinned build.")
-(root / "android/.build_version").write_text("4.7.2.stable")
+(root / "android/.build_version").write_text("4.7.2.stable\n")
+(root / "android/.gdignore").touch()
 sdk = Path(os.environ.get("ANDROID_HOME", Path.home() / "Library/Android/sdk"))
 java = Path(os.environ.get("JAVA_HOME", "/opt/homebrew/opt/openjdk@17/libexec/openjdk.jdk/Contents/Home"))
 for directory in (android, root / "platform/android_save"):
@@ -26,7 +27,10 @@ for required in ("platforms/android-36", "build-tools/36.1.0", "ndk/29.0.1420686
     if not (sdk / required).is_dir():
         raise SystemExit("Missing Android SDK package: " + required)
 # Editor path settings stay local and contain no signing credentials.
-settings_dir = Path.home() / ("Library/Application Support/Godot" if sys.platform == "darwin" else ".config/godot")
+binary = Path(os.environ.get("BRACKENWARD_GODOT", Path.home() / ".local/share/brackenward/toolchain/4.7.2/Godot.app/Contents/MacOS/Godot"))
+if not (binary.parent / "_sc_").exists():
+    raise SystemExit("Use the isolated editor installed by tools/bootstrap.py for Android builds; no shared editor settings will be edited.")
+settings_dir = (binary.parents[3] if sys.platform == "darwin" else binary.parent) / "editor_data"
 settings_dir.mkdir(parents=True, exist_ok=True)
 settings = settings_dir / "editor_settings-4.7.tres"
 if settings.exists():
