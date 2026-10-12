@@ -15,6 +15,9 @@ var map_tools: VBoxContainer
 var placement: VBoxContainer
 var preview_label: Label
 var confirm_button: Button
+var placement_nudges: HBoxContainer
+var placement_actions: HBoxContainer
+var placement_wide_row: HBoxContainer
 var sheet: PanelContainer
 var sheet_body: VBoxContainer
 var sheet_feedback: Label
@@ -191,21 +194,24 @@ func _build_placement() -> void:
 	content.add_child(placement)
 	placement.visible = false
 	preview_label = label("", placement)
-	var nudges: HBoxContainer = HBoxContainer.new()
-	placement.add_child(nudges)
+	preview_label.add_theme_stylebox_override("normal", _box(Color("263C3B")))
+	placement_nudges = HBoxContainer.new()
+	placement.add_child(placement_nudges)
 	for direction in [Vector2i.LEFT, Vector2i.RIGHT, Vector2i.UP, Vector2i.DOWN]:
 		var title: String = {Vector2i.LEFT: "Left", Vector2i.RIGHT: "Right", Vector2i.UP: "Up", Vector2i.DOWN: "Down"}[direction]
 		button(title, func() -> void:
 			view.preview_end += direction
 			view.preview_end.x = clampi(view.preview_end.x, 0, 127)
-			view.preview_end.y = clampi(view.preview_end.y, 0, 127), nudges)
-	var actions: HBoxContainer = HBoxContainer.new()
-	placement.add_child(actions)
-	button("Cancel", cancel_placement, actions, 64)
+			view.preview_end.y = clampi(view.preview_end.y, 0, 127), placement_nudges)
+	placement_actions = HBoxContainer.new()
+	placement.add_child(placement_actions)
+	button("Cancel", cancel_placement, placement_actions, 64)
 	button("Pan", func() -> void:
 		view.cancel_gesture()
-		view.gestures.mode = "paint" if view.gestures.mode == "pan" else "pan", actions, 64)
-	confirm_button = button("Confirm", confirm_placement, actions, 96)
+		view.gestures.mode = "paint" if view.gestures.mode == "pan" else "pan", placement_actions, 64)
+	confirm_button = button("Confirm", confirm_placement, placement_actions, 96)
+	placement_wide_row = HBoxContainer.new()
+	placement.add_child(placement_wide_row)
 
 func _process(delta: float) -> void:
 	if not is_node_ready() or backgrounded:
@@ -246,7 +252,7 @@ func begin_placement() -> void:
 	view.preview_visible = true
 	view.gestures.mode = "paint"
 	placement.visible = true
-	view.camera_tile = Vector2(77, 57)
+	view.camera_tile = Vector2(77, 55)
 	notice = "Paint an area, then Confirm. Dragging never submits an order."
 	_layout()
 
@@ -439,6 +445,17 @@ func _layout() -> void:
 	map_tools.size = Vector2(112, 160)
 	map_tools.visible = sheet == null and not placement.visible
 	placement.position = Vector2(8, header_height + 8)
+	if (width >= 600 and height < 500) or (text_scale > 1.0 and height < 700):
+		placement.position.y = 8
+	var placement_parent: Node = placement_wide_row if width >= 600 else placement
+	if placement_nudges.get_parent() != placement_parent:
+		placement_nudges.reparent(placement_parent)
+		placement_actions.reparent(placement_parent)
+		if width < 600:
+			placement.move_child(placement_nudges, 1)
+			placement.move_child(placement_actions, 2)
+	placement_wide_row.visible = width >= 600
+	placement.reset_size()
 	placement.size = Vector2(width - 16, 160)
 	if sheet != null:
 		sheet.position = Vector2(8, 8)

@@ -171,6 +171,11 @@ func ui() -> void:
 			await process_frame
 			check("UI05/sheet_%dx%d_%d" % [viewport_size.x, viewport_size.y, int(scale_factor * 100)], game.sheet.size.x <= game.content.size.x and game.sheet.size.y <= game.content.size.y - 64, str([game.sheet.size, game.sheet.get_combined_minimum_size(), game.content.size, game.sheet.get_child(0).get_child(0).get_child(0).size]))
 			game.close_sheet()
+			game.begin_placement()
+			await process_frame
+			await process_frame
+			check("UI03/confirm_clear_%dx%d_%d" % [viewport_size.x, viewport_size.y, int(scale_factor * 100)], not game.confirm_button.get_global_rect().intersects(game.speeds.get_global_rect()) and game.confirm_button.get_global_rect().end.y <= game.nav.get_global_rect().position.y)
+			game.cancel_placement()
 	root.size = Vector2i(960, 600)
 	game.size = Vector2(960, 600)
 	game.test_insets = Vector4.ZERO

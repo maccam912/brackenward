@@ -35,6 +35,8 @@ jobs:
         run: sdkmanager 'platforms;android-36' 'build-tools;36.1.0' 'ndk;29.0.14206865' 'cmake;3.10.2.4988404'
       - name: Validate media and prototype contract
         run: python3 tools/validate_content.py
+      - name: Install Linux UI test dependencies
+        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
       - name: Import project
         run: tools/godot.sh --headless --editor --import
       - name: Unit and deterministic integration checks
@@ -50,6 +52,7 @@ jobs:
           tools/godot.sh --headless --export-debug Windows build/brackenward.exe
           tools/godot.sh --headless --export-debug macOS build/brackenward-macos.zip
           tools/godot.sh --headless --export-debug Linux build/brackenward-linux
+          xvfb-run -a build/brackenward-linux --quit-after 60
       - uses: actions/upload-artifact@v4
         if: always()
         with:
