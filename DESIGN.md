@@ -2,13 +2,13 @@
 
 Revision 1.1 · 12 October 2026 · Project directory: `~/dev/brackenward`
 
-**Status: implementation authorized on 12 October 2026.** This is the contract for the complete first release, its intermediate milestones, and its acceptance tests. Implementation evidence and outstanding gates are tracked in `reports/STATUS.md`; planned systems below are not automatically implemented or validated. The current checkpoint is M0, with physical Android testing deferred by the user.
+**Status: implementation authorized on 12 October 2026.** This is the contract for the complete first release, its intermediate milestones, and its acceptance tests. Implementation evidence and outstanding gates are tracked in `reports/STATUS.md`; planned systems below are not automatically implemented or validated. The current checkpoint is M0, with physical Android testing deferred by the user. The user authorized continuing M1 and all later implementation without waiting for phone tests, and publishing checked per-commit development APKs. Physical and human release gates remain pending until exercised.
 
 Brackenward is an offline colony simulation about making a woodland refuge worth staying in. The player lays out a settlement, assigns work, sets policies, and watches a small group of adults turn those intentions into daily life. Its interest comes from shared resources, competing uses of time, personalities, geography, and consequences that persist. A phone player must be able to understand a problem where it happens and do something useful about it without reading a wiki.
 
 The first release supports Android, Windows, macOS, and Linux. Android is a release gate from the first playable milestone. Both portrait and landscape are fully playable. There is no direct player avatar, subscription, advertising, paid acceleration, online requirement, or simulation while the app is closed.
 
-Plan the initial release as free downloadable Android and desktop builds. There is no account, entitlement check, external economy, or paid content tier. Publishing those builds remains a later task.
+Plan the initial release as free downloadable Android and desktop builds. There is no account, entitlement check, external economy, or paid content tier. Publishing checked development APKs on each main-branch commit is authorized; finished production releases remain a later gate.
 
 ## Contents
 
@@ -1091,11 +1091,11 @@ iOS remains outside 1.0 delivery. Keep input/persistence behind interfaces so a 
 
 Once implementation begins, pin the Godot binary/export-template hashes and all Android build package versions in `toolchain.lock.json`. Set `gl_compatibility` for both the global rendering method and mobile override. Commit export presets without secrets. Build debug and release APKs separately; release validation uses the actual release export with debug-only tools absent. Android debug tests may also use an x86-64 emulator export, but the deliverable ABI is arm64-v8a.
 
-CI must validate catalogs, import assets, run deterministic suites, and export Android plus desktop packages. A successful build is distinct from a successful native launch, a physical Android run, a cross-platform save/replay match, a signed release, and a published download. Every milestone report must state each applicable status explicitly. Shipping requires a clean install and an upgrade preserving saves, in addition to all core acceptance gates. Public publishing, store submission, signing-key creation, and telemetry integration require their own later task authorization.
+CI must validate catalogs, import assets, run deterministic suites, and export Android plus desktop packages. A successful build is distinct from a successful native launch, a physical Android run, a cross-platform save/replay match, a signed release, and a published download. Every milestone report must state each applicable status explicitly. Shipping requires a clean install and an upgrade preserving saves, in addition to all core acceptance gates. Per-commit development APK publishing and a stable development signing identity are authorized. Production signing, store submission, and telemetry integration require their own later task authorization.
 
 ## 24 Implementation milestones
 
-Build these milestones in order when implementation is authorized. Each one must leave a runnable, inspectable checkpoint and pass its exit gate before adding the next system. The complete 1.0 scope remains §§1–23; a slice is not permission to silently omit a later requirement. Do not implement the full catalog before proving the basic phone interaction and worker loop.
+Build these milestones in order when implementation is authorized. Each one must leave a runnable, inspectable checkpoint and pass its automated exit gate before adding the next system. At the user's direction, deferred physical-device and human tests do not block implementation; they still block certification of the applicable release gates. The complete 1.0 scope remains §§1–23; a slice is not permission to silently omit a later requirement. Do not implement the full catalog before proving the basic phone interaction and worker loop.
 
 | Milestone | Deliverable | Exit gate |
 | --- | --- | --- |

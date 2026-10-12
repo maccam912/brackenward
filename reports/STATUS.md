@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.0.1-m0`, content `m0-touch-1`, prototype save envelope `brackenward-m0` version 1. The complete release generator and campaign format do not exist yet. Implementation was authorized on 12 October 2026. The user deferred physical-phone testing until later; M1 waits for the M0 device gate.
+Checkpoint: `0.0.1-m0`, content `m0-touch-1`, prototype save envelope `brackenward-m0` version 1. The complete release generator and campaign format do not exist yet. Implementation was authorized on 12 October 2026. The user deferred physical-phone testing until later; M1 and later implementation are explicitly authorized to continue without that device gate. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -18,7 +18,7 @@ Checkpoint: `0.0.1-m0`, content `m0-touch-1`, prototype save envelope `brackenwa
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
 | Remote CI | Pass at code checkpoint `8030a22` | [Linux checks, Kotlin tests, Android APK, all desktop exports and exported Linux launch](https://github.com/maccam912/brackenward/actions/runs/38251297873); all 111 local/CI checks pass, including rendered-preview and keyboard-focus regressions |
 | Colony work loop (M1) and later milestones | Not implemented | Gather/haul/cook/build/needs, then sustainable colony, people/seasons, production/region, combat/story, campaign and release quality |
-| Production signing / public release / store publication | Not run | Separate later authorization |
+| Development APK publication | In progress | Every checked main-branch commit creates a downloadable prerelease with a stable development signing identity; production signing and store publication remain pending |
 
 Local suites: 19 unit checks, 6 integration checks, 82 UI checks, 4 Kotlin JUnit tests. Test names using release acceptance IDs only cover the stated M0 subset. No release gate is certified merely by those names. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the actual results.
 

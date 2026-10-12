@@ -1,7 +1,8 @@
-name: Prototype checks and exports
+name: Checks, exports and development APK releases
 
 on:
   push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -46,7 +47,30 @@ jobs:
       - name: Real Control/input/layout suite
         run: xvfb-run -a tools/godot.sh --script tools/run_suite.gd -- --suite ui
       - name: Build/test Kotlin plugin and Android debug APK
-        run: tools/build_android.sh
+        env:
+          DEVELOPMENT_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$DEVELOPMENT_KEYSTORE_BASE64" ]; then
+            umask 077
+            printf '%s' "$DEVELOPMENT_KEYSTORE_BASE64" | base64 --decode > "$RUNNER_TEMP/brackenward-debug.keystore"
+            export GODOT_ANDROID_KEYSTORE_DEBUG_PATH="$RUNNER_TEMP/brackenward-debug.keystore"
+            export GODOT_ANDROID_KEYSTORE_DEBUG_USER=androiddebugkey
+            export GODOT_ANDROID_KEYSTORE_DEBUG_PASSWORD=android
+          elif [ "$GITHUB_EVENT_NAME" = push ]; then
+            echo 'Missing stable development keystore secret.' >&2
+            exit 1
+          fi
+          python3 tools/stamp_build.py
+          tools/build_android.sh
+          mkdir -p build/download
+          cp build/brackenward-debug.apk build/download/
+          cp data/build.json build/download/build.json
+          (cd build/download && sha256sum brackenward-debug.apk > SHA256SUMS.txt)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: development-apk
+          path: build/download/
+          if-no-files-found: error
       - name: Export desktop prototypes
         run: |
           tools/godot.sh --headless --export-debug Windows build/brackenward.exe
@@ -63,3 +87,35 @@ jobs:
             platform/android_save/plugin/build/test-results/testDebugUnitTest/*.xml
             build/
           if-no-files-found: warn
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: prototype
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: development-apk
+          path: download
+      - name: Publish checked APK for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TAG="dev-${GITHUB_SHA:0:12}"
+          cat > "$RUNNER_TEMP/release-notes.md" <<EOF
+          Development APK from commit $GITHUB_SHA.
+
+          Download brackenward-debug.apk below and sideload it on an Android 10+ arm64 phone. These development APKs share a signing identity and can update one another while preserving app data. Saves from development milestones remain explicitly versioned; do not uninstall the app to update it.
+
+          Automated simulation, UI, Kotlin, APK and desktop-export checks passed in [this run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID). Physical-phone testing remains pending. This is a debug build, not the finished game or a production-signed release.
+
+          build.json identifies the source and build; SHA256SUMS.txt verifies the APK.
+          EOF
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --target "$GITHUB_SHA" --title "Development ${GITHUB_SHA:0:7}" --draft --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
+          fi
+          gh release upload "$TAG" download/brackenward-debug.apk download/SHA256SUMS.txt download/build.json --clobber
+          gh release edit "$TAG" --draft=false

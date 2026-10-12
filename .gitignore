@@ -18,3 +18,4 @@ addons/android_save/*.aar
 *.jks
 .DS_Store
 __pycache__/
+/data/build.json
