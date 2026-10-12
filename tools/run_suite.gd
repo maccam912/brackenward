@@ -143,10 +143,13 @@ func integration() -> void:
 	DirAccess.remove_absolute(store.directory)
 
 func ui() -> void:
+	var ui_m0_directory: String = "user://ui-m0-%d" % Time.get_ticks_usec()
+	var ui_colony_directory: String = "user://ui-colony-%d" % Time.get_ticks_usec()
 	var game: GameSession = load("res://scenes/game.tscn").instantiate()
 	game.world = PrototypeWorld.new()
 	game.runner = SimRunner.new(game.world)
 	game.store = PrototypeStore.new()
+	game.store.directory = ui_m0_directory
 	root.add_child(game)
 	await process_frame
 	await process_frame
@@ -268,6 +271,7 @@ func ui() -> void:
 	game.queue_free()
 	await process_frame
 	var colony_game: GameSession = load("res://scenes/game.tscn").instantiate()
+	colony_game.store.directory = ui_colony_directory
 	root.add_child(colony_game)
 	await process_frame
 	colony_game.close_sheet()
@@ -326,12 +330,33 @@ func ui() -> void:
 	await process_frame
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
+		var citizen: Dictionary = colony_game.world.citizens[0]
+		citizen.x = 75
+		citizen.y = 55
+		citizen.progress = 0
+		colony_game.view.camera_tile = Vector2(75,55)
+		await process_frame
+		var actor_sample: Vector2 = colony_game.view.get_global_transform()*colony_game.view.tile_to_screen(Vector2(75.5,55.5))-Vector2(0,colony_game.view.tile_size)
+		colony_game.view.actor_layer.visible = false
+		await RenderingServer.frame_post_draw
+		var without_actor: Color = root.get_texture().get_image().get_pixelv(Vector2i(actor_sample))
+		colony_game.view.actor_layer.visible = true
+		await RenderingServer.frame_post_draw
+		var with_actor: Color = root.get_texture().get_image().get_pixelv(Vector2i(actor_sample))
+		check("M2/UI_worker_visible_over_field",without_actor != with_actor,str([without_actor,with_actor]))
 		root.get_texture().get_image().save_png("res://reports/m2-landscape.png")
 		root.size = Vector2i(390, 844)
 		colony_game.size = Vector2(390, 844)
-		colony_game.view.camera_tile = Vector2(68, 63)
+		colony_game.view.camera_tile = Vector2(75,55)
 		await process_frame
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://reports/m2-portrait.png")
 	colony_game.queue_free()
 	await process_frame
+	if failures.is_empty():
+		for directory in [ui_m0_directory,ui_colony_directory]:
+			if not DirAccess.dir_exists_absolute(directory):
+				continue
+			for name in DirAccess.get_files_at(directory):
+				DirAccess.remove_absolute(directory.path_join(name))
+			DirAccess.remove_absolute(directory)

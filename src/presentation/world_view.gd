@@ -16,6 +16,7 @@ var selected_id: int = 0
 var follow_id: int = 0
 var magnifier: Vector2 = Vector2(-100, -100)
 var ground: Node2D
+var actor_layer: Node2D
 var terrain: TileMapLayer
 var actors: Array[Sprite2D] = []
 
@@ -38,6 +39,9 @@ func setup(state: RefCounted) -> void:
 	tile_set.add_source(atlas, 0)
 	terrain.tile_set = tile_set
 	ground.add_child(terrain)
+	actor_layer = Node2D.new()
+	actor_layer.y_sort_enabled = true
+	add_child(actor_layer)
 	for y in range(128):
 		for x in range(128):
 			var cell: int = (x * 17 + y * 13) % 2
@@ -54,7 +58,7 @@ func setup(state: RefCounted) -> void:
 		var actor: Sprite2D = Sprite2D.new()
 		actor.texture = load("res://assets/exported/citizens/%s.svg" % name)
 		actor.offset = Vector2(0, -8)
-		ground.add_child(actor)
+		actor_layer.add_child(actor)
 		actors.append(actor)
 	resized.connect(_update_transform)
 	_update_transform()
@@ -172,6 +176,8 @@ func _update_transform() -> void:
 	camera_tile.y = clampf(camera_tile.y, 0.0, 128.0)
 	ground.scale = Vector2.ONE * tile_size / 16.0
 	ground.position = size * 0.5 + focus_offset - camera_tile * tile_size
+	actor_layer.scale = ground.scale
+	actor_layer.position = ground.position
 
 func _draw() -> void:
 	if world == null:

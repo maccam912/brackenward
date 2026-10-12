@@ -46,6 +46,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 				world.get(field).assign(data[field])
 			else:
 				world.set(field, data[field])
+	world.record_indexes.clear()
 	var errors: Array[String] = world.invariant_errors()
 	if not errors.is_empty():
 		return {"error": "Invalid colony invariants: " + str(errors)}

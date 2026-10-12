@@ -27,6 +27,7 @@ var navigation_dirty: bool = true
 var solid_tiles: Dictionary = {}
 var reachable_home: Dictionary = {}
 var reachability_dirty: bool = true
+var record_indexes: Dictionary = {}
 var designations: Array[Vector2i] = []
 var receipts: Dictionary = {}
 var pending_commands: Array[Dictionary] = []
@@ -149,6 +150,23 @@ func _structure(kind: String, anchor: Vector2i, rotation: int) -> Dictionary:
 	return result
 
 func find(records: Array[Dictionary], id: int) -> Dictionary:
+	if id == 0:
+		return {}
+	var table: String = ""
+	for name in ["citizens","structures","resources","stacks","jobs","stores","fields"]:
+		if is_same(records,get(name)):
+			table = name
+			break
+	if not table.is_empty():
+		var index: Dictionary = record_indexes.get(table,{})
+		if index.has(id):
+			return index[id]
+		for record in records:
+			if record.id == id:
+				index[id] = record
+				record_indexes[table] = index
+				return record
+		return {}
 	for record in records:
 		if record.id == id:
 			return record
@@ -279,6 +297,7 @@ func _command(command: Dictionary) -> String:
 				if job.target == field.id and job.state not in ["Complete", "Canceled"]:
 					_release(job, true)
 			fields.erase(field)
+			record_indexes.clear()
 		"stock_filter":
 			var store: Dictionary = find(stores, args.target)
 			if store.is_empty() or not args.filters.all(func(item: Variant) -> bool: return definitions.items.has(item)) or args.priority not in [1,2,3]:

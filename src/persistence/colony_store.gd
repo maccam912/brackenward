@@ -68,7 +68,8 @@ func load_latest() -> Dictionary:
 	var earlier_errors: Array[String] = []
 	for name in generations:
 		var snapshot_bytes: PackedByteArray = FileAccess.get_file_as_bytes(directory.path_join(name))
-		var header: Variant = JSON.parse_string(snapshot_bytes.get_string_from_utf8())
+		var parser: JSON = JSON.new()
+		var header: Variant = parser.data if parser.parse(snapshot_bytes.get_string_from_utf8()) == OK else null
 		var legacy: bool = header is Dictionary and header.get("content") == "m1-loop-1"
 		var decoded: Dictionary = M1Codec.decode(snapshot_bytes) if legacy else decode(snapshot_bytes)
 		if decoded.has("error"):

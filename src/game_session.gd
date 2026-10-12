@@ -240,10 +240,11 @@ func _process(delta: float) -> void:
 		notice = "Order accepted. Resume to watch the work." if receipt == "accepted" else "Order rejected: " + receipt
 		submitted_command = 0
 		confirm_button.disabled = false
-	var day: int = world.tick / 7200 + 1
+	var day: int = (world.tick / 7200) % 8 + 1
+	var season_name: String = ["Spring","Summer","Autumn","Winter"][ColonyAgriculture.season(world.tick)]
 	var hour: int = (world.tick % 7200) / 300
 	var minute: int = (world.tick % 300) / 5
-	clock_label.text = "Spring %d  %02d:%02d\n%s | %s" % [day, hour, minute, ("Meals %d  Wood %d" % [world.available("meal"), world.available("wood")]) if world is ColonyWorld else "4 travelers", "Paused" if runner.speed == 0 else "%dx" % runner.speed]
+	clock_label.text = "%s %d Y%d  %02d:%02d\n%s | %s" % [season_name,day,world.tick/230400+1,hour,minute,("Meals %d  Wood %d" % [world.available("meal"),world.available("wood")]) if world is ColonyWorld else "4 travelers","Paused" if runner.speed == 0 else "%dx" % runner.speed]
 	_update_inspector()
 	if world is ColonyWorld:
 		forecast_elapsed += delta
