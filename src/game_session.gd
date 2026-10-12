@@ -44,6 +44,10 @@ var controls: Array[Button] = []
 var nav_labels: Array[Label] = []
 var inspector_details: Label
 var rotation_button: Button
+var placement_kind: String = "stockpile"
+var forecast_elapsed: float = 0.0
+var food_warning_level: int = 0
+var forecast: Dictionary = {"portions":24,"ticks":21600,"label":"24 portions | 3 days stored runway"}
 
 func _ready() -> void:
 	Engine.max_fps = 30
@@ -241,6 +245,15 @@ func _process(delta: float) -> void:
 	var minute: int = (world.tick % 300) / 5
 	clock_label.text = "Spring %d  %02d:%02d\n%s | %s" % [day, hour, minute, ("Meals %d  Wood %d" % [world.available("meal"), world.available("wood")]) if world is ColonyWorld else "4 travelers", "Paused" if runner.speed == 0 else "%dx" % runner.speed]
 	_update_inspector()
+	if world is ColonyWorld:
+		forecast_elapsed += delta
+		if forecast_elapsed >= 1.0:
+			forecast = FoodForecast.calculate(world)
+			forecast_elapsed = 0.0
+			var warning: int = 3 if forecast.ticks < 3600 else (2 if forecast.ticks < 7200 else (1 if forecast.ticks < 14400 else 0))
+			if warning > food_warning_level:
+				notice = forecast.label + ". Gather food, plant turnips, and keep Cooking enabled. Ration policy is in Menu."
+			food_warning_level = warning
 	notice_label.text = notice
 	if is_instance_valid(sheet_feedback):
 		sheet_feedback.text = notice
@@ -270,6 +283,7 @@ func begin_placement() -> void:
 	view.follow_id = 0
 	view.preview_visible = true
 	view.preview_definition = ""
+	placement_kind = "stockpile"
 	rotation_button.visible = false
 	view.gestures.mode = "paint"
 	placement.visible = true
@@ -300,6 +314,8 @@ func confirm_placement() -> void:
 	confirm_button.disabled = true
 	if world is ColonyWorld and not view.preview_definition.is_empty():
 		submitted_command = world.queue_command("build", {"definition": view.preview_definition, "x": view.preview_start.x, "y": view.preview_start.y, "rotation": view.preview_rotation})
+	elif world is ColonyWorld and placement_kind == "field":
+		submitted_command = world.queue_command("field", {"crop":"turnip", "tiles":view.preview_tiles()})
 	else:
 		submitted_command = world.queue_designation(view.preview_tiles())
 	view.cancel_gesture()
@@ -329,6 +345,10 @@ func _map_intent(action: Dictionary) -> void:
 		select_citizen(candidates[0].id)
 	else:
 		if world is ColonyWorld:
+			for field in world.fields:
+				if Vector2i(field.x,field.y) == action.tile:
+					_field_sheet(field)
+					return
 			for resource in world.resources:
 				if Vector2i(resource.x, resource.y) == action.tile:
 					_resource_sheet(resource)
@@ -412,6 +432,7 @@ func show_sheet(title: String) -> void:
 		"Build":
 			label("Blueprints require real supplies and worker time. Pause to plan; materials are spent only when construction finishes.", sheet_body)
 			button("Paint stockpile", begin_placement, sheet_body)
+			button("Plant turnips", begin_field, sheet_body)
 			if world is ColonyWorld:
 				for kind in world.definitions.buildings:
 					var definition: Dictionary = world.definitions.buildings[kind]
@@ -431,7 +452,7 @@ func show_sheet(title: String) -> void:
 				for fact in world.facts.slice(maxi(0, world.facts.size() - 30)):
 					label("%02d:%02d - %s" % [(fact.tick % 7200) / 300, (fact.tick % 300) / 5, fact.text], sheet_body)
 		"Menu":
-			label("Brackenward 0.1.0-m1 | Godot 4.7.2\nDevelopment colony saves preserve inventory, jobs, needs and work progress. M0 saves remain separate.", sheet_body)
+			label("Brackenward 0.2.0-m2 | Godot 4.7.2\nDevelopment colony saves preserve inventory, jobs, needs and work progress. M0 saves remain separate.", sheet_body)
 			button("Save colony", save_local, sheet_body)
 			button("Load colony", load_local, sheet_body)
 			button("Export save", func() -> void: choose_document(true), sheet_body)
@@ -443,6 +464,9 @@ func show_sheet(title: String) -> void:
 			button("Handedness: " + ("Left" if left_handed else "Right"), func() -> void:
 				left_handed = not left_handed
 				show_sheet("Menu"), sheet_body)
+			if world is ColonyWorld:
+				label("Travel rations are expedition reserves. Home use is " + ("on" if world.use_rations else "off") + ".",sheet_body)
+				button("Keep rations for expeditions" if world.use_rations else "Use rations at home",func() -> void: _submit("food_policy", {"enabled":not world.use_rations}),sheet_body)
 			button("Introduction", func() -> void: show_sheet("Welcome"), sheet_body)
 	_layout()
 	get_viewport().gui_release_focus()
@@ -718,7 +742,7 @@ func _preview_text() -> String:
 		var error: String = world.placement_error(view.preview_definition, view.preview_start, view.preview_rotation)
 		var definition: Dictionary = world.definitions.buildings[view.preview_definition]
 		return "%s | %s | %d WU\n%s" % [view.preview_definition.capitalize(), _cost_text(definition.materials), definition.work_milli / 1000, "Valid placement" if error.is_empty() else error]
-	return "%d x %d tiles | %s" % [absi(view.preview_end.x - view.preview_start.x) + 1, absi(view.preview_end.y - view.preview_start.y) + 1, "Pan mode" if view.gestures.mode == "pan" else "Stockpile preview"]
+	return "%d x %d tiles | %s" % [absi(view.preview_end.x - view.preview_start.x) + 1, absi(view.preview_end.y - view.preview_start.y) + 1, "Pan mode" if view.gestures.mode == "pan" else ("Turnip field" if placement_kind == "field" else "Stockpile preview")]
 
 func _update_inspector() -> void:
 	if selected <= 0 or not is_instance_valid(inspector_details):
@@ -727,7 +751,7 @@ func _update_inspector() -> void:
 	if world is ColonyWorld:
 		var job: Dictionary = world.find(world.jobs, citizen.job)
 		inspector_details.text = "%s - %s\nFood %d/1000 | Rest %d/1000\nHealth %d | %s first\n%s" % [citizen.name, citizen.activity, citizen.fullness, citizen.rest, citizen.health, citizen.preferred,
-			("Work %d/%d WU" % [job.work / 1000, job.required / 1000]) if not job.is_empty() else "Choose orders in Work or Build."]
+			("Work %d/%d WU" % [job.work / 1000, job.required / 1000]) if not job.is_empty() and job.required > 0 else ("Needs take priority over ordinary work." if not job.is_empty() else "Choose orders in Work or Build.")]
 	else:
 		inspector_details.text = "%s - looking around\nM0 touch fixture movement." % citizen.name
 
@@ -755,6 +779,12 @@ func _job_sheet(job: Dictionary) -> void:
 	label("%s: %s\nWork %d/%d WU\n%s" % [job.kind.capitalize(), job.state, job.work / 1000, job.required / 1000, job.reason], sheet_body)
 	if not job.inputs.is_empty():
 		label("Required: " + _cost_text(job.inputs) + "\nDelivered materials remain refundable until completion.", sheet_body)
+	if job.category in ColonyWorld.CATEGORIES:
+		button("Priority: " + ["", "Low", "Normal", "Urgent"][job.priority],func() -> void: _submit("priority",{"target":job.id,"value":job.priority%3+1}),sheet_body)
+		for citizen in world.citizens:
+			button("Do next: " + citizen.name,func() -> void:
+				_submit("pin",{"target":job.id,"citizen":citizen.id})
+				close_sheet(),sheet_body)
 	button("Cancel order", func() -> void:
 		_submit("cancel", {"target": job.id})
 		close_sheet(), sheet_body)
@@ -777,9 +807,14 @@ func _work_sheet() -> void:
 				view.camera_tile = Vector2(resource.x, resource.y), sheet_body)
 	for citizen in world.citizens:
 		label(citizen.name + " - " + citizen.activity, sheet_body)
-		for category in ["Cooking", "Gathering", "Building", "Hauling"]:
+		button(citizen.shift, func() -> void:
+			_submit("schedule", {"citizen":citizen.id,"shift":"Night shift" if citizen.shift == "Normal" else "Normal"}), sheet_body)
+		for category in ColonyWorld.CATEGORIES:
 			button(category + ": " + ["Off", "Last", "Normal", "First"][citizen.preferences[category]], func() -> void:
 				_submit("preference", {"citizen": citizen.id, "category": category, "value": (citizen.preferences[category] + 1) % 4}), sheet_body)
+	label("Storage",sheet_body)
+	for store in world.stores:
+		button("Storage " + str(store.id),func() -> void: _storage_sheet(store),sheet_body)
 	label("Current orders", sheet_body)
 	for job in world.jobs:
 		if job.state not in ["Complete", "Canceled"]:
@@ -789,7 +824,48 @@ func _work_sheet() -> void:
 
 func _tutorial_sheet() -> void:
 	label("First steps", sheet_body)
+	label(forecast.label, sheet_body)
+	label("Stored runway excludes future harvests, reserved goods and expedition rations. Fresh food, cooking and storage can change it.", sheet_body)
 	var completed: Array = world.facts.map(func(fact: Dictionary) -> String: return fact.kind)
 	for kind in ["gather", "haul", "build", "cook", "eat", "sleep"]:
 		label(("Done: " if completed.has(kind) else "Next: ") + kind.capitalize(), sheet_body)
 	label("Gather berries and wood in Work. Place a bed in Build. Resume to see materials carried and used. Cooking starts when stored meals fall below 16; hunger and nightfall trigger eating and sleep.", sheet_body)
+
+func begin_field() -> void:
+	begin_placement()
+	placement_kind = "field"
+	view.preview_start = Vector2i(74,54)
+	view.preview_end = Vector2i(77,57)
+	notice = "Turnips: prepare 4 WU, sow 1 WU, harvest 2 WU per tile. Two days of growth gives four vegetables."
+
+func _field_sheet(field: Dictionary) -> void:
+	show_sheet(field.crop.capitalize())
+	var definition: Dictionary = world.definitions.crops[field.crop]
+	label("%s\nGrowth %d/%d | Yield %d\nSoil %d%% | %s" % [field.reason,field.growth,definition.growth,field.yield_count,field.fertility/10,"Automatic replanting" if field.replant else "Replant off"],sheet_body)
+	label("Clearing removes this field and its unharvested crop. Unconsumed materials and carried goods are retained.",sheet_body)
+	button("Clear field",func() -> void:
+		_submit("clear_field",{"target":field.id})
+		close_sheet(),sheet_body)
+
+func _storage_sheet(storage: Dictionary) -> void:
+	show_sheet("Storage")
+	var count: int = 0
+	for stack in world.stacks:
+		if stack.location == "store" and stack.owner == storage.id:
+			count += stack.count
+	label("%d/%d units. Each zone tile holds one stack. Goods remain here while their filter is valid; new loose goods prefer higher-priority destinations." % [count,storage.capacity],sheet_body)
+	button("Priority: " + ["","Low","Normal","High"][storage.priority],func() -> void:
+		_submit("stock_filter",{"target":storage.id,"filters":storage.filters,"priority":storage.priority%3+1}),sheet_body)
+	for item in world.definitions.items:
+		var stored: int = 0
+		var reserved: int = 0
+		for stack in world.stacks:
+			if stack.location == "store" and stack.owner == storage.id and stack.item == item:
+				stored += stack.count
+				reserved += world._reserved(stack)
+		label("%s: %d stored, %d reserved" % [item.capitalize(),stored,reserved],sheet_body)
+		button(item.capitalize()+": "+("On" if storage.filters.has(item) else "Off"),func() -> void:
+			var filters: Array = storage.filters.duplicate()
+			if filters.has(item): filters.erase(item)
+			else: filters.append(item)
+			_submit("stock_filter",{"target":storage.id,"filters":filters,"priority":storage.priority}),sheet_body)

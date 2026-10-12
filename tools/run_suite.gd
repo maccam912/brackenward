@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -29,6 +29,7 @@ func run() -> void:
 		"integration": integration()
 		"ui": await ui()
 		"colony": ColonyTests.run(check)
+		"survival": SurvivalTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -303,22 +304,34 @@ func ui() -> void:
 			await process_frame
 			check("M1/UI_build_toolbar_%dx%d_%d" % [viewport_size.x, viewport_size.y, int(scale_factor * 100)], not colony_game.confirm_button.get_global_rect().intersects(colony_game.speeds.get_global_rect()) and colony_game.rotation_button.get_global_rect().end.y <= colony_game.nav.get_global_rect().position.y, str([colony_game.rotation_button.get_global_rect(), colony_game.nav.get_global_rect()]))
 			colony_game.cancel_placement()
+	colony_game._process(0.0)
+	colony_game.begin_field()
+	colony_game.confirm_placement()
+	colony_game.confirm_placement()
+	check("M2/UI_field_single_submit",colony_game.world.pending_commands.size() == 1)
+	colony_game.set_speed(4)
+	colony_game.runner.advance_frame(0.1)
+	check("M2/UI_field_tiles_created",colony_game.world.fields.size() == 16)
+	for tick_index in range(17000): colony_game.world.step()
+	check("M2/UI_fields_produced_real_food",colony_game.world.ledger.produced.get("vegetable",0) > 0)
+	colony_game._process(0.0)
+	colony_game.runner.pause()
 	root.size = Vector2i(960, 600)
 	colony_game.size = Vector2(960, 600)
 	colony_game.text_scale = 1.0
 	colony_game._build_theme()
-	colony_game.view.camera_tile = Vector2(63, 63)
+	colony_game.view.camera_tile = Vector2(73, 59)
 	colony_game.select_citizen(2)
 	colony_game.set_speed(0)
 	await process_frame
 	if DisplayServer.get_name() != "headless":
 		await RenderingServer.frame_post_draw
-		root.get_texture().get_image().save_png("res://reports/m1-landscape.png")
+		root.get_texture().get_image().save_png("res://reports/m2-landscape.png")
 		root.size = Vector2i(390, 844)
 		colony_game.size = Vector2(390, 844)
 		colony_game.view.camera_tile = Vector2(68, 63)
 		await process_frame
 		await RenderingServer.frame_post_draw
-		root.get_texture().get_image().save_png("res://reports/m1-portrait.png")
+		root.get_texture().get_image().save_png("res://reports/m2-portrait.png")
 	colony_game.queue_free()
 	await process_frame

@@ -2,12 +2,12 @@ class_name ColonyCodec
 extends RefCounted
 const FORMAT: String = "brackenward-development-colony"
 const MAX_BYTES: int = 64 * 1024 * 1024
-const VERSION: int = 1
+const VERSION: int = 2
 
 static func encode(world: ColonyWorld) -> PackedByteArray:
 	var payload: String = JSON.stringify(ColonyState.pack(world.payload()), "", true)
 	return JSON.stringify({"format": FORMAT, "version": VERSION, "content": ColonyWorld.CONTENT_VERSION,
-		"engine": "4.7.2.ed1daf0bf", "payload": payload, "sha256": payload.sha256_text()}, "", true).to_utf8_buffer()
+		"content_hash":world.definitions.content_hash, "engine": "4.7.2.ed1daf0bf", "payload": payload, "sha256": payload.sha256_text()}, "", true).to_utf8_buffer()
 
 static func decode(bytes: PackedByteArray) -> Dictionary:
 	if bytes.is_empty() or bytes.size() > MAX_BYTES:
@@ -16,7 +16,10 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	if parser.parse(bytes.get_string_from_utf8()) != OK or not parser.data is Dictionary:
 		return {"error": "Malformed colony snapshot"}
 	var envelope: Dictionary = parser.data
-	if not _keys(envelope, ["format", "version", "content", "engine", "payload", "sha256"]) or envelope.format != FORMAT or envelope.version != VERSION or envelope.content != ColonyWorld.CONTENT_VERSION:
+	var keys: Array = ["format", "version", "content", "engine", "payload", "sha256"]
+	if envelope.get("version") == VERSION:
+		keys.append("content_hash")
+	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version != 1 and envelope.version != VERSION) or envelope.content not in ["m1-loop-1", ColonyWorld.CONTENT_VERSION]:
 		return {"error": "Unsupported development save format/content. M0 touch fixtures remain separate."}
 	if not envelope.payload is String or not envelope.sha256 is String or envelope.payload.sha256_text() != envelope.sha256:
 		return {"error": "Snapshot checksum mismatch"}
@@ -26,12 +29,19 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	if not decoded is Dictionary:
 		return {"error": "Invalid integer, coordinate or state encoding"}
 	var data: Dictionary = decoded
-	var world: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data())
+	var catalog: Dictionary = ColonyCatalog.load_data()
+	if envelope.version == 1 and envelope.content == "m1-loop-1":
+		data = ColonyMigrations.from_m1(data,catalog.content_hash)
+	elif envelope.version != VERSION or envelope.content != ColonyWorld.CONTENT_VERSION:
+		return {"error": "Save version and content are incompatible"}
+	elif envelope.content_hash != catalog.content_hash:
+		return {"error":"Catalog hash differs; retain the original save and use its compatible build"}
+	var world: ColonyWorld = ColonyWorld.new(catalog)
 	var error: String = _validate(data, world)
 	if not error.is_empty():
 		return {"error": error}
 	for field in data:
-		if field != "content":
+		if field not in ["content","content_hash"]:
 			if data[field] is Array:
 				world.get(field).assign(data[field])
 			else:
@@ -42,9 +52,9 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	return {"world": world}
 
 static func _keys(record: Dictionary, keys: Array) -> bool:
-	var actual: Array = record.keys()
+	var actual: Array = record.keys().map(func(key: Variant) -> String: return str(key))
 	actual.sort()
-	var expected: Array = keys.duplicate()
+	var expected: Array = keys.map(func(key: Variant) -> String: return str(key))
 	expected.sort()
 	return actual == expected
 
@@ -57,10 +67,12 @@ static func _record(value: Variant, template: Dictionary) -> bool:
 	return true
 
 static func _validate(data: Dictionary, world: ColonyWorld) -> String:
-	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80:
+	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80:
 		return "Invalid world header or unknown fields"
-	if data.citizens.size() != 4 or data.structures.size() > 16384 or data.resources.size() > 16384 or data.stacks.size() > 100000 or data.jobs.size() > 100000 or data.pending_commands.size() > 4096 or data.facts.size() > 100000:
+	if data.citizens.size() != 4 or data.fields.size() > 16384 or data.structures.size() > 16384 or data.resources.size() > 16384 or data.stacks.size() > 100000 or data.jobs.size() > 100000 or data.pending_commands.size() > 4096 or data.facts.size() > 100000:
 		return "Invalid record counts"
+	if not data.researched.all(func(value:Variant)->bool:return value is String and value in ["woodcraft","storecraft","farming","herbalism","weaving","masonry","metalwork","trailcraft","husbandry","signalcraft","commonlife","valley_charter"]) or data.weather not in ["clear","rain","fog","snow","drought","flood","cold_snap"]:
+		return "Unknown research/weather state"
 	for index in range(4):
 		var citizen: Variant = data.citizens[index]
 		if not _record(citizen, world.citizens[index]) or citizen.id != index + 1 or citizen.name.length() > 64:
@@ -82,6 +94,8 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		for coordinate in citizen.route_goal:
 			if not coordinate is int or coordinate < 0 or coordinate >= 128:
 				return "Invalid route goal"
+		if citizen.shift not in ["Normal","Night shift"] or citizen.pending_shift not in ["","Normal","Night shift"]:
+			return "Unknown work shift"
 		for trait_name in citizen.traits:
 			if not trait_name is String or trait_name not in ["Kind", "Homebody", "Steady", "Sociable", "Outdoorsy", "Restless", "Curious", "Private"]:
 				return "Unknown trait"
@@ -111,7 +125,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 				return "Invalid reservation"
 	var job_template: Dictionary = world._job("gather", "Gathering", "Field", world.resources[0].id, Vector2i(1, 1), 1000)
 	for job in data.jobs:
-		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
+		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
 			return "Invalid job"
 		if job.kind == "build" and not world.definitions.buildings.has(job.definition):
 			return "Unknown building definition"
@@ -151,6 +165,18 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		for item in store.filters:
 			if not world.definitions.items.has(item):
 				return "Unknown storage filter"
+	for field in data.fields:
+		var expected: Array = ["id", "crop", "x", "y", "prepared", "planted", "growth", "growth_rem", "ripe_tick", "yield_count", "fertility", "replant", "reason"]
+		if not field is Dictionary or not _keys(field, expected) or not world.definitions.crops.has(field.get("crop", "")) or not _position(field):
+			return "Invalid field schema"
+		for key in ["id", "x", "y", "growth", "growth_rem", "ripe_tick", "yield_count", "fertility"]:
+			if not field[key] is int or field[key] < 0:
+				return "Invalid field values"
+		if field.growth_rem >= 7200 or field.growth > world.definitions.crops[field.crop].growth or field.yield_count > world.definitions.crops[field.crop].yield_count or field.fertility not in [750,1000,1250]:
+			return "Invalid crop growth"
+		for key in ["prepared", "planted", "replant"]:
+			if not field[key] is bool:
+				return "Invalid field flags"
 	if not _keys(data.ledger, ["produced", "consumed", "spoiled"]):
 		return "Invalid inventory ledger"
 	for entries in data.ledger.values():
@@ -163,17 +189,19 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if not command is Dictionary or not _keys(command, ["id", "session", "kind", "args"]) or not command.id is int or command.id < 1 or not command.session is String or not command.kind is String or not command.args is Dictionary:
 			return "Invalid pending command"
 		# Preserve only commands generated by the concrete development UI.
-		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"]}
+		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
 		if not schemas.has(command.kind) or not _keys(command.args, schemas[command.kind]):
 			return "Unknown pending command arguments"
 		for key in command.args:
 			var value: Variant = command.args[key]
-			if key in ["target", "citizen", "x", "y", "rotation", "value"] and not value is int:
+			if key in ["target", "citizen", "x", "y", "rotation", "value", "priority"] and not value is int:
 				return "Invalid command quantity"
-			if key in ["definition", "category"] and not value is String:
+			if key in ["definition", "category", "crop", "shift"] and not value is String:
 				return "Invalid command definition"
 			if key == "enabled" and not value is bool:
 				return "Invalid policy toggle"
+			if key == "filters" and (not value is Array or not value.all(func(item: Variant)->bool:return item is String and world.definitions.items.has(item))):
+				return "Invalid storage filter"
 			if key == "tiles":
 				if not value is Array or value.size() > 16384:
 					return "Invalid command tiles"
@@ -186,4 +214,4 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 	return ""
 
 static func _position(record: Dictionary) -> bool:
-	return record.x >= 0 and record.y >= 0 and record.x < 128 and record.y < 128
+	return record.get("x") is int and record.get("y") is int and record.x >= 0 and record.y >= 0 and record.x < 128 and record.y < 128

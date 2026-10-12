@@ -45,6 +45,7 @@ jobs:
           python3 tools/check_suite.py unit
           python3 tools/check_suite.py integration
           python3 tools/check_suite.py colony
+          python3 tools/check_suite.py survival
       - name: Real Control/input/layout suite
         run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK

@@ -67,7 +67,10 @@ func load_latest() -> Dictionary:
 	generations.reverse()
 	var earlier_errors: Array[String] = []
 	for name in generations:
-		var decoded: Dictionary = decode(FileAccess.get_file_as_bytes(directory.path_join(name)))
+		var snapshot_bytes: PackedByteArray = FileAccess.get_file_as_bytes(directory.path_join(name))
+		var header: Variant = JSON.parse_string(snapshot_bytes.get_string_from_utf8())
+		var legacy: bool = header is Dictionary and header.get("content") == "m1-loop-1"
+		var decoded: Dictionary = M1Codec.decode(snapshot_bytes) if legacy else decode(snapshot_bytes)
 		if decoded.has("error"):
 			earlier_errors.append(name + ": " + decoded.error)
 			continue
@@ -82,6 +85,16 @@ func load_latest() -> Dictionary:
 			if decoded.has("error"):
 				earlier_errors.append(decoded.error)
 				continue
+		if legacy:
+			decoded = ColonyCodec.decode(M1Codec.encode(decoded.world))
+			if decoded.has("error"):
+				earlier_errors.append(decoded.error)
+				continue
+			var backup_error: String = _backup(directory.path_join(name),directory.path_join("migration-backup-"+name))
+			if backup_error.is_empty() and FileAccess.file_exists(journal_path):
+				backup_error = _backup(journal_path,directory.path_join("migration-backup-"+journal_path.get_file()))
+			if not backup_error.is_empty():
+				return {"error":backup_error}
 		sequence = snapshot_sequence
 		journal_tick = decoded.world.tick
 		recovered = true
@@ -89,3 +102,16 @@ func load_latest() -> Dictionary:
 		decoded["recovery"] = "Recovered through tick %d. Original files retained.%s" % [journal_tick, " Earlier damaged generation: " + str(earlier_errors) if not earlier_errors.is_empty() else ""]
 		return decoded
 	return {"error": "No valid colony generation/journal. Original files retained: " + str(earlier_errors)}
+
+func _backup(source: String, destination: String) -> String:
+	var bytes: PackedByteArray = FileAccess.get_file_as_bytes(source)
+	if FileAccess.file_exists(destination):
+		return "" if FileAccess.get_file_as_bytes(destination) == bytes else "Migration backup differs: original files retained"
+	var file: FileAccess = FileAccess.open(destination,FileAccess.WRITE)
+	if file == null:
+		return "Could not retain migration backup: original files unchanged"
+	file.store_buffer(bytes)
+	file.flush()
+	var error: Error = file.get_error()
+	file.close()
+	return "" if error == OK and FileAccess.get_file_as_bytes(destination) == bytes else "Migration backup verification failed"

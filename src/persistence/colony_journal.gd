@@ -52,7 +52,7 @@ static func read(bytes: PackedByteArray) -> Dictionary:
 		offset += 4 + length + 32
 	return {"records": records, "torn_tail": false}
 
-static func replay(world: ColonyWorld, records: Array[Dictionary]) -> Dictionary:
+static func replay(world: RefCounted, records: Array[Dictionary]) -> Dictionary:
 	var final_tick: int = world.tick
 	var previous_tick: int = world.tick
 	var commands: Dictionary = {}
@@ -73,7 +73,7 @@ static func replay(world: ColonyWorld, records: Array[Dictionary]) -> Dictionary
 			if command.get("id") is int:
 				world.next_command_id = maxi(world.next_command_id, command.id + 1)
 		if commands.has(world.tick + 1):
-			var validation: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+			var validation: Dictionary = M1Codec.decode(M1Codec.encode(world)) if world is M1World else ColonyCodec.decode(ColonyCodec.encode(world))
 			if validation.has("error"):
 				return {"error": validation.error}
 		world.step()

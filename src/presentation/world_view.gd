@@ -233,6 +233,13 @@ func citizen_point(citizen: Dictionary) -> Vector2:
 	return point
 
 func _draw_colony() -> void:
+	for field in world.fields:
+		var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(field.x,field.y)),Vector2.ONE*tile_size)
+		draw_rect(rectangle.grow(-1),Color("B96C50") if field.prepared else Color(0.72,0.42,0.31,0.25))
+		if field.planted:
+			var radius: float = tile_size * (0.08+0.22*float(field.growth)/world.definitions.crops[field.crop].growth)
+			for offset in [Vector2(0.25,0.25),Vector2(0.75,0.25),Vector2(0.25,0.75),Vector2(0.75,0.75)]:
+				draw_circle(rectangle.position+offset*tile_size,radius,Color("E9BA67") if field.ripe_tick>0 else Color("375749"))
 	for resource in world.resources:
 		if resource.remaining == 0:
 			continue

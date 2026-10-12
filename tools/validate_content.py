@@ -97,3 +97,30 @@ for r in catalog['recipes']:
 assert by_kind['buildings']['bed']['materials'] == {'wood':6,'fiber':2}
 assert by_kind['recipes']['cook_meals']['outputs'] == {'meal':2}
 print('Validated M1 subset catalogs and translation keys; full M4 catalogs remain pending.')
+
+m2 = json.loads((root / 'data/catalogs/m2.json').read_text())
+assert set(m2) == {'version','items','buildings','resources','recipes','crops'}
+assert m2['version'] == 'm2-survival-1'
+m2_translation = json.loads((root / 'data/catalogs/en_m2.json').read_text())
+m2_fields = fields | {'buildings':fields['buildings']|{'age_denominator'},'crops':{'item','yield_count','growth','seasons','unlock','roof','prepare_milli','sow_milli','harvest_milli'}}
+m2_ids = {}
+for kind, extra in m2_fields.items():
+ m2_ids[kind]={}
+ for d in m2[kind]:
+  assert set(d)==base|extra,(kind,d['id'],'unknown/missing fields')
+  assert d['id'] not in m2_ids[kind]
+  assert d['name_key'] in m2_translation and d['description_key'] in m2_translation
+  assert re.fullmatch('[a-z][a-z0-9_]*',d['id'])
+  for key,value in d.items():
+   if isinstance(value,(int,float)) and not isinstance(value,bool): assert type(value) is int and value>=0,key
+  m2_ids[kind][d['id']]=d
+for d in m2['crops']:
+ assert d['item'] in m2_ids['items'] and d['seasons'] and all(type(s) is int and s in range(4) for s in d['seasons'])
+ assert d['growth']>0 and d['yield_count']>0 and type(d['roof']) is bool
+for d in m2['buildings']:
+ assert d['age_denominator'] in [1,2,4] and 1<=d['width']<=4 and 1<=d['height']<=4
+ assert type(d['solid']) is bool and type(d['room_boundary']) is bool
+ for item,count in d['materials'].items(): assert item in m2_ids['items'] and type(count) is int and count>0
+for r in m2['recipes']:
+ assert r['station'] in m2_ids['buildings'] and all(i in m2_ids['items'] for i in r['alternatives'])
+print('Validated M2 agriculture/storage subset; full research and release acquisition chains remain pending.')
