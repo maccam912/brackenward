@@ -32,9 +32,11 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		var header: Dictionary = template.payload().duplicate()
 		header.erase("social_state")
 		header.erase("production_state")
+		header.erase("care_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
 		for key in ColonySocial.citizen_defaults(): citizen_template.erase(key)
+		for key in ColonyCare.citizen_defaults(): citizen_template.erase(key)
 		for citizen in result.citizens:
 			if not ColonyCodec._record(citizen,citizen_template): return data
 		result = result.duplicate(true)
@@ -56,8 +58,37 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 			citizen.equipment["vest"] = ""
 		result.schema_revision = 3
 	if result.get("schema_revision") == 3:
+		if not result.get("jobs") is Array: return data
 		result = result.duplicate(true)
 		result["production_state"] = ColonyProduction.initial_state()
-		for job in result.jobs: job["order"] = 0
+		for job in result.jobs:
+			if not job is Dictionary: return data
+			job["order"] = 0
 		result.schema_revision = 4
+	if result.get("schema_revision") == 4:
+		if not result.get("citizens") is Array or not result.get("jobs") is Array: return data
+		result = result.duplicate(true)
+		result["care_state"] = ColonyCare.initial_state()
+		for citizen in result.citizens:
+			if not citizen is Dictionary: return data
+			citizen.merge(ColonyCare.citizen_defaults())
+		for job in result.jobs:
+			if not job is Dictionary: return data
+			job["care_goal"] = []
+			job["emergency"] = false
+		result.schema_revision = 5
+	if result.get("schema_revision") == 5:
+		if not result.get("citizens") is Array: return data
+		result = result.duplicate(true)
+		var people: Array = result.citizens.duplicate()
+		if not result.get("social_state") is Dictionary or not result.social_state.get("deaths") is Array: return data
+		for death in result.social_state.deaths:
+			if not death is Dictionary or not death.get("citizen") is Dictionary: return data
+			people.append(death.citizen)
+		for citizen in people:
+			if not citizen is Dictionary or not citizen.get("recovery_rate") is int or not citizen.get("recovery_until") is int: return data
+			if not citizen.has("recovery_windows"):
+				citizen["recovery_windows"] = {}
+				if citizen.recovery_until > 0: citizen.recovery_windows[{2:"stabilize",4:"herb",8:"medicine"}.get(citizen.recovery_rate,"stabilize")] = citizen.recovery_until
+		result.schema_revision = 6
 	return result

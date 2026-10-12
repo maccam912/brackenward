@@ -303,4 +303,14 @@ static func validate(data: Variant, citizens: Array, tick: int) -> bool:
 		if request.state in ["Offered","Declined"] and (request.accepted_at != 0 or request.deadline != 0): return false
 		if request.state in ["Accepted","Fulfilled","Failed"] and (request.accepted_at < request.offered_at or request.deadline != request.accepted_at+28800): return false
 		if request.state in ["Offered","Accepted"]: active += 1
-	return active <= 1 and data.deaths.is_empty()
+	var seen: Dictionary = {}
+	for death in data.deaths:
+		if not death is Dictionary or not ColonyCodec._keys(death,["actor","tick","name","citizen","relationships"]) or not death.actor is int or not death.tick is int or death.tick < 1800 or death.tick > tick or not death.name is String or death.name.length() > 64 or not death.citizen is Dictionary or not death.relationships is Dictionary or seen.has(death.actor): return false
+		var person: Dictionary = {}
+		for c in citizens:
+			if c.id == death.actor: person = c; break
+		if person.is_empty() or not person.death_recorded or not ColonyCodec._record(death.citizen,person): return false
+		for id in death.relationships:
+			if not id is int or id == death.actor or not citizens.any(func(c:Dictionary)->bool:return c.id == id) or not death.relationships[id] is int or death.relationships[id] < -100 or death.relationships[id] > 100: return false
+		seen[death.actor] = true
+	return active <= 1

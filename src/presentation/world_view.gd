@@ -84,6 +84,10 @@ func _process(delta: float) -> void:
 		else:
 			point.x += float(citizen.progress) / 10000.0 * citizen.direction
 		actors[i].position = point * 16.0
+		if world is ColonyWorld:
+			actors[i].visible = not citizen.death_recorded and not citizen.departed and citizen.carried_by == 0
+			actors[i].rotation = PI*0.5 if citizen.downed else 0.0
+			actors[i].modulate = Color("E9BA67") if citizen.health < 50 else Color.WHITE
 		if citizen.id == follow_id:
 			camera_tile = point
 	_update_transform()
@@ -334,6 +338,15 @@ func _draw_colony() -> void:
 func _draw_carried_items() -> void:
 	if not world is ColonyWorld:
 		return
+	for citizen in world.citizens:
+		if citizen.carrying_patient > 0:
+			var point: Vector2 = tile_to_screen(citizen_point(citizen))+Vector2(0,-tile_size*0.7)
+			carried_overlay.draw_rect(Rect2(point-Vector2(tile_size*0.35,5),Vector2(tile_size*0.7,10)),Color("F3E8CC"))
+	for body in world.care_state.bodies:
+		if body.buried: continue
+		var point: Vector2 = tile_to_screen(Vector2(body.x+0.5,body.y+0.5))
+		carried_overlay.draw_rect(Rect2(point-Vector2(tile_size*0.4,5),Vector2(tile_size*0.8,10)),Color("716D88"))
+		carried_overlay.draw_line(point-Vector2(0,10),point+Vector2(0,10),Color("F3E8CC"),2)
 	for stack in world.stacks:
 		if stack.count <= 0 or stack.location != "carry":
 			continue

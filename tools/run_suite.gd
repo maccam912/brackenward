@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -34,6 +34,7 @@ func run() -> void:
 		"seasons": SeasonTests.run(check)
 		"people": SocialTests.run(check)
 		"production": ProductionTests.run(check)
+		"care": CareTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -552,6 +553,22 @@ func ui() -> void:
 		await process_frame
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://reports/m3-flood-preview.png")
+	ColonyCare.hurt(colony_game.world,colony_game.world.citizens[2],90,true)
+	colony_game._process(0)
+	check("CARE/UI_critical_alert_opens_paused_care",colony_game.sheet_name == "Injuries and care" and colony_game.runner.speed == 0)
+	check("CARE/UI_explains_bleeding_and_off_override",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.begins_with("Bleeding:")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Treat now pins one visible override")))
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text == "Treat with Mira": child.pressed.emit(); break
+	check("CARE/UI_treat_command_requires_one_explicit_choice",colony_game.world.pending_commands.size() == 1 and colony_game.world.pending_commands[0].kind == "treat_now")
+	colony_game.set_speed(1); colony_game.runner.advance_frame(0.1); colony_game._process(0); colony_game.runner.pause()
+	check("CARE/UI_treatment_pin_accepted",colony_game.world.citizens[0].pinned_job > 0)
+	for person in colony_game.world.citizens: ColonyCare.hurt(colony_game.world,person,1000,false)
+	colony_game._process(0)
+	check("DEATH/UI_epilogue_pauses_and_retains_choices",colony_game.sheet_name == "Colony epilogue" and colony_game.runner.speed == 0 and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text == "New colony with this seed"))
+	colony_game.show_sheet("Menu"); colony_game._process(0)
+	check("DEATH/UI_return_menu_stays_available",colony_game.sheet_name == "Menu" and colony_game.world.care_state.ended)
+	colony_game.set_speed(4)
+	check("DEATH/UI_terminal_colony_cannot_resume",colony_game.runner.speed == 0 and colony_game.sheet_name == "Colony epilogue")
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

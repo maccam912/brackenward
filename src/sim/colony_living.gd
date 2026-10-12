@@ -33,6 +33,7 @@ static func advance(world: ColonyWorld) -> void:
 			continue
 		var occupied: bool = false
 		for citizen in world.citizens:
+			if citizen.death_recorded or citizen.departed: continue
 			var point: Vector2i = Vector2i(citizen.x, citizen.y)
 			occupied = occupied or absi(point.x - hearth.x) + absi(point.y - hearth.y) <= 3 or (world.roofed(point) and world.room_tiles.get(point) == world.room_tiles.get(Vector2i(hearth.x, hearth.y), -1))
 		if temperature(world) < 8 and occupied and hearth.fuel > 0:
@@ -42,6 +43,7 @@ static func advance(world: ColonyWorld) -> void:
 				hearth.fuel -= 1
 				world._record("consumed", "wood", 1)
 	for citizen in world.citizens:
+		if citizen.death_recorded or citizen.departed: continue
 		var day: int = world.tick / 7200
 		if citizen.leisure_day != day:
 			citizen.leisure_day = day
@@ -105,6 +107,7 @@ static func comfortable(world: ColonyWorld, citizen: Dictionary) -> bool:
 
 static func _morale(world: ColonyWorld, citizen: Dictionary, job: Dictionary) -> void:
 	var terms: Dictionary = ColonySocial.mood_terms(world,citizen)
+	terms.merge(ColonyCare.mood_terms(world,citizen))
 	if world.production_state.discoveries.get(citizen.id,0) > world.tick:
 		terms["Discovery"] = 60
 	if citizen.bed_memory_until > world.tick:

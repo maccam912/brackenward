@@ -41,6 +41,9 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 	return "accepted"
 
 static func create_jobs(world: ColonyWorld) -> void:
+	for station in world.structures:
+		if station.definition == "herbal_bench" and world.researched.has("herbalism") and not world.production_state.orders.any(func(o:Dictionary)->bool:return o.station == station.id):
+			command(world,"recipe_order",{"target":station.id,"definition":"prepare_medicine","mode":"Maintain","value":4,"priority":2,"filters":[]})
 	var project: String = world.production_state.project
 	if not project.is_empty() and not world.researched.has(project):
 		var contributing: int = 0

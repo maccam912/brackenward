@@ -3,7 +3,7 @@
 import argparse, os, re, subprocess, sys
 from pathlib import Path
 parser = argparse.ArgumentParser()
-parser.add_argument('suite', choices=['unit','integration','colony','survival','persistence','seasons','people','production','ui'])
+parser.add_argument('suite', choices=['unit','integration','colony','survival','persistence','seasons','people','production','care','ui'])
 parser.add_argument('--headless', action='store_true')
 args = parser.parse_args()
 root = Path(__file__).resolve().parents[1]

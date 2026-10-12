@@ -35,6 +35,8 @@ var autosave_elapsed: float = 0.0
 var journal_elapsed: float = 0.0
 var file_dialog: FileDialog
 var catalog_strings: Dictionary = {}
+var seen_care_alert: int = -1
+var epilogue_session: String = ""
 var native_storage: Object
 var document_request: int = 0
 var exporting: bool = false
@@ -288,6 +290,15 @@ func _process(delta: float) -> void:
 	if not is_node_ready() or backgrounded:
 		return
 	runner.advance_frame(delta)
+	if world is ColonyWorld:
+		if world.care_state.ended:
+			seen_care_alert = world.care_state.alert_serial
+			if epilogue_session != world.session_id:
+				epilogue_session = world.session_id
+				show_epilogue()
+		elif world.care_state.alert_serial > seen_care_alert:
+			seen_care_alert = world.care_state.alert_serial
+			if world.citizens.any(func(c:Dictionary)->bool:return c.downed or c.death_recorded): show_care()
 	if runner.speed_reduced:
 		notice = "Speed reduced to keep the colony responsive."
 		runner.speed_reduced = false
@@ -327,6 +338,9 @@ func _process(delta: float) -> void:
 		autosave_elapsed = 0.0
 
 func set_speed(value: int) -> void:
+	if value > 0 and world is ColonyWorld and world.care_state.ended:
+		show_epilogue()
+		return
 	if recovery_failed:
 		notice = "Recovery stopped. Choose another campaign or import a verified snapshot."
 		return
@@ -512,6 +526,7 @@ func show_sheet(title: String) -> void:
 					if not definition.buildable: continue
 					button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body)
 		"People":
+			if world is ColonyWorld: button("Injuries and care",show_care,sheet_body)
 			for citizen in world.citizens:
 				button(citizen.name, func() -> void:
 					if world is ColonyWorld: show_person(citizen.id)
@@ -529,6 +544,7 @@ func show_sheet(title: String) -> void:
 					label("%02d:%02d - %s" % [(fact.tick % 7200) / 300, (fact.tick % 300) / 5, fact.text], sheet_body)
 		"Menu":
 			label("Brackenward %s\nCampaigns preserve inventory, work and needs. Time stays paused after recovery." % ProjectSettings.get_setting("application/config/version"), sheet_body)
+			if world is ColonyWorld: button("Mode: "+world.care_state.mode,show_mode,sheet_body)
 			button("Save colony", save_local, sheet_body)
 			button("Load colony", load_local, sheet_body)
 			button("Export save", func() -> void: choose_document(true), sheet_body)
@@ -657,6 +673,8 @@ func load_local() -> void:
 
 func _replace_world(state: RefCounted) -> void:
 	world = state
+	seen_care_alert = -1
+	epilogue_session = ""
 	recovery_failed = false
 	storage_error = ""
 	saving_disabled = false
@@ -1210,6 +1228,7 @@ func show_person(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_sheet(citizen.name)
 	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
+	if citizen.health < 100: button("Care and recovery",show_care,sheet_body)
 	label("Active morale causes",sheet_body)
 	for term in citizen.mood_terms: label("%s: %+d" % [term,citizen.mood_terms[term]],sheet_body)
 	button("Work preferences",func() -> void:show_work_preferences(id),sheet_body)
@@ -1263,6 +1282,8 @@ func show_station(station: Dictionary) -> void:
 	show_sheet(station.definition.replace("_"," ").capitalize())
 	var definition: Dictionary = world.definitions.buildings[station.definition]
 	label("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body)
+	if station.definition == "hearth":
+		label("Without production orders, cooking keeps four meals per living resident. Adding a policy replaces that default; Repeat stops after its batch count. Choose Maintain for a steady meal reserve.",sheet_body)
 	if station.definition == "research_desk":
 		button("Research projects",show_research,sheet_body)
 	for recipe in world.definitions.recipes.values():
@@ -1324,3 +1345,78 @@ func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
 			return
 		_submit("recipe_order",{"target":station.id,"definition":recipe.id,"mode":"Repeat" if mode.selected == 0 else "Maintain","value":int(quantity.value),"priority":priority.selected+1,"filters":filters})
 		close_sheet(),sheet_body)
+
+func show_mode() -> void:
+	show_sheet("Colony mode")
+	label("Standard allows sustained hunger and untreated injuries to cause death. Hearthside disables scheduled raids; at zero health a resident recovers for two days and wakes at 40 health. Weather, shortages and conflicts still apply. Changes affect future rules and do not resurrect anyone.",sheet_body)
+	for mode in ["Standard","Hearthside"]:
+		button("Choose "+mode,func()->void:
+			_submit("care_mode",{"mode":mode})
+			close_sheet(),sheet_body)
+
+func show_care() -> void:
+	show_sheet("Injuries and care")
+	label("Rescue carries a downed person to the nearest reachable bed or cart rally and slows the carrier by 25%. Emergency rescue and urgent stabilization in place override Care Off. Ordinary treatment needs Care enabled; Treat now pins one visible override. Patients receive food automatically and rest until 50 health before working.",sheet_body)
+	for patient in world.citizens:
+		if patient.death_recorded or patient.departed or patient.health >= 100: continue
+		var activity: String = ("Downed: bleeding, needs care" if not patient.stabilized else "Downed: recovering") if patient.downed else patient.activity
+		label("%s | Health %d/100 | Food %d/1000 | Rest %d/1000\n%s" % [patient.name,patient.health,patient.fullness,patient.rest,activity],sheet_body)
+		if patient.hearthside_until > world.tick:
+			label("Hearthside recovery: %.1f days until waking at 40 health." % [float(patient.hearthside_until-world.tick)/7200],sheet_body)
+		elif not patient.stabilized:
+			label("Bleeding: 2 health/hour. About %.1f hours until zero health without care." % [float(((patient.health+1)/2)*300-patient.bleed_ticks)/300],sheet_body)
+		else:
+			var rate: int = patient.recovery_rate if patient.recovery_until > world.tick else 2
+			label("Stabilized. Resting restores %d health/hour; about %.1f hours to work at 50 health. Treatment recovery lasts 12 hours, then resting gives 2/hour." % [rate,float(maxi(0,50-patient.health))/rate],sheet_body)
+		label("Stabilize: no input, 24 WU, 2 health/hour. Herb: one herb, 16 WU, +10 health and 4/hour. Medicine: one medicine, 10 WU, +20 health and 8/hour. Strongest available treatment is selected; rates do not stack.",sheet_body)
+		if patient.hearthside_until == 0:
+			for worker in world.citizens:
+				if worker.id == patient.id or worker.health < 50 or worker.departed: continue
+				button("Treat with "+worker.name,func()->void:
+					_submit("treat_now",{"target":patient.id,"citizen":worker.id})
+					close_sheet(),sheet_body)
+	for body in world.care_state.bodies:
+		if body.buried: continue
+		var person: Dictionary = world.find(world.citizens,body.patient)
+		label(person.name+" died. Nearby unburied remains give -40 morale. Grief declines over two days, or three for friends.",sheet_body)
+		button("Mark burial here",func()->void:
+			_submit("burial",{"target":body.id,"x":body.x,"y":body.y})
+			close_sheet(),sheet_body)
+	if world.citizens.all(func(c:Dictionary)->bool:return c.downed or c.death_recorded or c.departed):
+		label("Everyone at home is downed. Available recovery is shown above. In Standard an unstabilized patient continues bleeding; Hearthside recovery continues with time.",sheet_body)
+	button("Work preferences",func()->void:show_sheet("Work"),sheet_body)
+
+func show_epilogue() -> void:
+	runner.pause()
+	show_sheet("Colony epilogue")
+	label("No living residents remain in this colony. The journal and saves retain their history. Load an earlier save or begin a new campaign.",sheet_body)
+	button("Load save",show_named_snapshots,sheet_body)
+	button("New colony with this seed",show_seed_restart,sheet_body)
+	button("Return to menu",func()->void: show_sheet("Menu"),sheet_body)
+
+func show_seed_restart() -> void:
+	show_sheet("New colony with this seed")
+	label("Seed %d. Choose a campaign slot; an occupied slot is archived only after confirmation. Other campaigns stay intact." % world.seed,sheet_body)
+	for number in range(1,6):
+		var exists: bool = ColonyStore.occupied(number,store.root_directory)
+		button(("Replace" if exists else "New")+" campaign %d" % number,func()->void:
+			if exists:
+				show_sheet("Confirm new colony")
+				label("Archive campaign %d and start again with seed %d?" % [number,world.seed],sheet_body)
+				button("Archive and restart",func()->void:_restart_seed(number,true),sheet_body)
+			else: _restart_seed(number,false),sheet_body)
+
+func _restart_seed(number: int, replace: bool) -> void:
+	var fresh: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data(),Crypto.new().generate_random_bytes(16).hex_encode())
+	fresh.seed = world.seed
+	fresh.care_state.mode = world.care_state.mode
+	ColonyWeather.initialize(fresh)
+	var candidate: ColonyStore = ColonyStore.new()
+	candidate.root_directory = store.root_directory
+	var error: String = candidate.adopt(fresh,number,replace)
+	if not error.is_empty(): notice = error; return
+	store = candidate
+	_replace_world(fresh)
+	_restore_camera()
+	_save_settings()
+	close_sheet()

@@ -29,9 +29,13 @@ func advance_frame(delta: float) -> int:
 	accumulator += delta * float(speed)
 	var count: int = 0
 	while accumulator + 0.000000001 >= 0.1 and count < 8:
+		var alert: int = world.care_state.alert_serial if world is ColonyWorld else 0
 		world.step()
 		accumulator -= 0.1
 		count += 1
+		if world is ColonyWorld and (world.care_state.ended or world.care_state.alert_serial > alert):
+			pause()
+			return count
 	if accumulator > 1.0:
 		behind_seconds += delta
 		if behind_seconds >= 3.0 and speed > 1:

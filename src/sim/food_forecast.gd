@@ -12,7 +12,7 @@ static func expiry_ticks(world: ColonyWorld, stack: Dictionary) -> int:
 	return maxi(0,((shelf-stack.age)*4-stack.age_rem+4/denominator-1)/(4/denominator))
 
 static func calculate(world: ColonyWorld) -> Dictionary:
-	var residents: int = world.citizens.filter(func(c: Dictionary)->bool:return c.health > 0 and not c.departed).size()
+	var residents: int = world.citizens.filter(func(c: Dictionary)->bool:return not c.death_recorded and not c.departed).size()
 	if residents == 0:
 		return {"portions":0,"ticks":0,"label":"No residents at home"}
 	var demand: int = residents * 1000

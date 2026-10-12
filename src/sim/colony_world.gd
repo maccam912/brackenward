@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v1"
-const SCHEMA_REVISION: int = 4
+const SCHEMA_REVISION: int = 6
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -26,6 +26,8 @@ var rooms_dirty: bool = true
 var schema_revision: int = SCHEMA_REVISION
 var social_state: Dictionary = {}
 var production_state: Dictionary = {}
+var care_state: Dictionary = {}
+var care_destinations: Dictionary = {}
 var generator_version: int = 0
 var site_id: String = "meadow_reach"
 var weather_state: Dictionary = {}
@@ -96,6 +98,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 	ColonyWeather.initialize(self)
 	ColonySocial.initialize(self)
 	ColonyProduction.initialize(self)
+	ColonyCare.initialize(self)
 
 func _id() -> int:
 	var result: int = next_id
@@ -112,6 +115,7 @@ func walkable(point: Vector2i) -> bool:
 	if not inside(point) or is_water(point):
 		return false
 	if navigation_dirty:
+		care_destinations.clear()
 		solid_tiles.clear()
 		for resource in resources:
 			if resource.remaining > 0 and definitions.resources[resource.definition].solid:
@@ -199,6 +203,7 @@ func queue_designation(tiles: Array[Vector2i], command_id: int = 0, expected_ses
 	return queue_command("stockpile", {"tiles": tiles}, command_id, expected_session)
 
 func step() -> void:
+	if care_state.ended: return
 	tick += 1
 	path_requests = 0
 	pending_commands.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.id < b.id)
@@ -207,6 +212,7 @@ func step() -> void:
 			receipts[command.id] = _command(command) if command.session == session_id else "wrong_session"
 			command_trace.append({"tick": tick, "command": command.duplicate(true)})
 	pending_commands.clear()
+	ColonyCare.advance(self)
 	ColonyWeather.advance(self)
 	ColonyAgriculture.advance(self)
 	ColonySocial.advance(self)
@@ -217,6 +223,7 @@ func step() -> void:
 		_create_work()
 		ColonyProduction.create_jobs(self)
 		ColonyAgriculture.create_jobs(self)
+		ColonyCare.create_jobs(self)
 		for citizen in citizens:
 			_assign(citizen)
 	for citizen in citizens:
@@ -337,6 +344,7 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"care_mode", "treat_now", "burial": return ColonyCare.command(self,command.kind,args)
 		"station_enabled":
 			var station: Dictionary = find(structures,args.target)
 			if station.is_empty(): return "Missing workstation"
@@ -408,7 +416,7 @@ func _job(kind: String, category: String, skill: String, target: int, point: Vec
 	var job: Dictionary = {"id": _id(), "kind": kind, "category": category, "skill": skill, "target": target,
 		"x": point.x, "y": point.y, "definition": "", "rotation": 0, "required": effort, "work": 0,
 		"state": "Ready", "worker": 0, "priority": 2, "created": tick, "inputs": {}, "output": {},
-		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0, "worker_days": {}, "order":0,
+		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0, "worker_days": {}, "order":0, "care_goal":[], "emergency":false,
 		"rate_remainders": {}, "pending_xp": {}}
 	jobs.append(job)
 	return job
@@ -444,7 +452,7 @@ func _create_work() -> void:
 			if job.kind in ["cook","craft"] and job.target == hearth.id and job.state not in ["Complete", "Canceled"]:
 				active = true
 				in_progress += 2
-		if not active and output_batches < 2 and available("meal") + in_progress < citizens.size() * 4:
+		if not active and output_batches < 2 and available("meal") + in_progress < citizens.filter(func(c:Dictionary)->bool:return not c.death_recorded and not c.departed).size() * 4:
 			var recipe: Dictionary = definitions.recipes.cook_meals
 			var inputs: Dictionary = recipe.materials.duplicate()
 			var count: int = 0
@@ -484,38 +492,61 @@ func _create_work() -> void:
 			job.source = stack.id
 
 func _needs(citizen: Dictionary) -> void:
+	if citizen.death_recorded or citizen.departed: return
 	citizen.hunger_rem += 1000
 	citizen.fullness = maxi(0, citizen.fullness - citizen.hunger_rem / 7200)
 	citizen.hunger_rem %= 7200
 	var job: Dictionary = find(jobs, citizen.job)
-	var sleeping: bool = not job.is_empty() and job.kind == "sleep" and job.state == "Working"
+	var sleeping: bool = citizen.downed or (not job.is_empty() and job.kind in ["sleep","recover"] and job.state == "Working")
 	var rate: int = 50
 	if sleeping:
-		var bed: Dictionary = find(structures, job.target)
+		var bed: Dictionary = find(structures, citizen.bed if citizen.downed else job.target)
+		if citizen.downed:
+			bed = {}
+			for structure in structures:
+				if structure.definition in ["bed","bedroll"] and footprint(structure).has(Vector2i(citizen.x,citizen.y)):
+					bed = structure
+					break
 		rate = 80 if bed.is_empty() else (150 if bed.definition == "bed" else 120)
 	citizen.rest_rem += rate
 	var change: int = citizen.rest_rem / 300
 	citizen.rest_rem %= 300
 	citizen.rest = clampi(citizen.rest + (change if sleeping else -change), 0, 1000)
 	if citizen.fullness == 0:
+		if citizen.starving_ticks == 0:
+			facts.append({"tick":tick,"actor":citizen.id,"job":0,"kind":"starvation_warning","text":citizen.name+" is at zero fullness. After six continuous hours without food they lose 5 health/hour. Feed downed patients through Care; gather food and enable Cooking."})
 		citizen.starving_ticks += 1
 		if citizen.starving_ticks > 1800 and (citizen.starving_ticks - 1800) % 300 == 0:
-			citizen.health = maxi(0, citizen.health - 5)
+			ColonyCare.hurt(self,citizen,5)
 	else:
 		citizen.starving_ticks = 0
 
 func _assign(citizen: Dictionary) -> void:
+	if citizen.death_recorded or citizen.departed:
+		citizen.activity = "Died" if citizen.death_recorded else "Departed"
+		return
+	if citizen.downed:
+		citizen.activity = "Hearthside recovery" if citizen.hearthside_until > tick else ("Downed: bleeding, needs care" if not citizen.stabilized else "Downed: recovering")
+		return
 	var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
 	var needs_sleep: bool = citizen.rest <= 300 or ((hour >= 22 or hour < 6) and citizen.rest < 900)
 	var current: Dictionary = find(jobs, citizen.job)
+	var treatment_wait: bool = citizen.fullness > 0 and citizen.rest > 100 and jobs.any(func(j:Dictionary)->bool:return j.kind == "treat" and j.target == citizen.id and j.state not in ["Complete","Canceled"])
+	if treatment_wait and current.get("kind") not in ["eat","sleep"]:
+		_release(current,false)
+		citizen.activity = "Resting for treatment"
+		return
 	if not current.is_empty():
-		if (current.kind not in ["eat", "sleep"] and (citizen.fullness <= 350 or needs_sleep)) or (current.kind == "sleep" and citizen.fullness == 0 and not _food(citizen).is_empty()):
+		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
+		if (current.emergency and (citizen.fullness == 0 or citizen.rest <= 100)) or (current.kind not in ["eat","sleep"] and not current.emergency and (emergency or citizen.fullness <= 350 or needs_sleep)) or (current.kind == "sleep" and citizen.fullness == 0 and not _food(citizen).is_empty()):
 			_release(current, false)
 		else:
 			return
-	if citizen.health == 0 or citizen.departed:
-		citizen.activity = "Dead (care system pending)"
-		return
+	if citizen.health > 20 and citizen.fullness > 0 and citizen.rest > 100 and citizen.break_until <= tick:
+		var emergencies: Array = jobs.filter(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
+		emergencies.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return _higher_score(a,b,citizen))
+		for emergency in emergencies:
+			if _reserve(emergency,citizen): citizen.job = emergency.id; return
 	if citizen.fullness <= 350:
 		var food: Dictionary = _food(citizen)
 		if not food.is_empty():
@@ -526,15 +557,22 @@ func _assign(citizen: Dictionary) -> void:
 				citizen.job = eat_job.id
 				return
 		citizen.activity = "Hungry: gather berries or mushrooms and enable Cooking"
-	if needs_sleep and citizen.fullness > 350:
+	if needs_sleep and (citizen.fullness > 350 or citizen.rest <= 100):
 		var bed: Dictionary = find(structures, citizen.bed)
-		var point: Vector2i = Vector2i(citizen.x, citizen.y) if bed.is_empty() else Vector2i(bed.x, bed.y)
-		var sleep_job: Dictionary = _job("sleep", "", "", citizen.bed, point, 0)
+		var point: Vector2i = Vector2i(citizen.x, citizen.y) if bed.is_empty() or citizen.rest <= 100 else Vector2i(bed.x, bed.y)
+		if citizen.rest <= 100: bed = {}
+		var sleep_job: Dictionary = _job("sleep", "", "", 0 if bed.is_empty() else bed.id, point, 0)
 		sleep_job.worker = citizen.id
 		sleep_job.state = "Moving"
 		sleep_job.work_x = point.x
 		sleep_job.work_y = point.y
 		citizen.job = sleep_job.id
+		return
+	if citizen.health < 50:
+		var destination: Dictionary = ColonyCare.destination(self,citizen)
+		var recovery: Dictionary = _job("recover","","",destination.id,destination.point,0)
+		recovery.worker = citizen.id; recovery.state = "Moving"
+		citizen.job = recovery.id
 		return
 	if citizen.departure_until > 0 and tick >= citizen.departure_until:
 		var depart_job: Dictionary = _job("depart", "", "", citizen.id, Vector2i(66,127), 0)
@@ -552,7 +590,7 @@ func _assign(citizen: Dictionary) -> void:
 			return
 	if citizen.pinned_job > 0:
 		var pinned: Dictionary = find(jobs,citizen.pinned_job)
-		if not pinned.is_empty() and pinned.worker == 0 and citizen.preferences.get(pinned.category,0) > 0 and _reserve(pinned,citizen):
+		if not pinned.is_empty() and pinned.worker == 0 and (citizen.preferences.get(pinned.category,0) > 0 or pinned.kind == "treat") and _reserve(pinned,citizen):
 			citizen.job = pinned.id
 			return
 		citizen.pinned_job = 0
@@ -562,13 +600,7 @@ func _assign(citizen: Dictionary) -> void:
 		if job.worker != 0 or job.state in ["Complete", "Canceled"] or tick < job.retry or citizen.preferences.get(job.category, 0) == 0:
 			continue
 		candidates.append(job)
-	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
-		var aa: Array = _score(a, citizen)
-		var bb: Array = _score(b, citizen)
-		for index in range(aa.size()):
-			if aa[index] != bb[index]:
-				return aa[index] > bb[index]
-		return false)
+	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _higher_score(a,b,citizen))
 	for job in candidates:
 		if _reserve(job, citizen):
 			citizen.job = job.id
@@ -581,7 +613,15 @@ func _score(job: Dictionary, citizen: Dictionary) -> Array:
 		1 if citizen.preferred == job.category else 0, citizen.skills.get(job.skill, 0),
 		-absi(citizen.x - job.x) - absi(citizen.y - job.y), -job.id]
 
+func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
+	var aa: Array = _score(a,citizen)
+	var bb: Array = _score(b,citizen)
+	for index in range(aa.size()):
+		if aa[index] != bb[index]: return aa[index] > bb[index]
+	return false
+
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if job.kind in ["rescue","treat","feed","bury"] and not ColonyCare.reserve(self,job,citizen): return false
 	if job.kind in ["cook","craft"]: ColonyProduction.replace_food(self,job)
 	if job.kind == "research" and job.definition != production_state.project: return _block(job,"Project inactive: choose it in Research to resume")
 	if job.kind == "craft":
@@ -592,13 +632,13 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 		for other in jobs:
 			if other.id != job.id and other.target == job.target and other.worker > 0 and other.kind in ["cook","craft","research"]: return _block(job,"Workstation in use by another resident")
 	for resident in citizens:
-		if resident.pinned_job == job.id and resident.id != citizen.id:
+		if resident.pinned_job == job.id and resident.id != citizen.id and not job.emergency:
 			return false
 	var point: Vector2i = Vector2i(job.x, job.y)
 	var positions: Array[Vector2i] = []
 	if job.kind == "build":
 		positions = _perimeter(footprint(job))
-	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research"]:
+	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury"]:
 		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["cook","fuel","craft","research"] else _perimeter([point])
 	else:
 		positions.append(point)
@@ -641,7 +681,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 			var sources: Array = stacks.filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"])
 			sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(self,a,b,Vector2i(citizen.x,citizen.y)))
 			for stack in sources:
-				if stack.item != item or stack.location not in ["ground", "store", "output"] or (job.kind == "eat" and stack.id != job.source):
+				if stack.item != item or stack.location not in ["ground", "store", "output"] or (job.kind in ["eat","feed"] and stack.id != job.source):
 					continue
 				var count: int = mini(needed, stack.count - _reserved(stack))
 				if count > 0:
@@ -669,6 +709,15 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 	if job.is_empty():
 		citizen.job = 0
 		return
+	if job.kind == "rescue":
+		ColonyCare.rescue_work(self,citizen,job)
+		return
+	if job.kind in ["treat","feed"]:
+		var patient: Dictionary = find(citizens,job.target)
+		if patient.death_recorded or patient.carried_by > 0 or absi(patient.x-job.x)+absi(patient.y-job.y) > 0:
+			_release(job,false)
+			_block(job,"Patient moved: care will follow their position")
+			return
 	var activity: Dictionary = {
 		"Fetching":"Fetching supplies", "Delivering":"Carrying supplies", "Moving":"Walking to the task", "Working":"Working"}
 	citizen.activity = activity.get(job.state,job.reason)
@@ -729,6 +778,10 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 				if citizen.leisure_ticks >= 600 and citizen.break_until <= tick:
 					_complete(citizen, job)
 				return
+			if job.kind == "recover":
+				citizen.activity = "Recovering: ordinary work resumes at 50 health"
+				if citizen.health >= 50: _complete(citizen,job)
+				return
 			if job.kind == "sleep":
 				var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
 				if (hour >= 6 and hour < 22 and citizen.rest >= 900) or (hour == 6 and citizen.rest >= 500):
@@ -775,6 +828,10 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 		citizen.injury_rem += speed * 750
 		speed = citizen.injury_rem / 1000
 		citizen.injury_rem %= 1000
+	if citizen.carrying_patient > 0:
+		citizen.patient_move_rem += speed * 750
+		speed = citizen.patient_move_rem / 1000
+		citizen.patient_move_rem %= 1000
 	speed += citizen.travel_credit
 	citizen.travel_credit = 0
 	citizen.progress += speed
@@ -819,10 +876,11 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			return
 	for stack in stacks:
 		if stack.location == "escrow" and stack.owner == job.id:
-			if job.kind == "eat":
+			if job.kind in ["eat","feed"]:
+				var eater: Dictionary = citizen if job.kind == "eat" else find(citizens,job.target)
 				for tag in stack.tags:
-					if not citizen.food_tags.has(tag):
-						citizen.food_tags.append(tag)
+					if not eater.food_tags.has(tag):
+						eater.food_tags.append(tag)
 			if job.kind != "fuel":
 				_record("consumed", stack.item, stack.count)
 			else:
@@ -830,6 +888,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			stack.count = 0
 	var point: Vector2i = Vector2i(job.work_x, job.work_y)
 	match job.kind:
+		"treat", "feed", "bury": ColonyCare.complete(self,citizen,job)
 		"prepare", "sow", "harvest", "replant": ColonyAgriculture.complete(self, citizen, job)
 		"gather":
 			var resource: Dictionary = find(resources, job.target)
@@ -848,9 +907,10 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			var structure: Dictionary = _structure(job.definition, Vector2i(job.x, job.y), job.rotation)
 			if job.definition == "bed":
 				for resident in citizens:
+					if resident.death_recorded or resident.departed: continue
 					var old_bed: Dictionary = find(structures, resident.bed)
-					if old_bed.definition == "bedroll":
-						old_bed.user = 0
+					if old_bed.get("definition") == "bedroll" or old_bed.is_empty():
+						if not old_bed.is_empty(): old_bed.user = 0
 						resident.bed = structure.id
 						structure.user = resident.id
 						break
@@ -880,8 +940,8 @@ func _complete(citizen: Dictionary, job: Dictionary) -> void:
 		if citizen.preferred_work >= 30000:
 			citizen.preferred_memory_until = tick + 7200
 			citizen.preferred_work = 0
-	if citizen.pinned_job == job.id:
-		citizen.pinned_job = 0
+	for person in citizens:
+		if person.pinned_job == job.id: person.pinned_job = 0
 	if job.kind in ["eat","sleep"] and not citizen.pending_shift.is_empty():
 		citizen.shift = citizen.pending_shift
 		citizen.pending_shift = ""
@@ -905,6 +965,7 @@ func _award_xp(job: Dictionary) -> void:
 func _release(job: Dictionary, cancel: bool) -> void:
 	if job.is_empty():
 		return
+	ColonyCare.released(self,job)
 	for stack in stacks:
 		stack.reservations.erase(job.id)
 		if (stack.location == "carry" and stack.job == job.id) or (cancel and stack.location == "escrow" and stack.owner == job.id):
@@ -1029,7 +1090,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
 	var all_ids: Dictionary = {}
-	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders]:
+	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies]:
 		for record: Dictionary in records:
 			if all_ids.has(record.id) or record.id < 1 or record.id >= next_id:
 				errors.append("Invalid/duplicate ID")
@@ -1067,6 +1128,7 @@ func invariant_errors() -> Array[String]:
 				carried += stack.count
 		if carried > 8:
 			errors.append("Carry capacity exceeded")
+		if citizen.carrying_patient > 0 and carried > 0: errors.append("Patient carrier must have both hands free")
 		if not inside(Vector2i(citizen.x, citizen.y)) or citizen.fullness not in range(1001) or citizen.rest not in range(1001):
 			errors.append("Citizen bounds")
 		if citizen.job > 0 and (find(jobs, citizen.job).is_empty() or find(jobs, citizen.job).worker != citizen.id):
@@ -1076,7 +1138,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}
