@@ -51,6 +51,7 @@ var inspector_details: Label
 var rotation_button: Button
 var placement_kind: String = "stockpile"
 var paint_build_definition: String = ""
+var moving_target: int = 0
 var placement_cache_key: String = ""
 var placement_cache: Dictionary = {}
 var forecast_elapsed: float = 0.0
@@ -379,7 +380,7 @@ func begin_placement() -> void:
 	view.preview_visible = true
 	view.preview_definition = ""
 	view.preview_line=false;view.preview_lodge=false;view.rejected_build_tiles.clear()
-	paint_build_definition="";placement_cache_key="";placement_cache.clear()
+	moving_target=0;paint_build_definition="";placement_cache_key="";placement_cache.clear()
 	view.preview_resource = ""
 	if world is ColonyWorld:
 		view.preview_start = _home_tile(Vector2i(74,54))
@@ -411,7 +412,7 @@ func confirm_placement() -> void:
 			notice = "Deep river cannot be designated. Move the preview onto land."
 			return
 	if world is ColonyWorld and not view.preview_definition.is_empty():
-		var error: String = world.placement_error(view.preview_definition, view.preview_start, view.preview_rotation)
+		var error: String = ColonyMaintenance.cart_position_error(world,world.find(world.structures,moving_target),view.preview_start) if placement_kind=="cart_move" else world.placement_error(view.preview_definition,view.preview_start,view.preview_rotation,0,moving_target)
 		if not error.is_empty():
 			notice = error
 			return
@@ -423,7 +424,11 @@ func confirm_placement() -> void:
 		view.rejected_build_tiles=preview.rejected
 		if preview.valid.is_empty(): notice="No valid tiles. Inspect the red cells or clear obstructions.";return
 	confirm_button.disabled = true
-	if world is ColonyWorld and placement_kind == "lodge":
+	if world is ColonyWorld and placement_kind == "cart_move":
+		submitted_command=world.queue_command("cart_move",{"target":moving_target,"x":view.preview_start.x,"y":view.preview_start.y})
+	elif world is ColonyWorld and placement_kind == "move_furniture":
+		submitted_command=world.queue_command("move_furniture",{"target":moving_target,"x":view.preview_start.x,"y":view.preview_start.y,"rotation":view.preview_rotation})
+	elif world is ColonyWorld and placement_kind == "lodge":
 		submitted_command=world.queue_command("lodge",{"x":view.preview_start.x,"y":view.preview_start.y})
 	elif world is ColonyWorld and placement_kind == "build_area":
 		submitted_command=world.queue_command("build_area",{"definition":paint_build_definition,"tiles":view.preview_tiles()})
@@ -483,7 +488,7 @@ func _map_intent(action: Dictionary) -> void:
 	if action.kind=="chooser" or candidates.size()>1:
 		show_sheet("Select object")
 		for candidate in candidates:
-			var title: String = candidate.object.get("name",candidate.kind+": "+candidate.object.get("definition",candidate.object.get("crop","")))
+			var title: String = candidate.object.get("name",("Ruins: " if candidate.kind=="station" and candidate.object.health<=0 else candidate.kind+": ")+candidate.object.get("definition",candidate.object.get("crop","")))
 			button(title,func()->void:close_sheet();_select_map_object(candidate),sheet_body)
 		label("Terrain (%d, %d)" % [action.tile.x,action.tile.y],sheet_body)
 	elif candidates.size()==1: _select_map_object(candidates[0])
@@ -953,6 +958,12 @@ func begin_gather(kind: String) -> void:
 	_layout()
 
 func _preview_text() -> String:
+	if placement_kind=="cart_move":
+		var error: String = ColonyMaintenance.cart_position_error(world,world.find(world.structures,moving_target),view.preview_start)
+		return "Move cart · 20 WU · stored goods stay aboard\n"+("Needs a clear two-by-two route" if error.is_empty() else error)
+	if placement_kind=="move_furniture":
+		var error: String = world.placement_error(view.preview_definition,view.preview_start,view.preview_rotation,0,moving_target)
+		return "Move %s · %d WU · materials retained\n%s" % [_catalog_name(view.preview_definition),world.definitions.buildings[view.preview_definition].work_milli/1000,"Valid destination" if error.is_empty() else error]
 	if placement_kind=="lodge":
 		var key: String = "lodge|%s|%d" % [view.preview_start,world.tick]
 		if key!=placement_cache_key:
@@ -974,7 +985,7 @@ func _preview_text() -> String:
 		var count: int = world.gather_targets(view.preview_resource,view.preview_tiles()).size()
 		return "Gather %s | %d unmarked %s\nDrag a rectangle, then Confirm" % [world.definitions.resources[view.preview_resource].item,count,"trees" if view.preview_resource == "tree" else "resources"]
 	if world is ColonyWorld and not view.preview_definition.is_empty():
-		var error: String = world.placement_error(view.preview_definition, view.preview_start, view.preview_rotation)
+		var error: String = world.placement_error(view.preview_definition,view.preview_start,view.preview_rotation,0,moving_target)
 		var definition: Dictionary = world.definitions.buildings[view.preview_definition]
 		return "%s | %s | %d WU\n%s" % [view.preview_definition.capitalize(), _cost_text(definition.materials), definition.work_milli / 1000, "Valid placement" if error.is_empty() else error]
 	return "%d x %d tiles | %s" % [absi(view.preview_end.x - view.preview_start.x) + 1, absi(view.preview_end.y - view.preview_start.y) + 1, "Pan mode" if view.gestures.mode == "pan" else ("Turnip field" if placement_kind == "field" else "Stockpile preview")]
@@ -1391,9 +1402,21 @@ func show_research() -> void:
 				close_sheet(),sheet_body)
 
 func show_station(station: Dictionary) -> void:
+	if station.health<=0:
+		var moves: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="move_furniture" and j.target==station.id and j.state not in ["Complete","Canceled"])
+		if not moves.is_empty(): _job_sheet(moves[0]);return
+		show_sheet("Ruins: "+_catalog_name(station.definition))
+		var definition: Dictionary = world.definitions.buildings[station.definition]
+		label("This structure is gone. Surviving stored goods and fuel remain as physical ground stacks with their ages retained. Rebuilding uses the full original cost: %s; %d WU." % [_cost_text(definition.materials),definition.work_milli/1000],sheet_body)
+		button("Rebuild",func()->void:_submit("rebuild",{"target":station.id});close_sheet(),sheet_body)
+		return
 	show_sheet(station.definition.replace("_"," ").capitalize())
 	var definition: Dictionary = world.definitions.buildings[station.definition]
 	label("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body)
+	if station.definition == "supply_cart":
+		button("Move supply cart",func()->void:begin_cart_move(station),sheet_body)
+	if station.definition != "supply_cart":
+		button("Repair or demolish",func()->void:show_maintenance(station),sheet_body)
 	if station.definition == "hearth":
 		label("Without production orders, cooking keeps four meals per living resident. Adding a policy replaces that default; Repeat stops after its batch count. Choose Maintain for a steady meal reserve.",sheet_body)
 	if station.definition == "fishing_pier":
@@ -1739,3 +1762,34 @@ func show_equipment(id: int) -> void:
 			if stock.is_empty(): label(_catalog_name(item)+": no accessible unreserved stock; craft it or free reserved goods.",sheet_body)
 			else: button("Equip "+_catalog_name(item),func()->void:_submit("equip",{"target":id,"slot":slot,"item":item});close_sheet(),sheet_body)
 		if not person.equipment[slot].is_empty(): button("Remove "+slot+"; stop replacements",func()->void:_submit("equip",{"target":id,"slot":slot,"item":""});close_sheet(),sheet_body)
+
+func show_maintenance(station: Dictionary) -> void:
+	show_sheet(_catalog_name(station.definition)+" · Maintenance")
+	var definition: Dictionary = world.definitions.buildings[station.definition]
+	var missing: int = definition.health-station.health
+	if missing>0:
+		label("Repair restores %d health for %d %s and %.1f WU. Cost rounds up once per repair task; further damage can remain after this work." % [missing,(missing+49)/50,ColonyMaintenance.dominant(definition),missing/10.0],sheet_body)
+		button("Repair",func()->void:_submit("repair",{"target":station.id});close_sheet(),sheet_body)
+	else: label("Full health; no repair materials needed.",sheet_body)
+	var refund: Dictionary = {}
+	for item in definition.materials:
+		if definition.materials[item]/2>0: refund[item]=definition.materials[item]/2
+	label("Demolition: %d WU; returns %s, half materials rounded down. Stored goods/fuel fall to the ground without freshening. Beds lose assignment and production stops." % [((definition.work_milli+1999)/2000),"no materials" if refund.is_empty() else _cost_text(refund)],sheet_body)
+	if station.definition in ColonyMaintenance.MOVABLE:
+		label("Move: full original WU; all construction materials retained and physically carried. Stored goods/fuel stay at the source for separate hauling. Canceling after dismantling leaves the bundle available.",sheet_body)
+		button("Move furniture",func()->void:begin_furniture_move(station),sheet_body)
+	button("Demolish…",func()->void:
+		show_sheet("Demolish "+_catalog_name(station.definition))
+		label("Remove this structure for %d WU and recover %s? Rebuilding later costs the full original materials and WU." % [((definition.work_milli+1999)/2000),"no materials" if refund.is_empty() else _cost_text(refund)],sheet_body)
+		button("Confirm demolition",func()->void:_submit("demolish",{"target":station.id});close_sheet(),sheet_body),sheet_body)
+
+func begin_furniture_move(station: Dictionary) -> void:
+	begin_placement();placement_kind="move_furniture";moving_target=station.id
+	view.preview_definition=station.definition;view.preview_rotation=station.rotation
+	view.preview_start=Vector2i(station.x+3,station.y);view.fit_build_preview();view.camera_tile=Vector2(view.preview_start);rotation_button.visible=true
+	notice="Choose the destination before dismantling. Full original WU; retained materials move in real eight-unit loads. Stored goods/fuel stay at the old location."
+
+func begin_cart_move(cart: Dictionary) -> void:
+	begin_placement();placement_kind="cart_move";moving_target=cart.id
+	view.preview_definition="supply_cart";view.preview_rotation=0;view.preview_start=Vector2i(cart.x+3,cart.y);view.fit_build_preview();view.camera_tile=Vector2(view.preview_start);rotation_button.visible=false
+	notice="Move the supply cart for 20 WU, then push it along a clear two-by-two route. Stored goods keep their age and remain aboard. Canceling a push stops at the current position."

@@ -29,6 +29,7 @@ static func advance(world: ColonyWorld) -> void:
 				world._block(job, "Held inputs spoiled: gather fresh food")
 			stack.reservations.clear()
 	for hearth in world.structures:
+		if hearth.health<=0: continue
 		if hearth.definition != "hearth":
 			continue
 		var occupied: bool = false
@@ -98,6 +99,7 @@ static func comfortable(world: ColonyWorld, citizen: Dictionary) -> bool:
 		return true
 	var point: Vector2i = Vector2i(citizen.x, citizen.y)
 	for hearth in world.structures:
+		if hearth.health<=0: continue
 		if hearth.definition == "hearth" and hearth.fuel > 0:
 			if absi(point.x - hearth.x) + absi(point.y - hearth.y) <= 3:
 				return true

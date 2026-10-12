@@ -42,12 +42,14 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 
 static func create_jobs(world: ColonyWorld) -> void:
 	for station in world.structures:
+		if station.health<=0: continue
 		if station.definition == "herbal_bench" and world.researched.has("herbalism") and not world.production_state.orders.any(func(o:Dictionary)->bool:return o.station == station.id):
 			command(world,"recipe_order",{"target":station.id,"definition":"prepare_medicine","mode":"Maintain","value":4,"priority":2,"filters":[]})
 	var project: String = world.production_state.project
 	if not project.is_empty() and not world.researched.has(project):
 		var contributing: int = 0
 		for desk in world.structures:
+			if desk.health<=0: continue
 			if desk.definition != "research_desk" or not desk.cooking: continue
 			var exists: bool = world.jobs.any(func(j:Dictionary)->bool:return j.kind == "research" and j.target == desk.id and j.definition == project and j.state not in ["Complete","Canceled"])
 			if contributing >= 2: break
@@ -60,7 +62,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 	for order in orders:
 		if not order.enabled or order.quantity <= 0: continue
 		var station: Dictionary = world.find(world.structures,order.station)
-		if station.is_empty() or not station.cooking: continue
+		if station.is_empty() or station.health<=0 or not station.cooking: continue
 		if world.jobs.any(func(j:Dictionary)->bool:return j.target == station.id and j.kind in ["cook","craft"] and j.state not in ["Complete","Canceled"]): continue
 		var outputs: int = world.stacks.filter(func(s:Dictionary)->bool:return s.count > 0 and s.location == "output" and s.owner == station.id).size()
 		if outputs >= 2: continue

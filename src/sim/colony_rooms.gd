@@ -4,6 +4,7 @@ extends RefCounted
 static func compute(world: ColonyWorld) -> Dictionary:
 	var boundaries: Dictionary = {}
 	for structure in world.structures:
+		if structure.health<=0: continue
 		if structure.definition != "supply_cart" and world.definitions.buildings[structure.definition].room_boundary:
 			for point in world.footprint(structure):
 				boundaries[point] = true
@@ -32,4 +33,8 @@ static func compute(world: ColonyWorld) -> Dictionary:
 			if not open and interior.size() <= 64:
 				for point in interior:
 					roofed[point] = start.y * 128 + start.x
+	for structure in world.structures:
+		if structure.health>0 and world.definitions.buildings[structure.definition].built_in_roof:
+			for point in world.footprint(structure):
+				if not roofed.has(point): roofed[point]=-structure.id
 	return roofed

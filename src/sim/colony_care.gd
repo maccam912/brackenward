@@ -140,10 +140,12 @@ static func destination(world: ColonyWorld, patient: Dictionary) -> Dictionary:
 	var origin: Vector2i = Vector2i(patient.x,patient.y)
 	var occupied_beds: Array = []
 	for bed in world.structures:
+		if bed.health<=0: continue
 		if bed.definition in ["bed","bedroll"] and world.citizens.any(func(c:Dictionary)->bool:return c.id != patient.id and c.health > 0 and not c.departed and c.x == bed.x and c.y == bed.y): occupied_beds.append(bed.id)
 	var cached: Dictionary = world.care_destinations.get(patient.id,{})
 	if cached.get("origin") == origin and cached.get("occupied") == occupied_beds: return cached.result
 	for bed in world.structures:
+		if bed.health<=0: continue
 		if bed.definition not in ["bed","bedroll"]: continue
 		if origin == Vector2i(bed.x,bed.y): return {"id":bed.id,"point":origin,"distance":0}
 		if occupied_beds.has(bed.id): continue

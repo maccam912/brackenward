@@ -149,6 +149,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 	for structure in data.structures:
 		if not _record(structure, world.structures[0]) or (structure.definition != "supply_cart" and not world.definitions.buildings.has(structure.definition)) or structure.rotation not in [0, 1, 2, 3] or not _position(structure):
 			return "Invalid structure"
+		if structure.health<0 or structure.health>world.definitions.buildings[structure.definition].health or (structure.health==0 and structure.fuel>0): return "Invalid structure health/fuel state"
 		if structure.fuel < 0 or structure.fuel > 8:
 			return "Invalid hearth fuel"
 		for point in world.footprint(structure):
@@ -172,12 +173,14 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 			return "Invalid remaining yield"
 	if not ColonyNature.validate(data.nature_state,data.resources,data.structures,data.tick): return "Invalid forestry/fishing state"
 	for stack in data.stacks:
-		if not _record(stack, world.stacks[0]) or not world.definitions.items.has(stack.item) or stack.count < 0 or stack.count > 100000 or not _position(stack) or stack.location not in ["ground", "store", "carry", "escrow", "output", "animal_feed"] or stack.age < 0:
+		if not _record(stack, world.stacks[0]) or not world.definitions.items.has(stack.item) or stack.count < 0 or stack.count > 100000 or not _position(stack) or stack.location not in ["ground", "store", "carry", "escrow", "output", "animal_feed", "move_bundle"] or stack.age < 0:
 			return "Invalid item stack"
 		if stack.location == "animal_feed" and (not ColonyDomestic.feed_item(world,stack.item) or not data.structures.any(func(s:Dictionary)->bool:return s.id == stack.owner and s.definition == "barn")): return "Invalid barn feed ownership"
 		for reservation in stack.reservations.values():
 			if not reservation is int or reservation < 1:
 				return "Invalid reservation"
+	for bundle in data.stacks:
+		if bundle.location=="move_bundle" and not data.jobs.any(func(j:Variant)->bool:return j is Dictionary and j.get("id")==bundle.owner and j.get("kind")=="move_furniture" and j.get("inputs") is Dictionary and j.inputs.has(bundle.item)): return "Invalid retained material bundle"
 	for barn in data.structures:
 		if barn.definition=="barn":
 			var feed_units: int = 0
@@ -188,7 +191,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 			if feed_units>24 or output_units>24: return "Barn buffer exceeds 24 units"
 	var job_template: Dictionary = world._job("gather", "Gathering", "Field", world.resources[0].id, Vector2i(1, 1), 1000)
 	for job in data.jobs:
-		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate", "craft", "research", "rescue", "treat", "feed", "bury", "recover", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "escape", "stock_feed", "lead_animal", "collect_animal", "slaughter", "build_helper", "step_aside", "equip"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
+		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate", "craft", "research", "rescue", "treat", "feed", "bury", "recover", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "escape", "stock_feed", "lead_animal", "collect_animal", "slaughter", "build_helper", "step_aside", "equip", "repair", "demolish", "move_furniture", "cart_move"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
 			return "Invalid job"
 		if job.care_goal.size() not in [0,2] or not job.care_goal.all(func(n:Variant)->bool:return n is int and n >= 0 and n < 128): return "Invalid care destination"
 		if job.emergency and job.kind not in ["rescue","treat"]: return "Invalid emergency work type"
@@ -207,6 +210,15 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if job.kind == "lead_animal" and (job.required != 0 or job.care_goal.size() != 2 or not job.inputs.is_empty()): return "Invalid animal leading contract"
 		if job.kind in ["collect_animal","slaughter"] and (job.required != (4000 if job.kind == "collect_animal" else 10000) or not job.inputs.is_empty()): return "Invalid livestock work contract"
 		if job.kind == "stock_feed" and (job.required != 0 or job.inputs.size() != 1 or not job.inputs.keys().all(func(item:Variant)->bool:return ColonyDomestic.feed_item(world,item)) or not data.structures.any(func(s:Dictionary)->bool:return s.id == job.target and s.definition == "barn")): return "Invalid barn feed task"
+		if job.kind=="move_furniture" and (job.definition not in ColonyMaintenance.MOVABLE or job.care_goal.size()!=2 or not _keys(job.memo,["phase","cooking","health","user","store"]) or job.memo.phase not in ["dismantle","rebuild"] or not job.memo.cooking is bool or not job.memo.health is int or job.memo.health<1 or not job.memo.user is int or not job.memo.store is Dictionary or job.required!=world.definitions.buildings[job.definition].work_milli or job.inputs!=({} if job.memo.phase=="dismantle" else world.definitions.buildings[job.definition].materials)): return "Invalid furniture move"
+		if job.kind=="move_furniture" and (not data.structures.any(func(s:Dictionary)->bool:return s.id==job.target and s.definition==job.definition) or job.memo.health>world.definitions.buildings[job.definition].health or (job.memo.user>0 and not data.citizens.any(func(c:Dictionary)->bool:return c.id==job.memo.user))): return "Missing moving furniture or assigned user"
+		if job.kind=="move_furniture" and not job.memo.store.is_empty():
+			if not _record(job.memo.store,world.stores[0]) or job.memo.store.id!=job.target or job.memo.store.capacity<1 or job.memo.store.capacity>100000 or job.memo.store.priority not in [1,2,3] or not job.memo.store.filters.all(func(item:Variant)->bool:return item is String and world.definitions.items.has(item)): return "Invalid retained furniture storage settings"
+		if job.kind not in ["move_furniture","cart_move"] and not job.memo.is_empty(): return "Unexpected work memo"
+		if job.kind=="cart_move" and (job.required!=20000 or not job.inputs.is_empty() or job.care_goal.size()!=2 or not _keys(job.memo,["phase"]) or job.memo.phase not in ["prepare","push"] or (job.memo.phase=="push" and job.work!=job.required) or not data.structures.any(func(s:Dictionary)->bool:return s.id==job.target and s.definition=="supply_cart")): return "Invalid supply cart move"
+		if job.kind in ["repair","demolish"] and (not world.definitions.buildings.has(job.definition) or not data.structures.any(func(s:Dictionary)->bool:return s.id==job.target and s.definition==job.definition)): return "Invalid maintenance target"
+		if job.kind == "repair" and (job.amount<1 or job.amount>world.definitions.buildings[job.definition].health or job.required != job.amount*100 or job.inputs != {ColonyMaintenance.dominant(world.definitions.buildings[job.definition]):(job.amount+49)/50}): return "Invalid repair quantities"
+		if job.kind == "demolish" and (job.required != ((world.definitions.buildings[job.definition].work_milli+1999)/2000)*1000 or not job.inputs.is_empty()): return "Invalid demolition work"
 		if job.kind == "equip" and (job.required != 2000 or not ColonyEquipment.SLOTS.has(job.definition) or not data.citizens.any(func(c:Dictionary)->bool:return c.id==job.target) or job.inputs.size()>1 or not job.inputs.keys().all(func(item:Variant)->bool:return ColonyEquipment.SLOTS[job.definition].has(item) and job.inputs[item]==1)): return "Invalid equipment transaction"
 		if job.kind == "build_helper" and (job.required != 0 or not job.inputs.is_empty() or not data.jobs.any(func(p:Dictionary)->bool:return p.id==job.order and p.kind=="build" and p.definition==job.definition)): return "Invalid construction helper"
 		if job.kind == "build" and not world.definitions.buildings.has(job.definition):
@@ -279,7 +291,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		for key in ["prepared", "planted", "replant"]:
 			if not field[key] is bool:
 				return "Invalid field flags"
-	if not _keys(data.ledger, ["produced", "consumed", "spoiled"]):
+	if not _keys(data.ledger, ColonyMaintenance.LEDGER_BUCKETS):
 		return "Invalid inventory ledger"
 	for entries in data.ledger.values():
 		if not entries is Dictionary:
@@ -291,7 +303,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if not command is Dictionary or not _keys(command, ["id", "session", "kind", "args"]) or not command.id is int or command.id < 1 or not command.session is String or not command.kind is String or not command.args is Dictionary:
 			return "Invalid pending command"
 		# Preserve only commands generated by the concrete development UI.
-		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "request_accept": ["target"], "request_decline": ["target"], "mediate": ["definition"], "equip": ["target","slot","item"], "equipment_policy": ["target","slot","replacements","upgrades"], "build_area": ["definition","tiles"], "lodge": ["x","y"], "pen": ["tiles"], "breeding": ["target","enabled"], "slaughter": ["target"], "hunt": ["target","solo","citizen"], "forest": ["tiles","value"], "forest_policy": ["target","value","enabled"], "replant_tree": ["target"], "clear_sapling": ["target"], "care_mode": ["mode"], "treat_now": ["target","citizen"], "burial": ["target","x","y"], "recipe_order": ["target","definition","mode","value","priority","filters"], "order_enabled": ["target","enabled"], "research_select": ["definition"], "research_queue": ["definition"], "station_enabled": ["target","enabled"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
+		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "request_accept": ["target"], "request_decline": ["target"], "mediate": ["definition"], "cart_move": ["target","x","y"], "move_furniture": ["target","x","y","rotation"], "repair": ["target"], "demolish": ["target"], "rebuild": ["target"], "equip": ["target","slot","item"], "equipment_policy": ["target","slot","replacements","upgrades"], "build_area": ["definition","tiles"], "lodge": ["x","y"], "pen": ["tiles"], "breeding": ["target","enabled"], "slaughter": ["target"], "hunt": ["target","solo","citizen"], "forest": ["tiles","value"], "forest_policy": ["target","value","enabled"], "replant_tree": ["target"], "clear_sapling": ["target"], "care_mode": ["mode"], "treat_now": ["target","citizen"], "burial": ["target","x","y"], "recipe_order": ["target","definition","mode","value","priority","filters"], "order_enabled": ["target","enabled"], "research_select": ["definition"], "research_queue": ["definition"], "station_enabled": ["target","enabled"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
 		if not schemas.has(command.kind) or not _keys(command.args, schemas[command.kind]):
 			return "Unknown pending command arguments"
 		for key in command.args:

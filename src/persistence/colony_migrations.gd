@@ -127,4 +127,14 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		result = result.duplicate(true)
 		result["equipment_state"] = ColonyEquipment.initial_state(result.get("citizens",[]))
 		result.schema_revision = 12
+	if result.get("schema_revision") == 12:
+		if not result.get("jobs") is Array or not result.get("ledger") is Dictionary: return data
+		result=result.duplicate(true)
+		for bucket in ColonyMaintenance.LEDGER_BUCKETS:
+			if not result.ledger.has(bucket): result.ledger[bucket]={}
+		for job in result.jobs:
+			if not job is Dictionary: return data
+			job["amount"]=0
+			job["memo"]={}
+		result.schema_revision=13
 	return result

@@ -41,6 +41,7 @@ static func plantable(world: ColonyWorld, p: Vector2i) -> bool:
 	if not world.walkable(p): return false
 	if world.generator_version > 0 and world.terrain_state.paths.has(p): return false
 	for structure in world.structures:
+		if structure.health<=0: continue
 		if world.footprint(structure).has(p): return false
 	if world.fields.any(func(f:Dictionary)->bool:return f.x == p.x and f.y == p.y): return false
 	return not world.stores.any(func(s:Dictionary)->bool:return s.tiles.has(p))
@@ -87,6 +88,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 	var pending: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind == "fish" and j.state not in ["Complete","Canceled"])
 	var committed: int = fish.river+pending.size()*2
 	for pier in world.structures:
+		if pier.health<=0: continue
 		if pier.definition != "fishing_pier" or not pier.cooking or committed >= 16: continue
 		if pending.any(func(j:Dictionary)->bool:return j.target == pier.id) or fish.piers.get(pier.id,0) >= 8: continue
 		if world.stacks.filter(func(s:Dictionary)->bool:return s.count > 0 and s.location == "output" and s.owner == pier.id).size() >= 2: continue

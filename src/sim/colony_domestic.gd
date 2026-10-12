@@ -11,6 +11,7 @@ static func animal_template() -> Dictionary:
 static func geometry(world: ColonyWorld, tiles: Array) -> Dictionary:
 	var boundaries: Dictionary = {}
 	for structure in world.structures:
+		if structure.health<=0: continue
 		if structure.definition in BOUNDARIES:
 			for p in world.footprint(structure): boundaries[p]=true
 	var interior: Array[Vector2i] = []
@@ -33,6 +34,7 @@ static func geometry(world: ColonyWorld, tiles: Array) -> Dictionary:
 	if queue.size()!=interior.size(): return {"error":"Choose one connected enclosed pen"}
 	var barns: Array = []
 	for structure in world.structures:
+		if structure.health<=0: continue
 		if structure.definition!="barn": continue
 		if world.footprint(structure).any(func(p:Vector2i)->bool:return area.has(p) or ColonyNavigation.NEIGHBORS.any(func(d:Vector2i)->bool:return area.has(p+d))): barns.append(structure.id)
 	return {"error":"","interior":interior,"barns":barns,"tiles_capacity":interior.filter(func(p:Vector2i)->bool:return world.walkable(p)).size()/4,"shelter_capacity":barns.size()*6}
@@ -45,6 +47,7 @@ static func status(world: ColonyWorld, pen: Dictionary) -> Dictionary:
 	if not result.has("barns"):
 		result["barns"] = []
 		for structure in world.structures:
+			if structure.health<=0: continue
 			if structure.definition=="barn" and world.footprint(structure).any(func(p:Vector2i)->bool:return pen.tiles.has(p) or ColonyNavigation.NEIGHBORS.any(func(d:Vector2i)->bool:return pen.tiles.has(p+d))): result.barns.append(structure.id)
 	result["count"] = occupants(world,pen.id).size()
 	var slots: int = 0
@@ -141,7 +144,7 @@ static func _feed_dawn(world: ColonyWorld) -> void:
 			if animal.away: continue
 			var required: int = demand(world,animal,day)
 			var barn: Dictionary = world.find(world.structures,animal.barn)
-			var reachable_feed: bool = info.barns.has(animal.barn) and pen.tiles.has(Vector2i(animal.x,animal.y)) and not barn.is_empty()
+			var reachable_feed: bool = info.barns.has(animal.barn) and pen.tiles.has(Vector2i(animal.x,animal.y)) and not barn.is_empty() and barn.health>0
 			if reachable_feed and feed_count(world,animal.barn)>=required:
 				var remaining: int = required
 				var supplies: Array = world.stacks.filter(func(s:Dictionary)->bool:return s.location=="animal_feed" and s.owner==animal.barn and s.count>0)
@@ -166,6 +169,10 @@ static func _feed_dawn(world: ColonyWorld) -> void:
 static func create_jobs(world: ColonyWorld) -> void:
 	for pen in world.domestic_state.pens:
 		var info: Dictionary = status(world,pen)
+		for animal in occupants(world,pen.id):
+			if info.barns.has(animal.barn): continue
+			for barn in info.barns:
+				if world.domestic_state.animals.filter(func(a:Dictionary)->bool:return a.health>0 and a.barn==barn).size()<6: animal.barn=barn;break
 		if not info.error.is_empty(): pen.reason=info.error
 		for barn_id in info.barns:
 			var residents: Array = occupants(world,pen.id).filter(func(a:Dictionary)->bool:return a.barn==barn_id and not a.away)

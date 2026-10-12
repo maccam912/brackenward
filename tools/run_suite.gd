@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -41,6 +41,7 @@ func run() -> void:
 		"domestic": DomesticTests.run(check)
 		"construction": ConstructionTests.run(check)
 		"equipment": EquipmentTests.run(check)
+		"maintenance": MaintenanceTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -689,6 +690,29 @@ func ui() -> void:
 	for child in colony_game.sheet_body.get_children():
 		if child is Button and child.text=="Toolkit upgrades: Off": child.pressed.emit();break
 	check("GEAR/UI_upgrade_is_explicit_policy_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="equipment_policy" and colony_game.world.pending_commands[0].args.upgrades)
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	var maintenance_wall: Dictionary = colony_game.world._structure("wood_wall",Vector2i(74,54),0);maintenance_wall.health=129
+	colony_game.show_maintenance(maintenance_wall)
+	check("REPAIR/UI_exact_health_material_and_wu_quote",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("51 health") and n.text.contains("2 wood") and n.text.contains("5.1 WU")))
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Demolish…": child.pressed.emit();break
+	check("DEMOLISH/UI_separate_confirmation_before_removal",colony_game.world.pending_commands.is_empty() and colony_game.sheet_name.begins_with("Demolish"))
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Confirm demolition": child.pressed.emit();break
+	check("DEMOLISH/UI_confirm_submits_one_target",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="demolish" and colony_game.world.pending_commands[0].args.target==maintenance_wall.id)
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	var move_table: Dictionary = colony_game.world._structure("table",Vector2i(74,54),0)
+	colony_game.show_maintenance(move_table)
+	check("MOVE/UI_retained_materials_and_cancel_consequence",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("physically carried") and n.text.contains("Canceling after dismantling")))
+	colony_game.begin_furniture_move(move_table)
+	check("MOVE/UI_destination_preview_quotes_full_wu",colony_game._preview_text().contains("Move Table") and colony_game._preview_text().contains("20 WU") and colony_game._preview_text().contains("retained"))
+	colony_game.confirm_placement();colony_game.confirm_placement()
+	check("MOVE/UI_destination_confirm_submits_once",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="move_furniture" and colony_game.world.pending_commands[0].args.target==move_table.id)
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	colony_game.begin_cart_move(colony_game.world.structures[4]);colony_game.view.preview_start=Vector2i(74,68);colony_game.view.fit_build_preview()
+	check("CART/UI_quote_full_work_and_retained_goods",colony_game._preview_text().contains("20 WU") and colony_game._preview_text().contains("stay aboard") and not colony_game.rotation_button.visible)
+	colony_game.confirm_placement();colony_game.confirm_placement()
+	check("CART/UI_destination_confirm_submits_once",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="cart_move")
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

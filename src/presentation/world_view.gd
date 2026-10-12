@@ -339,8 +339,16 @@ func _draw_colony() -> void:
 			for offset in [Vector2(-6, -2), Vector2(4, -4), Vector2(0, 5)]:
 				draw_circle(point + offset * tile_size / 32, tile_size * 0.07, color)
 	for structure in world.structures:
+		if structure.health<=0:
+			var ruin: Vector2 = tile_to_screen(Vector2(structure.x+0.5,structure.y+0.5))
+			draw_rect(Rect2(ruin-Vector2(tile_size*0.3,tile_size*0.1),Vector2(tile_size*0.6,tile_size*0.2)),Color("716D88"));continue
 		var tiles: Array[Vector2i] = world.footprint(structure)
 		var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tiles[0])), Vector2(tiles[-1] - tiles[0] + Vector2i.ONE) * tile_size)
+		if structure.definition=="supply_cart":
+			for task in world.jobs:
+				if task.kind=="cart_move" and task.target==structure.id and task.worker>0 and task.memo.phase=="push" and task.state=="Working":
+					var worker: Dictionary = world.find(world.citizens,task.worker)
+					rectangle.position += Vector2(worker.edge_x-worker.x,worker.edge_y-worker.y)*tile_size*float(worker.progress)/10000.0
 		if not rectangle.intersects(Rect2(Vector2.ZERO, size)):
 			continue
 		var color: Color = Color("B96C50")
@@ -366,6 +374,9 @@ func _draw_colony() -> void:
 				draw_rect(rectangle.grow(-2), Color("E9BA67"), false, 2)
 			var point: Vector2 = tile_to_screen(Vector2(job.x, job.y))
 			draw_rect(Rect2(point, Vector2(tile_size * float(job.work) / job.required, 4)), Color("F3E8CC"))
+	for job in world.jobs:
+		if job.kind=="move_furniture" and job.state not in ["Complete","Canceled"]:
+			for tile in ColonyMaintenance.move_footprint(world,job): draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size).grow(-1),Color("E9BA67"),false,2)
 	for stack in world.stacks:
 		if stack.count <= 0:
 			continue

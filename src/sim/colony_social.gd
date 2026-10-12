@@ -54,6 +54,7 @@ static func leisure_seat(world: ColonyWorld, citizen: Dictionary) -> Vector2i:
 			var point: Vector2i = Vector2i(x,y)
 			if absi(x-cart.x)+absi(y-cart.y) <= 3 and not cart_tiles.has(point): seats[point] = {"tier":3,"object":point.y*128+point.x}
 	for structure in world.structures:
+		if structure.health<=0: continue
 		if structure.definition not in ["garden_bench","table"]: continue
 		for point in seats_for(world,structure):
 			seats[point] = {"tier":1 if structure.definition == "garden_bench" else 2,"object":structure.id}
@@ -73,6 +74,7 @@ static func leisure_seat(world: ColonyWorld, citizen: Dictionary) -> Vector2i:
 		if near_friend: tier = 0
 		var warm: bool = false
 		for hearth in world.structures:
+			if hearth.health<=0: continue
 			if hearth.definition == "hearth" and hearth.fuel > 0 and (absi(point.x-hearth.x)+absi(point.y-hearth.y) <= 3 or (world.roofed(point) and world.room_tiles.get(point) == world.room_tiles.get(Vector2i(hearth.x,hearth.y),-1))): warm = true
 		candidates.append({"point":point,"rank":[private_tier,0 if world.comfortable(citizen) or warm else 1,tier,distance[point],object,point.y*128+point.x]})
 	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
@@ -146,6 +148,7 @@ static func advance(world: ColonyWorld) -> void:
 
 static func table_at(world: ColonyWorld, point: Vector2i) -> int:
 	for structure in world.structures:
+		if structure.health<=0: continue
 		if structure.definition == "table" and seats_for(world,structure).has(point): return structure.id
 	return 0
 
@@ -259,9 +262,10 @@ static func fulfilled(world: ColonyWorld, request: Dictionary) -> bool:
 			var bed: Dictionary = world.find(world.structures,person.bed)
 			if bed.get("definition") != "bed" or not world.roofed(Vector2i(bed.x,bed.y)): return false
 			var room: int = world.room_tiles[Vector2i(bed.x,bed.y)]
-			return world.structures.filter(func(s:Dictionary)->bool:return s.definition in ["bed","bedroll"] and world.room_tiles.get(Vector2i(s.x,s.y),-1) == room).size() <= 2
+			return world.structures.filter(func(s:Dictionary)->bool:return s.health>0 and s.definition in ["bed","bedroll"] and world.room_tiles.get(Vector2i(s.x,s.y),-1) == room).size() <= 2
 		"garden_seat":
 			for bench in world.structures:
+				if bench.health<=0: continue
 				if bench.definition == "garden_bench" and world.fields.filter(func(f:Dictionary)->bool:return f.planted and absi(f.x-bench.x)+absi(f.y-bench.y) <= 3).size() >= 4: return true
 		"supper": return world.social_state.supper_history.get(person.id,0) > request.supper_before or person.supper_ticks >= 150
 		"learn": return person.xp.Study-request.study_xp >= 60000

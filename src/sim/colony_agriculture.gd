@@ -68,7 +68,7 @@ static func advance(world: ColonyWorld) -> void:
 		if world.roofed(Vector2i(field.x, field.y)) != definition.roof:
 			field.reason = "Roof required" if definition.roof else "Remove roof for outdoor crops"
 			continue
-		var watered: bool = world.structures.any(func(s:Dictionary)->bool:return s.definition == "well" and absi(s.x-field.x)+absi(s.y-field.y) <= 8)
+		var watered: bool = world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition == "well" and absi(s.x-field.x)+absi(s.y-field.y) <= 8)
 		var rate: int = field.fertility * (500 if world.weather == "drought" and not watered else 1000) / 1000
 		field.growth_rem += rate
 		field.growth += field.growth_rem / 7200

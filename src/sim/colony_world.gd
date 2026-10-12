@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 12
+const SCHEMA_REVISION: int = 13
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -51,7 +51,7 @@ var designations: Array[Vector2i] = []
 var receipts: Dictionary = {}
 var pending_commands: Array[Dictionary] = []
 var facts: Array[Dictionary] = []
-var ledger: Dictionary = {"produced": {}, "consumed": {}, "spoiled": {}}
+var ledger: Dictionary = {"produced":{},"recovered":{},"traded_in":{},"expedition_gain":{},"consumed":{},"spoiled":{},"lost":{},"traded_out":{},"looted":{}}
 var use_rations: bool = false
 var path_requests: int = 0
 var command_trace: Array[Dictionary] = []
@@ -119,7 +119,8 @@ static func inside(point: Vector2i) -> bool:
 	return point.x >= 0 and point.y >= 0 and point.x < SIZE and point.y < SIZE
 
 func is_water(point: Vector2i) -> bool:
-	if generator_version > 0 and inside(point): return terrain_state.elevation[point.y*128+point.x] == 0 and not terrain_state.bridges.has(point) and not structures.any(func(s:Dictionary)->bool:return s.definition == "bridge" and s.x == point.x and s.y == point.y)
+	if structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition=="bridge" and s.x==point.x and s.y==point.y): return false
+	if generator_version > 0 and inside(point): return terrain_state.elevation[point.y*128+point.x] == 0 and not terrain_state.bridges.has(point)
 	return point.x >= 32 and point.x <= 35 and point.y not in [63, 64]
 
 func walkable(point: Vector2i) -> bool:
@@ -132,6 +133,7 @@ func walkable(point: Vector2i) -> bool:
 			if resource.remaining > 0 and definitions.resources[resource.definition].solid:
 				solid_tiles[Vector2i(resource.x,resource.y)] = true
 		for structure in structures:
+			if structure.health<=0: continue
 			if structure.definition != "supply_cart" and definitions.buildings[structure.definition].solid:
 				for tile in footprint(structure):
 					solid_tiles[tile] = true
@@ -250,7 +252,7 @@ func step() -> void:
 			_work(citizen, find(jobs, citizen.job))
 	ColonyCombat.resolve(self)
 
-func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0) -> String:
+func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0, excluded_structure: int = 0) -> String:
 	if not definitions.buildings.has(kind) or rotation not in [0, 1, 2, 3]:
 		return "Unknown building or rotation"
 	if not definitions.buildings[kind].buildable: return "The supply cart cannot be built; move the existing cart instead"
@@ -268,6 +270,8 @@ func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job
 		if not walkable(point) and not overlay_under_structure and not (kind in ["bridge","fishing_pier"] and is_water(point)):
 			return "Blocked terrain"
 		for structure in structures:
+			if structure.health<=0 or structure.id==excluded_structure: continue
+			if kind in ColonyConstruction.OVERLAYS and structure.definition=="bridge" and footprint(structure).has(point): return "Bridge already provides its deck"
 			if (kind in ColonyConstruction.OVERLAYS)!=(structure.definition in ColonyConstruction.OVERLAYS): continue
 			if footprint(structure).has(point):
 				return "Occupied by " + structure.definition
@@ -275,6 +279,7 @@ func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job
 			if Vector2i(field.x, field.y) == point:
 				return "Field occupies this tile: clear its order first"
 		for job in jobs:
+			if job.id!=excluded_job and job.kind=="move_furniture" and job.state not in ["Complete","Canceled"] and ColonyMaintenance.move_footprint(self,job).has(point): return "Reserved furniture move destination"
 			if job.id != excluded_job and job.kind == "build" and job.state not in ["Complete", "Canceled"] and footprint(job).has(point) and ((kind in ColonyConstruction.OVERLAYS)==(job.definition in ColonyConstruction.OVERLAYS)):
 				return "Another blueprint occupies this tile"
 	if definitions.buildings[kind].solid:
@@ -374,6 +379,9 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"cart_move": return ColonyMaintenance.cart_command(self,args)
+		"move_furniture": return ColonyMaintenance.move_command(self,args)
+		"repair", "demolish", "rebuild": return ColonyMaintenance.command(self,command.kind,args)
 		"equip", "equipment_policy": return ColonyEquipment.command(self,command.kind,args)
 		"build_area", "lodge": return ColonyConstruction.command(self,command.kind,args)
 		"pen", "breeding", "slaughter": return ColonyDomestic.command(self,command.kind,args)
@@ -451,7 +459,7 @@ func _job(kind: String, category: String, skill: String, target: int, point: Vec
 	var job: Dictionary = {"id": _id(), "kind": kind, "category": category, "skill": skill, "target": target,
 		"x": point.x, "y": point.y, "definition": "", "rotation": 0, "required": effort, "work": 0,
 		"state": "Ready", "worker": 0, "priority": 2, "created": tick, "inputs": {}, "output": {},
-		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0, "worker_days": {}, "order":0, "care_goal":[], "emergency":false,
+		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0, "worker_days": {}, "order":0, "care_goal":[], "emergency":false, "amount":0, "memo":{},
 		"rate_remainders": {}, "pending_xp": {}}
 	jobs.append(job)
 	return job
@@ -468,7 +476,7 @@ func _perimeter(tiles: Array[Vector2i]) -> Array[Vector2i]:
 
 func _create_work() -> void:
 	for hearth in structures:
-		if hearth.definition != "hearth":
+		if hearth.health<=0 or hearth.definition != "hearth":
 			continue
 		if hearth.fuel < 4 and ColonyLiving.temperature(self) < 8 and available("wood") >= 8 - hearth.fuel and not jobs.any(func(job: Dictionary) -> bool: return job.kind == "fuel" and job.target == hearth.id and job.state not in ["Complete", "Canceled"]):
 			var fuel_job: Dictionary = _job("fuel", "Hauling", "", hearth.id, Vector2i(hearth.x,hearth.y), 0)
@@ -539,7 +547,7 @@ func _needs(citizen: Dictionary) -> void:
 		if citizen.downed:
 			bed = {}
 			for structure in structures:
-				if structure.definition in ["bed","bedroll"] and footprint(structure).has(Vector2i(citizen.x,citizen.y)):
+				if structure.health>0 and structure.definition in ["bed","bedroll"] and footprint(structure).has(Vector2i(citizen.x,citizen.y)):
 					bed = structure
 					break
 		rate = 80 if bed.is_empty() else (150 if bed.definition == "bed" else 120)
@@ -658,6 +666,9 @@ func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
 	return false
 
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if job.kind=="cart_move" and job.memo.phase=="prepare":
+		var cart: Dictionary = find(structures,job.target);job.x=cart.x;job.y=cart.y
+	if job.kind in ["repair","demolish","move_furniture"] and not ColonyMaintenance.reserve(self,job): return false
 	if job.kind == "equip" and not ColonyEquipment.reserve(self,job,citizen): return false
 	if job.kind in ["build","build_helper"] and not ColonyConstruction.ready(self,job): return false
 	if job.kind in ["stock_feed","lead_animal","collect_animal","slaughter"] and not ColonyDomestic.reserve(self,job,citizen): return false
@@ -670,7 +681,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 		var order: Dictionary = find(production_state.orders,job.order)
 		if order.is_empty() or not order.enabled: return _block(job,"Production order paused")
 	if job.kind in ["cook","craft","research","fish"]:
-		if not find(structures,job.target).get("cooking",true): return _block(job,"Station suspended: enable it in the workstation card")
+		if find(structures,job.target).get("health",0)<=0 or not find(structures,job.target).get("cooking",true): return _block(job,"Station suspended: enable it in the workstation card")
 		for other in jobs:
 			if other.id != job.id and other.target == job.target and other.worker > 0 and other.kind in ["cook","craft","research"]: return _block(job,"Workstation in use by another resident")
 	for resident in citizens:
@@ -678,10 +689,14 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 			return false
 	var point: Vector2i = Vector2i(job.x, job.y)
 	var positions: Array[Vector2i] = []
-	if job.kind in ["build","build_helper"]:
+	if job.kind=="cart_move":
+		var cart: Dictionary = find(structures,job.target);positions.append(Vector2i(cart.x,cart.y))
+	elif job.kind=="move_furniture":
+		positions=_perimeter(ColonyMaintenance.move_footprint(self,job)) if job.memo.phase=="rebuild" else _perimeter(footprint(find(structures,job.target)))
+	elif job.kind in ["build","build_helper"]:
 		positions = _perimeter(footprint(job))
-	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "stock_feed", "lead_animal", "collect_animal", "slaughter"]:
-		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["cook","fuel","craft","research","fish"] else _perimeter([point])
+	elif job.kind in ["repair","demolish", "gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "stock_feed", "lead_animal", "collect_animal", "slaughter"]:
+		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["repair","demolish","cook","fuel","craft","research","fish"] else _perimeter([point])
 	else:
 		positions.append(point)
 	positions.sort_custom(func(a: Vector2i, b: Vector2i) -> bool:
@@ -721,6 +736,9 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 		job.work_y = work_position.y
 		for item in job.inputs:
 			var needed: int = job.inputs[item] - _escrow_count(job.id, item)
+			if job.kind=="move_furniture":
+				for bundle in stacks:
+					if bundle.location=="move_bundle" and bundle.owner==job.id and bundle.item==item: needed -= bundle.count
 			var sources: Array = stacks.filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and accessible(Vector2i(s.x,s.y)))
 			sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(self,a,b,Vector2i(citizen.x,citizen.y)))
 			for stack in sources:
@@ -738,7 +756,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 	for request in requests:
 		find(stacks, request.stack).reservations[job.id] = request.count
 	job.worker = citizen.id
-	job.state = "Fetching" if not requests.is_empty() else "Moving"
+	job.state = "Fetching" if not requests.is_empty() or (job.kind=="move_furniture" and stacks.any(func(s:Dictionary)->bool:return s.location=="move_bundle" and s.owner==job.id and s.count>0)) else "Moving"
 	job.reason = ""
 	return true
 
@@ -751,6 +769,12 @@ func _block(job: Dictionary, reason: String) -> bool:
 func _work(citizen: Dictionary, job: Dictionary) -> void:
 	if job.is_empty():
 		citizen.job = 0
+		return
+	if job.kind=="cart_move":
+		ColonyMaintenance.cart_work(self,citizen,job)
+		return
+	if job.kind=="move_furniture" and job.memo.phase=="dismantle":
+		ColonyMaintenance.move_dismantle(self,citizen,job)
 		return
 	if job.kind == "build_helper":
 		ColonyConstruction.helper_work(self,citizen,job)
@@ -783,6 +807,7 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 		citizen.activity = {"build":"Building "+job.definition,"gather":"Gathering","cook":"Cooking meals","prepare":"Preparing soil","sow":"Sowing","harvest":"Harvesting","fuel":"Refueling hearth"}.get(job.kind,"Working")
 	match job.state:
 		"Fetching":
+			if job.kind=="move_furniture" and ColonyMaintenance.fetch_bundle(self,citizen,job): return
 			var source: Dictionary = {}
 			for stack in stacks:
 				if stack.reservations.get(job.id, 0) > 0:
@@ -792,7 +817,10 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 				job.state = "Moving"
 				return
 			if _walk(citizen, Vector2i(source.x, source.y)):
-				var quantity: int = mini(8, source.reservations[job.id])
+				var held: int = 0
+				for existing in stacks:
+					if existing.location == "carry" and existing.owner == citizen.id: held += existing.count
+				var quantity: int = mini(8-held, source.reservations[job.id])
 				var carried: Dictionary = _make_stack(source.item, quantity, "carry", citizen.id, Vector2i(citizen.x, citizen.y), false)
 				carried.age = source.age
 				carried.age_rem = source.age_rem
@@ -802,7 +830,7 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 				source.reservations[job.id] -= quantity
 				if source.reservations[job.id] == 0:
 					source.reservations.erase(job.id)
-				job.state = "Delivering"
+				if held+quantity >= 8 or not stacks.any(func(s:Dictionary)->bool:return s.reservations.get(job.id,0)>0): job.state = "Delivering"
 		"Delivering":
 			if _walk(citizen, Vector2i(job.work_x, job.work_y)):
 				for stack in stacks:
@@ -860,7 +888,9 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 			if path_requests >= 4:
 				return false
 			path_requests += 1
-			citizen.route = ColonyNavigation.path(Vector2i(citizen.x, citizen.y), goal, func(p:Vector2i)->bool:return ColonyDanger.allowed(self,citizen,p),can_step)
+			citizen.route = ColonyNavigation.path(Vector2i(citizen.x, citizen.y), goal, func(p:Vector2i)->bool:return ColonyDanger.allowed(self,citizen,p),func(a:Vector2i,b:Vector2i)->bool:
+				var task: Dictionary = find(jobs,citizen.job)
+				return ColonyMaintenance.cart_edge(self,a,b) if task.get("kind")=="cart_move" and task.memo.phase=="push" and task.state=="Working" else can_step(a,b))
 			citizen.route_goal = [goal.x, goal.y]
 		if citizen.route.is_empty():
 			var job: Dictionary = find(jobs, citizen.job)
@@ -913,6 +943,9 @@ func _rate(citizen: Dictionary, job: Dictionary) -> int:
 	return work
 
 func _finish(citizen: Dictionary, job: Dictionary) -> void:
+	if job.kind=="move_furniture":
+		var move_error: String = placement_error(job.definition,Vector2i(job.care_goal[0],job.care_goal[1]),job.rotation,job.id,job.target)
+		if not move_error.is_empty(): _release(job,false);_block(job,move_error);return
 	if job.kind in ["stock_feed","collect_animal","slaughter"] and not ColonyDomestic.ready_complete(self,job):
 		_release(job,false); _block(job,"Animal buffer full or conditions changed: haul goods or restore the barn"); return
 	if job.kind == "mediate":
@@ -947,6 +980,8 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			stack.count = 0
 	var point: Vector2i = Vector2i(job.work_x, job.work_y)
 	match job.kind:
+		"move_furniture": ColonyMaintenance.complete_move(self,job)
+		"repair", "demolish": ColonyMaintenance.complete(self,job)
 		"equip": ColonyEquipment.complete(self,citizen,job)
 		"stock_feed", "collect_animal", "slaughter": ColonyDomestic.complete(self,job)
 		"butcher": ColonyWildlife.butcher(self,job)
@@ -1029,6 +1064,7 @@ func _award_xp(job: Dictionary) -> void:
 func _release(job: Dictionary, cancel: bool) -> void:
 	if job.is_empty():
 		return
+	if job.kind=="move_furniture": ColonyMaintenance.release_move(self,job,cancel)
 	if cancel and job.kind == "build": ColonyConstruction.cancel_helpers(self,job)
 	if job.kind == "hunt": danger_cache_tick = -1
 	if cancel and job.kind == "hunt":
@@ -1191,7 +1227,7 @@ func invariant_errors() -> Array[String]:
 		if job.kind in ["gather", "cook", "craft", "research"] and find(resources if job.kind == "gather" else structures, job.target).is_empty():
 			errors.append("Missing job target")
 	for item in definitions.items:
-		if total(item) != ledger.produced.get(item, 0) - ledger.consumed.get(item, 0) - ledger.spoiled.get(item, 0):
+		if total(item) != ledger.produced.get(item,0)+ledger.recovered.get(item,0)+ledger.traded_in.get(item,0)+ledger.expedition_gain.get(item,0)-ledger.consumed.get(item,0)-ledger.spoiled.get(item,0)-ledger.lost.get(item,0)-ledger.traded_out.get(item,0)-ledger.looted.get(item,0):
 			errors.append("Conservation failed: " + item)
 	for citizen in citizens:
 		var carried: int = 0
@@ -1252,8 +1288,9 @@ func is_flooded(tile: Vector2i) -> bool:
 	return flood_cache.has(tile)
 
 func tile_move_cost(tile: Vector2i) -> int:
+	if structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition=="bridge" and footprint(s).has(tile)): return 10
 	for structure in structures:
-		if structure.definition == "stone_path" and footprint(structure).has(tile): return 8
+		if structure.health>0 and structure.definition == "stone_path" and footprint(structure).has(tile): return 8
 	if is_flooded(tile): return 15
 	if generator_version > 0 and terrain_state.bridges.has(tile): return 10
 	if weather == "snow": return 12

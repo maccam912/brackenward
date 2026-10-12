@@ -57,6 +57,7 @@ jobs:
           python3 tools/check_suite.py domestic
           python3 tools/check_suite.py construction
           python3 tools/check_suite.py equipment
+          python3 tools/check_suite.py maintenance
       - name: Real Control/input/layout suite
         run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK

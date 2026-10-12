@@ -96,7 +96,7 @@ static func advance(world: ColonyWorld) -> void:
 			if quantity == 0: continue
 			stack.count -= quantity
 			lost += quantity
-			world._record("spoiled",stack.item,quantity)
+			world._record("lost",stack.item,quantity)
 			for id in stack.reservations.keys(): interrupted[id] = true
 			if stack.location == "escrow": interrupted[stack.owner] = true
 		for id in interrupted:
