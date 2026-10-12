@@ -277,6 +277,13 @@ func citizen_point(citizen: Dictionary) -> Vector2:
 	return point
 
 func _draw_colony() -> void:
+	for merchant in world.trade_state.merchants:
+		if merchant.state not in ["Entering","Trading","Leaving"]: continue
+		var tile: Vector2 = Vector2(merchant.x+0.5,merchant.y+0.5)
+		if not merchant.route.is_empty(): tile+=Vector2(merchant.route[0]-Vector2i(merchant.x,merchant.y))*float(merchant.progress)/10000.0
+		var point: Vector2 = tile_to_screen(tile)
+		draw_circle(point,tile_size*0.27,Color("716D88"));draw_circle(point+Vector2(0,-0.27)*tile_size,tile_size*0.15,Color("E9BA67"))
+		draw_rect(Rect2(point+Vector2(-0.65,-0.2)*tile_size,Vector2(0.35,0.35)*tile_size),Color("B96C50"))
 	for pen in world.domestic_state.pens:
 		for tile in pen.tiles:
 			var point: Vector2 = tile_to_screen(Vector2(tile))

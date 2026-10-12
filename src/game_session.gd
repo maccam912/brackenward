@@ -463,6 +463,10 @@ func _map_intent(action: Dictionary) -> void:
 		var separation: float = view.tile_to_screen(view.citizen_point(citizen)).distance_to(action.point)
 		if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"citizen","object":citizen,"rank":0,"distance":separation})
 	if world is ColonyWorld:
+		for merchant in world.trade_state.merchants:
+			if merchant.state not in ["Entering","Trading","Leaving"]: continue
+			var separation: float = view.tile_to_screen(Vector2(merchant.x+0.5,merchant.y+0.5)).distance_to(action.point)
+			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"merchant","object":merchant,"rank":1,"distance":separation})
 		for animal in world.domestic_state.animals:
 			if animal.health<=0 or animal.away: continue
 			var separation: float = view.tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5)).distance_to(action.point)
@@ -489,6 +493,7 @@ func _map_intent(action: Dictionary) -> void:
 		show_sheet("Select object")
 		for candidate in candidates:
 			var title: String = candidate.object.get("name",("Ruins: " if candidate.kind=="station" and candidate.object.health<=0 else candidate.kind+": ")+candidate.object.get("definition",candidate.object.get("crop","")))
+			if candidate.kind=="merchant": title=candidate.object.community.capitalize()+" merchant"
 			button(title,func()->void:close_sheet();_select_map_object(candidate),sheet_body)
 		label("Terrain (%d, %d)" % [action.tile.x,action.tile.y],sheet_body)
 	elif candidates.size()==1: _select_map_object(candidates[0])
@@ -503,6 +508,9 @@ func _map_intent(action: Dictionary) -> void:
 func _select_map_object(candidate: Dictionary) -> void:
 	var object: Dictionary = candidate.object
 	match candidate.kind:
+		"merchant":
+			if object.state=="Trading": show_trade(object)
+			else: show_valley()
 		"citizen": select_citizen(object.id)
 		"domestic": show_domestic_animal(object)
 		"wildlife": _wildlife_sheet(object)
@@ -606,7 +614,7 @@ func show_sheet(title: String) -> void:
 		"Work":
 			_work_sheet()
 		"Valley":
-			label("The regional map and expeditions arrive in M4. This checkpoint tests the local map and mobile storage.", sheet_body)
+			if world is ColonyWorld: show_valley()
 		"Journal":
 			if world is ColonyWorld:
 				_tutorial_sheet()
@@ -1416,6 +1424,7 @@ func show_station(station: Dictionary) -> void:
 	label("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body)
 	if station.definition == "supply_cart":
 		button("Move supply cart",func()->void:begin_cart_move(station),sheet_body)
+		button("Neighbors and trade",show_valley,sheet_body)
 	if station.definition != "supply_cart":
 		button("Repair or demolish",func()->void:show_maintenance(station),sheet_body)
 	if station.definition == "hearth":
@@ -1815,3 +1824,64 @@ func show_newcomers() -> void:
 			button("Build sleeping place",func()->void:begin_build("bedroll"),sheet_body)
 			button("Food forecast",func()->void:show_sheet("Journal"),sheet_body)
 		button("Decline "+person.name,func()->void:_submit("newcomer",{"target":request.id,"accept":false});close_sheet(),sheet_body)
+
+func show_valley() -> void:
+	show_sheet("Valley and neighbors")
+	label("Merchants visit every four days, beginning day five. One-day notice; their 24-hour stay starts at the cart. Prices per unit are rounded up: 120% normally, 110% at Friendly (40), 100% at Trusted (70). Selling uses base value. Trade gives no reputation; listed deliveries give ten, once per eight days.",sheet_body)
+	label("Next visit: %s in %.1f game hours" % [ColonyTrade.COMMUNITIES[world.trade_state.visit_index%3].capitalize(),maxf(0,(world.trade_state.next_visit-world.tick)/300.0)],sheet_body)
+	for community in ColonyTrade.COMMUNITIES:
+		var score: int = world.trade_state.reputation[community]
+		label("%s | %d · %s\nRequested delivery: %s. Next eligible in %.1f days." % [community.capitalize(),score,"Trusted" if score>=70 else ("Friendly" if score>=40 else "Neighbor"),_cost_text(world.definitions.communities[community].delivery),maxf(0,(world.trade_state.delivery_after[community]-world.tick)/7200.0)],sheet_body)
+	for merchant in world.trade_state.merchants:
+		if merchant.state=="Gone": continue
+		label("%s: %s · %s" % [merchant.community.capitalize(),merchant.state,merchant.note],sheet_body)
+		if merchant.state=="Trading":
+			button("Trade with "+merchant.community.capitalize(),func()->void:show_trade(merchant),sheet_body)
+			button("Deliver community request",func()->void:_preview_trade(merchant,{},world.definitions.communities[merchant.community].delivery.duplicate(),0,true),sheet_body)
+	for exchange in world.trade_state.exchanges:
+		if exchange.state!="Packing": continue
+		label("%s payment delivery: %s" % [exchange.community.capitalize(),_cost_text(exchange.pay)],sheet_body)
+		button("Cancel unpaid exchange "+str(exchange.id),func()->void:_submit("trade_cancel",{"target":exchange.id});close_sheet(),sheet_body)
+	var receipts: Array = world.trade_state.exchanges.filter(func(e:Dictionary)->bool:return e.state=="Complete")
+	for exchange in receipts.slice(maxi(0,receipts.size()-10)):
+		label("Receipt %d: %s paid %s; received %s; gift %d%s" % [exchange.id,exchange.community.capitalize(),_cost_text(exchange.pay),_cost_text(exchange.buy),exchange.gift,"; delivery +10 reputation" if exchange.delivery else ""],sheet_body)
+
+func show_trade(merchant: Dictionary) -> void:
+	show_sheet("Trade · "+merchant.community.capitalize())
+	label("Choose quantities, then preview. Payment is reserved together and carried to the cart before bought goods are released. Cancel before payment commits; a completed exchange is final. Animals need Husbandry, four free pen tiles and a barn slot each.",sheet_body)
+	if FoodForecast.calculate(world).ticks<3600 and merchant.stock.get("meal",0)>0: label("Food recovery: consider meals paid with wood or stone before offering valuable tools. The price and stock stay the same.",sheet_body)
+	var buys: Dictionary = {};var pays: Dictionary = {}
+	label("Merchant goods",sheet_body)
+	for item in merchant.stock:
+		var remaining: int = ColonyTrade.available(world,merchant,item)
+		if remaining<=0: continue
+		label(item.capitalize()+" | "+str(remaining)+" available",sheet_body)
+		var quantity: SpinBox = SpinBox.new();quantity.min_value=0;quantity.max_value=remaining;quantity.value=0;quantity.custom_minimum_size=Vector2(96,48);sheet_body.add_child(quantity);buys[item]=quantity
+	label("Your offer",sheet_body)
+	var goods: Dictionary = ColonyTrade.accessible_goods(world)
+	for item in goods:
+		if goods[item]<=0: continue
+		label(item.capitalize()+" | "+str(goods[item])+" unreserved; base value "+str(world.definitions.items[item].barter_value),sheet_body)
+		var quantity: SpinBox = SpinBox.new();quantity.min_value=0;quantity.max_value=goods[item];quantity.value=0;quantity.custom_minimum_size=Vector2(96,48);sheet_body.add_child(quantity);pays[item]=quantity
+	var pens: Array = world.domestic_state.pens
+	var pen_choice: CycleChoiceButton = CycleChoiceButton.new();pen_choice.custom_minimum_size=Vector2(96,48)
+	pen_choice.add_item("No animal destination")
+	for pen in pens: pen_choice.add_item("Pen "+str(pen.id)+" · "+str(ColonyDomestic.status(world,pen).capacity)+" slots")
+	sheet_body.add_child(pen_choice)
+	button("Preview exchange",func()->void:
+		var buy: Dictionary = {};var pay: Dictionary = {}
+		for item in buys:
+			if buys[item].value>0: buy[item]=int(buys[item].value)
+		for item in pays:
+			if pays[item].value>0: pay[item]=int(pays[item].value)
+		_preview_trade(merchant,buy,pay,0 if pen_choice.selected==0 else pens[pen_choice.selected-1].id,false),sheet_body)
+
+func _preview_trade(merchant: Dictionary, buy: Dictionary, pay: Dictionary, pen: int, delivery: bool) -> void:
+	var quote: Dictionary = ColonyTrade.preview(world,merchant,buy,pay,pen,delivery)
+	show_sheet("Delivery preview" if delivery else "Exchange preview")
+	label("Pay: %s\nReceive: %s" % [_cost_text(pay),"Ten reputation; no deadline after acceptance" if delivery else _cost_text(buy)],sheet_body)
+	if not quote.error.is_empty():
+		label(quote.error,sheet_body);button("Back to trade",func()->void:show_trade(merchant),sheet_body);return
+	label("Price %d · offer %d · surplus gift %d. The gift gives no extra reputation. Supplies stay reserved until physical payment or cancellation. Animals go to pen %d." % [quote.cost,quote.offered,quote.gift,pen],sheet_body)
+	button("Accept delivery" if delivery else "Accept exchange",func()->void:_submit("trade",{"target":merchant.id,"buy":buy,"pay":pay,"pen":pen,"delivery":delivery});close_sheet(),sheet_body)
+	button("Cancel preview",show_valley,sheet_body)

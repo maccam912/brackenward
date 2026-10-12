@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -43,6 +43,7 @@ func run() -> void:
 		"equipment": EquipmentTests.run(check)
 		"maintenance": MaintenanceTests.run(check)
 		"population": PopulationTests.run(check)
+		"trade": TradeTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -726,6 +727,17 @@ func ui() -> void:
 	var newcomer_selected: bool = colony_game.view.selected_id==colony_game.world.citizens[-1].id and colony_game.inspector_details.text.contains(colony_game.world.citizens[-1].name)
 	colony_game.show_person(colony_game.world.citizens[-1].id)
 	check("POP/UI_new_id_is_selectable_and_inspectable",newcomer_selected and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Equipment"))
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	var trader: Dictionary = TradeTests.merchant(colony_game.world)
+	colony_game.show_valley()
+	check("TRADE/UI_merchant_and_relations_are_visible",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Trade with Orchard Kin") and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Requested delivery")))
+	colony_game._preview_trade(trader,{"meal":5},{"wood":19},0,false)
+	check("TRADE/UI_short_payment_has_no_accept",not colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Accept exchange"))
+	colony_game._preview_trade(trader,{"meal":5},{"wood":21},0,false)
+	check("TRADE/UI_exact_price_and_surplus_gift",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Price 20") and n.text.contains("surplus gift 1")))
+	var accept_trade: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Accept exchange")[0]
+	accept_trade.pressed.emit();accept_trade.pressed.emit()
+	check("TRADE/UI_confirmation_queues_one_atomic_exchange",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="trade" and colony_game.world.pending_commands[0].args.buy=={"meal":5} and colony_game.world.pending_commands[0].args.pay=={"wood":21})
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

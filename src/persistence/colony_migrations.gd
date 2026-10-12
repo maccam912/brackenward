@@ -40,6 +40,7 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		header.erase("construction_state")
 		header.erase("equipment_state")
 		header.erase("population_state")
+		header.erase("trade_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
 		for key in ColonySocial.citizen_defaults(): citizen_template.erase(key)
@@ -142,4 +143,11 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		result=result.duplicate(true)
 		result["population_state"]=ColonyPopulation.initial_state(result.seed,result.generator_version,result.site_id)
 		result.schema_revision=14
+	if result.get("schema_revision")==14:
+		result=result.duplicate(true)
+		result["trade_state"]=ColonyTrade.initial_state(result.seed,result.generator_version,result.site_id)
+		# Start the next scheduled visit after this existing campaign tick.
+		while result.trade_state.next_visit<=result.tick:
+			result.trade_state.next_visit+=28800;result.trade_state.visit_index+=1
+		result.schema_revision=15
 	return result
