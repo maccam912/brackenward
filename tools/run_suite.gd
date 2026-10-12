@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -32,6 +32,7 @@ func run() -> void:
 		"survival": SurvivalTests.run(check)
 		"persistence": CampaignTests.run(check)
 		"seasons": SeasonTests.run(check)
+		"people": SocialTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -429,6 +430,49 @@ func ui() -> void:
 		await RenderingServer.frame_post_draw
 		root.get_texture().get_image().save_png("res://reports/m2-portrait.png")
 	colony_game.close_inspector()
+	colony_game.show_sheet("Work")
+	var assignment_button: Button
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text.begins_with("Tavi | Gathering"): assignment_button = child
+	assignment_button.pressed.emit()
+	check("PEOPLE/UI_work_preferences_one_tap",colony_game.sheet_name == "Tavi - Work" and colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button).size() == 12)
+	var gathering: Button
+	var care: Button
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text.begins_with("Gathering:"): gathering = child
+		if child is Button and child.text.begins_with("Care:"): care = child
+	var initial_gathering: int = colony_game.world.citizens[2].preferences.Gathering
+	gathering.pressed.emit()
+	gathering.pressed.emit()
+	care.pressed.emit()
+	check("WORK/UI_multiple_paused_preferences_are_queued",colony_game.world.pending_commands.size() == 3 and gathering.text == "Gathering: Last (pending)" and colony_game.world.citizens[2].preferences.Gathering == initial_gathering)
+	colony_game.close_sheet()
+	colony_game.set_speed(1)
+	colony_game.runner.advance_frame(0.1)
+	colony_game._process(0)
+	colony_game.runner.pause()
+	check("WORK/UI_paused_preference_batch_applies_in_order",colony_game.world.citizens[2].preferences.Gathering == 1 and colony_game.world.citizens[2].preferences.Care == 3 and colony_game.world.pending_commands.is_empty())
+	colony_game.show_person(1)
+	check("PEOPLE/UI_person_has_relationships_and_morale",colony_game.sheet_name == "Mira" and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text == "Relationships"))
+	var saved_social_tick: int = colony_game.world.tick
+	colony_game.world.tick = 3*7200+2400
+	ColonyWeather.initialize(colony_game.world)
+	ColonySocial.advance(colony_game.world)
+	colony_game.show_person(1)
+	var decline: Button
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text == "Decline without penalty": decline = child
+	check("REQUEST/UI_offer_requires_explicit_acceptance",decline != null and colony_game.world.social_state.requests[-1].state == "Offered")
+	decline.pressed.emit()
+	colony_game.set_speed(1)
+	colony_game.runner.advance_frame(0.1)
+	colony_game._process(0)
+	colony_game.runner.pause()
+	check("REQUEST/UI_decline_has_no_penalty",colony_game.world.social_state.requests[-1].state == "Declined" and colony_game.world.citizens[0].broken_promise_until == 0)
+	colony_game.world.tick = saved_social_tick
+	for request in colony_game.world.social_state.requests: request.offered_at = mini(request.offered_at,saved_social_tick)
+	for person in colony_game.world.citizens: person.last_request_offer = mini(person.last_request_offer,saved_social_tick)
+	ColonyWeather.initialize(colony_game.world)
 	var weather_hash: String = colony_game.world.canonical_hash()
 	colony_game.show_weather()
 	await process_frame

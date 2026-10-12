@@ -40,6 +40,8 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	return restore(data,envelope.get("snapshot_name",""))
 
 static func restore(data: Dictionary, snapshot_name: String = "", initialize_weather: bool = false) -> Dictionary:
+	if data.get("schema_revision") is int and data.schema_revision > ColonyWorld.SCHEMA_REVISION:
+		return {"error":"Campaign requires a newer build: schema revision %d (this build supports %d). Original files retained." % [data.schema_revision,ColonyWorld.SCHEMA_REVISION]}
 	var world: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data())
 	if initialize_weather and data.get("weather_state") == {}:
 		# Only pure legacy migration supplies the empty initial schedule.
@@ -48,6 +50,7 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 		world.weather = data.weather
 		ColonyWeather.initialize(world)
 		data.weather_state = world.weather_state.duplicate(true)
+	data = ColonyMigrations.upgrade_current(data,world)
 	var error: String = _validate(data, world)
 	if not error.is_empty():
 		return {"error": error}
@@ -79,7 +82,7 @@ static func _record(value: Variant, template: Dictionary) -> bool:
 	return true
 
 static func _validate(data: Dictionary, world: ColonyWorld) -> String:
-	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80 or data.schema_revision != 1 or data.generator_version != 0 or data.site_id != "meadow_reach" or not ColonyWeather.validate(data.weather_state,data.tick):
+	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80 or data.schema_revision != ColonyWorld.SCHEMA_REVISION or data.generator_version != 0 or data.site_id != "meadow_reach" or not ColonyWeather.validate(data.weather_state,data.tick):
 		return "Invalid world header or unknown fields"
 	if data.citizens.size() != 4 or data.fields.size() > 16384 or data.structures.size() > 16384 or data.resources.size() > 16384 or data.stacks.size() > 100000 or data.jobs.size() > 100000 or data.pending_commands.size() > 4096 or data.facts.size() > 100000:
 		return "Invalid record counts"
@@ -98,6 +101,11 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		for category in ColonyWorld.CATEGORIES:
 			if not citizen.preferences[category] is int or citizen.preferences[category] not in [0, 1, 2, 3]:
 				return "Invalid job preferences"
+		for field in ColonySocial.citizen_defaults():
+			if field == "private_leisure_day":
+				if citizen[field] < -1 or citizen[field] > data.tick / 7200: return "Invalid private leisure day"
+			elif citizen[field] < 0 or citizen[field] > data.tick+28800: return "Invalid personal memory/request counter"
+		if citizen.request_cycle >= ColonySocial.REQUESTS.size(): return "Invalid personal request cycle"
 		if citizen.progress < 0 or citizen.progress > 9999 or citizen.edge_x < 0 or citizen.edge_x >= 128 or citizen.edge_y < 0 or citizen.edge_y >= 128 or citizen.health < 0 or citizen.health > 100:
 			return "Invalid citizen movement/health"
 		if citizen.hunger_rem < 0 or citizen.hunger_rem >= 7200 or citizen.rest_rem < 0 or citizen.rest_rem >= 300 or citizen.move_base_rem < 0 or citizen.move_base_rem >= 120 or citizen.move_rem < 0 or citizen.move_rem >= 1000 or citizen.injury_rem < 0 or citizen.injury_rem >= 1000 or citizen.travel_credit < 0 or citizen.travel_credit >= 10000 or citizen.starving_ticks < 0:
@@ -117,6 +125,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		for point in citizen.route:
 			if not point is Vector2i:
 				return "Invalid route"
+	if not ColonySocial.validate(data.social_state,data.citizens,data.tick): return "Invalid relationship/request state"
 	for structure in data.structures:
 		if not _record(structure, world.structures[0]) or (structure.definition != "supply_cart" and not world.definitions.buildings.has(structure.definition)) or structure.rotation not in [0, 1, 2, 3] or not _position(structure):
 			return "Invalid structure"
@@ -138,12 +147,15 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 				return "Invalid reservation"
 	var job_template: Dictionary = world._job("gather", "Gathering", "Field", world.resources[0].id, Vector2i(1, 1), 1000)
 	for job in data.jobs:
-		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
+		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or job.worker > 4 or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
 			return "Invalid job"
 		if job.kind == "build" and not world.definitions.buildings.has(job.definition):
 			return "Unknown building definition"
 		if job.kind == "build" and (job.inputs != world.definitions.buildings[job.definition].materials or job.required != world.definitions.buildings[job.definition].work_milli):
 			return "Construction contract mismatch"
+		if job.kind == "mediate" and (not data.social_state.pairs.has(job.definition) or job.required != 12000): return "Invalid mediation contract"
+		for worker in job.worker_days:
+			if not worker is int or worker not in [1,2,3,4] or not job.worker_days[worker] is int or job.worker_days[worker] < 0 or job.worker_days[worker] > data.tick / 7200: return "Invalid contributor day"
 		if job.kind == "eat" and (job.required != 2000 or job.inputs.size() != 1):
 			return "Eating contract mismatch"
 		if job.kind == "cook":
@@ -202,7 +214,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if not command is Dictionary or not _keys(command, ["id", "session", "kind", "args"]) or not command.id is int or command.id < 1 or not command.session is String or not command.kind is String or not command.args is Dictionary:
 			return "Invalid pending command"
 		# Preserve only commands generated by the concrete development UI.
-		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
+		var schemas: Dictionary = {"stockpile": ["tiles"], "build": ["definition", "x", "y", "rotation"], "gather": ["target"], "gather_area": ["definition", "tiles"], "cancel": ["target"], "preference": ["citizen", "category", "value"], "food_policy": ["enabled"], "field": ["tiles", "crop"], "schedule": ["citizen", "shift"], "priority": ["target", "value"], "clear_field": ["target"], "early_harvest": ["target"], "request_accept": ["target"], "request_decline": ["target"], "mediate": ["definition"], "stock_filter": ["target", "filters", "priority"], "pin": ["target", "citizen"]}
 		if not schemas.has(command.kind) or not _keys(command.args, schemas[command.kind]):
 			return "Unknown pending command arguments"
 		for key in command.args:

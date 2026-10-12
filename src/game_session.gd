@@ -141,7 +141,7 @@ func button(label: String, callback: Callable, parent: Node, width: float = 48.0
 			result.mouse_filter = Control.MOUSE_FILTER_PASS
 			break
 		ancestor = ancestor.get_parent()
-	result.pressed.connect(callback)
+	if callback.is_valid(): result.pressed.connect(callback)
 	parent.add_child(result)
 	controls.append(result)
 	return result
@@ -508,8 +508,10 @@ func show_sheet(title: String) -> void:
 		"People":
 			for citizen in world.citizens:
 				button(citizen.name, func() -> void:
-					close_sheet()
-					select_citizen(citizen.id), sheet_body)
+					if world is ColonyWorld: show_person(citizen.id)
+					else:
+						close_sheet()
+						select_citizen(citizen.id), sheet_body)
 		"Work":
 			_work_sheet()
 		"Valley":
@@ -874,7 +876,7 @@ func _update_inspector() -> void:
 		inspector_details.text = "%s - looking around\nM0 touch fixture movement." % citizen.name
 
 func _submit(kind: String, args: Dictionary) -> void:
-	if submitted_command > 0:
+	if submitted_command > 0 and kind not in ["preference","schedule","priority","stock_filter","food_policy"]:
 		notice = "An order is pending. Resume to apply it before another action."
 		return
 	submitted_command = world.queue_command(kind, args)
@@ -914,13 +916,9 @@ func _work_sheet() -> void:
 	label("Choose a resource, drag a rectangle, then Confirm. Workers with Gathering enabled keep taking marked jobs until they are finished.", sheet_body)
 	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node"]:
 		button("Gather " + world.definitions.resources[kind].item, func() -> void: begin_gather(kind), sheet_body)
+	label("Worker assignments",sheet_body)
 	for citizen in world.citizens:
-		label(citizen.name + " - " + citizen.activity, sheet_body)
-		button(citizen.shift, func() -> void:
-			_submit("schedule", {"citizen":citizen.id,"shift":"Night shift" if citizen.shift == "Normal" else "Normal"}), sheet_body)
-		for category in ColonyWorld.CATEGORIES:
-			button(category + ": " + ["Off", "Last", "Normal", "First"][citizen.preferences[category]], func() -> void:
-				_submit("preference", {"citizen": citizen.id, "category": category, "value": (citizen.preferences[category] + 1) % 4}), sheet_body)
+		button("%s | Gathering %s" % [citizen.name,["Off","Last","Normal","First"][citizen.preferences.Gathering]],func() -> void: show_work_preferences(citizen.id),sheet_body)
 	label("Storage",sheet_body)
 	for store in world.stores:
 		button("Storage " + str(store.id),func() -> void: _storage_sheet(store),sheet_body)
@@ -1180,3 +1178,58 @@ func show_weather() -> void:
 		button("Hide flood preview",func() -> void:
 			view.forecast_mask.clear()
 			close_sheet(),sheet_body)
+
+func show_work_preferences(id: int) -> void:
+	var citizen: Dictionary = world.find(world.citizens,id)
+	show_sheet(citizen.name+" - Work")
+	label(citizen.activity+"\nCategories set to Off retain their queued jobs for other eligible workers. Hunger, sleep and taking a break come first.",sheet_body)
+	button(citizen.shift,func() -> void:
+		_submit("schedule",{"citizen":id,"shift":"Night shift" if citizen.shift == "Normal" else "Normal"}),sheet_body)
+	for category in ColonyWorld.CATEGORIES:
+		var entry: Button = button(category+": "+["Off","Last","Normal","First"][_queued_preference(id,category)],Callable(),sheet_body)
+		entry.pressed.connect(func() -> void:
+			var value: int = (_queued_preference(id,category)+1)%4
+			_submit("preference",{"citizen":id,"category":category,"value":value})
+			entry.text = category+": "+["Off","Last","Normal","First"][value]+" (pending)")
+	button("All work orders",func() -> void:show_sheet("Work"),sheet_body)
+
+func _queued_preference(id: int,category: String) -> int:
+	var value: int = world.find(world.citizens,id).preferences[category]
+	for command in world.pending_commands:
+		if command.kind == "preference" and command.args.citizen == id and command.args.category == category: value = command.args.value
+	return value
+
+func show_person(id: int) -> void:
+	var citizen: Dictionary = world.find(world.citizens,id)
+	show_sheet(citizen.name)
+	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
+	label("Active morale causes",sheet_body)
+	for term in citizen.mood_terms: label("%s: %+d" % [term,citizen.mood_terms[term]],sheet_body)
+	button("Work preferences",func() -> void:show_work_preferences(id),sheet_body)
+	button("View on map",func() -> void:
+		close_sheet()
+		select_citizen(id)
+		view.camera_tile = Vector2(citizen.x,citizen.y),sheet_body)
+	label("Relationships",sheet_body)
+	for other in world.citizens:
+		if other.id == id: continue
+		var pair: Dictionary = world.social_state.pairs[ColonySocial.key(id,other.id)]
+		label("%s: %s (%d)" % [other.name,"Friends" if pair.score >= 40 else ("Strained" if pair.score <= -40 else "Getting acquainted"),pair.score],sheet_body)
+		if pair.conflict_until > world.tick:
+			button("Mediate with "+other.name,func() -> void:
+				_submit("mediate",{"definition":ColonySocial.key(id,other.id)})
+				close_sheet(),sheet_body)
+	for request in world.social_state.requests:
+		if request.actor != id or request.state not in ["Offered","Accepted"]: continue
+		label(ColonySocial.TITLES[request.kind]+" | "+request.state,sheet_body)
+		label({"quiet_bed":"Assign a bed in a roofed room with at most two beds.","garden_seat":"Build a garden bench within 3 tiles of four planted field tiles.","supper":"Finish half an hour of leisure at one table with two other residents.","learn":"Complete 60 WU of research after this offer.","tool":"Equip a forged toolkit.","valley":"Return from a successful expedition after this offer."}[request.kind],sheet_body)
+		if request.state == "Offered":
+			label("Optional. Accepting gives four days; decline without a penalty. Success gives +100 morale target for two days; an accepted promise that expires gives -60 for two days.",sheet_body)
+			button("Accept - four days",func() -> void:
+				_submit("request_accept",{"target":request.id})
+				close_sheet(),sheet_body)
+			button("Decline without penalty",func() -> void:
+				_submit("request_decline",{"target":request.id})
+				close_sheet(),sheet_body)
+		else:
+			label("Deadline: %s %d at %02d:00 | about %.1f days left" % [["Spring","Summer","Autumn","Winter"][(request.deadline/57600)%4],(request.deadline/7200)%8+1,(request.deadline%7200)/300,maxf(0,float(request.deadline-world.tick)/7200.0)],sheet_body)

@@ -107,7 +107,7 @@ static func comfortable(world: ColonyWorld, citizen: Dictionary) -> bool:
 	return false
 
 static func _morale(world: ColonyWorld, citizen: Dictionary, job: Dictionary) -> void:
-	var terms: Dictionary = {}
+	var terms: Dictionary = ColonySocial.mood_terms(world,citizen)
 	if citizen.bed_memory_until > world.tick:
 		terms["Assigned bed"] = 40 if citizen.traits.has("Restless") else 80
 	if citizen.food_tags.size() >= 3:

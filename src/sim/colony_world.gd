@@ -3,6 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "m3-people-seasons-1"
+const SCHEMA_REVISION: int = 2
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -22,7 +23,8 @@ var fields: Array[Dictionary] = []
 var researched: Array[String] = []
 var room_tiles: Dictionary = {}
 var rooms_dirty: bool = true
-var schema_revision: int = 1
+var schema_revision: int = SCHEMA_REVISION
+var social_state: Dictionary = {}
 var generator_version: int = 0
 var site_id: String = "meadow_reach"
 var weather_state: Dictionary = {}
@@ -88,6 +90,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		resources.append({"id": _id(), "definition": kind, "x": point.x, "y": point.y, "remaining": definitions.resources[kind].yield_count, "regrow_at": 0})
 
 	ColonyWeather.initialize(self)
+	ColonySocial.initialize(self)
 
 func _id() -> int:
 	var result: int = next_id
@@ -157,7 +160,7 @@ func _structure(kind: String, anchor: Vector2i, rotation: int) -> Dictionary:
 	navigation_dirty = true
 	return result
 
-func find(records: Array[Dictionary], id: int) -> Dictionary:
+func find(records: Array, id: int) -> Dictionary:
 	if id == 0:
 		return {}
 	var table: String = ""
@@ -201,6 +204,7 @@ func step() -> void:
 	pending_commands.clear()
 	ColonyWeather.advance(self)
 	ColonyAgriculture.advance(self)
+	ColonySocial.advance(self)
 	ColonyLiving.advance(self)
 	for citizen in citizens:
 		_needs(citizen)
@@ -326,6 +330,7 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"request_accept", "request_decline", "mediate": return ColonySocial.command(self,command.kind,args)
 		"early_harvest":
 			var field: Dictionary = find(fields,args.target)
 			if field.is_empty() or not field.planted: return "No planted crop on this tile"
@@ -389,7 +394,7 @@ func _job(kind: String, category: String, skill: String, target: int, point: Vec
 	var job: Dictionary = {"id": _id(), "kind": kind, "category": category, "skill": skill, "target": target,
 		"x": point.x, "y": point.y, "definition": "", "rotation": 0, "required": effort, "work": 0,
 		"state": "Ready", "worker": 0, "priority": 2, "created": tick, "inputs": {}, "output": {},
-		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0,
+		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0, "worker_days": {},
 		"rate_remainders": {}, "pending_xp": {}}
 	jobs.append(job)
 	return job
@@ -524,7 +529,7 @@ func _assign(citizen: Dictionary) -> void:
 	if citizen.break_until > tick or (hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
 		var urgent: bool = jobs.any(func(job: Dictionary) -> bool: return job.priority == 3 and job.state not in ["Complete", "Canceled"])
 		if citizen.break_until > tick or not urgent:
-			var leisure: Dictionary = _job("leisure", "", "", citizen.id, Vector2i(65 + citizen.id, 66), 0)
+			var leisure: Dictionary = _job("leisure", "", "", citizen.id, ColonySocial.leisure_seat(self,citizen), 0)
 			leisure.state = "Moving"
 			leisure.worker = citizen.id
 			citizen.job = leisure.id
@@ -568,7 +573,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 	var positions: Array[Vector2i] = []
 	if job.kind == "build":
 		positions = _perimeter(footprint(job))
-	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant"]:
+	elif job.kind in ["gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate"]:
 		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["cook","fuel"] else _perimeter([point])
 	else:
 		positions.append(point)
@@ -705,6 +710,7 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 			var work: int = _rate(citizen, job)
 			work = mini(work, job.required - job.work)
 			job.work += work
+			if job.kind == "build": job.worker_days[citizen.id] = tick / 7200
 			job.pending_xp[citizen.id] = job.pending_xp.get(citizen.id, 0) + work
 			if job.work >= job.required:
 				_finish(citizen, job)
@@ -764,6 +770,11 @@ func _rate(citizen: Dictionary, job: Dictionary) -> int:
 	return work
 
 func _finish(citizen: Dictionary, job: Dictionary) -> void:
+	if job.kind == "mediate":
+		if not ColonySocial.complete_mediation(self,job):
+			_release(job,false)
+			_block(job,"Both residents must meet within 3 tiles for mediation")
+			return
 	# Batch inputs remain real escrow until this atomic completion transaction.
 	if job.kind == "build":
 		var error: String = placement_error(job.definition, Vector2i(job.x, job.y), job.rotation, job.id)
@@ -843,6 +854,7 @@ func _complete(citizen: Dictionary, job: Dictionary) -> void:
 	if job.kind in ["eat","sleep"] and not citizen.pending_shift.is_empty():
 		citizen.shift = citizen.pending_shift
 		citizen.pending_shift = ""
+	if job.kind == "build": ColonySocial.shared_building(self,job)
 	job.state = "Complete"
 	job.worker = 0
 	citizen.job = 0
@@ -980,7 +992,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
 	var all_ids: Dictionary = {}
-	for records in [citizens, structures, resources, stacks, jobs, fields]:
+	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests]:
 		for record: Dictionary in records:
 			if all_ids.has(record.id) or record.id < 1 or record.id >= next_id:
 				errors.append("Invalid/duplicate ID")
@@ -1027,7 +1039,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "site_id":site_id, "weather_state":weather_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}

@@ -105,6 +105,10 @@ func load_latest() -> Dictionary:
 		var parser: JSON = JSON.new()
 		var header: Variant = parser.data if parser.parse(snapshot_bytes.get_string_from_utf8()) == OK else null
 		var legacy: bool = header is Dictionary and (header.get("version") == 1 or header.get("version") == 2)
+		var migrating: bool = legacy
+		if header is Dictionary and header.get("version") == ColonyCodec.VERSION and header.get("payload") is String:
+			var original_state: Variant = JSON.parse_string(header.payload)
+			migrating = original_state is Dictionary and original_state.get("schema_revision",0) < ColonyWorld.SCHEMA_REVISION
 		var decoded: Dictionary = (M1Codec.decode(snapshot_bytes) if header.get("version") == 1 else M2Codec.decode(snapshot_bytes)) if legacy else decode(snapshot_bytes)
 		if decoded.has("error"):
 			earlier_errors.append(name + ": " + decoded.error)
@@ -125,6 +129,7 @@ func load_latest() -> Dictionary:
 			if decoded.has("error"):
 				earlier_errors.append(decoded.error)
 				continue
+		if migrating:
 			var backup_error: String = _backup(directory.path_join(name),directory.path_join("migration-backup-"+name))
 			if backup_error.is_empty() and FileAccess.file_exists(journal_path):
 				backup_error = _backup(journal_path,directory.path_join("migration-backup-"+journal_path.get_file()))
