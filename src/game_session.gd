@@ -47,10 +47,24 @@ var rotation_button: Button
 var placement_kind: String = "stockpile"
 var forecast_elapsed: float = 0.0
 var food_warning_level: int = 0
+var saving_disabled: bool = false
+var storage_error: String = ""
+var recovery_failed: bool = false
+var pending_import_world: ColonyWorld
 var forecast: Dictionary = {"portions":24,"ticks":21600,"label":"24 portions | 3 days stored runway"}
 
 func _ready() -> void:
 	Engine.max_fps = 30
+	if store is ColonyStore and (not store._generations().is_empty() or (store.directory == ColonyStore.CAMPAIGN_ROOT.path_join("slot-1") and ColonyStore.occupied(1))):
+		var restored: Dictionary = store.load_latest()
+		if restored.has("world"):
+			world = restored.world
+			runner = SimRunner.new(world)
+			last_saved_tick = world.tick
+			notice = restored.get("recovery","Recovered colony. Time stays paused.")
+		else:
+			recovery_failed = true
+			storage_error = restored.error
 	if Engine.has_singleton("BrackenwardSave"):
 		native_storage = Engine.get_singleton("BrackenwardSave")
 		logical_scale = maxf(1.0, float(native_storage.getDensity()))
@@ -70,6 +84,8 @@ func _ready() -> void:
 	resized.connect(_resize)
 	_layout()
 	show_sheet("Welcome")
+	if recovery_failed:
+		show_recovery_problem()
 
 func _build_theme() -> void:
 	var ui_theme: Theme = Theme.new()
@@ -255,23 +271,28 @@ func _process(delta: float) -> void:
 			if warning > food_warning_level:
 				notice = forecast.label + ". Gather food, plant turnips, and keep Cooking enabled. Ration policy is in Menu."
 			food_warning_level = warning
-	notice_label.text = notice
+	notice_label.text = ("Unsaved progress | " if saving_disabled else "") + notice
 	if is_instance_valid(sheet_feedback):
 		sheet_feedback.text = notice
 	preview_label.text = _preview_text()
 	journal_elapsed += delta
-	if store is ColonyStore and journal_elapsed >= 2.0:
+	if store is ColonyStore and journal_elapsed >= 2.0 and not saving_disabled and not recovery_failed:
 		var error: String = store.checkpoint(world)
 		if not error.is_empty():
-			runner.pause()
-			notice = error + ". Retry Save or Export in Menu."
+			_storage_failed(error)
 		journal_elapsed = 0.0
 	autosave_elapsed += delta
-	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick:
+	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed:
 		save_local()
 		autosave_elapsed = 0.0
 
 func set_speed(value: int) -> void:
+	if recovery_failed:
+		notice = "Recovery stopped. Choose another campaign or import a verified snapshot."
+		return
+	if value > 0 and not storage_error.is_empty() and not saving_disabled:
+		_storage_failed(storage_error)
+		return
 	if not sheet_name.is_empty() or backgrounded or (placement.visible and value != 0):
 		notice = "Close the panel or confirm/cancel the area before resuming."
 		return
@@ -466,6 +487,8 @@ func show_sheet(title: String) -> void:
 				left_handed = not left_handed
 				show_sheet("Menu"), sheet_body)
 			if world is ColonyWorld:
+				button("Campaign slots",show_campaigns,sheet_body)
+				button("Named snapshots",show_named_snapshots,sheet_body)
 				label("Travel rations are expedition reserves. Home use is " + ("on" if world.use_rations else "off") + ".",sheet_body)
 				button("Keep rations for expeditions" if world.use_rations else "Use rations at home",func() -> void: _submit("food_policy", {"enabled":not world.use_rations}),sheet_body)
 			button("Introduction", func() -> void: show_sheet("Welcome"), sheet_body)
@@ -550,14 +573,20 @@ func _resize() -> void:
 		view.cancel_gesture()
 	_layout()
 
-func save_local() -> void:
+func save_local() -> String:
+	if recovery_failed:
+		return "Recovery failed; original campaign will not be overwritten"
 	var error: String = store.save(world)
 	if error.is_empty():
 		last_saved_tick = world.tick
+		saving_disabled = false
+		storage_error = ""
 		notice = "Saved and verified at tick %d." % world.tick
+		if sheet_name == "Save problem":
+			close_sheet()
 	else:
-		runner.pause()
-		notice = error + " Open Menu to retry or export."
+		_storage_failed(error)
+	return error
 
 func load_local() -> void:
 	runner.pause()
@@ -566,10 +595,13 @@ func load_local() -> void:
 		notice = result.error
 		return
 	_replace_world(result.world)
-	notice = "Prototype restored. Time stays paused."
+	notice = "Colony restored. Time stays paused."
 
 func _replace_world(state: RefCounted) -> void:
 	world = state
+	recovery_failed = false
+	storage_error = ""
+	saving_disabled = false
 	runner = SimRunner.new(world)
 	view.world = world
 	view.cancel_gesture()
@@ -650,8 +682,15 @@ func _accept_import(bytes: PackedByteArray) -> void:
 	if result.has("error"):
 		notice = result.error
 		return
-	_replace_world(result.world)
-	notice = "Imported verified colony. Time stays paused."
+	if world is ColonyWorld:
+		pending_import_world = result.world
+		pending_import_world.session_id = Crypto.new().generate_random_bytes(16).hex_encode()
+		for command in pending_import_world.pending_commands:
+			command.session = pending_import_world.session_id
+		show_import_slots()
+	else:
+		_replace_world(result.world)
+		notice = "Imported verified fixture. Time stays paused."
 
 func suspend() -> void:
 	if backgrounded:
@@ -659,13 +698,20 @@ func suspend() -> void:
 	backgrounded = true
 	runner.pause()
 	view.cancel_gesture()
-	save_local()
+	if not saving_disabled and not recovery_failed:
+		save_local()
 
 func resume_from_background() -> void:
 	backgrounded = false
 	runner.pause()
 	view.cancel_gesture()
 	notice = "While you were away, nothing advanced."
+	if recovery_failed:
+		show_recovery_problem()
+		return
+	if not storage_error.is_empty() and not saving_disabled:
+		_storage_failed(storage_error)
+		return
 	show_sheet("Welcome back")
 	label(notice, sheet_body)
 
@@ -694,6 +740,8 @@ func back() -> void:
 		show_sheet("Menu")
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if get_viewport().gui_get_focus_owner() is LineEdit or get_viewport().gui_get_focus_owner() is TextEdit:
+		return
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
 	match event.keycode:
@@ -715,6 +763,8 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 func _input(event: InputEvent) -> void:
+	if get_viewport().gui_get_focus_owner() is LineEdit or get_viewport().gui_get_focus_owner() is TextEdit:
+		return
 	# Space is the global pause shortcut even when a Button owns GUI focus.
 	# Enter remains available to activate the focused button.
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
@@ -870,3 +920,150 @@ func _storage_sheet(storage: Dictionary) -> void:
 			if filters.has(item): filters.erase(item)
 			else: filters.append(item)
 			_submit("stock_filter",{"target":storage.id,"filters":filters,"priority":storage.priority}),sheet_body)
+
+func _storage_failed(error: String) -> void:
+	storage_error = error
+	runner.pause()
+	view.cancel_gesture()
+	notice = error
+	show_sheet("Save problem")
+	label(error + "\nCurrent progress remains in memory. No earlier valid save was replaced.",sheet_body)
+	button("Retry save",save_local,sheet_body)
+	button("Export current colony",func() -> void: choose_document(true),sheet_body)
+	label("Continue without saving can lose progress when the app closes. A persistent Unsaved progress notice remains until a verified save succeeds.",sheet_body)
+	button("Continue without saving",func() -> void:
+		saving_disabled = true
+		close_sheet()
+		notice = "Saving is disabled. Retry Save in Menu to restore it.",sheet_body)
+
+func show_recovery_problem() -> void:
+	runner.pause()
+	show_sheet("Recovery stopped")
+	label(storage_error + "\nOriginal campaign files are retained. Choose another campaign or import a verified snapshot. This preview will not overwrite the failed campaign.",sheet_body)
+	button("Campaign slots",show_campaigns,sheet_body)
+	button("Import verified save",func() -> void: choose_document(false),sheet_body)
+
+func show_campaigns() -> void:
+	if not store is ColonyStore:
+		return
+	if not recovery_failed and not saving_disabled and not save_local().is_empty():
+		return
+	show_sheet("Campaigns")
+	label("Five independent campaign slots. Switching first saves the current colony. Imported campaigns use an empty slot or a confirmed replacement.",sheet_body)
+	for number in range(1,6):
+		var exists: bool = ColonyStore.occupied(number,store.root_directory)
+		button(("Load" if exists else "New") + " campaign %d" % number,func() -> void: _switch_campaign(number,exists),sheet_body)
+
+func _switch_campaign(number: int, exists: bool) -> void:
+	if not recovery_failed and not saving_disabled and not save_local().is_empty():
+		return
+	var candidate: ColonyStore = ColonyStore.new()
+	candidate.root_directory = store.root_directory
+	candidate.select_slot(number)
+	var result: Dictionary
+	if exists:
+		result = candidate.load_latest()
+	else:
+		var fresh: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data(),Crypto.new().generate_random_bytes(16).hex_encode())
+		var error: String = candidate.adopt(fresh,number)
+		result = {"world":fresh} if error.is_empty() else {"error":error}
+	if result.has("error"):
+		notice = result.error
+		return
+	store = candidate
+	_replace_world(result.world)
+	close_sheet()
+	notice = "Campaign %d is ready. Time stays paused." % number
+
+func show_import_slots() -> void:
+	if pending_import_world == null:
+		return
+	show_sheet("Import campaign")
+	label("The complete snapshot is verified. Select an empty campaign slot, or confirm replacement of a specific existing campaign. Your device settings are preserved.",sheet_body)
+	for number in range(1,6):
+		var exists: bool = ColonyStore.occupied(number,store.root_directory)
+		button(("Replace" if exists else "Import into")+" campaign %d" % number,func() -> void:
+			if exists:
+				show_sheet("Confirm replacement")
+				label("Replace campaign %d with the verified import? The previous campaign is archived before adoption. Every other campaign stays intact." % number,sheet_body)
+				button("Replace campaign %d" % number,func() -> void: _adopt_import(number,true),sheet_body)
+				button("Choose another slot",show_import_slots,sheet_body)
+			else:
+				_adopt_import(number,false),sheet_body)
+	button("Cancel import",func() -> void:
+		pending_import_world = null
+		close_sheet()
+		notice = "Import canceled. Campaigns unchanged.",sheet_body)
+
+func _adopt_import(number: int, replace: bool) -> void:
+	if pending_import_world == null:
+		return
+	if not recovery_failed and not saving_disabled and not save_local().is_empty():
+		return
+	var candidate: ColonyStore = ColonyStore.new()
+	candidate.root_directory = store.root_directory
+	var error: String = candidate.adopt(pending_import_world,number,replace)
+	if not error.is_empty():
+		notice = error
+		return
+	store = candidate
+	_replace_world(pending_import_world)
+	pending_import_world = null
+	close_sheet()
+	notice = "Imported verified campaign %d. Time stays paused." % number
+
+func show_named_snapshots() -> void:
+	if not store is ColonyStore or recovery_failed:
+		return
+	show_sheet("Named snapshots")
+	label("Ten named snapshots per campaign. Autosaves use their own three rotating generations. A full list requires choosing exactly which snapshot to replace.",sheet_body)
+	for row in store.named_snapshots():
+		label("%d: %s" % [row.index,row.name],sheet_body)
+		if row.valid:
+			button("Load snapshot %d" % row.index,func() -> void: _load_named(row.index),sheet_body)
+		button(("Replace" if row.exists else "Save")+" snapshot %d" % row.index,func() -> void: _name_snapshot(row.index,row.exists,row.name),sheet_body)
+
+func _name_snapshot(index: int, exists: bool, previous_name: String) -> void:
+	show_sheet("Name snapshot")
+	label("Replacing %s requires confirmation." % previous_name if exists else "Name this paused snapshot.",sheet_body)
+	var entry: LineEdit = LineEdit.new()
+	entry.placeholder_text = "Snapshot name"
+	entry.max_length = 64
+	entry.custom_minimum_size = Vector2(48,48)
+	entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	sheet_body.add_child(entry)
+	button("Continue" if exists else "Save snapshot",func() -> void:
+		var snapshot_name: String = entry.text.strip_edges()
+		if snapshot_name.is_empty():
+			notice = "Enter a snapshot name."
+			return
+		if exists:
+			show_sheet("Confirm snapshot replacement")
+			label("Replace %s with %s? Only snapshot slot %d changes." % [previous_name,snapshot_name,index],sheet_body)
+			button("Replace snapshot",func() -> void: _save_named(index,snapshot_name,true),sheet_body)
+		else:
+			_save_named(index,snapshot_name,false),sheet_body)
+	entry.grab_focus()
+
+func _save_named(index: int, name: String, replace: bool) -> void:
+	var error: String = store.save_named(world,index,name,replace)
+	if not error.is_empty():
+		_storage_failed(error)
+		return
+	last_saved_tick = world.tick
+	saving_disabled = false
+	storage_error = ""
+	show_named_snapshots()
+	notice = "Named snapshot saved and verified."
+
+func _load_named(index: int) -> void:
+	if not saving_disabled and not save_local().is_empty():
+		return
+	var result: Dictionary = store.load_named(index)
+	if result.has("error"):
+		notice = result.error
+		return
+	store.recovered = true
+	_replace_world(result.world)
+	close_sheet()
+	notice = "Named snapshot restored. Time stays paused."

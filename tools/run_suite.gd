@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -30,6 +30,7 @@ func run() -> void:
 		"ui": await ui()
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
+		"persistence": CampaignTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -271,7 +272,8 @@ func ui() -> void:
 	game.queue_free()
 	await process_frame
 	var colony_game: GameSession = load("res://scenes/game.tscn").instantiate()
-	colony_game.store.directory = ui_colony_directory
+	colony_game.store.root_directory = ui_colony_directory
+	colony_game.store.select_slot(1)
 	root.add_child(colony_game)
 	await process_frame
 	colony_game.close_sheet()
@@ -320,6 +322,48 @@ func ui() -> void:
 	check("M2/UI_fields_produced_real_food",colony_game.world.ledger.produced.get("vegetable",0) > 0)
 	colony_game._process(0.0)
 	colony_game.runner.pause()
+	colony_game._name_snapshot(1,false,"")
+	var name_entry: LineEdit
+	for child in colony_game.sheet_body.get_children():
+		if child is LineEdit: name_entry = child
+	name_entry.text = "Quiet"
+	name_entry.caret_column = name_entry.text.length()
+	name_entry.grab_focus()
+	var space: InputEventKey = InputEventKey.new()
+	space.keycode = KEY_SPACE
+	space.unicode = 32
+	space.pressed = true
+	root.push_input(space)
+	check("SAVE/UI_name_space_keeps_simulation_paused",name_entry.text == "Quiet " and colony_game.runner.speed == 0)
+	name_entry.text += "spring"
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text == "Save snapshot": child.pressed.emit()
+	check("SAVE/UI_named_snapshot_saved",colony_game.store.named_snapshots()[0].name == "Quiet spring")
+	var real_directory: String = colony_game.store.directory
+	var blocked_path: String = ui_colony_directory.path_join("not-a-directory")
+	var blocker: FileAccess = FileAccess.open(blocked_path,FileAccess.WRITE)
+	blocker.store_string("retained")
+	blocker.close()
+	colony_game.store.directory = blocked_path
+	colony_game.save_local()
+	check("SAVE/UI_write_failure_pauses_and_offers_choices",colony_game.sheet_name == "Save problem" and colony_game.runner.speed == 0 and FileAccess.get_file_as_string(blocked_path) == "retained")
+	colony_game.close_sheet()
+	colony_game.set_speed(4)
+	check("SAVE/UI_closing_error_never_implicitly_resumes",colony_game.sheet_name == "Save problem" and colony_game.runner.speed == 0)
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text == "Continue without saving": child.pressed.emit()
+	colony_game._process(0.0)
+	check("SAVE/UI_explicit_unsaved_mode_has_persistent_notice",colony_game.saving_disabled and colony_game.notice_label.text.begins_with("Unsaved progress"))
+	colony_game.store.directory = real_directory
+	colony_game.save_local()
+	check("SAVE/UI_verified_retry_restores_saving",not colony_game.saving_disabled and colony_game.storage_error.is_empty())
+	var import_bytes: PackedByteArray = colony_game.store.encode(colony_game.world)
+	var original_session: String = colony_game.world.session_id
+	colony_game._accept_import(import_bytes)
+	check("SAVE/UI_import_waits_for_campaign_choice",colony_game.sheet_name == "Import campaign" and colony_game.world.session_id == original_session and not ColonyStore.occupied(2,ui_colony_directory))
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text == "Import into campaign 2": child.pressed.emit()
+	check("SAVE/UI_import_clones_into_independent_slot",colony_game.store.slot == 2 and colony_game.world.session_id != original_session and ColonyStore.occupied(1,ui_colony_directory) and ColonyStore.occupied(2,ui_colony_directory))
 	root.size = Vector2i(960, 600)
 	colony_game.size = Vector2(960, 600)
 	colony_game.text_scale = 1.0
@@ -357,6 +401,4 @@ func ui() -> void:
 		for directory in [ui_m0_directory,ui_colony_directory]:
 			if not DirAccess.dir_exists_absolute(directory):
 				continue
-			for name in DirAccess.get_files_at(directory):
-				DirAccess.remove_absolute(directory.path_join(name))
-			DirAccess.remove_absolute(directory)
+			CampaignTests.remove_tree(directory)

@@ -4,10 +4,10 @@ const FORMAT: String = "brackenward-development-colony"
 const MAX_BYTES: int = 64 * 1024 * 1024
 const VERSION: int = 2
 
-static func encode(world: ColonyWorld) -> PackedByteArray:
+static func encode(world: ColonyWorld, snapshot_name: String = "") -> PackedByteArray:
 	var payload: String = JSON.stringify(ColonyState.pack(world.payload()), "", true)
 	return JSON.stringify({"format": FORMAT, "version": VERSION, "content": ColonyWorld.CONTENT_VERSION,
-		"content_hash":world.definitions.content_hash, "engine": "4.7.2.ed1daf0bf", "payload": payload, "sha256": payload.sha256_text()}, "", true).to_utf8_buffer()
+		"content_hash":world.definitions.content_hash, "snapshot_name":snapshot_name, "engine": "4.7.2.ed1daf0bf", "payload": payload, "sha256": payload.sha256_text()}, "", true).to_utf8_buffer()
 
 static func decode(bytes: PackedByteArray) -> Dictionary:
 	if bytes.is_empty() or bytes.size() > MAX_BYTES:
@@ -19,10 +19,14 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	var keys: Array = ["format", "version", "content", "engine", "payload", "sha256"]
 	if envelope.get("version") == VERSION:
 		keys.append("content_hash")
+		if envelope.has("snapshot_name"):
+			keys.append("snapshot_name")
 	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version != 1 and envelope.version != VERSION) or envelope.content not in ["m1-loop-1", ColonyWorld.CONTENT_VERSION]:
 		return {"error": "Unsupported development save format/content. M0 touch fixtures remain separate."}
 	if not envelope.payload is String or not envelope.sha256 is String or envelope.payload.sha256_text() != envelope.sha256:
 		return {"error": "Snapshot checksum mismatch"}
+	if not envelope.get("snapshot_name","") is String or envelope.get("snapshot_name","").length() > 64:
+		return {"error":"Invalid snapshot name"}
 	if parser.parse(envelope.payload) != OK:
 		return {"error": "Malformed simulation payload"}
 	var decoded: Variant = ColonyState.unpack(parser.data)
@@ -50,7 +54,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	var errors: Array[String] = world.invariant_errors()
 	if not errors.is_empty():
 		return {"error": "Invalid colony invariants: " + str(errors)}
-	return {"world": world}
+	return {"world":world,"snapshot_name":envelope.get("snapshot_name","")}
 
 static func _keys(record: Dictionary, keys: Array) -> bool:
 	var actual: Array = record.keys().map(func(key: Variant) -> String: return str(key))
