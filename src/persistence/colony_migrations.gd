@@ -43,9 +43,11 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		header.erase("trade_state")
 		header.erase("region_state")
 		header.erase("fire_state")
+		header.erase("defense_state")
+		header.erase("director_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
-		for key in ["away","expedition","camp_sleeping"]: citizen_template.erase(key)
+		for key in ["away","expedition","camp_sleeping"]+ColonyDefense.citizen_defaults().keys(): citizen_template.erase(key)
 		for key in ColonySocial.citizen_defaults(): citizen_template.erase(key)
 		for key in ColonyCare.citizen_defaults(): citizen_template.erase(key)
 		for key in ColonyCombat.citizen_defaults(): citizen_template.erase(key)
@@ -162,4 +164,10 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		result=result.duplicate(true)
 		result["fire_state"]=ColonyFire.initial_state()
 		result.schema_revision=17
+	if result.get("schema_revision")==17:
+		result=result.duplicate(true)
+		result["director_state"]=ColonyDirector.initial_state(result.seed,result.generator_version,result.site_id)
+		result["defense_state"]=ColonyDefense.initial_state(result.seed,result.generator_version,result.site_id)
+		for person in result.citizens: person.merge(ColonyDefense.citizen_defaults())
+		result.schema_revision=18
 	return result

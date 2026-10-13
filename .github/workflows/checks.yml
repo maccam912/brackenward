@@ -62,6 +62,8 @@ jobs:
           python3 tools/check_suite.py trade
           python3 tools/check_suite.py region
           python3 tools/check_suite.py fire
+          python3 tools/check_suite.py defense
+          python3 tools/check_suite.py director
       - name: Real Control/input/layout suite
         run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK

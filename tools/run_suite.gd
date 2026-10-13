@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region", "fire"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region|fire. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region", "fire", "defense", "director"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region|fire|defense|director. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -46,6 +46,8 @@ func run() -> void:
 		"trade": TradeTests.run(check)
 		"region": RegionTests.run(check)
 		"fire": FireTests.run(check)
+		"defense": DefenseTests.run(check)
+		"director": DirectorTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -783,6 +785,25 @@ func ui() -> void:
 	check("FIRE/UI_new_fire_opens_response_panel",colony_game.sheet_name=="Fire and water" and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Work preferences"))
 	check("FIRE/UI_water_effort_and_interruption_are_explained",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("fetch 2 WU") and n.text.contains("apply 8 WU") and n.text.contains("retains applied effort")))
 	check("FIRE/UI_well_and_camera_recovery_actions",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Build a well") and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text.begins_with("Look at fire")))
+
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	var ui_raid: Dictionary = DefenseTests.raid(colony_game.world)
+	colony_game.show_defense()
+	check("DEFEND/UI_party_price_and_colony_actions",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Offer supplies") and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Shelter everyone") and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("supplies price 16")))
+	colony_game.show_squad([2,3])
+	var review_stand_fast: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Review Stand fast")[0]
+	review_stand_fast.pressed.emit()
+	check("DEFEND/UI_stand_fast_has_explicit_warning",colony_game.sheet_name=="Stand fast warning" and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("retreat at forty") and n.text.contains("disabled")))
+	colony_game.begin_defend_rally([2,3],false);colony_game.confirm_placement();colony_game.confirm_placement()
+	check("DEFEND/UI_rally_queues_one_draft_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="draft" and colony_game.world.pending_commands[0].args.citizens==[2,3] and not colony_game.world.pending_commands[0].args.stand_fast)
+	colony_game.world.pending_commands.clear();colony_game.submitted_command=0
+	var ui_neutral: Dictionary = colony_game.world.defense_state.enemies[0];ColonyDefense.hurt(colony_game.world,ui_neutral,999,2)
+	colony_game.show_enemy(ui_neutral)
+	check("RAID/UI_neutral_offers_care_and_no_focus_attack",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Voluntary treatment") and not colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text.begins_with("Focus")))
+	colony_game.show_incidents()
+	check("DIRECTOR/UI_public_pressure_and_spacing",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Pressure")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("incident")))
+	colony_game.show_raid_offer(ui_raid)
+	check("RAID/UI_supply_panel_has_concrete_price_no_placeholder",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Need 16 barter") and not n.text.contains("%d")))
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

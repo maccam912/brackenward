@@ -38,6 +38,9 @@ var catalog_strings: Dictionary = {}
 var seen_care_alert: int = -1
 var seen_region_alert: int = -1
 var seen_fire_alert: int = -1
+var seen_defense_alert: int = -1
+var defend_citizens: Array = []
+var defend_stand_fast: bool = false
 var epilogue_session: String = ""
 var awaiting_first_colony: bool = false
 var creation_thread: Thread
@@ -317,6 +320,9 @@ func _process(delta: float) -> void:
 	if world is ColonyWorld and world.fire_state.alert_serial>seen_fire_alert:
 		seen_fire_alert=world.fire_state.alert_serial
 		if not ColonyFire.active(world).is_empty(): show_fires()
+	if world is ColonyWorld and world.defense_state.alert_serial>seen_defense_alert:
+		seen_defense_alert=world.defense_state.alert_serial
+		if not ColonyDefense.active(world).is_empty(): show_defense()
 	if runner.speed_reduced:
 		notice = "Speed reduced to keep the colony responsive."
 		runner.speed_reduced = false
@@ -432,7 +438,9 @@ func confirm_placement() -> void:
 		view.rejected_build_tiles=preview.rejected
 		if preview.valid.is_empty(): notice="No valid tiles. Inspect the red cells or clear obstructions.";return
 	confirm_button.disabled = true
-	if world is ColonyWorld and placement_kind == "cart_move":
+	if world is ColonyWorld and placement_kind=="rally":
+		submitted_command=world.queue_command("draft",{"citizens":defend_citizens.duplicate(),"rally":Vector2i((view.preview_start.x+view.preview_end.x)/2,(view.preview_start.y+view.preview_end.y)/2),"stand_fast":defend_stand_fast})
+	elif world is ColonyWorld and placement_kind == "cart_move":
 		submitted_command=world.queue_command("cart_move",{"target":moving_target,"x":view.preview_start.x,"y":view.preview_start.y})
 	elif world is ColonyWorld and placement_kind == "move_furniture":
 		submitted_command=world.queue_command("move_furniture",{"target":moving_target,"x":view.preview_start.x,"y":view.preview_start.y,"rotation":view.preview_rotation})
@@ -471,6 +479,10 @@ func _map_intent(action: Dictionary) -> void:
 		var separation: float = view.tile_to_screen(view.citizen_point(citizen)).distance_to(action.point)
 		if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"citizen","object":citizen,"rank":0,"distance":separation})
 	if world is ColonyWorld:
+		for enemy in world.defense_state.enemies:
+			if enemy.state=="Gone": continue
+			var separation: float = view.tile_to_screen(Vector2(enemy.x+0.5,enemy.y+0.5)).distance_to(action.point)
+			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"enemy","object":enemy,"rank":1,"distance":separation})
 		for merchant in world.trade_state.merchants:
 			if merchant.state not in ["Entering","Trading","Leaving"]: continue
 			var separation: float = view.tile_to_screen(Vector2(merchant.x+0.5,merchant.y+0.5)).distance_to(action.point)
@@ -516,6 +528,7 @@ func _map_intent(action: Dictionary) -> void:
 func _select_map_object(candidate: Dictionary) -> void:
 	var object: Dictionary = candidate.object
 	match candidate.kind:
+		"enemy": show_enemy(object)
 		"merchant":
 			if object.state=="Trading": show_trade(object)
 			else: show_valley()
@@ -611,6 +624,7 @@ func show_sheet(title: String) -> void:
 					if not definition.buildable: continue
 					button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body)
 		"People":
+			if world is ColonyWorld: button("Defense and shelter",show_defense,sheet_body)
 			if world is ColonyWorld and not ColonyFire.active(world).is_empty(): button("Fires and water",show_fires,sheet_body)
 			if world is ColonyWorld: button("Newcomer offers",show_newcomers,sheet_body)
 			if world is ColonyWorld: button("Injuries and care",show_care,sheet_body)
@@ -976,6 +990,7 @@ func begin_gather(kind: String) -> void:
 	_layout()
 
 func _preview_text() -> String:
+	if placement_kind=="rally": return "Defend rally · hold within two tiles · %d selected\n%s" % [defend_citizens.size(),"Stand fast: automatic retreat disabled until this incident ends" if defend_stand_fast else "Automatic retreat at forty health; downed residents stop fighting"]
 	if placement_kind=="cart_move":
 		var error: String = ColonyMaintenance.cart_position_error(world,world.find(world.structures,moving_target),view.preview_start)
 		return "Move cart · 20 WU · stored goods stay aboard\n"+("Needs a clear two-by-two route" if error.is_empty() else error)
@@ -1371,6 +1386,7 @@ func show_person(id: int) -> void:
 	if citizen.health < 100: button("Care and recovery",show_care,sheet_body)
 	label("Active morale causes",sheet_body)
 	for term in citizen.mood_terms: label("%s: %+d" % [term,citizen.mood_terms[term]],sheet_body)
+	if not citizen.away and not citizen.downed and not citizen.death_recorded and not citizen.departed: button("Defend",func()->void:show_squad([id]),sheet_body)
 	button("Equipment",func()->void:show_equipment(id),sheet_body)
 	button("Work preferences",func() -> void:show_work_preferences(id),sheet_body)
 	button("View on map",func() -> void:
@@ -1840,6 +1856,7 @@ func show_newcomers() -> void:
 
 func show_valley() -> void:
 	show_sheet("Valley and neighbors")
+	button("Incident forecast and pressure",show_incidents,sheet_body)
 	button("Regional map",show_region,sheet_body)
 	button("Expedition status",show_expeditions,sheet_body)
 	label("Merchants visit every four days, beginning day five. One-day notice; their 24-hour stay starts at the cart. Prices per unit are rounded up: 120% normally, 110% at Friendly (40), 100% at Trusted (70). Selling uses base value. Trade gives no reputation; listed deliveries give ten, once per eight days.",sheet_body)
@@ -2022,3 +2039,97 @@ func show_fires() -> void:
 		button("Look at fire "+str(fire.id),func()->void:view.camera_tile=Vector2(object.x,object.y);view.follow_id=0;view._update_transform();close_sheet(),sheet_body)
 	button("Work preferences",func()->void:show_sheet("Work"),sheet_body)
 	button("Build a well",func()->void:begin_build("well"),sheet_body)
+
+func show_incidents() -> void:
+	show_sheet("Incident forecast")
+	var pressure: Dictionary = ColonyDirector.pressure(world)
+	label("Pressure %d/100. No new major at fifty or more, with a downed resident, or while an incident remains unresolved." % pressure.score,sheet_body)
+	for cause in pressure.terms: label(cause+": +"+str(pressure.terms[cause]),sheet_body)
+	var gate: String = ColonyDirector.gates(world)
+	label("No new major incident while recovering: "+gate if not gate.is_empty() else "Major consideration at 06:00 from day eight. Starts stay seventy-two hours apart; resolution gives forty-eight recovery hours. Already shown extreme weather reserves the same spacing.",sheet_body)
+	var major: Dictionary = world.director_state.major
+	if not major.is_empty(): label(major.kind.capitalize()+" · "+major.state+"\n"+major.reason+"\nDue in %.1f hours" % maxf(0,(major.due-world.tick)/300.0),sheet_body)
+	button("Defense and supplies",show_defense,sheet_body)
+	if not ColonyFire.active(world).is_empty(): button("Fire response",show_fires,sheet_body)
+	if not major.is_empty() and major.kind=="overheat":
+		var station: Dictionary = world.find(world.structures,major.target)
+		button("Suspend overheating station",func()->void:_submit("station_enabled",{"target":station.id,"enabled":false});close_sheet(),sheet_body)
+		button("Inspect fixed target",func()->void:show_station(station),sheet_body)
+
+func show_defense() -> void:
+	show_sheet("Defense")
+	var raid: Dictionary = ColonyDefense.active(world)
+	if raid.is_empty(): label("No road party is active. Choose a squad and rally, or inspect the incident forecast. Squad members hold within two tiles, choose targets deterministically, and retreat at forty health unless Stand fast was explicitly confirmed.",sheet_body)
+	else:
+		label("Party: "+", ".join(raid.party.map(func(k:String)->String:return k.capitalize()))+"\nBudget %d · theft quota %d units · supplies price %d barter value\nEntry (%d,%d) · %s\n%s" % [raid.budget,raid.party.size()*4,raid.budget*8,raid.entry.x,raid.entry.y,raid.state,raid.reason],sheet_body)
+		label("Arrival in %.1f hours. Active siege remaining %.1f hours. Worn equipment and expedition cargo cannot be stolen. Downed visitors are stable, neutral and never executed." % [maxf(0,(raid.due-world.tick)/300.0),maxf(0,(raid.arrival+1800-world.tick)/300.0) if raid.arrival>0 else 6.0],sheet_body)
+		if raid.state not in ["Payment","Retreating","Resolved"]: button("Offer supplies",func()->void:show_raid_offer(raid),sheet_body)
+		button("Acknowledge arrival",func()->void:_submit("raid_ack",{});close_sheet(),sheet_body)
+	button("Choose defending squad",func()->void:show_squad([]),sheet_body)
+	button("Shelter everyone" if not world.defense_state.shelter else "End shelter order",func()->void:_submit("shelter",{"enabled":not world.defense_state.shelter});close_sheet(),sheet_body)
+	button("Open passage" if not world.defense_state.open_passage else "Close hostile passage",func()->void:_submit("open_passage",{"enabled":not world.defense_state.open_passage});close_sheet(),sheet_body)
+	button("Stand down: return everyone to ordinary work",func()->void:_submit("stand_down",{});close_sheet(),sheet_body)
+	for enemy in world.defense_state.enemies:
+		if enemy.state!="Gone": button(enemy.definition.capitalize()+" · "+enemy.state+" · "+str(enemy.health)+" health",func()->void:show_enemy(enemy),sheet_body)
+
+func show_squad(initial: Array) -> void:
+	show_sheet("Defending squad")
+	var people: Dictionary = {}
+	for person in ColonyRegion.home(world):
+		if person.downed: continue
+		var choice: CheckButton = CheckButton.new();choice.text=person.name;choice.button_pressed=initial.has(person.id);choice.custom_minimum_size.y=48;sheet_body.add_child(choice);people[person.id]=choice
+		label("Health %d · Guard %d · %s" % [person.health,person.skills.Guard,"Unarmed" if person.equipment.weapon.is_empty() else person.equipment.weapon],sheet_body)
+	button("Choose rally on map",func()->void:
+		var selected: Array = []
+		for id in people:
+			if people[id].button_pressed: selected.append(id)
+		if selected.is_empty(): notice="Choose at least one resident";return
+		begin_defend_rally(selected,false),sheet_body)
+	button("Review Stand fast",func()->void:
+		var selected: Array = []
+		for id in people:
+			if people[id].button_pressed: selected.append(id)
+		if selected.is_empty(): notice="Choose at least one resident";return
+		show_sheet("Stand fast warning")
+		label("Automatic retreat at forty health will be disabled for this squad during this incident. They can suffer further attacks. Downed residents still stop fighting and need rescue. This flag clears when the incident ends.",sheet_body)
+		button("Confirm Stand fast and choose rally",func()->void:begin_defend_rally(selected,true),sheet_body),sheet_body)
+	button("Undraft selected",func()->void:
+		var selected: Array = []
+		for id in people:
+			if people[id].button_pressed: selected.append(id)
+		_submit("undraft",{"citizens":selected});close_sheet(),sheet_body)
+
+func begin_defend_rally(people: Array, stand_fast: bool) -> void:
+	begin_placement();placement_kind="rally";defend_citizens=people.duplicate();defend_stand_fast=stand_fast
+	var wagon: Dictionary = ColonyTrade.cart(world);view.preview_start=Vector2i(wagon.x,wagon.y);view.preview_end=view.preview_start
+	view.camera_tile=Vector2(view.preview_start);view._update_transform()
+	notice="Choose a rally point and Confirm. The squad holds within two tiles."
+
+func show_enemy(enemy: Dictionary) -> void:
+	show_sheet(enemy.definition.capitalize())
+	var definition: Dictionary = world.definitions.enemies[enemy.definition]
+	label("%s · health %d/%d · armor %d\n%s · %d damage every %d ticks; objective %s\nCollected goods: %s" % [enemy.state,enemy.health,definition.health,definition.armor,definition.weapon,definition.damage,definition.cooldown,definition.objective,str(enemy.loot)],sheet_body)
+	if enemy.state=="Downed":
+		label("Neutral and stable. Automatic recovery to twenty-five in %.1f hours; voluntary care gives three Road reputation once for this person." % maxf(0,(enemy.recovery_at-world.tick)/300.0),sheet_body)
+		button("Voluntary treatment",func()->void:_submit("enemy_treat",{"target":enemy.id});close_sheet(),sheet_body)
+	elif enemy.state in ["Active","Retreating"]:
+		var squad: Array = world.citizens.filter(func(c:Dictionary)->bool:return c.drafted and not c.away).map(func(c:Dictionary)->int:return c.id)
+		if not squad.is_empty(): button("Focus with drafted squad",func()->void:_submit("focus",{"citizens":squad,"target":enemy.id});close_sheet(),sheet_body)
+
+func show_raid_offer(raid: Dictionary) -> void:
+	show_sheet("Offer supplies")
+	label("Need %d barter value at the marked meeting spot. Workers deliver it in eight-unit loads. The party waits six hours without attacks during payment; a failed delivery gives one warning hour. The absolute six-hour raid limit still prevents renewed attacks once elapsed. Payment gives no later budget increase. Retreating parties cannot be restarted." % (raid.budget*8),sheet_body)
+	var choices: Dictionary = {}
+	for item in ColonyTrade.accessible_goods(world):
+		var available: int = ColonyTrade.accessible_goods(world)[item]
+		if available<=0: continue
+		label(item.capitalize()+" · value "+str(world.definitions.items[item].barter_value)+" · "+str(available)+" available",sheet_body)
+		var count: SpinBox = SpinBox.new();count.max_value=available;count.custom_minimum_size=Vector2(96,48);sheet_body.add_child(count);choices[item]=count
+	button("Preview supplies",func()->void:
+		var pay: Dictionary = {};var value: int = 0
+		for item in choices:
+			if choices[item].value>0: pay[item]=int(choices[item].value);value+=pay[item]*world.definitions.items[item].barter_value
+		show_sheet("Supply preview")
+		label("Pay "+_cost_text(pay)+"\nOffer value %d / needed %d\nMeeting (%d,%d). Surplus %d is a gift." % [value,raid.budget*8,raid.meeting.x,raid.meeting.y,maxi(0,value-raid.budget*8)],sheet_body)
+		if value<raid.budget*8: label("Add "+str(raid.budget*8-value)+" value before accepting",sheet_body)
+		else: button("Accept and deliver supplies",func()->void:_submit("raid_offer",{"target":raid.id,"pay":pay});close_sheet(),sheet_body),sheet_body)

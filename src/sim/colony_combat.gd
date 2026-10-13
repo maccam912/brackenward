@@ -49,6 +49,7 @@ static func resolve(world: ColonyWorld) -> void:
 		if target.is_empty() or target.downed or target.death_recorded or target.departed or ColonyWildlife.distance(animal,target)>1: continue
 		animal.cooldown = world.tick+25
 		hits.append({"animal":animal.id,"citizen":target.id,"damage":maxi(1,12-(2 if target.equipment.vest == "vest" else 0)),"job":0})
+	var human_hits: Array = ColonyDefense.attacks(world)
 	# Every attack is chosen before any damage resolves, preserving simultaneous hits.
 	var animal_damage: Dictionary = {}; var people_damage: Dictionary = {}
 	for hit in hits:
@@ -60,14 +61,23 @@ static func resolve(world: ColonyWorld) -> void:
 		else:
 			people_damage[hit.citizen] = people_damage.get(hit.citizen,0)+hit.damage
 			world.facts.append({"tick":world.tick,"actor":hit.citizen,"job":0,"kind":"boar_injury","text":"%s took %d damage from a wounded boar; retreat begins at health 40." % [world.find(world.citizens,hit.citizen).name,hit.damage]})
+	var enemy_damage: Dictionary = {};var wall_damage: Dictionary = {};var attackers: Dictionary = {}
+	for hit in human_hits:
+		if hit.kind=="citizen": people_damage[hit.target]=people_damage.get(hit.target,0)+hit.damage
+		elif hit.kind=="enemy": enemy_damage[hit.target]=enemy_damage.get(hit.target,0)+hit.damage;attackers[hit.target]=hit.source
+		else: wall_damage[hit.target]=wall_damage.get(hit.target,0)+hit.damage
 	for id in people_damage:
 		var person: Dictionary = world.find(world.citizens,id)
 		ColonyCare.hurt(world,person,people_damage[id],true)
 		if person.downed:
-			var cause: Dictionary = hits.filter(func(h:Dictionary)->bool:return h.job == 0 and h.citizen == id)[0]
-			world.wildlife_state.injuries[person.injury_id] = {"animal":cause.animal,"tick":world.tick}
+			var causes: Array = hits.filter(func(h:Dictionary)->bool:return h.job==0 and h.citizen==id)
+			if not causes.is_empty(): world.wildlife_state.injuries[person.injury_id]={"animal":causes[0].animal,"tick":world.tick}
 	for id in animal_damage:
 		var animal: Dictionary = world.find(world.wildlife_state.animals,id)
 		animal.health = maxi(0,animal.health-animal_damage[id])
 		if animal.health == 0: ColonyWildlife.kill(world,animal)
+	for id in enemy_damage: ColonyDefense.hurt(world,world.find(world.defense_state.enemies,id),enemy_damage[id],attackers[id])
+	for id in wall_damage:
+		var wall: Dictionary = world.find(world.structures,id);wall.health=maxi(0,wall.health-wall_damage[id])
+		if wall.health==0: ColonyMaintenance.destroy(world,wall)
 	world.danger_cache_tick = -1

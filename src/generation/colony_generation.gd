@@ -46,6 +46,8 @@ static func configure(world: ColonyWorld, entered_seed: int, site: String) -> St
   ColonyWeather.initialize(world)
   ColonyWildlife.initialize(world)
   world.trade_state=ColonyTrade.initial_state(world.seed,world.generator_version,world.site_id)
+  world.director_state=ColonyDirector.initial_state(world.seed,world.generator_version,world.site_id)
+  world.defense_state=ColonyDefense.initial_state(world.seed,world.generator_version,world.site_id)
   world.region_state=ColonyRegion.initial_state(world.seed,world.generator_version,world.site_id)
   world.population_state=ColonyPopulation.initial_state(world.seed,world.generator_version,world.site_id)
   return ""

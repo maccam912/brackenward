@@ -414,6 +414,20 @@ func _draw_colony() -> void:
 			var center: Vector2 = tile_to_screen(Vector2(tile)+Vector2(0.5,0.5))
 			draw_colored_polygon(PackedVector2Array([center+Vector2(-0.3,0.3)*tile_size,center+Vector2(0,-0.45)*tile_size,center+Vector2(0.3,0.3)*tile_size]),Color("E9BA67"))
 
+
+	for enemy in world.defense_state.enemies:
+		if enemy.state=="Gone": continue
+		var tile: Vector2 = Vector2(enemy.x+0.5,enemy.y+0.5)
+		if not enemy.route.is_empty(): tile+=Vector2(enemy.route[0]-Vector2i(enemy.x,enemy.y))*float(enemy.progress)/10000.0
+		var point: Vector2 = tile_to_screen(tile);var neutral: bool = enemy.state in ["Downed","Leaving"]
+		var color: Color = Color("E9BA67") if neutral else Color("B96C50")
+		draw_rect(Rect2(point-Vector2(0.2,0.25)*tile_size,Vector2(0.4,0.5)*tile_size),color)
+		draw_circle(point+Vector2(0,-0.3)*tile_size,tile_size*0.15,Color("F3E8CC"))
+		if enemy.state=="Downed": draw_line(point+Vector2(-0.3,0)*tile_size,point+Vector2(0.3,0)*tile_size,Color("263C3B"),3)
+		if enemy.definition=="bow_raider": draw_arc(point+Vector2(0.3,0)*tile_size,tile_size*0.2,-PI*0.5,PI*0.5,8,Color("263C3B"),2)
+		var fraction: float = float(enemy.health)/world.definitions.enemies[enemy.definition].health
+		draw_rect(Rect2(point+Vector2(-0.3,0.35)*tile_size,Vector2(0.6*fraction,0.06)*tile_size),Color("375749"))
+
 func _draw_carried_items() -> void:
 	if not world is ColonyWorld:
 		return
