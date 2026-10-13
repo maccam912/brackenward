@@ -3,6 +3,13 @@ extends RefCounted
 
 static func run(check: Callable) -> void:
 	var w: ColonyWorld = ColonyTests.world()
+	var forecast_before: Dictionary = FoodForecast.calculate(w)
+	var stock_before: int = ColonyProduction.policy_stock(w,"meal")
+	for index in range(50): w._make_stack("meal",0,"ground",0,Vector2i(66,64),false)
+	check.call("PRODUCTION/empty_history_does_not_change_stock_or_forecast",FoodForecast.calculate(w)==forecast_before and ColonyProduction.policy_stock(w,"meal")==stock_before)
+	w._make_stack("meal",1,"ground",0,Vector2i(66,64),true)
+	check.call("PRODUCTION/new_food_after_empty_history_immediately_counted",ColonyProduction.policy_stock(w,"meal")==stock_before+1 and FoodForecast.calculate(w).portions==forecast_before.portions+1)
+	w=ColonyTests.world()
 	check.call("CATALOG/all_definitions_and_research_total",w.definitions.items.size() == 28 and w.definitions.buildings.size() == 34 and w.definitions.recipes.size() == 13 and w.definitions.research.values().reduce(func(total:int,r:Dictionary)->int:return total+r.points,0) == 4700)
 	check.call("GEAR/starting_equipment_in_conservation_ledger",w.total("toolkit") == 4 and w.total("cloak") == 4 and w.total("bow") == 2 and w.total("spear") == 2 and w.invariant_errors().is_empty())
 	var simple: Dictionary = w.citizens[1]

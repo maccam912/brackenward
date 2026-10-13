@@ -50,11 +50,24 @@ static func advance(world: ColonyWorld) -> void:
 	var day: int = (world.tick-1800)/7200
 	if world.nature_state.fishing.day != day: world.nature_state.fishing = {"day":day,"river":0,"piers":{}}
 	if ColonyAgriculture.season(world.tick) == 3: return
+	var occupied: Dictionary = {}
+	var indexed: bool = false
 	for id in world.nature_state.trees:
 		var state: Dictionary = world.nature_state.trees[id]
 		if not state.planted: continue
+		# Structures, fields and stores cannot change during this advance call.
+		# Mature trees can change navigation, so walkability is still checked live.
+		if not indexed:
+			for structure in world.structures:
+				if structure.health>0:
+					for point in world.footprint(structure): occupied[point]=true
+			for field in world.fields: occupied[Vector2i(field.x,field.y)]=true
+			for store in world.stores:
+				for point in store.tiles: occupied[point]=true
+			indexed=true
 		var resource: Dictionary = world.find(world.resources,id)
-		if not plantable(world,Vector2i(resource.x,resource.y)): continue
+		var point: Vector2i = Vector2i(resource.x,resource.y)
+		if not world.walkable(point) or (world.generator_version>0 and world.terrain_state.paths.has(point)) or occupied.has(point): continue
 		state.age += 1
 		if state.age >= MATURITY:
 			state.age = MATURITY; state.planted = false; resource.remaining = 8

@@ -45,6 +45,12 @@ static func run(check: Callable) -> void:
 	for i in range(2200): world.step()
 	check.call("FISH/real_pier_build_and_physical_catch",world.structures.any(func(s:Dictionary)->bool:return s.definition == "fishing_pier") and world.ledger.produced.get("fish",0) > 0 and world.nature_state.fishing.river <= 8 and world.jobs.any(func(j:Dictionary)->bool:return j.kind == "fish" and j.required == 12000 and j.state == "Complete") and world.invariant_errors().is_empty(),str(world.invariant_errors()))
 	world._structure("fishing_pier",Vector2i(31,52),0); world._structure("fishing_pier",Vector2i(31,56),0)
+	# Staff the capacity test and shorten output hauling. The limit must be reached
+	# by actual work, independently of changes to ordinary meal/sleep timing.
+	world.queue_command("preference",{"citizen":2,"category":"Gathering","value":3})
+	world.queue_command("preference",{"citizen":3,"category":"Gathering","value":3})
+	world.queue_command("preference",{"citizen":4,"category":"Hauling","value":3})
+	world.queue_command("stockpile",{"tiles":[Vector2i(29,50),Vector2i(30,50),Vector2i(29,51),Vector2i(30,51)]})
 	var maximum: int = 0
 	var legal: bool = true
 	for i in range(12000):
@@ -52,7 +58,7 @@ static func run(check: Callable) -> void:
 		maximum = maxi(maximum,world.nature_state.fishing.river)
 		legal = legal and world.nature_state.fishing.river <= 16 and world.nature_state.fishing.piers.values().all(func(n:Variant)->bool:return n <= 8)
 		if maximum == 16: break
-	check.call("FISH/multiple_piers_respect_river_sixteen_limit",maximum == 16 and legal)
+	check.call("FISH/multiple_piers_respect_river_sixteen_limit",maximum == 16 and legal,"maximum=%d, legal=%s; residents=%s" % [maximum,legal,world.citizens.map(func(c:Dictionary)->Dictionary:return {"name":c.name,"activity":c.activity,"fullness":c.fullness,"rest":c.rest})])
 	decoded = ColonyCodec.decode(ColonyCodec.encode(world))
 	check.call("FISH/daily_limits_and_physical_outputs_roundtrip",decoded.has("world") and decoded.world.canonical_hash() == world.canonical_hash(),str(decoded.get("error","")))
 	var following_day: int = world.nature_state.fishing.day+1

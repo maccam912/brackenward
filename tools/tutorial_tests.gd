@@ -67,6 +67,7 @@ static func run(check: Callable) -> void:
 	person.preferences.Cooking=3;ColonyTutorial.evaluate(world,state)
 	check.call("TUTORIAL/priority_waits_for_real_assignment",not state.completed.has("cooking_priority"))
 	var next: Dictionary = world._job("cook","Cooking","Cooking",hearth.id,Vector2i(hearth.x,hearth.y),24000);next.worker=person.id;person.job=next.id
+	ColonyTutorial.action(world,state,"work_preferences",{"citizen":person.id})
 	ColonyTutorial.evaluate(world,state)
 	check.call("TUTORIAL/priority_observes_next_cooking_assignment",state.completed.has("cooking_priority"))
 	ColonyTutorial.action(world,state,"pin_forecast")
@@ -75,7 +76,61 @@ static func run(check: Callable) -> void:
 	world._structure("research_desk",Vector2i(80,70),0);world.researched.append("trailcraft")
 	var triggered: Array = ColonyTutorial.evaluate(world,state)
 	check.call("TUTORIAL/four_context_lessons_trigger_once",triggered==ColonyTutorial.TRIGGERS and ColonyTutorial.evaluate(world,state).is_empty())
+	ColonyTutorial.replay(state,"cooking_priority");world.citizens[0].departed=true
+	var gone: Dictionary = ColonyTutorial.card(world,state)
+	check.call("UI09/departed_priority_target_is_not_highlighted",gone.entity==0 and gone.target.is_empty() and gone.prerequisite.contains("no longer"))
+	generated_suggestions(check)
+	planned_field_conflicts(check)
+	explicit_meal_batch(check)
 	persistence(check)
+
+static func explicit_meal_batch(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var state: Dictionary = ColonyTutorial.initial_state()
+	var hearth: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition=="hearth")[0]
+	world._make_stack("berry",4,"ground",0,Vector2i(hearth.x,hearth.y),true)
+	ColonyTutorial.action(world,state,"hearth")
+	world.queue_command("recipe_order",{"target":hearth.id,"definition":"cook_meals","mode":"Repeat","value":1,"priority":2,"filters":["berry"]})
+	world.step();ColonyTutorial.evaluate(world,state)
+	check.call("TUTORIAL/explicit_batch_waits_for_physical_completion",not state.completed.has("cook"))
+	for index in range(1500): world.step()
+	ColonyTutorial.evaluate(world,state)
+	check.call("TUTORIAL/hearth_make_one_batch_completes_cooking_lesson",state.completed.has("cook") and world.jobs.any(func(j:Dictionary)->bool:return j.kind=="craft" and j.definition=="cook_meals" and j.state=="Complete") and world.ledger.produced.meal==26 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+
+static func generated_suggestions(check: Callable) -> void:
+	for site in ColonyGeneration.SITES:
+		var world: ColonyWorld = ColonyTests.world()
+		var error: String = ColonyGeneration.configure(world,718,site)
+		var before: String = world.canonical_hash()
+		var lodge: Array = ColonyTutorial.lodge_target(world)
+		var field: Array = ColonyTutorial.field_target(world)
+		var overlap: bool = false
+		if not lodge.is_empty():
+			for point in world.terrain_state.starter_field:
+				if point.x>=lodge[0] and point.x<lodge[0]+8 and point.y>=lodge[1] and point.y<lodge[1]+6: overlap=true
+		check.call("TUTORIAL/generated_%s_has_safe_suggestions" % site,error.is_empty() and not lodge.is_empty() and not field.is_empty() and not overlap and ColonyConstruction.lodge_error(world,Vector2i(lodge[0],lodge[1])).is_empty() and world.canonical_hash()==before,error)
+
+static func planned_field_conflicts(check: Callable) -> void:
+	for site in ColonyGeneration.SITES:
+		var world: ColonyWorld = ColonyTests.world()
+		ColonyGeneration.configure(world,104729,site)
+		var lodge: Array = ColonyTutorial.lodge_target(world)
+		ColonyConstruction.command(world,"lodge",{"x":lodge[0],"y":lodge[1]})
+		var bed_job: Dictionary = world.find(world.jobs,world.construction_state.groups[0].first[0])
+		var blocked: String = ColonyAgriculture.designate(world,{"crop":"turnip","tiles":[Vector2i(bed_job.x,bed_job.y)]})
+		var field: Array = ColonyTutorial.field_target(world)
+		var clear: bool = not field.is_empty()
+		if clear:
+			clear=not Rect2i(lodge[0],lodge[1],8,6).intersects(Rect2i(field[0],field[1],4,2))
+		check.call("TUTORIAL/%s_next_field_avoids_unfinished_lodge_and_future_roof" % site,clear and blocked.contains("planned construction") and world.fields.is_empty(),str(field))
+	var world: ColonyWorld = ColonyTests.world()
+	var bed: Dictionary = world.find(world.structures,world.citizens[0].bed)
+	var result: String = ColonyMaintenance.move_command(world,{"target":bed.id,"x":80,"y":70,"rotation":0})
+	var blocked: String = ColonyAgriculture.designate(world,{"crop":"turnip","tiles":[Vector2i(80,70)]})
+	var move_job: Dictionary = world.jobs[-1]
+	world._release(move_job,true)
+	var freed: String = ColonyAgriculture.designate(world,{"crop":"turnip","tiles":[Vector2i(80,70)]})
+	check.call("TUTORIAL/field_respects_move_destination_until_canceled",result=="accepted" and blocked.contains("move destination") and freed=="accepted")
 
 static func persistence(check: Callable) -> void:
 	var settings: DeviceSettings = DeviceSettings.new()

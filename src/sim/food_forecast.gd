@@ -20,6 +20,7 @@ static func calculate(world: ColonyWorld, resident_override: int = -1, removed_b
 	var nutrition: int = 0
 	var batches: Array[Dictionary] = []
 	for stack in world.stacks:
+		if stack.count<=0: continue
 		var definition: Dictionary = world.definitions.items[stack.item]
 		if not ColonyFire.usable(world,stack) or definition.fullness == 0 or stack.location not in ["ground","store","output"] or (stack.item == "travel_ration" and not world.use_rations) or not world.accessible(Vector2i(stack.x,stack.y)):
 			continue

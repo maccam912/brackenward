@@ -11,7 +11,9 @@ static func designate(world: ColonyWorld, args: Dictionary) -> String:
 		return "Dormant: first sowing season is " + ["Spring", "Summer", "Autumn", "Winter"][definition.seasons[0]]
 	if args.tiles.is_empty():
 		return "empty_field"
+	var planned: Dictionary = planned_tiles(world)
 	for point: Vector2i in args.tiles:
+		if planned.has(point): return "Field overlaps planned construction or a move destination: cancel that order first"
 		if world.domestic_state.pens.any(func(p:Dictionary)->bool:return p.tiles.has(point)): return "Field overlaps pen"
 		if not world.walkable(point) or world.roofed(point) != definition.roof:
 			return "Requires roofed soil" if definition.roof else "Requires open soil"
@@ -34,13 +36,25 @@ static func designate(world: ColonyWorld, args: Dictionary) -> String:
 			"yield_count": definition.yield_count, "fertility": world.soil_fertility(point), "replant": true, "reason": "Waiting for preparation"})
 	return "accepted"
 
+static func planned_tiles(world: ColonyWorld) -> Dictionary:
+	var result: Dictionary = {}
+	for job in world.jobs:
+		if job.state in ["Complete","Canceled"]: continue
+		var tiles: Array = world.footprint(job) if job.kind=="build" else (ColonyMaintenance.move_footprint(world,job) if job.kind in ["move_furniture","cart_move"] else [])
+		for tile in tiles: result[tile]=true
+	return result
+
 static func season(tick: int) -> int:
 	return (tick / 7200 / 8) % 4
 
 static func advance(world: ColonyWorld) -> void:
+	var current_season: int = season(world.tick)
+	# Irrigation only affects drought. Build this local view once so destroyed or
+	# moved wells are observed on the next tick without a persisted cache.
+	var wells: Array = world.structures.filter(func(s:Dictionary)->bool:return s.health>0 and s.definition=="well") if world.weather=="drought" else []
 	for resource in world.resources:
 		if resource.remaining == 0 and resource.regrow_at > 0:
-			if season(world.tick) == 3 and resource.definition in ["berry_bush", "herb_patch", "tree"]:
+			if current_season == 3 and resource.definition in ["berry_bush", "herb_patch", "tree"]:
 				resource.regrow_at += 1
 			elif world.tick >= resource.regrow_at:
 				resource.remaining = world.definitions.resources[resource.definition].yield_count
@@ -62,13 +76,13 @@ static func advance(world: ColonyWorld) -> void:
 					field.growth = 0
 					field.ripe_tick = 0
 			continue
-		if not definition.seasons.has(season(world.tick)):
+		if not definition.seasons.has(current_season):
 			field.reason = "Dormant until " + ["Spring", "Summer", "Autumn", "Winter"][definition.seasons[0]]
 			continue
 		if world.roofed(Vector2i(field.x, field.y)) != definition.roof:
 			field.reason = "Roof required" if definition.roof else "Remove roof for outdoor crops"
 			continue
-		var watered: bool = world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition == "well" and absi(s.x-field.x)+absi(s.y-field.y) <= 8)
+		var watered: bool = wells.any(func(s:Dictionary)->bool:return absi(s.x-field.x)+absi(s.y-field.y) <= 8)
 		var rate: int = field.fertility * (500 if world.weather == "drought" and not watered else 1000) / 1000
 		field.growth_rem += rate
 		field.growth += field.growth_rem / 7200

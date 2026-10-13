@@ -10,3 +10,6 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 *.aar filter=lfs diff=lfs merge=lfs -text
 *.jpg filter=lfs diff=lfs merge=lfs -text
+tests/fixtures/campaign-replay-input.json text eol=lf
+tests/fixtures/campaign-replay-golden.json text eol=lf
+tests/fixtures/campaign-replay-7200.brackenward -text

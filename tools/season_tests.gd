@@ -91,6 +91,26 @@ static func run(check: Callable) -> void:
 	var fixture: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/m3-weather.brackenward"))
 	check.call("SAVE/M3_android_recovery_fixture_roundtrip",fixture.has("world") and fixture.world.tick == 3135 and ColonyCodec.decode(ColonyCodec.encode(fixture.world)).world.canonical_hash() == fixture.world.canonical_hash(),str(fixture.get("error","")))
 	legacy_and_journal(check)
+	irrigation_mutations(check)
+
+static func irrigation_mutations(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	ColonyAgriculture.designate(world,{"crop":"turnip","tiles":[Vector2i(74,54)]})
+	var field: Dictionary = world.fields[0]
+	field.prepared=true;field.planted=true;field.fertility=1000
+	world.weather="drought"
+	ColonyAgriculture.advance(world)
+	var well: Dictionary = world._structure("well",Vector2i(75,54),0)
+	ColonyAgriculture.advance(world)
+	check.call("CROP/new_well_changes_next_tick_drought_growth",field.growth_rem==1500 and field.reason=="Growing: well stabilizes drought")
+	well.health=0
+	ColonyAgriculture.advance(world)
+	well.health=100;well.x=95
+	ColonyAgriculture.advance(world)
+	check.call("CROP/destroyed_or_moved_well_stops_irrigation_immediately",field.growth_rem==2500 and field.reason.contains("half rate"))
+	world.weather="clear"
+	ColonyAgriculture.advance(world)
+	check.call("CROP/clear_weather_restores_full_growth_without_well",field.growth_rem==3500 and field.reason=="Growing")
 
 static func legacy_and_journal(check: Callable) -> void:
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/m2-fields-and-work.brackenward")

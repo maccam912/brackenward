@@ -84,6 +84,16 @@ static func run(check: Callable) -> void:
 	hare=ColonyWildlife.spawn(world,"hare",Vector2i(74,68))
 	ColonyWildlife.advance(world);ColonyWildlife.advance(world)
 	check.call("ANIMAL/crop_bite_once_per_animal_per_day",field.yield_count==3 and field.reason.contains("Wildlife"))
+	field.yield_count=1;hare.crop_day=-1
+	var second_hare: Dictionary = ColonyWildlife.spawn(world,"hare",Vector2i(74,68))
+	ColonyWildlife.advance(world)
+	check.call("ANIMAL/same_tick_crop_exhaustion_visible_to_later_animals",field.yield_count==0 and hare.crop_day==world.tick/7200 and second_hare.crop_day== -1)
+	field.yield_count=4;field.planted=false;hare.crop_day=-1
+	ColonyWildlife.advance(world)
+	check.call("ANIMAL/unplanted_crop_removed_from_next_tick_lookup",field.yield_count==4 and hare.crop_day== -1 and second_hare.crop_day== -1)
+	field.planted=true
+	ColonyWildlife.advance(world)
+	check.call("ANIMAL/newly_planted_crop_available_without_stale_index",field.yield_count==2 and second_hare.crop_day==world.tick/7200)
 	world._structure("pen_gate",Vector2i(75,68),0)
 	check.call("ANIMAL/fence_gate_blocks_unhandled_wildlife",not ColonyWildlife.animal_walkable(world,Vector2i(75,68)))
 	world=ColonyTests.world();boar=ColonyWildlife.spawn(world,"boar",Vector2i(74,68))

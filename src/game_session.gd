@@ -68,6 +68,14 @@ var storage_error: String = ""
 var recovery_failed: bool = false
 var settings: DeviceSettings = DeviceSettings.new()
 var pending_import_world: ColonyWorld
+var guidance_panel: PanelContainer
+var guidance_text: Label
+var guidance_forecast: Label
+var guidance_actions: HBoxContainer
+var guidance_forecast_button: Button
+var guidance_card: Dictionary = {}
+var guidance_elapsed: float = 1.0
+var guidance_signature: String = ""
 var forecast: Dictionary = {"portions":24,"ticks":21600,"label":"24 portions | 3 days stored runway"}
 
 func _ready() -> void:
@@ -105,6 +113,7 @@ func _ready() -> void:
 	_build_speed_controls()
 	_build_map_tools()
 	_build_placement()
+	_build_guidance()
 	resized.connect(_resize)
 	_layout()
 	show_sheet("Welcome")
@@ -244,6 +253,8 @@ func _build_speed_controls() -> void:
 	button("Pause", func() -> void: set_speed(0), speeds, 72)
 	for speed in [1, 2, 4]:
 		button("%dx" % speed, func() -> void: set_speed(speed), speeds)
+	var help: Button = button("?",show_tutorials,speeds)
+	help.tooltip_text="Lessons and food forecast"
 
 func _build_map_tools() -> void:
 	map_tools = VBoxContainer.new()
@@ -307,6 +318,12 @@ func _process(delta: float) -> void:
 	if not is_node_ready() or backgrounded:
 		return
 	runner.advance_frame(delta)
+	guidance_elapsed += delta
+	if world is ColonyWorld:
+		var signature: String = world.session_id+JSON.stringify(_tutorial_state())
+		if guidance_elapsed>=1.0 or signature!=guidance_signature:
+			_refresh_guidance()
+		if is_instance_valid(guidance_panel): _layout_guidance()
 	if world is ColonyWorld:
 		if world.charter_state.ending and not world.charter_state.continued and charter_epilogue_session!=world.session_id:
 			charter_epilogue_session=world.session_id
@@ -581,7 +598,8 @@ func select_citizen(id: int) -> void:
 	_update_inspector()
 	var actions: HBoxContainer = HBoxContainer.new()
 	inspector_rows.add_child(actions)
-	button("Follow", func() -> void: view.follow_id = id, actions, 80)
+	button("Follow", func() -> void:
+		view.follow_id = id;_tutorial_action("follow",{"citizen":id});_refresh_guidance(), actions, 80)
 	button("Close", close_inspector, actions, 64)
 	_layout()
 
@@ -627,7 +645,9 @@ func show_sheet(title: String) -> void:
 			label("Start paused. Gather berries and wood, place a bed, then resume and watch your residents fetch, carry, work, eat, and sleep.", sheet_body)
 			label("Meals: 3 days of starting food. Cooking needs four raw food units and one wood for two meals. Choose resource orders in Work or tap a plant on the map.", sheet_body)
 			button("Begin", func() -> void:
-				close_sheet()
+				_tutorial_begin();close_sheet();_refresh_guidance()
+				if not guidance_card.get("target",[]).is_empty():
+					view.camera_tile=Vector2(guidance_card.target[0],guidance_card.target[1]);view._update_transform()
 				notice = "Tap Mira and Follow. Time starts paused.", sheet_body)
 			button("Look around", close_sheet, sheet_body)
 		"Build":
@@ -711,6 +731,10 @@ func _layout() -> void:
 	content.size = available - Vector2(insets.x + insets.z, insets.y + insets.w)
 	var width: float = content.size.x
 	var height: float = content.size.y
+	for control in controls:
+		if is_instance_valid(control) and control.text in ["Pause","Close","Menu","Follow","Begin","Hide","Skip","Show me"]:
+			var text_width: float = control.get_theme_font("font").get_string_size(control.text,HORIZONTAL_ALIGNMENT_LEFT,-1,control.get_theme_font_size("font_size")).x
+			control.custom_minimum_size.x=maxf(48,ceilf(text_width)+control.get_theme_stylebox("normal").get_minimum_size().x+4)
 	var wrap_navigation: bool = width < 600 and text_scale > 1.0
 	var navigation_height: float = 128 if wrap_navigation else 64
 	var header_height: float = (104.0 if width < 600 else 88.0) * text_scale
@@ -725,8 +749,10 @@ func _layout() -> void:
 		caption.add_theme_font_size_override("font_size", int(16 * text_scale))
 	nav.reset_size()
 	nav.size = Vector2(width, navigation_height)
-	speeds.position = Vector2(8 if left_handed else maxf(8, width - 248), height - navigation_height - 56)
-	speeds.size = Vector2(240, 48)
+	var speed_width: float = speeds.get_theme_constant("separation")*4
+	for control in speeds.get_children(): speed_width+=control.custom_minimum_size.x
+	speeds.position = Vector2(8 if left_handed else maxf(8,width-speed_width-8),height-navigation_height-56)
+	speeds.size = Vector2(speed_width,48)
 	view.position = Vector2(0, header_height)
 	view.size = Vector2(width, maxf(48, height - header_height - navigation_height))
 	map_tools.position = Vector2(8, header_height + 8)
@@ -759,6 +785,7 @@ func _layout() -> void:
 		view.focus_offset = Vector2(-164, 0) if wide else Vector2(0, -120)
 	else:
 		view.focus_offset = Vector2.ZERO
+	_layout_guidance()
 	speeds.move_to_front()
 
 func _resize() -> void:
@@ -794,6 +821,9 @@ func load_local() -> void:
 
 func _replace_world(state: RefCounted) -> void:
 	world = state
+	# Every caller supplies a loaded, imported or newly adopted campaign. The
+	# first-launch placeholder must no longer block play or persistence.
+	awaiting_first_colony = false
 	seen_care_alert = -1
 	epilogue_session = ""
 	recovery_failed = false
@@ -1124,12 +1154,103 @@ func _work_sheet() -> void:
 
 func _tutorial_sheet() -> void:
 	label("First steps", sheet_body)
-	label(forecast.label, sheet_body)
-	label("Stored runway excludes future harvests, reserved goods and expedition rations. Fresh food, cooking and storage can change it.", sheet_body)
-	var completed: Array = world.facts.map(func(fact: Dictionary) -> String: return fact.kind)
-	for kind in ["gather", "haul", "build", "cook", "eat", "sleep"]:
-		label(("Done: " if completed.has(kind) else "Next: ") + kind.capitalize(), sheet_body)
-	label("Gather berries and wood in Work. Place a bed in Build. Resume to see materials carried and used. Cooking starts when stored meals fall below 16; hunger and nightfall trigger eating and sleep.", sheet_body)
+	var state: Dictionary = _tutorial_state()
+	label("Lessons use real work and supplies. Skipping leaves a lesson available to replay; it does not complete it.",sheet_body)
+	button("Resume first steps",func()->void:_tutorial_begin();close_sheet(),sheet_body)
+	for lesson in ColonyTutorial.OPENING+state.triggered:
+		var status_text: String = "Completed" if state.completed.has(lesson) else ("Skipped" if state.skipped.has(lesson) else "Available")
+		button("%s - %s" % [ColonyTutorial.TITLES[lesson],status_text],func()->void:
+			ColonyTutorial.replay(state,lesson);_save_settings();close_sheet();_tutorial_show_me(),sheet_body)
+	button("Food forecast",show_food_forecast,sheet_body)
+
+func _tutorial_state() -> Dictionary:
+	return ColonyTutorial.campaign(settings,world.session_id)
+
+func tutorial_tick() -> Dictionary:
+	if not world is ColonyWorld or awaiting_first_colony: return {}
+	var state: Dictionary = _tutorial_state()
+	var previous: String = JSON.stringify(state)
+	var added: Array = ColonyTutorial.evaluate(world,state)
+	if JSON.stringify(state)!=previous: _save_settings()
+	if not added.is_empty(): notice="New lesson: "+ColonyTutorial.TITLES[added[0]]+". Open ? to see the action."
+	return ColonyTutorial.card(world,state)
+
+func _tutorial_action(kind: String, args: Dictionary = {}) -> void:
+	if not world is ColonyWorld: return
+	var state: Dictionary = _tutorial_state()
+	var previous: String = JSON.stringify(state)
+	ColonyTutorial.action(world,state,kind,args)
+	if JSON.stringify(state)!=previous: _save_settings()
+
+func _tutorial_begin() -> void:
+	if not world is ColonyWorld: return
+	ColonyTutorial.begin(_tutorial_state());_save_settings();runner.pause()
+
+func _tutorial_skip() -> void:
+	ColonyTutorial.skip(_tutorial_state());_save_settings()
+
+func _tutorial_dismiss() -> void:
+	ColonyTutorial.dismiss(_tutorial_state());_save_settings()
+
+func show_tutorials() -> void:
+	show_sheet("Lessons")
+	_tutorial_sheet()
+
+func _tutorial_show_me() -> void:
+	runner.pause()
+	var card: Dictionary = ColonyTutorial.card(world,_tutorial_state())
+	if card.is_empty(): show_tutorials();return
+	if not card.prerequisite.is_empty():
+		show_sheet(card.title);label(card.prerequisite,sheet_body)
+		button("Skip this lesson",func()->void:_tutorial_skip();close_sheet(),sheet_body)
+		return
+	match card.action:
+		"follow":
+			close_sheet();select_citizen(card.entity)
+		"forage":
+			begin_gather("berry_bush")
+			view.preview_start=Vector2i(card.target[0],card.target[1]);view.preview_end=view.preview_start
+		"lodge":
+			begin_lodge();view.preview_start=Vector2i(card.target[0],card.target[1]);placement_cache_key=""
+		"cook":
+			_tutorial_action("hearth");show_station(world.find(world.structures,card.entity))
+		"field":
+			begin_field();view.preview_start=Vector2i(card.target[0],card.target[1]);view.preview_end=view.preview_start+Vector2i(3,1)
+		"cooking_priority":
+			_tutorial_action("work_preferences",{"citizen":card.entity});show_work_preferences(card.entity)
+		"forecast": show_food_forecast()
+		"winter": _tutorial_action("weather");show_weather()
+		"injury": _tutorial_action("care");show_care()
+		"research": _tutorial_action("research");show_research()
+		"expedition": _tutorial_action("expedition");show_expeditions()
+	if not card.target.is_empty():
+		view.camera_tile=Vector2(card.target[0],card.target[1]);view._update_transform()
+
+func tutorial_forecast_text() -> String:
+	if not world is ColonyWorld: return ""
+	var residents: int = ColonyCharter.living(world,true).size()
+	return "%s | %d meal portions/day\n%s" % [FoodForecast.calculate(world).label,residents*2,_tutorial_harvest_text()]
+
+func _tutorial_harvest_text() -> String:
+	var soonest: int = 2147483647
+	var quantity: int = 0
+	var reason: String = "No planted crops: plant seasonal food and keep Growing enabled."
+	for field in world.fields:
+		if not field.planted: continue
+		var definition: Dictionary = world.definitions.crops[field.crop]
+		if world.definitions.items[definition.item].fullness<=0 and definition.item not in world.definitions.recipes.cook_meals.alternatives: continue
+		if field.ripe_tick>0: return "Ripe crops are ready now; workers still need to harvest and haul them."
+		if ColonyAgriculture.season(world.tick) not in definition.seasons or world.roofed(Vector2i(field.x,field.y))!=definition.roof or world.is_flooded(Vector2i(field.x,field.y)):
+			reason="Planted crops are paused: "+field.reason;continue
+		var watered: bool = world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition=="well" and absi(s.x-field.x)+absi(s.y-field.y)<=8)
+		var rate: int = field.fertility*(500 if world.weather=="drought" and not watered else 1000)/1000
+		if rate<=0: continue
+		var remaining: int = maxi(0,((definition.growth-field.growth)*7200-field.growth_rem+rate-1)/rate)
+		if remaining<soonest: soonest=remaining;quantity=field.yield_count
+		elif remaining==soonest: quantity+=field.yield_count
+	if soonest==2147483647: return reason
+	var hours: int = (soonest+299)/300
+	return "Next crop maturity: about %d days %d hours, %d raw food units, if current growing conditions continue." % [hours/24,hours%24,quantity]
 
 func begin_field() -> void:
 	begin_placement()
@@ -1353,6 +1474,7 @@ func _save_settings() -> void:
 		notice = error
 
 func show_weather() -> void:
+	_tutorial_action("weather")
 	show_sheet("Weather forecast")
 	label("Today: %s, %d C\n%s" % [world.weather.replace("_"," "),ColonyLiving.temperature(world),ColonyWeather.describe(world.weather)],sheet_body)
 	for entry in world.weather_state.days:
@@ -1378,6 +1500,7 @@ func show_weather() -> void:
 			close_sheet(),sheet_body)
 
 func show_work_preferences(id: int) -> void:
+	_tutorial_action("work_preferences",{"citizen":id})
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_sheet(citizen.name+" - Work")
 	label(citizen.activity+"\nCategories set to Off retain their queued jobs for other eligible workers. Hunger, sleep and taking a break come first.",sheet_body)
@@ -1438,6 +1561,7 @@ func show_person(id: int) -> void:
 			label("Deadline: %s %d at %02d:00 | about %.1f days left" % [["Spring","Summer","Autumn","Winter"][(request.deadline/57600)%4],(request.deadline/7200)%8+1,(request.deadline%7200)/300,maxf(0,float(request.deadline-world.tick)/7200.0)],sheet_body)
 
 func show_research() -> void:
+	_tutorial_action("research")
 	show_sheet("Research")
 	label("One active project, up to two desks. Each productive WU adds one point; switching keeps progress. Build a research desk and enable Research work to begin.",sheet_body)
 	label("Active: "+("None" if world.production_state.project.is_empty() else _catalog_name(world.production_state.project))+"\nQueue: "+", ".join(world.production_state.queue.map(_catalog_name))+"\nBanked insight: %d" % world.production_state.insight,sheet_body)
@@ -1456,6 +1580,7 @@ func show_research() -> void:
 				close_sheet(),sheet_body)
 
 func show_station(station: Dictionary) -> void:
+	if station.definition=="hearth" and station.health>0: _tutorial_action("hearth")
 	if station.health<=0:
 		var moves: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="move_furniture" and j.target==station.id and j.state not in ["Complete","Canceled"])
 		if not moves.is_empty(): _job_sheet(moves[0]);return
@@ -1555,6 +1680,7 @@ func show_mode() -> void:
 			close_sheet(),sheet_body)
 
 func show_care() -> void:
+	_tutorial_action("care")
 	show_sheet("Injuries and care")
 	label("Rescue carries a downed person to the nearest reachable bed or cart rally and slows the carrier by 25%. Emergency rescue and urgent stabilization in place override Care Off. Ordinary treatment needs Care enabled; Treat now pins one visible override. Patients receive food automatically and rest until 50 health before working.",sheet_body)
 	for patient in world.citizens:
@@ -2018,6 +2144,7 @@ func show_expedition_preview(plan: Dictionary) -> void:
 	button("Change plan",func()->void:show_expedition_prepare(plan.definition,plan.pickup),sheet_body)
 
 func show_expeditions() -> void:
+	_tutorial_action("expedition")
 	show_sheet("Expedition")
 	var trip: Dictionary = ColonyRegion.active(world)
 	if trip.is_empty(): label("No expedition is active. Choose a known site on the regional map.",sheet_body);button("Regional map",show_region,sheet_body);return
@@ -2316,10 +2443,80 @@ func show_person_history(id: int) -> void:
 
 func show_food_forecast() -> void:
 	show_sheet("Food forecast")
-	var current: Dictionary = FoodForecast.calculate(world)
-	label(current.label,sheet_body)
+	_tutorial_action("forecast")
+	label(tutorial_forecast_text(),sheet_body)
 	label("This uses accessible, unreserved food already at home and its actual spoilage. Future harvests and expedition rations kept by policy are excluded. Residents need 1000 fullness per day; one meal supplies 500.",sheet_body)
+	var state: Dictionary = _tutorial_state()
+	button("Unpin forecast" if state.forecast_pinned else "Pin forecast on map",func()->void:
+		if state.forecast_pinned: state.forecast_pinned=false;_save_settings()
+		else: _tutorial_action("pin_forecast")
+		close_sheet(),sheet_body)
+	var cooking: bool = world.citizens.any(func(c:Dictionary)->bool:return not c.away and not c.death_recorded and not c.departed and c.preferences.Cooking>0)
+	var hearth: bool = world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition=="hearth" and s.cooking and not ColonyFire.burning(world,"structure",s.id))
+	var raw: int = 0
+	for item in world.definitions.recipes.cook_meals.alternatives: raw+=world.available(item)
+	var bottlenecks: Array[String] = []
+	if not cooking: bottlenecks.append("Enable Cooking for a home resident.")
+	if not hearth: bottlenecks.append("Build or enable a usable hearth.")
+	if raw<4: bottlenecks.append("Gather or harvest four raw food units for the next batch.")
+	if world.available("wood")<1: bottlenecks.append("Gather one wood for cooking fuel.")
+	label("Cooking: "+("Inputs and a cook are available; work priority, travel and output storage still affect timing." if bottlenecks.is_empty() else " ".join(bottlenecks)),sheet_body)
 	button("Gather berries",func()->void:begin_gather("berry_bush"),sheet_body)
 	button("Plant turnips",begin_field,sheet_body)
 	button("Work preferences",func()->void:show_sheet("Work"),sheet_body)
 	button("Weather forecast",show_weather,sheet_body)
+
+func _build_guidance() -> void:
+	guidance_panel = PanelContainer.new()
+	guidance_panel.visible = false
+	content.add_child(guidance_panel)
+	var rows: VBoxContainer = VBoxContainer.new()
+	guidance_panel.add_child(rows)
+	guidance_forecast = label("",rows)
+	guidance_forecast.max_lines_visible=3
+	guidance_forecast.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	var scroll: ScrollContainer = TouchScrollContainer.new()
+	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
+	scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	scroll.custom_minimum_size.y=32
+	rows.add_child(scroll)
+	guidance_text=label("",scroll)
+	guidance_actions=HBoxContainer.new();rows.add_child(guidance_actions)
+	button("Show me",func()->void:_tutorial_show_me();_refresh_guidance(),guidance_actions)
+	button("Skip",func()->void:_tutorial_skip();_refresh_guidance(),guidance_actions)
+	button("Hide",func()->void:_tutorial_dismiss();_refresh_guidance(),guidance_actions)
+	guidance_forecast_button=button("Food forecast",show_food_forecast,rows)
+
+func _refresh_guidance() -> void:
+	if not is_instance_valid(guidance_panel) or not world is ColonyWorld: return
+	guidance_elapsed=0.0
+	guidance_card=tutorial_tick()
+	guidance_signature=world.session_id+JSON.stringify(_tutorial_state())
+	var pinned: bool = _tutorial_state().forecast_pinned
+	guidance_forecast.visible=pinned
+	guidance_forecast.text=tutorial_forecast_text() if pinned else ""
+	guidance_forecast_button.visible=pinned and guidance_card.is_empty()
+	guidance_text.get_parent().visible=not guidance_card.is_empty()
+	guidance_actions.visible=not guidance_card.is_empty()
+	guidance_text.text="" if guidance_card.is_empty() else guidance_card.text+("\n"+guidance_card.prerequisite if not guidance_card.prerequisite.is_empty() else "")
+	view.tutorial_target.clear()
+	if not guidance_card.is_empty(): view.tutorial_target.assign(guidance_card.target)
+	view.tutorial_gesture=guidance_card.get("gesture","")
+	_layout_guidance()
+
+func _layout_guidance() -> void:
+	if not is_instance_valid(guidance_panel): return
+	guidance_panel.visible=sheet==null and inspector==null and not placement.visible and (not guidance_card.is_empty() or guidance_forecast.visible)
+	view.tutorial_highlight_visible=sheet==null
+	if not guidance_panel.visible:
+		if inspector==null: view.focus_offset=Vector2.ZERO
+		return
+	var width: float = minf(480,content.size.x-16)
+	var available: float = maxf(80,speeds.position.y-view.position.y-16)
+	guidance_panel.reset_size()
+	var desired: float = 128*text_scale if not guidance_card.is_empty() else 140*text_scale
+	guidance_panel.size=Vector2(width,minf(desired,available))
+	guidance_panel.position=Vector2(content.size.x-width-8,speeds.position.y-guidance_panel.size.y-8)
+	view.focus_offset=Vector2(0,-guidance_panel.size.y*0.5)
+	guidance_panel.move_to_front()
+	speeds.move_to_front()

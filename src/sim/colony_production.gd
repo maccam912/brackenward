@@ -106,7 +106,7 @@ static func completed(world: ColonyWorld, job: Dictionary) -> void:
 static func policy_stock(world: ColonyWorld, item: String) -> int:
 	var count: int = 0
 	for stack in world.stacks:
-		if stack.item != item or stack.location not in ["ground","store","output","carry"]: continue
+		if stack.count<=0 or stack.item != item or stack.location not in ["ground","store","output","carry"]: continue
 		if stack.location == "carry":
 			var delivery: Dictionary = world.find(world.jobs,stack.job)
 			if delivery.get("kind") != "haul": continue

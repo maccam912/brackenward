@@ -413,11 +413,24 @@ func ui() -> void:
 	check("SAVE/UI_verified_retry_restores_saving",not colony_game.saving_disabled and colony_game.storage_error.is_empty())
 	var import_bytes: PackedByteArray = colony_game.store.encode(colony_game.world)
 	var original_session: String = colony_game.world.session_id
+	colony_game.awaiting_first_colony = true
 	colony_game._accept_import(import_bytes)
 	check("SAVE/UI_import_waits_for_campaign_choice",colony_game.sheet_name == "Import campaign" and colony_game.world.session_id == original_session and not ColonyStore.occupied(2,ui_colony_directory))
 	for child in colony_game.sheet_body.get_children():
 		if child is Button and child.text == "Import into campaign 2": child.pressed.emit()
 	check("SAVE/UI_import_clones_into_independent_slot",colony_game.store.slot == 2 and colony_game.world.session_id != original_session and ColonyStore.occupied(1,ui_colony_directory) and ColonyStore.occupied(2,ui_colony_directory))
+	colony_game.set_speed(1)
+	check("SAVE/UI_import_replaces_first_launch_placeholder_gate",not colony_game.awaiting_first_colony and colony_game.runner.speed==1)
+	colony_game.runner.pause();colony_game.world.step()
+	var imported_tick: int = colony_game.world.tick
+	var import_save_error: String = colony_game.save_local()
+	var import_restored: Dictionary = colony_game.store.load_latest()
+	check("SAVE/UI_imported_first_campaign_saves_new_progress",import_save_error.is_empty() and import_restored.has("world") and import_restored.world.tick==imported_tick,import_save_error)
+	colony_game.awaiting_first_colony=true
+	colony_game._switch_campaign(1,true)
+	colony_game._tutorial_begin()
+	check("SAVE/UI_load_replaces_placeholder_and_enables_tutorial",not colony_game.awaiting_first_colony and colony_game.world.session_id==original_session and not colony_game.tutorial_tick().is_empty())
+	colony_game._tutorial_dismiss()
 	root.size = Vector2i(960, 600)
 	colony_game.size = Vector2(960, 600)
 	colony_game.text_scale = 1.0
@@ -883,6 +896,36 @@ func ui() -> void:
 		if child is Button and child.text=="Continue settlement": child.pressed.emit();break
 	colony_game.set_speed(1);colony_game.runner.advance_frame(0.1);colony_game.runner.pause()
 	check("CHARTER/UI_continue_keeps_colony",colony_game.world.charter_state.continued and colony_game.world.citizens.size()==8)
+	TutorialUITests.run(colony_game,check)
+	colony_game._tutorial_state().forecast_pinned=false
+	ColonyTutorial.replay(colony_game._tutorial_state(),"follow")
+	colony_game.close_inspector();colony_game.close_sheet();colony_game._refresh_guidance()
+	colony_game.view.camera_tile=Vector2(colony_game.world.citizens[0].x,colony_game.world.citizens[0].y)
+	for viewport in [Vector2i(360,640),Vector2i(640,360)]:
+		for scale_value in [1.0,1.5]:
+			root.size=viewport;colony_game.size=Vector2(viewport);colony_game.text_scale=scale_value;colony_game._build_theme();colony_game._layout();colony_game._refresh_guidance()
+			await process_frame;await process_frame
+			check("TUTORIAL/UI_card_leaves_pause_accessible_%dx%d_%d" % [viewport.x,viewport.y,int(scale_value*100)],colony_game.guidance_panel.visible and colony_game.guidance_panel.get_rect().end.y<=colony_game.speeds.position.y and colony_game.guidance_panel.get_rect().end.x<=colony_game.content.size.x and colony_game.speeds.get_children().all(func(n:Node)->bool:return n is Button and n.size.y>=48),str({"card":colony_game.guidance_panel.get_rect(),"pause":colony_game.speeds.get_rect()}))
+			var pause_control: Button = colony_game.speeds.get_child(0)
+			var needed_width: float = pause_control.get_theme_font("font").get_string_size("Pause",HORIZONTAL_ALIGNMENT_LEFT,-1,pause_control.get_theme_font_size("font_size")).x+pause_control.get_theme_stylebox("normal").get_minimum_size().x
+			check("TUTORIAL/UI_pause_label_fits_%dx%d_%d" % [viewport.x,viewport.y,int(scale_value*100)],pause_control.size.x>=needed_width and colony_game.speeds.get_rect().end.x<=colony_game.content.size.x)
+			if viewport==Vector2i(360,640) and scale_value==1.0:
+				await RenderingServer.frame_post_draw
+				root.get_texture().get_image().save_png("res://reports/tutorial-follow.png")
+			if viewport==Vector2i(640,360) and scale_value==1.5:
+				await RenderingServer.frame_post_draw
+				root.get_texture().get_image().save_png("res://reports/tutorial-landscape-large.png")
+	check("TUTORIAL/UI_real_target_has_pulsing_map_marker",colony_game.view.tutorial_target==[colony_game.world.citizens[0].x,colony_game.world.citizens[0].y] and colony_game.view.tutorial_animation>0.0)
+	colony_game.world.citizens[0].departed=true
+	colony_game._refresh_guidance()
+	check("TUTORIAL/UI_deleted_target_reselects_without_empty_highlight",colony_game.guidance_card.entity!=1 and colony_game.view.tutorial_target==colony_game.guidance_card.target)
+	colony_game.world.citizens[0].departed=false
+	root.size=Vector2i(390,844);colony_game.size=Vector2(390,844);colony_game.text_scale=1.0;colony_game._build_theme();colony_game._layout()
+	colony_game._tutorial_dismiss();colony_game._tutorial_action("pin_forecast");colony_game._refresh_guidance()
+	await process_frame;await process_frame
+	check("TUTORIAL/UI_pinned_forecast_remains_after_prompt_dismissed",colony_game.guidance_panel.visible and colony_game.guidance_forecast.visible and colony_game.guidance_forecast.text.contains("meal portions/day") and colony_game.guidance_forecast_button.visible)
+	await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("res://reports/tutorial-pinned-food.png")
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

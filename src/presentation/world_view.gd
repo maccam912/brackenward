@@ -2,6 +2,10 @@ class_name WorldView
 extends Control
 
 signal intent(action: Dictionary)
+var tutorial_target: Array = []
+var tutorial_gesture: String = ""
+var tutorial_highlight_visible: bool = true
+var tutorial_animation: float = 0.0
 var world: RefCounted
 var gestures: GestureState = GestureState.new()
 var camera_tile: Vector2 = Vector2(68, 63)
@@ -63,6 +67,7 @@ func setup(state: RefCounted) -> void:
 	_update_transform()
 
 func _process(delta: float) -> void:
+	tutorial_animation=fmod(tutorial_animation+delta,1.4)
 	var action: Dictionary = gestures.elapse(delta)
 	if not action.is_empty():
 		_apply_intent(action)
@@ -229,6 +234,15 @@ func _draw() -> void:
 		if citizen.id == selected_id:
 			var point: Vector2 = tile_to_screen(citizen_point(citizen))
 			draw_arc(point, maxf(12.0, tile_size * 0.55), 0, TAU, 24, Color("F3E8CC"), 2.0)
+	if tutorial_highlight_visible and tutorial_target.size()==2:
+		var center: Vector2 = tile_to_screen(Vector2(tutorial_target[0]+0.5,tutorial_target[1]+0.5))
+		var phase: float = tutorial_animation/1.4
+		draw_arc(center,tile_size*(0.58+phase*0.28),0,TAU,32,Color(0.91,0.73,0.4,1.0-phase*0.7),3)
+		var hand: Vector2 = center+Vector2(0,-tile_size*(0.9+0.12*sin(phase*TAU)))
+		draw_circle(hand,5,Color("F3E8CC"))
+		draw_line(hand,hand+Vector2(0,10),Color("263C3B"),3)
+		if tutorial_gesture.begins_with("Drag"):
+			draw_line(center-Vector2(tile_size*0.4,0),center+Vector2(tile_size*(phase-0.4),0),Color("F3E8CC"),3)
 	if magnifier.x >= 0:
 		var position_above: Vector2 = magnifier - Vector2(0, 72)
 		draw_circle(position_above, 28, Color("263C3B"))

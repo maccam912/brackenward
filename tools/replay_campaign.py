@@ -1,0 +1,66 @@
+#!/usr/bin/env python3
+"""Run the pinned native editor's SAVE10 replay; fail on engine errors or incomplete evidence."""
+import argparse
+import json
+import os
+from pathlib import Path
+import re
+import subprocess
+import sys
+
+import bootstrap
+
+ROOT = Path(__file__).resolve().parents[1]
+
+def run_engine(binary, arguments, timeout, logs):
+    result = subprocess.run([str(binary), "--path", str(ROOT), "--headless", "--audio-driver", "Dummy", *arguments],
+                            cwd=ROOT, text=True, encoding="utf-8", errors="replace", stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, timeout=timeout)
+    logs.append(result.stdout)
+    print(result.stdout, end="", flush=True)
+    clean = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", result.stdout)
+    if result.returncode or re.search(r"(?m)^(SCRIPT ERROR:|ERROR:|REPLAY FAIL:)", clean):
+        raise RuntimeError("Pinned engine reported a replay/import failure")
+    return clean
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--record-golden", action="store_true", help="Explicitly replace the reviewed local baseline after a gameplay change")
+    parser.add_argument("--report", default="reports/replay.json")
+    args = parser.parse_args()
+    binary = Path(os.environ.get("BRACKENWARD_GODOT", bootstrap.engine_binary()))
+    if not binary.exists():
+        raise SystemExit("Pinned editor missing; run python tools/bootstrap.py --editor-only")
+    bootstrap.verify_engine(binary)
+    report = Path(args.report)
+    if not report.is_absolute():
+        report = ROOT / report
+    report.parent.mkdir(parents=True, exist_ok=True)
+    report.unlink(missing_ok=True)
+    for tick in (7200, 72000):
+        report.with_name(report.stem + f"-{tick}.brackenward").unlink(missing_ok=True)
+    logs = []
+    try:
+        run_engine(binary, ["--editor", "--import", "--quit"], 120, logs)
+        arguments = ["--script", "tools/replay_campaign.gd", "--", "--report", str(report)]
+        if args.record_golden:
+            arguments.append("--record-golden")
+        clean = run_engine(binary, arguments, 780, logs)
+        evidence = json.loads(report.read_text())
+        if not evidence.get("passed") or not evidence.get("cross_host_save_continuation") or \
+           [int(item["tick"]) for item in evidence.get("checkpoints", [])] != [7200, 72000] or \
+           any(not re.fullmatch(r"[a-f0-9]{64}", item["canonical_hash"]) for item in evidence["checkpoints"]) or \
+           "REPLAY PASS:" not in clean:
+            raise RuntimeError("Replay did not produce complete passing evidence")
+    except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
+        if isinstance(error, subprocess.TimeoutExpired) and error.stdout:
+            logs.append(error.stdout.decode(errors="replace") if isinstance(error.stdout, bytes) else error.stdout)
+        print("Replay gate failed:", error, file=sys.stderr)
+        report.write_text(json.dumps({"version": 1, "passed": False, "error": str(error)}, indent=2) + "\n", encoding="utf-8")
+        return 1
+    finally:
+        report.with_suffix(".log").write_text("".join(logs), encoding="utf-8")
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())

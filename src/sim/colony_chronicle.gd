@@ -28,8 +28,15 @@ static func display_name(world: ColonyWorld, id: int) -> String:
 	return "Object "+str(id)
 
 static func fact(state: Dictionary, id: int) -> Dictionary:
-	for record in state.facts:
+	# IDs remain strictly ordered after retention removes older ordinary records.
+	var low: int = 0
+	var high: int = state.facts.size()-1
+	while low<=high:
+		var middle: int = (low+high)/2
+		var record: Dictionary = state.facts[middle]
 		if record.id==id: return record
+		if record.id<id: low=middle+1
+		else: high=middle-1
 	return state.archive.get(id,{})
 
 static func _capture(world: ColonyWorld, raw: Dictionary, details: Dictionary) -> Dictionary:

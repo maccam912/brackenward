@@ -635,7 +635,10 @@ func _assign(citizen: Dictionary) -> void:
 		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
 		var urgent_self_care: bool = (citizen.fullness == 0 and current.kind != "eat") or (citizen.rest <= 100 and current.kind not in ["eat","sleep"])
 		var change_to_defense: bool = draft_ready and not current.emergency and current.kind != "defend"
-		var ordinary_needs: bool = not draft_ready and current.kind not in ["eat","sleep"] and not current.emergency and (citizen.fullness <= 350 or needs_sleep)
+		# Hunger still drains during sleep. Wake for ordinary food before reaching
+		# zero, while protecting life-critical rest until it exceeds 100.
+		var needs_food: bool = citizen.fullness <= 350 and current.kind != "eat" and (current.kind != "sleep" or citizen.rest > 100)
+		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or (needs_sleep and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
 		if urgent_self_care or break_interrupt or (emergency and not current.emergency) or change_to_defense or ordinary_needs:
 			_release(current, false)

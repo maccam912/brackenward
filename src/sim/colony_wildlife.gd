@@ -34,6 +34,14 @@ static func distance(a: Dictionary, b: Dictionary) -> int:
 	return absi(a.x-b.x)+absi(a.y-b.y)
 
 static func advance(world: ColonyWorld) -> void:
+	# Fields may be planted, cleared or exhausted between ticks. References in this
+	# local index observe bites by earlier animals while preserving field order.
+	var fields_at: Dictionary = {}
+	for field in world.fields:
+		if not field.planted or field.yield_count<=0: continue
+		var point: Vector2i = Vector2i(field.x,field.y)
+		if not fields_at.has(point): fields_at[point]=[]
+		fields_at[point].append(field)
 	for carcass in world.wildlife_state.carcasses:
 		if not carcass.done and not carcass.spoiled and world.tick >= carcass.expires:
 			carcass.spoiled = true
@@ -83,8 +91,8 @@ static func advance(world: ColonyWorld) -> void:
 				_route(world,animal,choices[rng.next()%choices.size()]); animal.rng = rng.state
 		_move(world,animal)
 		if animal.crop_day != world.tick/7200:
-			for field in world.fields:
-				if field.x == animal.x and field.y == animal.y and field.planted and field.yield_count > 0:
+			for field in fields_at.get(Vector2i(animal.x,animal.y),[]):
+				if field.yield_count > 0:
 					field.yield_count -= 1; animal.crop_day = world.tick/7200
 					field.reason = "Wildlife ate one future crop unit: fence this field or mark a hunt"
 					world.emit_fact({"tick":world.tick,"actor":animal.id,"job":0,"kind":"wildlife_crop","text":"A %s ate one future crop unit. Fence this field or designate a hunt." % animal.definition})

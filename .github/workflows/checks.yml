@@ -113,9 +113,58 @@ jobs:
             build/
           if-no-files-found: warn
 
+  native-replay:
+    name: Native replay (${{ matrix.name }})
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            name: linux-x64
+          - runner: macos-15
+            name: macos-arm64
+          - runner: macos-15-intel
+            name: macos-x64
+          - runner: windows-2022
+            name: windows-x64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/brackenward/toolchain/*.zip
+          key: native-editor-${{ matrix.name }}-${{ hashFiles('toolchain.lock.json') }}
+      - name: Verify installer idempotence and failure preservation
+        run: python tools/test_bootstrap.py
+      - name: Install checksum-verified native editor only
+        run: python tools/bootstrap.py --editor-only
+      - name: Compare canonical replay and imported-save continuation
+        run: python tools/replay_campaign.py --report reports/replay-${{ matrix.name }}.json
+      - name: Install Linux graphical smoke dependencies
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
+      - name: Launch native source project with a graphical renderer (Linux)
+        if: runner.os == 'Linux'
+        run: xvfb-run -a python tools/native_smoke.py --skip-import --report reports/replay-${{ matrix.name }}-native-smoke.json
+      - name: Launch native source project with a graphical renderer (macOS and Windows)
+        if: runner.os != 'Linux'
+        run: python tools/native_smoke.py --skip-import --report reports/replay-${{ matrix.name }}-native-smoke.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: native-replay-${{ matrix.name }}
+          path: reports/replay-${{ matrix.name }}*
+          if-no-files-found: warn
+
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: prototype
+    needs: [prototype, native-replay]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

@@ -43,20 +43,29 @@ static func _create(world: ColonyWorld, person: Dictionary, slot: String, item: 
 	job.definition=slot;job.inputs={} if item.is_empty() else {item:1}
 
 static func create_jobs(world: ColonyWorld) -> void:
+	# These views live for this call only; job creation does not reserve stock.
+	var pending: Dictionary = {}
+	for job in world.jobs:
+		if job.kind!="equip" or job.state in ["Complete","Canceled"]: continue
+		if not pending.has(job.target): pending[job.target]={}
+		pending[job.target][job.definition]=true
+	var stocked: Dictionary = {}
+	for stack in world.stacks:
+		if stack.count>0 and stack.location in ["ground","store","output"] and stack.count>world._reserved(stack): stocked[stack.item]=true
 	for person in world.citizens:
 		if person.death_recorded or person.departed or person.downed or person.away: continue
 		for slot in SLOTS:
-			if world.jobs.any(func(j:Dictionary)->bool:return j.kind=="equip" and j.target==person.id and j.definition==slot and j.state not in ["Complete","Canceled"]): continue
 			var worn: String = person.equipment[slot]
 			var policy: Dictionary = world.equipment_state[person.id][slot]
 			if not ((worn.is_empty() and policy.replacements) or (not worn.is_empty() and policy.upgrades)): continue
+			if pending.get(person.id,{}).has(slot): continue
 			var choices: Array = SLOTS[slot].duplicate()
 			choices.sort_custom(func(a:String,b:String)->bool:
 				if rank(a)!=rank(b): return rank(a)>rank(b)
 				if (a==policy.preferred)!=(b==policy.preferred): return a==policy.preferred
 				return SLOTS[slot].find(a)<SLOTS[slot].find(b))
 			for item in choices:
-				if rank(item)<=rank(worn): continue
+				if rank(item)<=rank(worn) or not stocked.has(item): continue
 				var stack: Dictionary = source(world,person,item)
 				if not stack.is_empty(): _create(world,person,slot,item,stack);break
 

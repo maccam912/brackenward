@@ -8,6 +8,7 @@ static func run(check: Callable) -> void:
 	for index in range(20): ordered.step();reversed.step()
 	check.call("SCHED/citizen_storage_order_does_not_change_tick_results",ordered.canonical_hash()==reversed.canonical_hash())
 	automatic_cooking(check)
+	hungry_sleepers(check)
 	var world: ColonyWorld = ColonyTests.world()
 	var person: Dictionary = world.citizens[0]
 	world.tick=24*7200;world.weather="cold_snap";person.x=90;person.y=90
@@ -69,6 +70,30 @@ static func automatic_cooking(check: Callable) -> void:
 	world._make_stack("berry",8,"ground",0,Vector2i(66,63),true)
 	world._create_work()
 	check.call("SCHED/automatic_hearth_restarts_after_two_emptied_batches",world.jobs.any(func(j:Dictionary)->bool:return j.kind=="cook" and j.state=="Ready") and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+
+static func hungry_sleepers(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	world.tick=6600
+	var person: Dictionary = world.citizens[0]
+	var bed: Dictionary = world.find(world.structures,person.bed)
+	person.x=bed.x;person.y=bed.y;person.rest=100;person.fullness=350
+	var sleeping: Dictionary = world._job("sleep","","",bed.id,Vector2i(bed.x,bed.y),0)
+	sleeping.worker=person.id;sleeping.state="Working";person.job=sleeping.id
+	world._assign(person)
+	check.call("SCHED/critical_sleep_precedes_ordinary_hunger",person.job==sleeping.id)
+	person.rest=500
+	world._assign(person)
+	check.call("SCHED/sleepers_seek_available_food_at_350",world.find(world.jobs,person.job).get("kind")=="eat")
+	var ate: bool = false
+	var resumed_sleep: bool = false
+	var minimum_fullness: int = person.fullness
+	for index in range(1800):
+		world.step()
+		minimum_fullness=mini(minimum_fullness,person.fullness)
+		ate=ate or person.fullness>350
+		resumed_sleep=resumed_sleep or (ate and world.find(world.jobs,person.job).get("kind")=="sleep")
+	check.call("SCHED/night_meal_finishes_and_sleep_resumes_without_starvation",ate and resumed_sleep and minimum_fullness>0 and person.health==100,"minimum fullness=%d, ate=%s, slept=%s" % [minimum_fullness,ate,resumed_sleep])
+	check.call("SCHED/night_meal_preserves_material_accounting",world.invariant_errors().is_empty(),str(world.invariant_errors()))
 
 static func work_position(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]

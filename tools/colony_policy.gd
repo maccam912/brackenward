@@ -12,6 +12,17 @@ const RESEARCH: Array[String] = ["storecraft","farming","woodcraft","weaving","m
 func _init(selected: String) -> void:
 	scenario=selected
 
+func resume(world: ColonyWorld, previous_decisions: Array) -> void:
+	initialized=true
+	last_policy=world.tick
+	decisions.assign(previous_decisions)
+	# Recover the planner's designated rooms from the accepted command evidence.
+	for entry in world.command_trace:
+		var command: Dictionary = entry.command
+		if world.receipts.get(command.id)!="accepted": continue
+		if command.kind=="lodge": lodge_origins.append(Vector2i(command.args.x,command.args.y))
+		elif command.kind=="build" and command.args.definition=="door": grow_origin=Vector2i(command.args.x-3,command.args.y-5)
+
 func issue(world: ColonyWorld, kind: String, args: Dictionary = {}) -> void:
 	var id: int = world.queue_command(kind,args)
 	decisions.append({"tick":world.tick,"id":id,"kind":kind,"args":args.duplicate(true)})
@@ -110,13 +121,19 @@ func _build(world: ColonyWorld, definition: String) -> bool:
 	var data: Dictionary = world.definitions.buildings[definition]
 	if data.unlock!="initial" and not world.researched.has(data.unlock): return false
 	var cart: Vector2i = _cart(world)
+	var protected_seats: Array[Vector2i] = []
+	for table in world.structures:
+		if table.definition=="table" and table.health>0: protected_seats.append_array(ColonySocial.seats_for(world,table))
 	for radius in range(3,25):
 		for y in range(maxi(1,cart.y-radius),mini(125,cart.y+radius+1)):
 			for x in range(maxi(1,cart.x-radius),mini(125,cart.x+radius+1)):
 				if absi(x-cart.x)+absi(y-cart.y)!=radius: continue
 				var point: Vector2i = Vector2i(x,y)
 				var area: Array[Vector2i] = world.footprint({"definition":definition,"x":x,"y":y,"rotation":0})
-				if area.any(_reserved_plan) or area.any(func(p:Vector2i)->bool:return world.terrain_state.starter_field.has(p)) or not world.placement_error(definition,point,0).is_empty(): continue
+				if area.any(_reserved_plan) or area.any(func(p:Vector2i)->bool:return world.terrain_state.starter_field.has(p) or protected_seats.has(p)) or not world.placement_error(definition,point,0).is_empty(): continue
+				if definition=="table":
+					var seats: Array[Vector2i] = ColonySocial.seats_for(world,{"definition":definition,"x":x,"y":y,"rotation":0})
+					if seats.any(func(p:Vector2i)->bool:return not world.walkable(p) or not world.accessible(p) or _reserved_plan(p) or world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.state not in ["Complete","Canceled"] and world.footprint(j).has(p))): continue
 				issue(world,"build",{"definition":definition,"x":x,"y":y,"rotation":0});return true
 	return false
 
@@ -125,6 +142,8 @@ func _empty_room(world: ColonyWorld) -> Vector2i:
 	var occupied: Dictionary = {}
 	for structure in world.structures:
 		for point in world.footprint(structure): occupied[point]=true
+		if structure.definition=="table" and structure.health>0:
+			for point in ColonySocial.seats_for(world,structure): occupied[point]=true
 	for job in world.jobs:
 		if job.kind=="build" and job.state not in ["Complete","Canceled"]:
 			for point in world.footprint(job): occupied[point]=true
@@ -223,7 +242,11 @@ func _defense(world: ColonyWorld, residents: Array) -> void:
 	elif raid.state=="Retreating": issue(world,"stand_down")
 
 func _charter(world: ColonyWorld) -> void:
+	if world.charter_state.ending and not world.charter_state.continued:
+		issue(world,"continue_settlement")
 	_expedition(world)
+	if ColonyCharter.seats(world).size()<8 and not world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition=="table" and j.state not in ["Complete","Canceled"]):
+		_build(world,"table")
 	# Higher dependencies stay visible when this conservative planner cannot supply them.
 	for definition in ["workbench","brick_kiln","charcoal_kiln","smelter","loom"]:
 		if not _present(world,definition) and _build(world,definition): return

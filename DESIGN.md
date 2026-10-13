@@ -2,7 +2,7 @@
 
 Revision 1.1 · 12 October 2026 · Project directory: `~/dev/brackenward`
 
-**Status: implementation authorized on 12 October 2026.** This is the contract for the complete first release, its intermediate milestones, and its acceptance tests. Implementation evidence and outstanding gates are tracked in `reports/STATUS.md`; planned systems below are not automatically implemented or validated. The current checkpoint is M5 in progress, with physical Android testing deferred by the user. The user authorized continuing M1 and all later implementation without waiting for phone tests, and publishing checked per-commit development APKs. Physical and human release gates remain pending until exercised.
+**Status: implementation authorized on 12 October 2026.** This is the contract for the complete first release, its intermediate milestones, and its acceptance tests. Implementation evidence and outstanding gates are tracked in `reports/STATUS.md`; planned systems below are not automatically implemented or validated. The current checkpoint is M6 in progress, with physical Android testing deferred by the user. The user authorized continuing M1 and all later implementation without waiting for phone tests, and publishing checked per-commit development APKs. Physical and human release gates remain pending until exercised.
 
 Brackenward is an offline colony simulation about making a woodland refuge worth staying in. The player lays out a settlement, assigns work, sets policies, and watches a small group of adults turn those intentions into daily life. Its interest comes from shared resources, competing uses of time, personalities, geography, and consequences that persist. A phone player must be able to understand a problem where it happens and do something useful about it without reading a wiki.
 
@@ -108,7 +108,7 @@ The opening panel is: **“Four travelers. A ruined wayhouse. Make a place to st
 | 3 | Place the suggested 8 × 6 sleeping lodge outline | Four beds, walls, and a door become individually buildable blueprints | Preview shows total cost, reachable doors, and order of construction |
 | 4 | Resume at 1× and inspect the hearth | Cook makes meals from actual delivered ingredients | One completed meal batch; inspector explains ingredient and fuel use |
 | 5 | Make an 8-tile turnip field | A worker prepares, sows, and later harvests it | Eight planted tiles; next harvest shown in days and hours |
-| 6 | Change Cooking to First for Mira | Her next eligible assignment changes | Work inspector identifies the new priority as the reason |
+| 6 | Inspect Mira's Cooking First priority, or change it to First if it was changed | Her next eligible cooking assignment follows that priority | Work inspector identifies Cooking First as the reason; opening defaults still follow §6 |
 | 7 | Pin the food forecast | Shows portions, daily demand, next harvest, and bottlenecks | Forecast visible; prompt ends |
 
 Each step is a dismissible one-sentence card with an animated gesture and a highlighted target. It never intercepts the pause button. Skip marks the current lesson skipped, not completed. “Show me” replays it. Triggered lessons for winter, injury, research, and expeditions each teach one action in at most 3 cards. They use actual current objects, pause on opening, and do not grant free resources. A deleted or blocked lesson target is reselected from valid candidates; if none exists, show the actual prerequisite instead of pointing at empty space.
