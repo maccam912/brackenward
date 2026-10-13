@@ -155,6 +155,17 @@ static func run(check: Callable) -> void:
 		var failed: String = ColonyRegion.collect(world,trip,{})
 		var expected_insight: int = world.definitions.expeditions[destination].insight/2
 		check.call("EXP/%s_failed_attempt_has_no_items_and_preserves_contract_inputs" % destination,failed=="accepted" and trip.quote.shortfall>2 and world.ledger.expedition_gain.is_empty() and world.production_state.insight==expected_insight and trip.quote.payment.keys().all(func(item:String)->bool:return ColonyRegion.cargo(world,trip).get(item,0)==packed_before.get(item,0)) and not trip.reward_animal and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	world=expanded();plan=args();trip=depart(world,plan);focused_arrival(world,trip)
+	ColonyRegion.collect(world,trip,ColonyRegion.default_keep(world,trip));trip.remaining=0
+	var raid: Dictionary = DefenseTests.raid(world)
+	var traveler: Dictionary = world.find(world.citizens,trip.args.party[0]);traveler.fullness=0;traveler.starving_ticks=2099
+	var food_before: Dictionary = ColonyRegion.cargo(world,trip).duplicate();var health_before: int = traveler.health
+	ColonyRegion.advance(world);ColonyRegion.needs(world,traveler)
+	check.call("EXP/returning_party_waits_for_raid_without_extra_food_or_starvation",trip.state=="Returning" and trip.note.contains("without extra food") and ColonyRegion.cargo(world,trip)==food_before and traveler.health==health_before and traveler.starving_ticks==2099)
+	world.tick=raid.arrival+1800
+	check.call("EXP/raid_food_waiver_is_bounded_by_original_six_hour_limit",not ColonyRegion.waiting_for_raid(world,trip))
+	raid.state="Resolved";ColonyRegion.advance(world)
+	check.call("EXP/return_resumes_from_boundary_after_raid",trip.state=="Walking in")
 
 static func level(person: Dictionary, skill: String, value: int) -> void:
 	person.skills[skill]=value;person.xp[skill]=ColonyWorld.THRESHOLDS[value]*1000

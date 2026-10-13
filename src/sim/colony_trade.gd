@@ -44,7 +44,7 @@ static func advance(world: ColonyWorld) -> void:
 	for merchant in state.merchants:
 		if merchant.state=="Gone": continue
 		if merchant.state=="Waiting":
-			if active: continue
+			if active or ColonyOpportunities.visitor_count(world)>=8: continue
 			var entries: Array[Vector2i] = ColonyPopulation.boundary(world)
 			if entries.is_empty() or not ColonyDanger.safe(world,Vector2i(cart(world).x,cart(world).y)):
 				merchant.note="Route blocked or dangerous: waiting at the boundary; stay timer has not started";continue

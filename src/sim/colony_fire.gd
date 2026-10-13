@@ -7,7 +7,7 @@ static func initial_state() -> Dictionary:
 	return {"fires":[],"destroyed":[],"alert_serial":0}
 
 static func active(world: ColonyWorld) -> Array:
-	return world.fire_state.fires.filter(func(f:Dictionary)->bool:return not f.done)
+	return ColonyCombat.ordered_actors(world.fire_state.fires.filter(func(f:Dictionary)->bool:return not f.done))
 
 static func burning(world: ColonyWorld, kind: String, id: int) -> bool:
 	return world.fire_state.fires.any(func(f:Dictionary)->bool:return not f.done and f.kind==kind and f.target==id)
@@ -35,6 +35,10 @@ static func unsafe(world: ColonyWorld, station: Dictionary) -> Array:
 		if world.footprint(structure).any(func(p:Vector2i)->bool:return cells.any(func(q:Vector2i)->bool:return maxi(absi(p.x-q.x),absi(p.y-q.y))<=1)): hazards.append({"kind":"structure","target":structure.id})
 	for stack in world.stacks:
 		if stack.count<=0 or stack.item not in ITEMS or stack.location not in ["ground","store","output","escrow","move_bundle"]: continue
+		# A kiln's required batch inputs are process fuel, not perimeter storage.
+		if stack.location=="escrow":
+			var owner: Dictionary = world.find(world.jobs,stack.owner)
+			if owner.get("kind")=="craft" and owner.get("target")==station.id: continue
 		var fuel: Array = footprint(world,{"kind":"stack","target":stack.id})
 		if fuel.any(func(p:Vector2i)->bool:return cells.any(func(q:Vector2i)->bool:return maxi(absi(p.x-q.x),absi(p.y-q.y))<=1)): hazards.append({"kind":"stack","target":stack.id})
 	return hazards
@@ -74,27 +78,45 @@ static func spread(world: ColonyWorld, fire: Dictionary) -> void:
 	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.direction<b.direction if a.direction!=b.direction else a.target<b.target)
 	if not candidates.is_empty(): ignite(world,candidates[0].kind,candidates[0].target,fire.root)
 
-static func advance(world: ColonyWorld) -> void:
-	var people_hit: Dictionary = {}
+static func collect_damage(world: ColonyWorld) -> Dictionary:
+	var damage: Dictionary = {"people":{},"structures":{},"stacks":{}}
 	for fire in active(world):
 		var object: Dictionary = world.find(world.structures if fire.kind=="structure" else world.stacks,fire.target)
-		if object.is_empty() or (fire.kind=="structure" and object.health<=0) or (fire.kind=="stack" and object.count<=0): end(world,fire,"Burning object no longer exists");continue
+		if object.is_empty() or (fire.kind=="structure" and object.health<=0) or (fire.kind=="stack" and object.count<=0): continue
 		fire.spread_ticks+=1
-		if world.tick%10==0:
-			fire.damage_rem+=500 if world.weather=="rain" else 1000
-			var units: int = fire.damage_rem/1000;fire.damage_rem%=1000
-			var health_damage: int = 1 if world.weather=="rain" else 2
-			if fire.kind=="structure":
-				object.health=maxi(0,object.health-health_damage)
-				if object.health==0: ColonyMaintenance.destroy(world,object);end(world,fire,"Fire destroyed "+object.definition+"; surviving goods fell with their ages retained");continue
-			else:
-				var loss: int = mini(units,object.count);object.count-=loss;object.reservations.clear();world._record("lost",object.item,loss)
-				if object.count==0: end(world,fire,"Fire consumed the exposed "+object.item+" stack");continue
-			for person in world.citizens:
-				if person.away or person.death_recorded or person.departed: continue
-				if footprint(world,fire).has(Vector2i(person.x,person.y)): people_hit[person.id]=maxi(people_hit.get(person.id,0),health_damage)
+		if world.tick%10!=0: continue
+		fire.damage_rem+=500 if world.weather=="rain" else 1000
+		var units: int = fire.damage_rem/1000;fire.damage_rem%=1000
+		var health_damage: int = 1 if world.weather=="rain" else 2
+		if fire.kind=="structure": damage.structures[object.id]=health_damage
+		else: damage.stacks[object.id]=mini(units,object.count)
+		for person in ColonyCombat.ordered_actors(world.citizens):
+			if person.away or person.death_recorded or person.departed: continue
+			if footprint(world,fire).has(Vector2i(person.x,person.y)): damage.people[person.id]=maxi(damage.people.get(person.id,0),health_damage)
+	return damage
+
+static func finish_tick(world: ColonyWorld, damage: Dictionary) -> void:
+	for id in damage.stacks:
+		var stack: Dictionary = world.find(world.stacks,id)
+		var loss: int = mini(damage.stacks[id],stack.count)
+		stack.count-=loss;stack.reservations.clear();world._record("lost",stack.item,loss)
+	for fire in active(world):
+		var object: Dictionary = world.find(world.structures if fire.kind=="structure" else world.stacks,fire.target)
+		if object.is_empty() or (fire.kind=="structure" and object.health<=0) or (fire.kind=="stack" and object.count<=0):
+			end(world,fire,"Fire ended after its target was destroyed or consumed; surviving goods retained their ages")
+			continue
 		if fire.spread_ticks>=(600 if world.weather=="rain" else 300): fire.spread_ticks=0;spread(world,fire)
-	for id in people_hit: ColonyCare.hurt(world,world.find(world.citizens,id),people_hit[id])
+
+static func advance(world: ColonyWorld) -> void:
+	# Standalone fire stepping for focused scenarios; normal ticks combine this
+	# collected damage with combat before resolving any health changes.
+	var damage: Dictionary = collect_damage(world)
+	for id in damage.people: ColonyCare.hurt(world,world.find(world.citizens,id),damage.people[id])
+	for id in damage.structures:
+		var structure: Dictionary = world.find(world.structures,id)
+		structure.health=maxi(0,structure.health-damage.structures[id])
+		if structure.health==0: ColonyMaintenance.destroy(world,structure)
+	finish_tick(world,damage)
 
 static func water(world: ColonyWorld, from: Vector2i) -> Dictionary:
 	var candidates: Array[Vector2i] = []
@@ -129,7 +151,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 		job.memo={"phase":"water","water_work":0,"water_x":0,"water_y":0}
 
 static func reserve(world: ColonyWorld, job: Dictionary, person: Dictionary) -> bool:
-	if person.away or person.downed or person.death_recorded or person.departed or person.preferences.Care==0 or person.carrying_patient>0: return false
+	if person.away or person.downed or person.death_recorded or person.departed or person.carrying_patient>0: return false
 	var fire: Dictionary = world.find(world.fire_state.fires,job.target)
 	if fire.is_empty() or fire.done: job.state="Canceled";return false
 	var positions: Array = world._perimeter(footprint(world,fire)).filter(func(p:Vector2i)->bool:return not active(world).any(func(f:Dictionary)->bool:return footprint(world,f).has(p)))

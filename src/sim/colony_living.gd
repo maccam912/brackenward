@@ -111,6 +111,7 @@ static func comfortable(world: ColonyWorld, citizen: Dictionary) -> bool:
 static func _morale(world: ColonyWorld, citizen: Dictionary, job: Dictionary) -> void:
 	var terms: Dictionary = ColonySocial.mood_terms(world,citizen)
 	terms.merge(ColonyCare.mood_terms(world,citizen))
+	if citizen.story_memory_until>world.tick: terms["Shared a traveling story"]=40
 	if citizen.away and citizen.traits.has("Homebody"): terms["Homebody away"]=-40
 	if world.production_state.discoveries.get(citizen.id,0) > world.tick:
 		terms["Discovery"] = 60

@@ -263,6 +263,11 @@ static func walking_arrived(world: ColonyWorld, trip: Dictionary, incoming: bool
 		var goat: Dictionary = world.find(world.domestic_state.animals,id);var leader: Dictionary = world.find(world.citizens,trip.args.party[0]);goat.x=leader.x;goat.y=leader.y
 	return all_arrived
 
+static func waiting_for_raid(world: ColonyWorld, trip: Dictionary) -> bool:
+	if trip.state!="Returning" or trip.remaining!=0: return false
+	var raid: Dictionary = ColonyDefense.active(world)
+	return not raid.is_empty() and raid.arrival>0 and world.tick<raid.arrival+1800
+
 static func advance(world: ColonyWorld) -> void:
 	var trip: Dictionary = active(world)
 	if trip.is_empty(): return
@@ -283,9 +288,11 @@ static func advance(world: ColonyWorld) -> void:
 		trip.remaining=maxi(0,trip.remaining-1);trip.away_ticks+=1
 		if trip.remaining==0: trip.state="Collect";world.region_state.alert_serial+=1;trip.note="Review exact outcome and choose which rewards fit; Recall before collection gives no new reward"
 	elif trip.state=="Returning":
-		trip.remaining=maxi(0,trip.remaining-1);trip.away_ticks+=1
+		if trip.remaining>0: trip.remaining-=1;trip.away_ticks+=1
+		elif not waiting_for_raid(world,trip): trip.away_ticks+=1
 		if trip.remaining==0:
-			if world.walkable(trip.entry) and world.accessible(trip.entry) and ColonyDanger.safe(world,trip.entry): start_walk(world,trip,true)
+			if waiting_for_raid(world,trip): trip.note="Raid at home: waiting safely at the boundary without extra food until the raid ends or its six-hour limit"
+			elif world.walkable(trip.entry) and world.accessible(trip.entry) and ColonyDanger.safe(world,trip.entry): start_walk(world,trip,true)
 			else: trip.note="Return boundary blocked or dangerous: clear a safe route; party waits with its cargo"
 	elif trip.state=="Walking in" and walking_arrived(world,trip,true):
 		var wagon: Dictionary = ColonyTrade.cart(world)
@@ -333,15 +340,17 @@ static func feed_goats(world: ColonyWorld, trip: Dictionary) -> void:
 static func needs(world: ColonyWorld, person: Dictionary) -> void:
 	var trip: Dictionary = world.find(world.region_state.trips,person.expedition)
 	if trip.is_empty(): return
-	person.hunger_rem+=1000;person.fullness=maxi(0,person.fullness-person.hunger_rem/7200);person.hunger_rem%=7200
-	if person.fullness<=350 and cargo(world,trip).get("travel_ration",0)>0:
+	var protected_wait: bool = waiting_for_raid(world,trip)
+	if not protected_wait:
+		person.hunger_rem+=1000;person.fullness=maxi(0,person.fullness-person.hunger_rem/7200);person.hunger_rem%=7200
+	if not protected_wait and person.fullness<=350 and cargo(world,trip).get("travel_ration",0)>0:
 		consume(world,trip,"travel_ration",1);trip.eaten+=1;person.fullness=mini(1000,person.fullness+500);person.starving_ticks=0
 	var hour: int = ((world.tick%7200)/300+(12 if person.shift=="Night shift" else 0))%24
 	if not person.camp_sleeping and (person.rest<=300 or ((hour>=22 or hour<6) and person.rest<900)): person.camp_sleeping=true
 	elif person.camp_sleeping and (((hour>=6 and hour<22) and person.rest>=900) or (hour==6 and person.rest>=500)): person.camp_sleeping=false
 	person.rest_rem+=120 if person.camp_sleeping else 50
 	var change: int = person.rest_rem/300;person.rest_rem%=300;person.rest=clampi(person.rest+(change if person.camp_sleeping else -change),0,1000)
-	if person.fullness==0:
+	if not protected_wait and person.fullness==0:
 		person.starving_ticks+=1
 		if person.starving_ticks>1800 and (person.starving_ticks-1800)%300==0: ColonyCare.hurt(world,person,5)
 	if trip.state not in ["Walking out","Walking in"]: person.activity="Expedition: "+trip.state+(" · resting at camp" if person.camp_sleeping else "")

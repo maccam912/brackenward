@@ -23,7 +23,9 @@ static func start_allowed(world: ColonyWorld, tick: int) -> bool:
 	if state.last_start>0 and tick-state.last_start<21600: return false
 	if tick<state.recovery_until: return false
 	for entry in world.weather_state.days:
-		if entry.kind in ["flood","cold_snap"] and absi(entry.day-tick/7200)<=2: return false
+		if entry.kind in ["flood","cold_snap"]:
+			var extreme_start: int = entry.day*7200+(1800 if entry.kind=="flood" else 0)
+			if absi(extreme_start-tick)<21600: return false
 	return true
 
 static func gates(world: ColonyWorld) -> String:

@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 18
+const SCHEMA_REVISION: int = 19
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -34,6 +34,7 @@ var region_state: Dictionary = {}
 var fire_state: Dictionary = ColonyFire.initial_state()
 var defense_state: Dictionary = {}
 var director_state: Dictionary = {}
+var opportunity_state: Dictionary = {}
 var equipment_state: Dictionary = {}
 var construction_state: Dictionary = ColonyConstruction.initial_state()
 var domestic_state: Dictionary = ColonyDomestic.initial_state()
@@ -107,6 +108,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		var point: Vector2i = Vector2i(55 - (index % 6) * 2, 54 + (index / 6) * 3)
 		resources.append({"id": _id(), "definition": kind, "x": point.x, "y": point.y, "remaining": definitions.resources[kind].yield_count, "regrow_at": 0})
 
+	opportunity_state=ColonyOpportunities.initial_state(seed,generator_version,site_id)
 	director_state=ColonyDirector.initial_state(seed,generator_version,site_id)
 	defense_state=ColonyDefense.initial_state(seed,generator_version,site_id)
 	region_state=ColonyRegion.initial_state(seed,generator_version,site_id)
@@ -236,7 +238,6 @@ func step() -> void:
 			command_trace.append({"tick": tick, "command": command.duplicate(true)})
 	pending_commands.clear()
 	ColonyDefense.advance(self)
-	ColonyFire.advance(self)
 	ColonyCare.advance(self)
 	ColonyWeather.advance(self)
 	ColonyAgriculture.advance(self)
@@ -274,6 +275,7 @@ func step() -> void:
 		if transaction.kind=="finish": _finish(worker,job)
 		elif transaction.kind=="water": ColonyFire.water_ready(self,worker,job)
 		elif transaction.kind=="move_phase": ColonyMaintenance.finish_dismantle(self,worker,job)
+	ColonyOpportunities.advance(self)
 	committing_work=false;in_tick=false
 
 func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0, excluded_structure: int = 0) -> String:
@@ -338,6 +340,7 @@ func gather_targets(definition: String, tiles: Array) -> Array[Dictionary]:
 func _command(command: Dictionary) -> String:
 	var args: Dictionary = command.args
 	match command.kind:
+		"minor_event": return ColonyOpportunities.command(self,args)
 		"stockpile":
 			if args.tiles.is_empty():
 				return "empty_area"
@@ -615,13 +618,13 @@ func _assign(citizen: Dictionary) -> void:
 		citizen.activity = "Resting for treatment"
 		return
 	if not current.is_empty():
-		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and jobs.any(func(j:Dictionary)->bool:return j.emergency and (j.kind!="extinguish" or citizen.preferences.Care>0) and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
+		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
 		if (current.emergency and (citizen.fullness == 0 or citizen.rest <= 100)) or (current.kind not in ["eat","sleep"] and not current.emergency and (emergency or citizen.fullness <= 350 or needs_sleep)) or (current.kind == "sleep" and citizen.fullness == 0 and not _food(citizen).is_empty()):
 			_release(current, false)
 		else:
 			return
 	if citizen.health > 20 and citizen.fullness > 0 and citizen.rest > 100 and citizen.break_until <= tick:
-		var emergencies: Array = jobs.filter(func(j:Dictionary)->bool:return j.emergency and (j.kind!="extinguish" or citizen.preferences.Care>0) and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
+		var emergencies: Array = jobs.filter(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
 		emergencies.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return _higher_score(a,b,citizen))
 		for emergency in emergencies:
 			if _reserve(emergency,citizen): citizen.job = emergency.id; return
@@ -705,6 +708,7 @@ func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
 	return false
 
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if job.kind in ["minor_work","minor_study"] and not ColonyOpportunities.reserve(self,job,citizen): return false
 	if job.kind=="enemy_treat" and find(defense_state.enemies,job.target).get("state")!="Downed": _release(job,true);return false
 	if job.kind=="raid_pay" and find(defense_state.raids,job.target).get("state")!="Payment": return _block(job,"Payment is no longer awaiting delivery")
 	if job.kind=="extinguish": return ColonyFire.reserve(self,job,citizen)
@@ -730,6 +734,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 	if job.kind in ["cook","craft","research","fish"]:
 		if find(structures,job.target).get("health",0)<=0 or not find(structures,job.target).get("cooking",true): return _block(job,"Station suspended: enable it in the workstation card")
 		for other in jobs:
+			if other.id != job.id and other.worker>0 and other.kind=="minor_study" and other.memo.get("station")==job.target: return _block(job,"Research desk in use by a shared observation")
 			if other.id != job.id and other.target == job.target and other.worker > 0 and other.kind in ["cook","craft","research"]: return _block(job,"Workstation in use by another resident")
 	for resident in citizens:
 		if resident.pinned_job == job.id and resident.id != citizen.id and not job.emergency:
@@ -917,6 +922,8 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 				else:
 					job.state = "Working"
 		"Working":
+			if job.kind in ["minor_work","minor_study"] and not ColonyOpportunities.ready_complete(self,job):
+				var reason: String = job.reason;_release(job,false);_block(job,reason);return
 			if job.kind == "leisure":
 				citizen.leisure_ticks += 1
 				if citizen.leisure_ticks >= 600 and citizen.break_until <= tick:
@@ -1024,6 +1031,8 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			_release(job,false)
 			_block(job,"Both residents must meet within 3 tiles for mediation")
 			return
+	if job.kind in ["minor_work","minor_study"] and not ColonyOpportunities.ready_complete(self,job):
+		var reason: String = job.reason;_release(job,false);_block(job,reason);return
 	# Batch inputs remain real escrow until this atomic completion transaction.
 	if job.kind == "build":
 		var error: String = placement_error(job.definition, Vector2i(job.x, job.y), job.rotation, job.id)
@@ -1045,12 +1054,13 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 					if not eater.food_tags.has(tag):
 						eater.food_tags.append(tag)
 			if job.kind != "fuel":
-				_record("traded_out" if job.kind in ["trade","raid_pay"] else "consumed", stack.item, stack.count)
+				_record("traded_out" if job.kind in ["trade","raid_pay"] or (job.kind=="minor_work" and job.definition=="surplus_harvest") else "consumed", stack.item, stack.count)
 			else:
 				find(structures,job.target).fuel += stack.count
 			stack.count = 0
 	var point: Vector2i = Vector2i(job.work_x, job.work_y)
 	match job.kind:
+		"minor_work", "minor_study": ColonyOpportunities.finished_work(self,job)
 		"raid_pay": ColonyDefense.pay_complete(self,job)
 		"enemy_treat": ColonyDefense.treatment_complete(self,job)
 		"extinguish": ColonyFire.complete(self,job)
@@ -1155,7 +1165,7 @@ func _release(job: Dictionary, cancel: bool) -> void:
 	ColonyFire.released(self,job)
 	ColonyCare.released(self,job)
 	for stack in stacks:
-		if cancel or job.kind not in ["trade","expedition_pack","raid_pay"]: stack.reservations.erase(job.id)
+		if cancel or job.kind not in ["trade","expedition_pack","raid_pay","minor_work"]: stack.reservations.erase(job.id)
 		if (stack.location == "carry" and stack.job == job.id) or (cancel and stack.location == "escrow" and stack.owner == job.id):
 			stack.location = "ground"
 			if stack.owner > 0 and not find(citizens, stack.owner).is_empty():
@@ -1164,7 +1174,7 @@ func _release(job: Dictionary, cancel: bool) -> void:
 				stack.y = carrier.y
 			stack.owner = 0
 			stack.job = 0
-			if not cancel and job.kind in ["trade","expedition_pack","raid_pay"] and stack.count>0: stack.reservations[job.id]=stack.count
+			if not cancel and job.kind in ["trade","expedition_pack","raid_pay","minor_work"] and stack.count>0: stack.reservations[job.id]=stack.count
 	if job.worker > 0:
 		var citizen: Dictionary = find(citizens, job.worker)
 		citizen.job = 0
@@ -1172,6 +1182,7 @@ func _release(job: Dictionary, cancel: bool) -> void:
 		citizen.route_goal.clear()
 	job.worker = 0
 	job.state = "Canceled" if cancel else "Ready"
+	if job.kind in ["minor_work","minor_study"]: ColonyOpportunities.released(self,job,cancel)
 	if cancel:
 		for citizen in citizens:
 			if citizen.pinned_job == job.id:
@@ -1280,7 +1291,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
 	var all_ids: Dictionary = {}
-	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses, domestic_state.pens, domestic_state.animals, construction_state.groups, population_state.offers, trade_state.merchants, trade_state.exchanges, region_state.trips, fire_state.fires, defense_state.raids, defense_state.enemies, director_state.history, ([director_state.major] if not director_state.major.is_empty() else [])]:
+	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses, domestic_state.pens, domestic_state.animals, construction_state.groups, population_state.offers, trade_state.merchants, trade_state.exchanges, region_state.trips, fire_state.fires, defense_state.raids, defense_state.enemies, director_state.history, opportunity_state.offers, opportunity_state.visitors, ([director_state.major] if not director_state.major.is_empty() else [])]:
 		for record: Dictionary in records:
 			if all_ids.has(record.id) or record.id < 1 or record.id >= next_id:
 				errors.append("Invalid/duplicate ID")
@@ -1290,7 +1301,7 @@ func invariant_errors() -> Array[String]:
 			errors.append("Invalid quantity or over-reservation")
 		for job_id in stack.reservations:
 			var job: Dictionary = find(jobs, job_id)
-			if job.is_empty() or (job.worker == 0 and job.kind not in ["trade","expedition_pack","raid_pay"]) or job.state in ["Complete", "Canceled"]:
+			if job.is_empty() or (job.worker == 0 and job.kind not in ["trade","expedition_pack","raid_pay","minor_work"]) or job.state in ["Complete", "Canceled"]:
 				errors.append("Orphan reservation")
 		if stack.count > 0 and stack.location in ["carry", "escrow", "output", "store", "expedition_cargo"]:
 			var owners: Array = region_state.trips if stack.location=="expedition_cargo" else citizens if stack.location == "carry" else (jobs if stack.location == "escrow" else (structures if stack.location == "output" else stores))
@@ -1328,7 +1339,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "director_state":director_state, "defense_state":defense_state, "fire_state":fire_state, "region_state":region_state, "trade_state":trade_state, "population_state":population_state, "equipment_state":equipment_state, "construction_state":construction_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "opportunity_state":opportunity_state, "director_state":director_state, "defense_state":defense_state, "fire_state":fire_state, "region_state":region_state, "trade_state":trade_state, "population_state":population_state, "equipment_state":equipment_state, "construction_state":construction_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}
@@ -1388,7 +1399,7 @@ func can_step(from: Vector2i, to: Vector2i) -> bool:
 	return absi(elevation(from)-elevation(to)) <= 1
 
 static func citizen_record(id: int, name: String, point: Vector2i, skills: Dictionary, xp: Dictionary, traits: Array, preferred: String, preferences: Dictionary, food: String, weapon: String) -> Dictionary:
-	var result: Dictionary = {"away":false,"expedition":0,"camp_sleeping":false,"id": id, "name": name, "x": point.x, "y": point.y,
+	var result: Dictionary = {"story_memory_until":0,"away":false,"expedition":0,"camp_sleeping":false,"id": id, "name": name, "x": point.x, "y": point.y,
 		"progress": 0, "direction": 0, "edge_x": point.x, "edge_y": point.y, "route": [], "route_goal": [], "move_base_rem": 0, "move_rem": 0, "injury_rem": 0, "travel_credit": 0,
 		"skills": skills, "xp": xp, "traits": traits, "preferred": preferred, "preferences": preferences,
 		"shift": "Normal", "pending_shift": "", "pinned_job": 0, "yesterday_leisure": 0, "leisure_memory_until": 0, "warm_until": 0, "leisure_ticks": 0, "leisure_day": 0, "bed_sleep_ticks": 0, "bed_memory_until": 0, "raw_memory_until": 0, "preferred_work": 0, "preferred_memory_until": 0, "mood_terms": {}, "food_tags": [], "food_tags_day": 0, "break_clock": 0, "break_until": 0, "break_cooldown": 0, "departure_clock": 0, "departure_until": 0, "departed": false,

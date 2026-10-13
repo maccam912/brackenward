@@ -74,3 +74,60 @@ static func run(check: Callable) -> void:
 	world=ColonyTests.world();visit=raid(world,6)
 	ColonyDefense.hurt(world,world.defense_state.enemies[0],999,2);ColonyDefense.advance(world)
 	check.call("RAID/half_stopped_forces_whole_party_retreat",visit.state in ["Retreating","Resolved"] and world.defense_state.enemies[0].state=="Downed")
+	world=ColonyTests.world();visit=raid(world)
+	enemy=world.defense_state.enemies[0];enemy.x=70;enemy.y=65
+	person=world.citizens[1];person.x=69;person.y=65;person.drafted=true;person.focus=enemy.id
+	ColonyDefense.offer(world,{"target":visit.id,"pay":{"wood":16}})
+	person_health=person.health;enemy_health=enemy.health
+	ColonyCombat.resolve(world)
+	check.call("RAID/payment_ceasefire_stops_both_sides_without_cooldown",person.health==person_health and enemy.health==enemy_health and person.attack_ready==0 and enemy.cooldown==0)
+	visit.payment_deadline=world.tick;ColonyDefense.advance(world);ColonyCombat.resolve(world)
+	check.call("RAID/failed_delivery_grace_keeps_both_sides_peaceful",visit.state=="Grace" and person.health==person_health and enemy.health==enemy_health and person.attack_ready==0)
+	world=ColonyTests.world();visit=raid(world)
+	enemy=world.defense_state.enemies[0];enemy.x=70;enemy.y=65;enemy.route=[Vector2i(71,65),Vector2i(72,65)];enemy.goal=[72,65];enemy.progress=5000
+	ColonyDefense.hurt(world,enemy,29,2)
+	check.call("RAID/injury_retreat_preserves_current_movement_edge",enemy.state=="Retreating" and enemy.progress==5000 and enemy.route==[Vector2i(71,65)] and enemy.goal.is_empty())
+	for index in range(12):
+		world.tick+=1;world.path_requests=0;ColonyDefense.move(world,enemy,Vector2i(69,65))
+		if enemy.progress==0: break
+	check.call("RAID/injury_retreat_finishes_edge_before_turning_back",enemy.x==71 and enemy.y==65 and enemy.progress==0)
+	enemy=world.defense_state.enemies[1];enemy.x=70;enemy.y=66;enemy.route=[Vector2i(71,66),Vector2i(72,66)];enemy.goal=[72,66];enemy.progress=5000
+	ColonyDefense.retreat(world,visit,"Six-hour limit")
+	check.call("RAID/whole_party_retreat_preserves_in_flight_edges",enemy.progress==5000 and enemy.route==[Vector2i(71,66)])
+	world=ColonyTests.world();visit=raid(world);enemy=world.defense_state.enemies[0];enemy.x=70;enemy.y=65
+	person=world.citizens[1];person.x=69;person.y=65;person.drafted=true
+	var guard_before: int = person.xp.Guard
+	ColonyCombat.resolve(world)
+	check.call("COMBAT/successful_defense_attack_grants_two_guard_xp",person.xp.Guard==guard_before+2000 and person.guard_xp_today==2 and person.defense_incident==visit.id)
+	ColonyDefense.retreat(world,visit,"Defense complete")
+	for member in world.defense_state.enemies: member.state="Gone"
+	ColonyDefense.advance(world);ColonyDefense.advance(world)
+	check.call("COMBAT/completed_defense_grants_ten_xp_once",person.xp.Guard==guard_before+12000 and person.guard_xp_today==12 and person.defense_incident==0)
+	ColonyCombat.award_guard_xp(world,person,50)
+	check.call("COMBAT/attacks_and_incident_share_fifty_xp_daily_cap",person.xp.Guard==guard_before+50000 and person.guard_xp_today==50)
+	saved=ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/guard_daily_cap_roundtrip",saved.has("world") and saved.world.canonical_hash()==world.canonical_hash(),str(saved.get("error","")))
+	world.tick=7200;ColonyCombat.award_guard_xp(world,person,2)
+	check.call("COMBAT/guard_cap_resets_at_midnight",person.xp.Guard==guard_before+52000 and person.guard_xp_today==2 and person.guard_xp_day==1)
+	person.guard_xp_today=51
+	check.call("SAVE/rejects_invalid_guard_daily_total",not ColonyCombat.validate(world.citizens,world.tick,world.defense_state.raids))
+	world=ColonyTests.world();visit=raid(world,10)
+	for member in world.defense_state.enemies: ColonyDefense.hurt(world,member,999,1)
+	visit.state="Resolved"
+	var next: Dictionary = ColonyDefense.announce(world,6);next.due=world.tick
+	ColonyDefense.arrive(world,next)
+	check.call("RAID/boundary_arrival_reserves_capacity_for_neutral_visitors",next.arrival==world.tick and ColonyOpportunities.visitor_count(world)==8)
+	next.state="Resolved"
+	var waiting: Dictionary = ColonyDefense.announce(world,2);ColonyDefense.arrive(world,waiting)
+	check.call("RAID/arrival_waits_without_exceeding_eight_visitors",waiting.arrival==0 and waiting.actors.is_empty() and waiting.due==world.tick+7200 and waiting.reason.contains("capacity") and ColonyOpportunities.visitor_count(world)==8)
+	world=ColonyTests.world();visit=raid(world)
+	for member in world.defense_state.enemies: member.x=70;member.y=65
+	for defender in world.citizens: defender.x=69;defender.y=65;defender.drafted=true;defender.health=21;defender.stand_fast=true
+	saved=ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/reversed_combat_fixture_decodes",saved.has("world"),str(saved.get("error","")))
+	if saved.has("world"):
+		var reordered: ColonyWorld = saved.world
+		reordered.citizens.reverse();reordered.defense_state.enemies.reverse();reordered.wildlife_state.animals.reverse()
+		ColonyCombat.resolve(world);ColonyCombat.resolve(reordered)
+		reordered.citizens.assign(ColonyCombat.ordered_actors(reordered.citizens));reordered.defense_state.enemies=ColonyCombat.ordered_actors(reordered.defense_state.enemies);reordered.wildlife_state.animals=ColonyCombat.ordered_actors(reordered.wildlife_state.animals)
+		check.call("COMBAT/storage_iteration_order_cannot_change_damage_causes_or_xp",world.canonical_hash()==reordered.canonical_hash())

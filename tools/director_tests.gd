@@ -61,3 +61,57 @@ static func run(check: Callable) -> void:
 	var rng_before: int = colony.director_state.rng
 	for index in range(10): ColonyDirector.pressure(colony);ColonyDirector.gates(colony)
 	check.call("DIRECTOR/reading_pressure_never_changes_streams",colony.director_state.rng==rng_before)
+	colony=world();station=colony._structure("charcoal_kiln",Vector2i(80,80),0)
+	job=colony._job("craft","Crafting","Craft",station.id,Vector2i(80,80),16000);job.state="Working";job.worker=1
+	colony._make_stack("wood",8,"escrow",job.id,Vector2i(80,80),true)
+	check.call("FIRE/isolated_kiln_process_fuel_does_not_make_perimeter_unsafe",ColonyFire.unsafe(colony,station).is_empty())
+	var stored: Dictionary = colony._make_stack("wood",8,"ground",0,Vector2i(79,80),true)
+	check.call("FIRE/separate_fuel_storage_remains_an_unsafe_perimeter",ColonyFire.unsafe(colony,station)==[{"kind":"stack","target":stored.id}])
+	colony=world();colony.weather_state.days[-1].kind="cold_snap"
+	var extreme: int = colony.weather_state.days[-1].day*7200
+	check.call("DIRECTOR/extreme_spacing_uses_seventy_two_hours_not_calendar_dates",not ColonyDirector.start_allowed(colony,extreme-19800) and ColonyDirector.start_allowed(colony,extreme-21600))
+	pacing_sweep(check)
+
+static func pacing_sweep(check: Callable) -> void:
+	# Isolate scheduler/calendar contracts over three years. Incident resolution
+	# is a controlled fixture here; this is not a colony survival/balance trace.
+	for mode in ["Standard","Hearthside"]:
+		var colony: ColonyWorld = ColonyTests.world();colony.care_state.mode=mode
+		var station: Dictionary = colony._structure("charcoal_kiln",Vector2i(80,80),0)
+		colony._structure("wood_wall",Vector2i(79,80),0)
+		var work: Dictionary = colony._job("craft","Crafting","Craft",station.id,Vector2i(80,80),16000)
+		var starts: Array = [];var seen: Dictionary = {};var errors: Array = [];var quoted: Dictionary = {};var last_end: int = 0;var history_count: int = 0
+		for hour in range(96*24):
+			colony.tick=1800+hour*300;colony.path_requests=0
+			ColonyWeather.advance(colony)
+			for entry in colony.weather_state.days:
+				if entry.kind not in ["flood","cold_snap"]: continue
+				var onset: int = entry.day*7200+(1800 if entry.kind=="flood" else 0)
+				if onset==colony.tick: starts.append({"tick":onset,"kind":entry.kind})
+			var raid: Dictionary = ColonyDefense.active(colony)
+			if not raid.is_empty():
+				if raid.arrival==0 and colony.tick>=raid.due: ColonyDefense.arrive(colony,raid)
+				if raid.arrival>0 and colony.tick>=raid.arrival+1800:
+					ColonyDefense.retreat(colony,raid,"Controlled six-hour resolution for scheduler sweep")
+					for id in raid.actors: colony.find(colony.defense_state.enemies,id).state="Gone"
+					ColonyDefense.advance(colony)
+			var major: Dictionary = colony.director_state.major
+			if not major.is_empty() and major.state=="Active" and major.kind=="overheat" and colony.tick>=major.started+1800:
+				for fire in ColonyFire.active(colony): ColonyFire.end(colony,fire,"Controlled fire recovery for scheduler sweep")
+			if ColonyFire.active(colony).is_empty(): work.state="Working";work.worker=1;colony.citizens[0].job=work.id
+			ColonyDirector.advance(colony)
+			major=colony.director_state.major
+			if not major.is_empty():
+				if not quoted.has(major.id):
+					quoted[major.id]=major.duplicate(true)
+					if major.created<last_end+14400 and last_end>0: errors.append("Announcement during recovery at "+str(colony.tick))
+				if quoted[major.id].target!=major.target: errors.append("Announced target changed")
+				if major.started>0 and not seen.has(major.id): starts.append({"tick":major.started,"kind":major.kind});seen[major.id]=true
+			if colony.director_state.history.size()>history_count:
+				history_count=colony.director_state.history.size();last_end=colony.director_state.history[-1].ended
+		starts.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.tick<b.tick)
+		for index in range(1,starts.size()):
+			if starts[index].tick-starts[index-1].tick<21600: errors.append("Starts closer than seventy-two hours: "+str([starts[index-1],starts[index]]))
+		check.call("DIRECTOR/%s_96_day_calendar_and_major_spacing" % mode,errors.is_empty() and history_count>=4 and starts.size()>=8,str(errors))
+		check.call("DIRECTOR/%s_96_day_announced_outcomes_stay_fixed" % mode,colony.director_state.history.all(func(m:Dictionary)->bool:return quoted.has(m.id) and quoted[m.id].target==m.target and m.created<m.started and m.started<m.ended))
+		if mode=="Hearthside": check.call("DIRECTOR/hearthside_96_day_sweep_never_schedules_raids",colony.defense_state.raids.is_empty())

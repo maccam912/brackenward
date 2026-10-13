@@ -40,6 +40,15 @@ static func _day(world: ColonyWorld, day: int) -> Dictionary:
 				if previous.kind in ["flood","cold_snap"] and absi(previous.day-day) < 4: eligible = false
 			for major in world.weather_state.reserved_major_days:
 				if absi(major-day) <= 2: eligible = false
+			# Forecasts reserve exact incident onsets, including evening fires.
+			# A calendar-day gap of three can still be less than 72 hours.
+			var onset: int = day*7200+(1800 if kind=="flood" else 0)
+			for major in world.director_state.get("history",[]):
+				if major.started>0 and absi(major.started-onset)<21600: eligible=false
+			var current: Dictionary = world.director_state.get("major",{})
+			if not current.is_empty():
+				var start: int = current.started if current.started>0 else current.due
+				if absi(start-onset)<21600: eligible=false
 			if not eligible: kind = "snow" if season == 3 else "rain"
 	return {"day":day,"kind":kind,"mask":flood_mask(world) if kind == "flood" else []}
 

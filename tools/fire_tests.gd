@@ -66,10 +66,12 @@ static func run(check: Callable) -> void:
 		world.step()
 		if fire.done: break
 	check.call("FIRE/resumes_without_double_counting_eight_wu",fire.done and fire.pending_xp.values().reduce(func(n:int,v:int)->int:return n+v,0)==8000)
-	world=ColonyTests.world();wall=world._structure("wood_wall",Vector2i(80,80),0);fire=ColonyFire.ignite(world,"structure",wall.id)
+	world=ColonyTests.world();world._structure("well",Vector2i(74,64),0);wall=world._structure("wood_wall",Vector2i(74,54),0);fire=ColonyFire.ignite(world,"structure",wall.id)
 	for person in world.citizens: person.preferences.Care=0
-	for index in range(100): world.step()
-	check.call("FIRE/care_off_is_respected",not fire.done and fire.work==0 and world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="extinguish").all(func(j:Dictionary)->bool:return j.worker==0))
+	for index in range(450):
+		world.step()
+		if fire.done: break
+	check.call("FIRE/emergency_overrides_off_without_changing_preference",fire.done and fire.work==8000 and world.citizens.all(func(c:Dictionary)->bool:return c.preferences.Care==0))
 	world=ColonyTests.world();var person: Dictionary = world.citizens[1]
 	var tree: Dictionary = world.resources.filter(func(r:Dictionary)->bool:return r.definition=="tree" and r.remaining>0)[0]
 	person.x=tree.x+1;person.y=tree.y;person.edge_x=person.x;person.edge_y=person.y;person.health=21
@@ -81,3 +83,13 @@ static func run(check: Callable) -> void:
 	world.step()
 	check.call("COMBAT/injury_resolves_before_completed_work_transaction",person.downed and tree.remaining==8 and world.ledger.produced.wood==before and gather.state!="Complete",str([person.health,tree.remaining,gather.state]))
 	check.call("COMBAT/fog_reduces_bow_range_two",ColonyCombat.weapon(world.citizens[2],3,"fog").range==4 and ColonyCombat.weapon(world.citizens[2],3).range==6)
+	world=ColonyTests.world();var raid: Dictionary = DefenseTests.raid(world)
+	person=world.citizens[1];person.x=70;person.y=65;person.health=21;person.drafted=true;person.stand_fast=true
+	var enemy: Dictionary = world.defense_state.enemies[0];enemy.x=71;enemy.y=65
+	fuel=world._make_stack("wood",20,"ground",0,Vector2i(70,65),true);ColonyFire.ignite(world,"stack",fuel.id)
+	ColonyCombat.resolve(world)
+	check.call("COMBAT/fire_and_attacks_resolve_together_after_attack_selection",person.health==14 and person.downed and enemy.health==36 and fuel.count==19 and person.guard_xp_today==2)
+	check.call("COMBAT/combined_fire_downing_emits_one_incident",world.facts.filter(func(f:Dictionary)->bool:return f.kind=="downed" and f.actor==person.id).size()==1)
+	world.tick+=10;person.health=1;person.stabilized=true;enemy.cooldown=world.tick+25
+	ColonyCombat.resolve(world)
+	check.call("COMBAT/fire_can_harm_a_downed_resident_without_attack_execution",person.death_recorded and enemy.health==36 and world.facts.any(func(f:Dictionary)->bool:return f.kind=="fire_injury" and f.actor==person.id))

@@ -59,6 +59,8 @@ static func enemy_template() -> Dictionary:
 	return {"id":0,"raid":0,"definition":"hungry_thief","x":0,"y":0,"health":40,"state":"Active","route":[],"goal":[],"progress":0,"move_rem":0,"cooldown":0,"attacking":0,"last_attacker":0,"target_stack":0,"target_wall":0,"loot":[],"recovery_at":0,"treated":false}
 
 static func arrive(world: ColonyWorld, raid: Dictionary) -> void:
+	if ColonyOpportunities.visitor_count(world)+raid.party.size()>8:
+		raid.due=world.tick+7200;raid.reason="Visitor capacity: road party waits twenty-four hours for a safe boundary arrival";return
 	if not world.director_state.major.is_empty() and world.director_state.major.target==raid.id and not ColonyDirector.start_allowed(world,world.tick):
 		raid.due=world.tick+7200;raid.reason="Extreme-weather or recovery spacing reserved: party waits twenty-four hours";return
 	var entries: Array = boundary(world)
@@ -75,6 +77,12 @@ static func arrive(world: ColonyWorld, raid: Dictionary) -> void:
 	raid.reason="Party arrived through the announced boundary. Defend, shelter, open passage, offer supplies, or stand down."
 	world.defense_state.alert_serial+=1;world.danger_cache_tick=-1
 	ColonyTrade.fact(world,"raid_arrived",raid.reason)
+
+static func retarget(enemy: Dictionary) -> void:
+	# Finish an already-started edge before routing toward a changed objective.
+	if enemy.progress>0 and not enemy.route.is_empty(): enemy.route.resize(1)
+	else: enemy.route.clear();enemy.progress=0
+	enemy.goal.clear()
 
 static func move(world: ColonyWorld, enemy: Dictionary, goal: Vector2i) -> bool:
 	if enemy.progress==0 and Vector2i(enemy.x,enemy.y)==goal: return true
@@ -124,7 +132,7 @@ static func steal(world: ColonyWorld, enemy: Dictionary, stack: Dictionary) -> v
 	stack.count-=count;stack.reservations.clear();world._record("looted",stack.item,count)
 	var raid: Dictionary = world.find(world.defense_state.raids,enemy.raid);raid.loot_units+=count
 	ColonyTrade.fact(world,"raid_theft","The road party took %d %s from actual stock; worn equipment and expedition cargo remain unavailable." % [count,stack.item])
-	if carried+count==4: enemy.state="Retreating";enemy.route.clear();enemy.goal.clear()
+	if carried+count==4: enemy.state="Retreating";retarget(enemy)
 
 static func drop_loot(world: ColonyWorld, enemy: Dictionary) -> void:
 	for load in enemy.loot:
@@ -139,14 +147,14 @@ static func hurt(world: ColonyWorld, enemy: Dictionary, damage: int, attacker: i
 		enemy.state="Downed";enemy.recovery_at=world.tick+3600;enemy.progress=0;enemy.route.clear();enemy.goal.clear();drop_loot(world,enemy)
 		ColonyTrade.fact(world,"enemy_downed","A road attacker is downed, stable and neutral. They cannot be attacked again, recover to twenty-five after twelve hours, and may receive voluntary care for three Road reputation once.")
 	elif enemy.health*10<=world.definitions.enemies[enemy.definition].health*3:
-		enemy.state="Retreating";enemy.route.clear();enemy.goal.clear()
+		enemy.state="Retreating";retarget(enemy)
 	world.danger_cache_tick=-1
 
 static func retreat(world: ColonyWorld, raid: Dictionary, reason: String) -> void:
 	raid.state="Retreating";raid.reason=reason;raid.acknowledged=true
 	for id in raid.actors:
 		var enemy: Dictionary = world.find(world.defense_state.enemies,id)
-		if enemy.state=="Active": enemy.state="Retreating";enemy.route.clear();enemy.goal.clear()
+		if enemy.state=="Active": enemy.state="Retreating";retarget(enemy)
 	world.danger_cache_tick=-1
 	ColonyTrade.fact(world,"raid_retreat",reason)
 
@@ -191,7 +199,10 @@ static func advance(world: ColonyWorld) -> void:
 				if not positions.is_empty(): move(world,enemy,positions[0])
 	if not raid.is_empty() and raid.state=="Retreating" and not raid.actors.any(func(id:int)->bool:return world.find(world.defense_state.enemies,id).state in ["Active","Retreating"]):
 		raid.state="Resolved";raid.acknowledged=true;world.defense_state.shelter=false
-		for person in world.citizens: person.stand_fast=false
+		for person in world.citizens:
+			person.stand_fast=false
+			if person.defense_incident==raid.id:
+				ColonyCombat.award_guard_xp(world,person,10);person.defense_incident=0
 		ColonyTrade.fact(world,"raid_resolved","The active raid ended. Downed neutral visitors remain stable and leave after recovery.")
 	world.danger_cache_tick=-1
 
@@ -205,6 +216,8 @@ static func assign(world: ColonyWorld, person: Dictionary) -> bool:
 static func defend_work(world: ColonyWorld, person: Dictionary, job: Dictionary) -> void:
 	if not person.drafted or person.downed: world._release(job,true);return
 	if person.health<=40 and not person.stand_fast: person.drafted=false;world._release(job,true);ColonyDanger.escape(world,person);return
+	var raid: Dictionary = active(world)
+	if not raid.is_empty() and raid.arrival>0 and raid.state=="Active": person.defense_incident=raid.id
 	person.activity="Defending the rally" if absi(person.x-person.rally.x)+absi(person.y-person.rally.y)<=2 else "Moving to defend"
 	if absi(person.x-person.rally.x)+absi(person.y-person.rally.y)>2: world._walk(person,person.rally)
 	else: job.state="Working"
@@ -283,11 +296,12 @@ static func treatment_complete(world: ColonyWorld, job: Dictionary) -> void:
 
 static func attacks(world: ColonyWorld) -> Array:
 	var result: Array = []
-	for person in world.citizens:
+	for person in ColonyCombat.ordered_actors(world.citizens):
 		if not person.drafted or person.away or person.downed or person.death_recorded or person.departed or (person.health<=40 and not person.stand_fast) or world.tick<person.attack_ready: continue
 		var targets: Array = world.defense_state.enemies.filter(func(e:Dictionary)->bool:
 			var distance: int = ColonyWildlife.distance(person,e);var weapon: Dictionary = ColonyCombat.weapon(person,distance,world.weather)
-			return e.state in ["Active","Retreating"] and e.health>10 and distance<=weapon.range and ColonyCombat.line_of_sight(world,Vector2i(person.x,person.y),Vector2i(e.x,e.y)))
+			var raid: Dictionary = world.find(world.defense_state.raids,e.raid)
+			return raid.get("state","") not in ["Payment","Grace","Resolved"] and e.state in ["Active","Retreating"] and e.health>10 and distance<=weapon.range and ColonyCombat.line_of_sight(world,Vector2i(person.x,person.y),Vector2i(e.x,e.y)))
 		targets.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
 			if (a.id==person.focus)!=(b.id==person.focus): return a.id==person.focus
 			if (a.attacking==person.id)!=(b.attacking==person.id): return a.attacking==person.id
@@ -297,7 +311,7 @@ static func attacks(world: ColonyWorld) -> Array:
 		var enemy: Dictionary = targets[0];var weapon: Dictionary = ColonyCombat.weapon(person,ColonyWildlife.distance(person,enemy),world.weather)
 		person.attack_ready=world.tick+weapon.cooldown
 		result.append({"kind":"enemy","target":enemy.id,"source":person.id,"damage":maxi(1,weapon.damage-world.definitions.enemies[enemy.definition].armor)})
-	for enemy in world.defense_state.enemies:
+	for enemy in ColonyCombat.ordered_actors(world.defense_state.enemies):
 		if not enemy_active(enemy) or world.tick<enemy.cooldown: continue
 		var raid: Dictionary = world.find(world.defense_state.raids,enemy.raid)
 		if raid.state!="Active": continue

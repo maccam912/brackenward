@@ -283,6 +283,14 @@ func _draw_colony() -> void:
 		if task.get("kind")=="extinguish" and task.memo.phase in ["carry","apply"]:
 			var point: Vector2 = tile_to_screen(citizen_point(person))
 			draw_rect(Rect2(point+Vector2(0.2,0.1)*tile_size,Vector2(0.2,0.25)*tile_size),Color("7096B4"))
+	for visitor in world.opportunity_state.visitors:
+		if visitor.state in ["Waiting","Gone"]: continue
+		var tile: Vector2 = Vector2(visitor.x+0.5,visitor.y+0.5)
+		if not visitor.route.is_empty(): tile+=Vector2(visitor.route[0]-Vector2i(visitor.x,visitor.y))*float(visitor.progress)/10000.0
+		var point: Vector2 = tile_to_screen(tile)
+		draw_circle(point,tile_size*0.27,Color("77915A"))
+		draw_circle(point+Vector2(0,-0.27)*tile_size,tile_size*0.15,Color("F3E8CC"))
+		draw_line(point+Vector2(-0.4,-0.35)*tile_size,point+Vector2(-0.4,0.4)*tile_size,Color("B96C50"),maxf(2,tile_size*0.08))
 	for merchant in world.trade_state.merchants:
 		if merchant.state not in ["Entering","Trading","Leaving"]: continue
 		var tile: Vector2 = Vector2(merchant.x+0.5,merchant.y+0.5)

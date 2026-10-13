@@ -39,6 +39,7 @@ var seen_care_alert: int = -1
 var seen_region_alert: int = -1
 var seen_fire_alert: int = -1
 var seen_defense_alert: int = -1
+var seen_opportunity_id: int = 0
 var defend_citizens: Array = []
 var defend_stand_fast: bool = false
 var epilogue_session: String = ""
@@ -323,6 +324,11 @@ func _process(delta: float) -> void:
 	if world is ColonyWorld and world.defense_state.alert_serial>seen_defense_alert:
 		seen_defense_alert=world.defense_state.alert_serial
 		if not ColonyDefense.active(world).is_empty(): show_defense()
+	if world is ColonyWorld:
+		for event in world.opportunity_state.offers:
+			if event.id<=seen_opportunity_id: continue
+			seen_opportunity_id=event.id
+			if event.state=="Offered": notice=event.definition.replace("_"," ").capitalize()+" offer: open Valley > Visitor opportunities. Two game days; declining has no penalty."
 	if runner.speed_reduced:
 		notice = "Speed reduced to keep the colony responsive."
 		runner.speed_reduced = false
@@ -483,6 +489,10 @@ func _map_intent(action: Dictionary) -> void:
 			if enemy.state=="Gone": continue
 			var separation: float = view.tile_to_screen(Vector2(enemy.x+0.5,enemy.y+0.5)).distance_to(action.point)
 			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"enemy","object":enemy,"rank":1,"distance":separation})
+		for visitor in world.opportunity_state.visitors:
+			if visitor.state in ["Waiting","Gone"]: continue
+			var separation: float = view.tile_to_screen(Vector2(visitor.x+0.5,visitor.y+0.5)).distance_to(action.point)
+			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"visitor","object":visitor,"rank":1,"distance":separation})
 		for merchant in world.trade_state.merchants:
 			if merchant.state not in ["Entering","Trading","Leaving"]: continue
 			var separation: float = view.tile_to_screen(Vector2(merchant.x+0.5,merchant.y+0.5)).distance_to(action.point)
@@ -528,6 +538,7 @@ func _map_intent(action: Dictionary) -> void:
 func _select_map_object(candidate: Dictionary) -> void:
 	var object: Dictionary = candidate.object
 	match candidate.kind:
+		"visitor": show_opportunities()
 		"enemy": show_enemy(object)
 		"merchant":
 			if object.state=="Trading": show_trade(object)
@@ -1857,6 +1868,7 @@ func show_newcomers() -> void:
 func show_valley() -> void:
 	show_sheet("Valley and neighbors")
 	button("Incident forecast and pressure",show_incidents,sheet_body)
+	button("Visitor opportunities",show_opportunities,sheet_body)
 	button("Regional map",show_region,sheet_body)
 	button("Expedition status",show_expeditions,sheet_body)
 	label("Merchants visit every four days, beginning day five. One-day notice; their 24-hour stay starts at the cart. Prices per unit are rounded up: 120% normally, 110% at Friendly (40), 100% at Trusted (70). Selling uses base value. Trade gives no reputation; listed deliveries give ten, once per eight days.",sheet_body)
@@ -2032,7 +2044,7 @@ func show_expeditions() -> void:
 
 func show_fires() -> void:
 	show_sheet("Fire and water")
-	label("Care workers use one abstract water load: fetch 2 WU at the nearest reachable well or river bank, carry it in both hands, then apply 8 WU beside the target. Interruption discards the load but retains applied effort. Enable Care if workers are idle. Burning objects cannot provide work or storage. Rain halves damage and doubles the spread interval.",sheet_body)
+	label("Emergency crews override ordinary Care Off and use one abstract water load: fetch 2 WU at the nearest reachable well or river bank, carry it in both hands, then apply 8 WU beside the target. Interruption discards the load but retains applied effort. Residents need a safe route and cannot abandon life-critical needs. Burning objects cannot provide work or storage. Rain halves damage and doubles the spread interval.",sheet_body)
 	for fire in ColonyFire.active(world):
 		var object: Dictionary = world.find(world.structures if fire.kind=="structure" else world.stacks,fire.target)
 		label("%s at (%d, %d) · %.1f/8 WU applied\n%s" % [object.get("definition",object.get("item","")),object.x,object.y,fire.work/1000.0,"Two health/sec; touching wood can ignite every thirty seconds" if fire.kind=="structure" else "One item/sec; food and the cart itself do not propagate fire"],sheet_body)
@@ -2133,3 +2145,24 @@ func show_raid_offer(raid: Dictionary) -> void:
 		label("Pay "+_cost_text(pay)+"\nOffer value %d / needed %d\nMeeting (%d,%d). Surplus %d is a gift." % [value,raid.budget*8,raid.meeting.x,raid.meeting.y,maxi(0,value-raid.budget*8)],sheet_body)
 		if value<raid.budget*8: label("Add "+str(raid.budget*8-value)+" value before accepting",sheet_body)
 		else: button("Accept and deliver supplies",func()->void:_submit("raid_offer",{"target":raid.id,"pay":pay});close_sheet(),sheet_body),sheet_body)
+
+func show_opportunities() -> void:
+	show_sheet("Visitor offers")
+	label("Every second day from day four, one eligible visitor may offer help. Offers last two game days, with no penalty for declining or expiry. Accepting reserves the listed payment; workers must deliver it and do the promised work. No event repeats within eight days.",sheet_body)
+	var active: Array = world.opportunity_state.offers.filter(func(e:Dictionary)->bool:return e.state in ["Offered","Accepted","Hosted"])
+	if active.is_empty(): label("No offer is waiting. Tables, friendships and research desks create more opportunities.",sheet_body)
+	for event in active:
+		var visitor: Dictionary = world.find(world.opportunity_state.visitors,event.visitor)
+		label(event.definition.replace("_"," ").capitalize()+" · "+event.state,sheet_body)
+		label({"traveling_storyteller":"Two meals host a storyteller for six hours. Residents who share a continuous half-hour of leisure nearby gain +40 morale target for one day.","stranded_carrier":"Deliver eight wood and complete twelve Building WU at the cart within two days. Receive four cloth and +3 Road fellowship reputation.","surplus_harvest":"Deliver twenty wood to the cart within two days. Receive sixteen grain.","shared_observation":"The named friends each contribute twenty Study WU at an available research desk within two days. Receive one hundred insight."}[event.definition],sheet_body)
+		label("%s · %s
+%.1f hours left to accept or finish payment/work. %s" % [visitor.state,visitor.note,maxf(0,(event.deadline-world.tick)/300.0),event.reason],sheet_body)
+		if not event.people.is_empty(): label("Friends: "+", ".join(event.people.map(func(id:int)->String:return world.find(world.citizens,id).name)),sheet_body)
+		if event.state=="Offered":
+			button("Accept "+event.definition.replace("_"," "),func()->void:_submit("minor_event",{"target":event.id,"accept":true});close_sheet(),sheet_body)
+			button("Decline offer",func()->void:_submit("minor_event",{"target":event.id,"accept":false});close_sheet(),sheet_body)
+		for id in event.jobs:
+			var job: Dictionary = world.find(world.jobs,id)
+			if not job.is_empty(): button("Task: %s · %s" % ["Study together" if job.kind=="minor_study" else ("Repair cart" if event.definition=="stranded_carrier" else "Deliver supplies"),job.state],func()->void:_job_sheet(job),sheet_body)
+	for event in world.opportunity_state.offers.slice(maxi(0,world.opportunity_state.offers.size()-10)):
+		if event.state not in ["Offered","Accepted","Hosted"]: label("%s · %s · %s" % [event.definition.replace("_"," ").capitalize(),event.state,event.reason],sheet_body)

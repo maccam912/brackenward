@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region", "fire", "defense", "director"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region|fire|defense|director. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region", "fire", "defense", "director", "opportunity"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region|fire|defense|director|opportunity. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -48,6 +48,7 @@ func run() -> void:
 		"fire": FireTests.run(check)
 		"defense": DefenseTests.run(check)
 		"director": DirectorTests.run(check)
+		"opportunity": OpportunityTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -804,6 +805,19 @@ func ui() -> void:
 	check("DIRECTOR/UI_public_pressure_and_spacing",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Pressure")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("incident")))
 	colony_game.show_raid_offer(ui_raid)
 	check("RAID/UI_supply_panel_has_concrete_price_no_placeholder",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Need 16 barter") and not n.text.contains("%d")))
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	var ui_opportunity: Dictionary = ColonyOpportunities.offer(colony_game.world,"stranded_carrier")
+	colony_game.show_valley()
+	check("STORY/UI_valley_opens_visitor_opportunities",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Visitor opportunities"))
+	colony_game.show_opportunities()
+	check("STORY/UI_exact_work_reward_and_deadline",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("eight wood") and n.text.contains("twelve Building WU") and n.text.contains("four cloth")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("hours left")))
+	var accept_opportunity: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text.begins_with("Accept "))[0]
+	accept_opportunity.pressed.emit();accept_opportunity.pressed.emit()
+	check("STORY/UI_accept_one_reserved_transaction",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="minor_event" and colony_game.world.pending_commands[0].args=={"target":ui_opportunity.id,"accept":true})
+	colony_game.world.step();colony_game.submitted_command=0;colony_game.show_opportunities()
+	check("STORY/UI_accepted_work_can_be_inspected",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text.begins_with("Task:")))
+	await process_frame;await process_frame
+	root.get_texture().get_image().save_png("res://reports/opportunity-ui.png")
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

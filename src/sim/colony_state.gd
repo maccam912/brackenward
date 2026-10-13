@@ -1,7 +1,7 @@
 class_name ColonyState
 extends RefCounted
 ## JSON-safe representation preserving integer-keyed maps and exact runtime IDs.
-const IDS: Array[String] = ["id", "target", "worker", "source", "destination", "owner", "job", "bed", "actor", "tick", "next_id", "next_command_id", "created", "retry", "regrow_at", "ripe_tick", "bed_memory_until", "raw_memory_until", "preferred_memory_until", "break_until", "break_cooldown", "departure_until", "pinned_job", "leisure_memory_until", "warm_until", "rng", "a", "b", "last_interaction", "last_decay", "friend_leisure_until", "fulfilled_request_until", "broken_promise_until", "last_request_offer", "offered_at", "accepted_at", "deadline", "conflict_until", "conflict_cooldown", "order", "station", "carried_by", "carrying_patient", "recovery_until", "hearthside_until", "injury_id", "patient"]
+const IDS: Array[String] = ["id", "target", "worker", "source", "destination", "owner", "job", "bed", "actor", "tick", "next_id", "next_command_id", "created", "retry", "regrow_at", "ripe_tick", "bed_memory_until", "raw_memory_until", "preferred_memory_until", "break_until", "break_cooldown", "departure_until", "pinned_job", "leisure_memory_until", "warm_until", "rng", "a", "b", "last_interaction", "last_decay", "friend_leisure_until", "fulfilled_request_until", "broken_promise_until", "last_request_offer", "offered_at", "accepted_at", "deadline", "conflict_until", "conflict_cooldown", "order", "station", "carried_by", "carrying_patient", "recovery_until", "hearthside_until", "injury_id", "patient", "defense_incident", "story_memory_until"]
 
 static func pack(value: Variant, field: String = "") -> Variant:
 	if value is Vector2i:
