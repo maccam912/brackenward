@@ -37,6 +37,7 @@ var file_dialog: FileDialog
 var catalog_strings: Dictionary = {}
 var seen_care_alert: int = -1
 var seen_region_alert: int = -1
+var seen_fire_alert: int = -1
 var epilogue_session: String = ""
 var awaiting_first_colony: bool = false
 var creation_thread: Thread
@@ -313,6 +314,9 @@ func _process(delta: float) -> void:
 	if world is ColonyWorld and world.region_state.alert_serial>seen_region_alert:
 		seen_region_alert=world.region_state.alert_serial
 		if ColonyRegion.critical(world): show_expeditions()
+	if world is ColonyWorld and world.fire_state.alert_serial>seen_fire_alert:
+		seen_fire_alert=world.fire_state.alert_serial
+		if not ColonyFire.active(world).is_empty(): show_fires()
 	if runner.speed_reduced:
 		notice = "Speed reduced to keep the colony responsive."
 		runner.speed_reduced = false
@@ -607,6 +611,7 @@ func show_sheet(title: String) -> void:
 					if not definition.buildable: continue
 					button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body)
 		"People":
+			if world is ColonyWorld and not ColonyFire.active(world).is_empty(): button("Fires and water",show_fires,sheet_body)
 			if world is ColonyWorld: button("Newcomer offers",show_newcomers,sheet_body)
 			if world is ColonyWorld: button("Injuries and care",show_care,sheet_body)
 			for citizen in world.citizens:
@@ -1431,6 +1436,10 @@ func show_station(station: Dictionary) -> void:
 		button("Neighbors and trade",show_valley,sheet_body)
 	if station.definition != "supply_cart":
 		button("Repair or demolish",func()->void:show_maintenance(station),sheet_body)
+	if station.definition in ColonyFire.INDUSTRIAL:
+		var hazards: Array = ColonyFire.unsafe(world,station)
+		label("Unsafe operating perimeter: suspend the station or move wood/fiber/cloth and flammable structures at least two tiles away, including diagonals." if not hazards.is_empty() else "Perimeter safe or station idle. An operating kiln/smelter near flammable objects can receive a twelve-hour overheating warning; suspending or clearing the fixed target prevents ignition.",sheet_body)
+	if ColonyFire.burning(world,"structure",station.id): button("Fire and water tasks",show_fires,sheet_body)
 	if station.definition == "hearth":
 		label("Without production orders, cooking keeps four meals per living resident. Adding a policy replaces that default; Repeat stops after its batch count. Choose Maintain for a steady meal reserve.",sheet_body)
 	if station.definition == "fishing_pier":
@@ -2003,3 +2012,13 @@ func show_expeditions() -> void:
 				if quantities[item].value>0: keep[item]=int(quantities[item].value)
 			_submit("expedition_collect",{"target":trip.id,"keep":keep});close_sheet();runner.set_speed(runner.previous_speed),sheet_body)
 	if trip.state not in ["Preparing","Ready","Returning","Walking in","Unloading"]: button("Recall without committing new site rewards",func()->void:_submit("expedition_recall",{"target":trip.id});close_sheet();runner.set_speed(runner.previous_speed),sheet_body)
+
+func show_fires() -> void:
+	show_sheet("Fire and water")
+	label("Care workers use one abstract water load: fetch 2 WU at the nearest reachable well or river bank, carry it in both hands, then apply 8 WU beside the target. Interruption discards the load but retains applied effort. Enable Care if workers are idle. Burning objects cannot provide work or storage. Rain halves damage and doubles the spread interval.",sheet_body)
+	for fire in ColonyFire.active(world):
+		var object: Dictionary = world.find(world.structures if fire.kind=="structure" else world.stacks,fire.target)
+		label("%s at (%d, %d) · %.1f/8 WU applied\n%s" % [object.get("definition",object.get("item","")),object.x,object.y,fire.work/1000.0,"Two health/sec; touching wood can ignite every thirty seconds" if fire.kind=="structure" else "One item/sec; food and the cart itself do not propagate fire"],sheet_body)
+		button("Look at fire "+str(fire.id),func()->void:view.camera_tile=Vector2(object.x,object.y);view.follow_id=0;view._update_transform();close_sheet(),sheet_body)
+	button("Work preferences",func()->void:show_sheet("Work"),sheet_body)
+	button("Build a well",func()->void:begin_build("well"),sheet_body)

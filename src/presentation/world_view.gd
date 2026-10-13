@@ -278,6 +278,11 @@ func citizen_point(citizen: Dictionary) -> Vector2:
 	return point
 
 func _draw_colony() -> void:
+	for person in world.citizens:
+		var task: Dictionary = world.find(world.jobs,person.job)
+		if task.get("kind")=="extinguish" and task.memo.phase in ["carry","apply"]:
+			var point: Vector2 = tile_to_screen(citizen_point(person))
+			draw_rect(Rect2(point+Vector2(0.2,0.1)*tile_size,Vector2(0.2,0.25)*tile_size),Color("7096B4"))
 	for merchant in world.trade_state.merchants:
 		if merchant.state not in ["Entering","Trading","Leaving"]: continue
 		var tile: Vector2 = Vector2(merchant.x+0.5,merchant.y+0.5)
@@ -391,6 +396,7 @@ func _draw_colony() -> void:
 	for stack in world.stacks:
 		if stack.count <= 0:
 			continue
+		if stack.location == "expedition_cargo" and world.find(world.region_state.trips,stack.owner).get("state") not in ["Preparing","Ready","Unloading"]: continue
 		if stack.location == "carry":
 			continue
 		var point: Vector2 = tile_to_screen(Vector2(stack.x + 0.5, stack.y + 0.5))
@@ -402,6 +408,11 @@ func _draw_colony() -> void:
 		draw_rect(Rect2(point - Vector2(8, 8), Vector2(16, 16)), color)
 		draw_rect(Rect2(point - Vector2(8, 8), Vector2(16, 16)), Color("263C3B"), false, 2)
 		draw_string(get_theme_default_font(), point + Vector2(9, 5), str(stack.count), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("F3E8CC"))
+
+	for fire in ColonyFire.active(world):
+		for tile in ColonyFire.footprint(world,fire):
+			var center: Vector2 = tile_to_screen(Vector2(tile)+Vector2(0.5,0.5))
+			draw_colored_polygon(PackedVector2Array([center+Vector2(-0.3,0.3)*tile_size,center+Vector2(0,-0.45)*tile_size,center+Vector2(0.3,0.3)*tile_size]),Color("E9BA67"))
 
 func _draw_carried_items() -> void:
 	if not world is ColonyWorld:

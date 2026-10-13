@@ -46,6 +46,7 @@ static func complete(world: ColonyWorld, job: Dictionary) -> void:
 
 static func destroy(world: ColonyWorld, structure: Dictionary, caller: int = 0, temporary: bool = false) -> void:
 	if structure.definition=="supply_cart": return
+	if not temporary: world.fire_state.destroyed.append({"target":structure.id,"tick":world.tick})
 	structure.health=0
 	if not temporary: structure.cooking=false
 	for job in world.jobs:
@@ -96,6 +97,11 @@ static func move_dismantle(world: ColonyWorld, citizen: Dictionary, job: Diction
 	var work: int = mini(world._rate(citizen,job),limit-job.work)
 	job.work += work;job.pending_xp[citizen.id]=job.pending_xp.get(citizen.id,0)+work
 	if job.work<limit: return
+	if world.in_tick and not world.committing_work:
+		world.work_commits.append({"kind":"move_phase","worker":citizen.id,"job":job.id});return
+	finish_dismantle(world,citizen,job)
+
+static func finish_dismantle(world: ColonyWorld, citizen: Dictionary, job: Dictionary) -> void:
 	var error: String = world.placement_error(job.definition,Vector2i(job.care_goal[0],job.care_goal[1]),job.rotation,job.id,job.target)
 	if not error.is_empty(): world._release(job,false);world._block(job,"Move destination changed: "+error);return
 	var structure: Dictionary = world.find(world.structures,job.target)

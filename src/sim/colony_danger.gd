@@ -7,6 +7,9 @@ static func sources(world: ColonyWorld) -> Array[Vector2i]:
 	for animal in world.wildlife_state.animals:
 		if animal.health<=0 or animal.definition!="boar": continue
 		if animal.attacker>0 or world.jobs.any(func(j:Dictionary)->bool:return j.kind=="hunt" and j.target==animal.id and j.state not in ["Complete","Canceled"]): result.append(Vector2i(animal.x,animal.y))
+	for fire in ColonyFire.active(world):
+		for tile in ColonyFire.footprint(world,fire):
+			if not result.has(tile): result.append(tile)
 	world.danger_cache_tick = world.tick; world.danger_cache = result
 	return result
 

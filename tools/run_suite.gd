@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region", "fire"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region|fire. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -45,6 +45,7 @@ func run() -> void:
 		"population": PopulationTests.run(check)
 		"trade": TradeTests.run(check)
 		"region": RegionTests.run(check)
+		"fire": FireTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -775,6 +776,13 @@ func ui() -> void:
 	var continue_route: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Choose continue")[0]
 	continue_route.pressed.emit()
 	check("EXP/UI_confirm_choice_queues_exact_response",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="expedition_choice" and colony_game.world.pending_commands[0].args.definition=="continue")
+
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	var ui_burning_wall: Dictionary = colony_game.world._structure("wood_wall",Vector2i(74,54),0)
+	ColonyFire.ignite(colony_game.world,"structure",ui_burning_wall.id);colony_game.seen_fire_alert=0;colony_game._process(0)
+	check("FIRE/UI_new_fire_opens_response_panel",colony_game.sheet_name=="Fire and water" and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Work preferences"))
+	check("FIRE/UI_water_effort_and_interruption_are_explained",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("fetch 2 WU") and n.text.contains("apply 8 WU") and n.text.contains("retains applied effort")))
+	check("FIRE/UI_well_and_camera_recovery_actions",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Build a well") and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text.begins_with("Look at fire")))
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

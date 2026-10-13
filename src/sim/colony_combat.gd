@@ -15,13 +15,13 @@ static func line_of_sight(world: ColonyWorld, from: Vector2i, to: Vector2i) -> b
 		if twice < dx: error += dx; p.y += sy
 		if p == to: return true
 		for structure in world.structures:
-			if structure.definition in ["wood_wall","stone_wall","door","palisade","reinforced_gate"] and world.footprint(structure).has(p): return false
+			if structure.health>0 and structure.definition in ["wood_wall","stone_wall","door","palisade","reinforced_gate"] and world.footprint(structure).has(p): return false
 	return true
 
-static func weapon(citizen: Dictionary, distance: int) -> Dictionary:
+static func weapon(citizen: Dictionary, distance: int, weather: String = "clear") -> Dictionary:
 	var name: String = citizen.equipment.weapon
 	var bow: bool = name == "bow" and distance>=2
-	return {"damage":(8 if bow else (9 if name == "spear" else 3))+citizen.skills.Guard,"cooldown":30 if bow else 20,"range":6 if bow else 1}
+	return {"damage":(8 if bow else (9 if name == "spear" else 3))+citizen.skills.Guard,"cooldown":30 if bow else 20,"range":(4 if weather=="fog" else 6) if bow else 1}
 
 static func resolve(world: ColonyWorld) -> void:
 	var hits: Array = []
@@ -36,7 +36,7 @@ static func resolve(world: ColonyWorld) -> void:
 		var target: Dictionary = world.find(world.wildlife_state.animals,job.target)
 		if target.is_empty() or target.health<=0: continue
 		var separation: int = ColonyWildlife.distance(citizen,target)
-		var attack: Dictionary = weapon(citizen,separation)
+		var attack: Dictionary = weapon(citizen,separation,world.weather)
 		if separation>attack.range or not line_of_sight(world,Vector2i(citizen.x,citizen.y),Vector2i(target.x,target.y)): continue
 		citizen.attack_ready = world.tick+attack.cooldown
 		hits.append({"animal":target.id,"citizen":citizen.id,"damage":attack.damage,"job":job.id})

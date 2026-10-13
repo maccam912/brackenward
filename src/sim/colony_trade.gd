@@ -77,7 +77,7 @@ static func available(world: ColonyWorld, merchant: Dictionary, item: String) ->
 static func accessible_goods(world: ColonyWorld) -> Dictionary:
 	var result: Dictionary = {}
 	for stack in world.stacks:
-		if stack.location in ["ground","store","output"] and world.accessible(Vector2i(stack.x,stack.y)):
+		if ColonyFire.usable(world,stack) and stack.location in ["ground","store","output"] and world.accessible(Vector2i(stack.x,stack.y)):
 			result[stack.item]=result.get(stack.item,0)+stack.count-world._reserved(stack)
 	return result
 
@@ -119,7 +119,7 @@ static func reservation_plan(world: ColonyWorld, inputs: Dictionary, point: Vect
 	var requests: Array = []
 	for item in inputs:
 		var needed: int = inputs[item]
-		var sources: Array = world.stacks.filter(func(s:Dictionary)->bool:return s.item==item and s.count>world._reserved(s) and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
+		var sources: Array = world.stacks.filter(func(s:Dictionary)->bool:return s.item==item and s.count>world._reserved(s) and s.location in ["ground","store","output"] and ColonyFire.usable(world,s) and world.accessible(Vector2i(s.x,s.y)))
 		sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(world,a,b,point))
 		for stack in sources:
 			var count: int = mini(needed,stack.count-world._reserved(stack));requests.append({"stack":stack.id,"count":count});needed-=count

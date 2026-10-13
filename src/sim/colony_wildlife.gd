@@ -177,7 +177,7 @@ static func hunt_work(world: ColonyWorld, citizen: Dictionary, job: Dictionary) 
 			if not ColonyDanger.safe(world,Vector2i(citizen.x,citizen.y)):
 				world._release(job,false); world._block(job,"Waiting for the hunter; return to safety"); ColonyDanger.escape(world,citizen)
 			return
-	var range_limit: int = 6 if citizen.equipment.weapon == "bow" else 1
+	var range_limit: int = (4 if world.weather=="fog" else 6) if citizen.equipment.weapon == "bow" else 1
 	if distance(citizen,animal)<=range_limit and ColonyCombat.line_of_sight(world,Vector2i(citizen.x,citizen.y),Vector2i(animal.x,animal.y)):
 		citizen.activity = "Escorting boar hunt" if job.kind == "escort_hunt" else "Hunting "+animal.definition; job.state = "Working"; return
 	var positions: Array[Vector2i] = []
