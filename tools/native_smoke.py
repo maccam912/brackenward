@@ -18,6 +18,14 @@ RENDERER = re.compile(
 )
 
 
+def is_software_renderer(renderer):
+    # The Windows hosted runner uses ANGLE over Microsoft's WARP adapter.
+    return bool(re.search(
+        r"llvmpipe|softpipe|SwiftShader|Software Rasterizer|Microsoft Basic Render (?:Driver|Adapter)",
+        renderer, re.I,
+    ))
+
+
 def inspect_output(output, returncode, graphical):
     """Require positive graphical evidence, even when Godot exits successfully."""
     clean = ANSI.sub("", output)
@@ -97,7 +105,7 @@ def main():
             logs.append("Graphical native launch\n" + output)
             report["failures"].extend(evidence["failures"])
             renderer = "\n".join(evidence["renderer_startup"])
-            report["software_renderer"] = bool(re.search(r"llvmpipe|softpipe|SwiftShader|Software Rasterizer", renderer, re.I))
+            report["software_renderer"] = is_software_renderer(renderer)
         report["passed"] = not report["failures"] and "native_launch" in report["stages"]
     except (OSError, subprocess.SubprocessError, SystemExit) as error:
         report["failures"].append("Pinned engine verification failed: " + str(error))

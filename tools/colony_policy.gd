@@ -59,6 +59,7 @@ func plan(world: ColonyWorld) -> void:
 	if not _present(world,"research_desk"):
 		_build(world,"research_desk");return
 	_orders(world,residents.size())
+	if long_campaign: _finished_research_staffing(world)
 	if world.production_state.project.is_empty():
 		for research in RESEARCH:
 			if world.researched.has(research) or not world.definitions.research[research].prerequisites.all(func(id:String)->bool:return world.researched.has(id)): continue
@@ -105,6 +106,13 @@ func plan(world: ColonyWorld) -> void:
 			issue(world,"replant_tree",{"target":resource.id});break
 	if scenario=="vegetarian_charter": _charter(world)
 
+func _finished_research_staffing(world: ColonyWorld) -> void:
+	if not RESEARCH.all(func(id:String)->bool:return world.researched.has(id)): return
+	var researcher: Dictionary = world.find(world.citizens,4)
+	if researcher.is_empty() or researcher.death_recorded or researcher.departed: return
+	if researcher.preferences.Gathering!=3: issue(world,"preference",{"citizen":researcher.id,"category":"Gathering","value":3})
+	if researcher.preferences.Research!=2: issue(world,"preference",{"citizen":researcher.id,"category":"Research","value":2})
+
 func _present(world: ColonyWorld, definition: String) -> bool:
 	return world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition==definition) or world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition==definition and j.state not in ["Complete","Canceled"])
 
@@ -148,6 +156,9 @@ func _empty_room(world: ColonyWorld) -> Vector2i:
 		if job.kind=="build" and job.state not in ["Complete","Canceled"]:
 			for point in world.footprint(job): occupied[point]=true
 	for field in world.fields: occupied[Vector2i(field.x,field.y)]=true
+	for command in world.pending_commands:
+		if command.kind=="field":
+			for point in command.args.tiles: occupied[point]=true
 	for point in world.terrain_state.starter_field: occupied[point]=true
 
 	for radius in range(5,31):

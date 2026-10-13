@@ -38,8 +38,10 @@ func decode(bytes: PackedByteArray) -> Dictionary:
 	return ColonyCodec.decode(bytes)
 
 func save(world: RefCounted) -> String:
+	var sequence_before: int = sequence
 	var error: String = super.save(world)
 	if not error.is_empty():
+		sequence = sequence_before
 		return error
 	journal_tick = world.tick
 	journal_sequence = 0
@@ -58,17 +60,33 @@ func checkpoint(world: ColonyWorld) -> String:
 	if world.tick == journal_tick:
 		return ""
 	var records: PackedByteArray = PackedByteArray()
-	var sequence_before: int = journal_sequence
+	var next_sequence: int = journal_sequence
 	for entry in world.command_trace:
 		if entry.tick > journal_tick:
-			journal_sequence += 1
-			records.append_array(ColonyJournal.frame({"sequence": str(journal_sequence), "kind": "command", "tick": entry.tick, "command": entry.command}))
-	journal_sequence += 1
-	records.append_array(ColonyJournal.frame({"sequence": str(journal_sequence), "kind": "tick", "tick": world.tick, "state":world.payload()}))
+			next_sequence += 1
+			var command_frame: PackedByteArray = ColonyJournal.frame({"sequence": str(next_sequence), "kind": "command", "tick": entry.tick, "command": entry.command})
+			if command_frame.decode_u32(0) > ColonyJournal.MAX_RECORD or records.size() + command_frame.size() > ColonyJournal.MAX_JOURNAL:
+				return save(world)
+			records.append_array(command_frame)
+	next_sequence += 1
+	var tick_frame: PackedByteArray = ColonyJournal.frame({"sequence": str(next_sequence), "kind": "tick", "tick": world.tick, "state":world.payload()})
+	# Large valid campaigns still fit snapshots after outgrowing one journal frame.
+	# Rotate before opening an append handle, preserving the previous durable data
+	# and command trace if creation or verification of the new snapshot fails.
+	if tick_frame.decode_u32(0) > ColonyJournal.MAX_RECORD or records.size() + tick_frame.size() > ColonyJournal.MAX_JOURNAL:
+		return save(world)
+	records.append_array(tick_frame)
 	var path: String = directory.path_join("journal-%010d.frames" % sequence)
+	if FileAccess.file_exists(path):
+		var existing: FileAccess = FileAccess.open(path, FileAccess.READ)
+		if existing == null:
+			return "Could not read durable journal length"
+		var length: int = existing.get_length()
+		existing.close()
+		if length + records.size() > ColonyJournal.MAX_JOURNAL:
+			return save(world)
 	var file: FileAccess = FileAccess.open(path, FileAccess.READ_WRITE if FileAccess.file_exists(path) else FileAccess.WRITE)
 	if file == null:
-		journal_sequence = sequence_before
 		return "Could not open durable journal"
 	file.seek_end()
 	file.store_buffer(records)
@@ -83,6 +101,7 @@ func checkpoint(world: ColonyWorld) -> String:
 		recovered = true
 		return "Journal verification failed; current state retained in memory"
 	journal_tick = world.tick
+	journal_sequence = next_sequence
 	world.command_trace.clear()
 	return ""
 

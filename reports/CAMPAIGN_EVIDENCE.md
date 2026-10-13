@@ -54,6 +54,26 @@ Full vegetarian Charter runs remain in progress. The policy found another
 honest blocker: later construction left only three usable table seats. The
 public supper explanation identified it. The revised planner protects seats
 and orders additional physical tables; it does not waive the supper gate.
+The verified Meadow Reach continuation has now earned Shelter, Provision,
+Connection and Refuge. Two distinct expeditions returned and restored the
+causeway. Its supper consumed eight actual meals and recorded eight distinct
+residents completing their seated half-hour attendance; the completion tick
+was 200,329. At tick 237,600 (Day 34), all eight residents were healthy, minimum
+health remained 100, the starvation grace period had never been exceeded, and
+food runway was 7 days 11:15. The beacon still awaited stone, so the final
+ceremony, Continue action and a further full saved day remain unproven.
+The unchanged resume source is `vegetarian-charter-main-lifecycle-source`,
+canonical hash `347a9fe180693c0cbf7a0985b666918b53385423ad97a63a42407c3eb4489d8b`.
+
+That snapshot also exposed abandoned personal activities: interrupted sleep
+and failed meal reservations had remained in the shared queue. The scheduler
+now cancels personal activities when released or blocked and reconciles old
+unowned activities on its first work pass. On the real snapshot, active jobs
+fell from 724 to 64 while all 4,990 history records and the complete material
+ledger remained intact. Invariants and a canonical save round trip passed;
+280 scheduler, expedition, Charter, care, defense and construction checks
+passed. Current continuations exercise the fix through ordinary play.
+
 Neither this document nor the scenario runner marks an incomplete Charter as
 complete. Other sites/modes, all remaining long-run scenarios and cross-platform
 replay remain separate gates.

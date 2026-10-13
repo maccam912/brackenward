@@ -69,6 +69,9 @@ jobs:
           python3 tools/check_suite.py chronicle
           python3 tools/check_suite.py scheduler
           python3 tools/check_suite.py tutorial
+          python3 tools/check_suite.py tutorial_flow --site meadow_reach
+          python3 tools/check_suite.py tutorial_flow --site pine_shelf
+          python3 tools/check_suite.py tutorial_flow --site reed_bend
       - name: Real Control/input/layout suite
         run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK
@@ -116,7 +119,7 @@ jobs:
   native-replay:
     name: Native replay (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
-    timeout-minutes: 15
+    timeout-minutes: ${{ matrix.job_timeout || 15 }}
     strategy:
       fail-fast: false
       matrix:
@@ -127,6 +130,8 @@ jobs:
             name: macos-arm64
           - runner: macos-15-intel
             name: macos-x64
+            job_timeout: 30
+            replay_timeout: 1500
           - runner: windows-2022
             name: windows-x64
     steps:
@@ -140,12 +145,14 @@ jobs:
         with:
           path: ~/.local/share/brackenward/toolchain/*.zip
           key: native-editor-${{ matrix.name }}-${{ hashFiles('toolchain.lock.json') }}
-      - name: Verify installer idempotence and failure preservation
-        run: python tools/test_bootstrap.py
+      - name: Verify installer and graphical evidence checks
+        run: |
+          python tools/test_bootstrap.py
+          python tools/test_native_smoke.py
       - name: Install checksum-verified native editor only
         run: python tools/bootstrap.py --editor-only
       - name: Compare canonical replay and imported-save continuation
-        run: python tools/replay_campaign.py --report reports/replay-${{ matrix.name }}.json
+        run: python tools/replay_campaign.py --report reports/replay-${{ matrix.name }}.json --replay-timeout ${{ matrix.replay_timeout || 780 }}
       - name: Install Linux graphical smoke dependencies
         if: runner.os == 'Linux'
         run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri

@@ -27,7 +27,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--record-golden", action="store_true", help="Explicitly replace the reviewed local baseline after a gameplay change")
     parser.add_argument("--report", default="reports/replay.json")
+    parser.add_argument("--replay-timeout", type=int, default=780,
+                        help="Maximum replay subprocess seconds (1..3600; default 780)")
     args = parser.parse_args()
+    if not 1 <= args.replay_timeout <= 3600:
+        parser.error("--replay-timeout must be between 1 and 3600 seconds")
     binary = Path(os.environ.get("BRACKENWARD_GODOT", bootstrap.engine_binary()))
     if not binary.exists():
         raise SystemExit("Pinned editor missing; run python tools/bootstrap.py --editor-only")
@@ -45,7 +49,7 @@ def main():
         arguments = ["--script", "tools/replay_campaign.gd", "--", "--report", str(report)]
         if args.record_golden:
             arguments.append("--record-golden")
-        clean = run_engine(binary, arguments, 780, logs)
+        clean = run_engine(binary, arguments, args.replay_timeout, logs)
         evidence = json.loads(report.read_text())
         if not evidence.get("passed") or not evidence.get("cross_host_save_continuation") or \
            [int(item["tick"]) for item in evidence.get("checkpoints", [])] != [7200, 72000] or \

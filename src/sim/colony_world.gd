@@ -7,6 +7,9 @@ const SCHEMA_REVISION: int = 20
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
+# These activities are recreated from the resident's current needs and orders.
+# They cannot return to the shared work queue after their owner leaves them.
+const PERSONAL_JOBS: Array[String] = ["eat","sleep","leisure","recover","depart","escape","step_aside","shelter","defend","expedition_meet","expedition_walk"]
 var definitions: Dictionary
 var tick: int = 1800
 var seed: int = 104729
@@ -67,6 +70,7 @@ var command_trace: Array[Dictionary] = []
 var in_tick: bool = false
 var committing_work: bool = false
 var work_commits: Array[Dictionary] = []
+var personal_jobs_reconciled: bool = false
 
 func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 	definitions = catalog.duplicate(true)
@@ -518,6 +522,13 @@ func _perimeter(tiles: Array[Vector2i]) -> Array[Vector2i]:
 	return result
 
 func _create_work() -> void:
+	if not personal_jobs_reconciled:
+		# Older snapshots can contain abandoned personal work. Retain its history
+		# and release any real supplies through the ordinary cancellation path.
+		for job in jobs:
+			if job.kind in PERSONAL_JOBS and job.worker==0 and job.state not in ["Complete","Canceled"]:
+				_release(job,true)
+		personal_jobs_reconciled=true
 	for hearth in structures:
 		if hearth.health<=0 or hearth.definition != "hearth":
 			continue
@@ -845,6 +856,12 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 	return true
 
 func _block(job: Dictionary, reason: String) -> bool:
+	if job.is_empty() or job.state=="Complete": return false
+	if job.kind in PERSONAL_JOBS:
+		_release(job,true)
+		job.reason=reason
+		return false
+	if job.state in ["Complete","Canceled"]: return false
 	job.state = "Blocked"
 	job.reason = reason
 	job.retry = tick + 50
@@ -1207,8 +1224,9 @@ func _award_xp(job: Dictionary) -> void:
 					worker.skills[job.skill] = level
 
 func _release(job: Dictionary, cancel: bool) -> void:
-	if job.is_empty():
+	if job.is_empty() or job.state in ["Complete","Canceled"]:
 		return
+	cancel=cancel or job.kind in PERSONAL_JOBS
 	if cancel and job.kind=="trade":
 		var exchange: Dictionary = find(trade_state.exchanges,job.target)
 		if not exchange.is_empty() and exchange.state=="Packing": exchange.state="Canceled"

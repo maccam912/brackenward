@@ -37,3 +37,20 @@ static func run(game: GameSession, check: Callable) -> void:
 	ColonyAgriculture.designate(game.world,{"crop":"flax","tiles":[Vector2i(80,70)]})
 	game.world.fields[-1].planted=true;game.world.fields[-1].ripe_tick=game.world.tick
 	check.call("TUTORIAL/UI_nonfood_crops_never_count_as_future_food",game._tutorial_harvest_text().begins_with("No planted crops"))
+	loaded_alerts(game,check)
+
+static func loaded_alerts(game: GameSession, check: Callable) -> void:
+	game.close_sheet();game.select_citizen(1)
+	game.seen_fire_alert=99;game.seen_defense_alert=99;game.seen_region_alert=99;game.seen_opportunity_id=999999
+	game.food_warning_level=3;game.charter_epilogue_session=game.world.session_id
+	var world: ColonyWorld = ColonyTests.world()
+	var wall: Dictionary = world._structure("wood_wall",Vector2i(74,54),0)
+	ColonyFire.ignite(world,"structure",wall.id)
+	game._replace_world(world)
+	check.call("SAVE/UI_adoption_clears_old_selection_and_warning_counters",game.selected==0 and game.inspector==null and game.seen_region_alert==-1 and game.seen_opportunity_id==0 and game.food_warning_level==0 and game.charter_epilogue_session.is_empty())
+	game._process(0.0)
+	check.call("SAVE/UI_loaded_fire_reopens_even_after_higher_prior_alert_count",game.sheet_name=="Fire and water" and game.runner.speed==0)
+	world=ColonyTests.world();DefenseTests.raid(world)
+	game.seen_defense_alert=99;game._replace_world(world);game._process(0.0)
+	check.call("SAVE/UI_loaded_raid_reopens_even_after_higher_prior_alert_count",game.sheet_name=="Defense" and game.runner.speed==0,game.sheet_name)
+	game._replace_world(ColonyTests.world());game.close_sheet()

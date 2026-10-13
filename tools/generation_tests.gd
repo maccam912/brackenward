@@ -4,7 +4,7 @@ extends RefCounted
 static func run(check: Callable) -> void:
 	var hashes: Dictionary = {}
 	for site in ColonyGeneration.SITES:
-		for seed_value in [0,1,104729,4294967295]:
+		for seed_value in [0,1,42,104729,2147483647,4294967295]:
 			var world: ColonyWorld = ColonyTests.world()
 			var error: String = ColonyGeneration.configure(world,seed_value,site)
 			check.call("GEN/viable_%s_%d" % [site,seed_value],error.is_empty() and world.resources.size() > 70 and world.terrain_state.habitats.boar.size() == 2 and world.invariant_errors().is_empty(),error)

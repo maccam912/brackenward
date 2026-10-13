@@ -74,4 +74,96 @@ static func run(check: Callable) -> void:
 	loaded.path = preferences.path
 	loaded.load_local()
 	check.call("SETTINGS/corrupt_preferences_use_defaults_preserve_evidence",loaded.values.last_slot == 1 and FileAccess.get_file_as_string(preferences.path) == "{truncated")
+	journal_bounds(check, root)
 	remove_tree(root)
+
+static func history_fixture(count: int) -> ColonyWorld:
+	var world: ColonyWorld = ColonyTests.world()
+	# Dense but valid historical evidence crosses byte limits without faking
+	# resources, reservations, job completion, or a large checked-in save file.
+	for index in range(count):
+		world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"history_fixture","text":"Retained evidence %d: " % index + "x".repeat(8000)})
+	return world
+
+static func journal_bounds(check: Callable, root: String) -> void:
+	# Rejected public commands remain audit records, and may themselves exceed a
+	# frame even when the resulting authoritative world is small and valid.
+	var small: ColonyWorld = ColonyTests.world()
+	var command_store: ColonyStore = ColonyStore.new()
+	command_store.directory=root.path_join("large-command")
+	command_store.save(small)
+	var command_id: int = small.queue_command("pin_moment",{"text":"x".repeat(ColonyJournal.MAX_RECORD)})
+	small.step()
+	check.call("SAVE/oversized_rejected_command_rotates_valid_state",small.receipts[command_id].contains("256") and command_store.checkpoint(small).is_empty() and command_store.sequence==2 and command_store.journal_sequence==0 and small.command_trace.is_empty() and not FileAccess.file_exists(command_store.directory.path_join("journal-0000000001.frames")))
+	var command_recovery: Dictionary = command_store.load_latest()
+	check.call("SAVE/oversized_command_recovery_keeps_rejection_receipt",command_recovery.has("world") and command_recovery.world.canonical_hash()==small.canonical_hash())
+	var world: ColonyWorld = history_fixture(150)
+	var store: ColonyStore = ColonyStore.new()
+	store.directory = root.path_join("large-checkpoints")
+	var encoded: PackedByteArray = ColonyCodec.encode(world)
+	var frame: PackedByteArray = ColonyJournal.frame({"sequence":"1","kind":"tick","tick":world.tick,"state":world.payload()})
+	check.call("SAVE/large_history_is_valid_snapshot_above_frame_limit",encoded.size()<ColonyCodec.MAX_BYTES and not ColonyCodec.decode(encoded).has("error") and frame.decode_u32(0)>ColonyJournal.MAX_RECORD)
+	check.call("SAVE/large_history_initial_snapshot",store.save(world).is_empty())
+	var previous_path: String = store.directory.path_join("snapshot-%010d.brackenward" % store.sequence)
+	var previous_bytes: PackedByteArray = FileAccess.get_file_as_bytes(previous_path)
+	world.queue_command("food_policy",{"enabled":true})
+	world.step()
+	check.call("SAVE/oversized_checkpoint_rotates_without_invalid_journal",store.checkpoint(world).is_empty() and store.sequence==2 and store.journal_sequence==0 and store.journal_tick==world.tick and world.command_trace.is_empty() and not FileAccess.file_exists(store.directory.path_join("journal-0000000001.frames")) and FileAccess.get_file_as_bytes(previous_path)==previous_bytes)
+	var reader: ColonyStore = ColonyStore.new()
+	reader.directory=store.directory
+	var restored: Dictionary = reader.load_latest()
+	check.call("SAVE/oversized_checkpoint_recovers_exact_acknowledged_state",restored.has("world") and restored.world.canonical_hash()==world.canonical_hash(),str(restored.get("error","")))
+	# A real filesystem failure must not advance bookkeeping or discard commands.
+	var obstruction: String = store.directory.path_join("snapshot-0000000003.brackenward.tmp")
+	DirAccess.make_dir_recursive_absolute(obstruction)
+	world.queue_command("food_policy",{"enabled":false})
+	world.step()
+	var trace: Array = world.command_trace.duplicate(true)
+	var committed_tick: int = store.journal_tick
+	var failure: String = store.checkpoint(world)
+	check.call("SAVE/failed_large_rotation_keeps_generation_and_pending_trace",not failure.is_empty() and store.sequence==2 and store.journal_sequence==0 and store.journal_tick==committed_tick and world.command_trace==trace and FileAccess.get_file_as_bytes(previous_path)==previous_bytes and not FileAccess.file_exists(store.directory.path_join("journal-0000000002.frames")),failure)
+	DirAccess.remove_absolute(obstruction)
+	check.call("SAVE/large_rotation_retries_same_generation_safely",store.checkpoint(world).is_empty() and store.sequence==3 and store.journal_sequence==0 and world.command_trace.is_empty())
+	restored=reader.load_latest()
+	check.call("SAVE/retried_large_rotation_recovers_exact_state",restored.has("world") and restored.world.canonical_hash()==world.canonical_hash())
+	# Fill a real, correctly framed journal just below its aggregate bound. Every
+	# checkpoint carries the same valid state; repeated tick markers are supported.
+	world=history_fixture(80)
+	store=ColonyStore.new()
+	store.directory=root.path_join("aggregate-checkpoints")
+	check.call("SAVE/aggregate_rotation_initial_snapshot",store.save(world).is_empty())
+	var path: String = store.directory.path_join("journal-0000000001.frames")
+	var handle: FileAccess = FileAccess.open(path,FileAccess.WRITE)
+	var record: Dictionary = {"sequence":"1","kind":"tick","tick":world.tick,"state":world.payload()}
+	var written: int = 0
+	var count: int = 0
+	while true:
+		record.sequence=str(count+1)
+		frame=ColonyJournal.frame(record)
+		if written+frame.size()>ColonyJournal.MAX_JOURNAL: break
+		handle.store_buffer(frame)
+		written+=frame.size()
+		count+=1
+	handle.flush()
+	handle.close()
+	store.journal_sequence=count
+	var old_hash: String = FileAccess.get_sha256(path)
+	check.call("SAVE/aggregate_fixture_uses_valid_bounded_frames",count>1 and frame.decode_u32(0)<=ColonyJournal.MAX_RECORD and written<=ColonyJournal.MAX_JOURNAL and written+frame.size()>ColonyJournal.MAX_JOURNAL)
+	world.queue_command("food_policy",{"enabled":true})
+	world.step()
+	obstruction=store.directory.path_join("snapshot-0000000002.brackenward.tmp")
+	DirAccess.make_dir_recursive_absolute(obstruction)
+	trace=world.command_trace.duplicate(true)
+	committed_tick=store.journal_tick
+	failure=store.checkpoint(world)
+	check.call("SAVE/failed_aggregate_rotation_never_appends_or_loses_sequence",not failure.is_empty() and store.sequence==1 and store.journal_sequence==count and store.journal_tick==committed_tick and world.command_trace==trace and FileAccess.get_sha256(path)==old_hash,failure)
+	DirAccess.remove_absolute(obstruction)
+	check.call("SAVE/full_journal_rotates_before_append",store.checkpoint(world).is_empty() and store.sequence==2 and store.journal_sequence==0 and store.journal_tick==world.tick and world.command_trace.is_empty() and FileAccess.get_sha256(path)==old_hash)
+	world.queue_command("food_policy",{"enabled":false})
+	world.step()
+	check.call("SAVE/rotation_starts_fresh_command_and_tick_sequences",store.checkpoint(world).is_empty() and store.sequence==2 and store.journal_sequence==2)
+	var parsed: Dictionary = ColonyJournal.read(FileAccess.get_file_as_bytes(store.directory.path_join("journal-0000000002.frames")))
+	check.call("SAVE/fresh_journal_has_contiguous_sequence",not parsed.has("error") and not parsed.get("torn_tail",true) and parsed.records.size()==2 and parsed.records[0].sequence=="1" and parsed.records[1].sequence=="2")
+	reader.directory=store.directory
+	restored=reader.load_latest()
+	check.call("SAVE/aggregate_rotation_continues_exact_recovery",restored.has("world") and restored.world.canonical_hash()==world.canonical_hash(),str(restored.get("error","")))

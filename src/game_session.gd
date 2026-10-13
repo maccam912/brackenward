@@ -825,7 +825,16 @@ func _replace_world(state: RefCounted) -> void:
 	# first-launch placeholder must no longer block play or persistence.
 	awaiting_first_colony = false
 	seen_care_alert = -1
+	seen_region_alert = -1
+	seen_fire_alert = -1
+	seen_defense_alert = -1
+	seen_opportunity_id = 0
+	food_warning_level = 0
+	forecast_elapsed = 2.0
 	epilogue_session = ""
+	charter_epilogue_session = ""
+	defend_citizens.clear()
+	defend_stand_fast = false
 	recovery_failed = false
 	storage_error = ""
 	saving_disabled = false
@@ -835,6 +844,7 @@ func _replace_world(state: RefCounted) -> void:
 	view.forecast_mask.clear()
 	view.cancel_gesture()
 	view.follow_id = 0
+	close_inspector()
 	cancel_placement()
 	submitted_command = 0
 	confirm_button.disabled = false

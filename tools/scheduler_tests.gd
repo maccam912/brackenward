@@ -9,6 +9,7 @@ static func run(check: Callable) -> void:
 	check.call("SCHED/citizen_storage_order_does_not_change_tick_results",ordered.canonical_hash()==reversed.canonical_hash())
 	automatic_cooking(check)
 	hungry_sleepers(check)
+	personal_job_lifecycle(check)
 	var world: ColonyWorld = ColonyTests.world()
 	var person: Dictionary = world.citizens[0]
 	world.tick=24*7200;world.weather="cold_snap";person.x=90;person.y=90
@@ -84,6 +85,7 @@ static func hungry_sleepers(check: Callable) -> void:
 	person.rest=500
 	world._assign(person)
 	check.call("SCHED/sleepers_seek_available_food_at_350",world.find(world.jobs,person.job).get("kind")=="eat")
+	check.call("SCHED/interrupted_sleep_retires_its_personal_job",sleeping.state=="Canceled" and sleeping.worker==0)
 	var ate: bool = false
 	var resumed_sleep: bool = false
 	var minimum_fullness: int = person.fullness
@@ -94,6 +96,47 @@ static func hungry_sleepers(check: Callable) -> void:
 		resumed_sleep=resumed_sleep or (ate and world.find(world.jobs,person.job).get("kind")=="sleep")
 	check.call("SCHED/night_meal_finishes_and_sleep_resumes_without_starvation",ate and resumed_sleep and minimum_fullness>0 and person.health==100,"minimum fullness=%d, ate=%s, slept=%s" % [minimum_fullness,ate,resumed_sleep])
 	check.call("SCHED/night_meal_preserves_material_accounting",world.invariant_errors().is_empty(),str(world.invariant_errors()))
+
+static func personal_job_lifecycle(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]
+	person.fullness=300;person.rest=1000
+	for category in person.preferences: person.preferences[category]=0
+	var occupied: Dictionary = world._job("leisure","","",world.citizens[1].id,Vector2i(person.x,person.y),0)
+	occupied.worker=world.citizens[1].id;occupied.state="Working";world.citizens[1].job=occupied.id
+	for attempt in range(3): world._assign(person);world.tick+=10
+	var attempts: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="eat")
+	check.call("SCHED/failed_meal_positions_leave_no_orphan_work",attempts.size()==3 and attempts.all(func(j:Dictionary)->bool:return j.state=="Canceled" and j.worker==0 and j.reason=="No free work position"))
+	check.call("SCHED/failed_meal_positions_hold_no_food",world.stacks.all(func(s:Dictionary)->bool:return s.reservations.is_empty()) and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	world=ColonyTests.world();person=world.citizens[0]
+	var food: Dictionary = world._food(person)
+	var eating: Dictionary = world._job("eat","","",person.id,Vector2i(person.x,person.y),2000)
+	eating.inputs={food.item:1};eating.source=food.id
+	var reserved: bool = world._reserve(eating,person)
+	check.call("SCHED/interrupted_meal_fixture_reserves",reserved)
+	if not reserved: return
+	person.job=eating.id;person.x=food.x;person.y=food.y;person.progress=0;world._work(person,eating)
+	var carried: Array = world.stacks.filter(func(s:Dictionary)->bool:return s.location=="carry" and s.job==eating.id and s.count>0)
+	world._release(eating,false)
+	check.call("SCHED/interrupted_meal_drops_real_food_at_resident",eating.state=="Canceled" and person.job==0 and carried.size()==1 and carried[0].location=="ground" and carried[0].x==person.x and carried[0].y==person.y and carried[0].count==1 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	world=ColonyTests.world();person=world.citizens[0];food=world._food(person)
+	eating=world._job("eat","","",person.id,Vector2i(person.x,person.y),2000);eating.inputs={food.item:1};eating.source=food.id
+	reserved=world._reserve(eating,person);person.job=eating.id
+	food.age=world.definitions.items[food.item].shelf_ticks
+	ColonyLiving.advance(world)
+	check.call("SCHED/spoiled_personal_meal_stays_canceled_with_cause",reserved and eating.state=="Canceled" and eating.reason.contains("spoiled") and person.job==0 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	world=ColonyTests.world();person=world.citizens[0]
+	var old_sleep: Dictionary = world._job("sleep","","",person.bed,Vector2i(person.x,person.y),0)
+	var old_leisure: Dictionary = world._job("leisure","","",person.id,Vector2i(person.x,person.y),0);old_leisure.state="Blocked";old_leisure.reason="No route"
+	var complete: Dictionary = world._job("leisure","","",person.id,Vector2i(person.x,person.y),0);complete.state="Complete"
+	var complete_before: Dictionary = complete.duplicate(true)
+	var active: Dictionary = world._job("sleep","","",person.bed,Vector2i(person.x,person.y),0);active.worker=person.id;active.state="Working";person.job=active.id
+	var ordinary: Dictionary = world._job("gather","Gathering","Field",world.resources[0].id,Vector2i(world.resources[0].x,world.resources[0].y),16000);ordinary.state="Blocked";ordinary.reason="No route"
+	var restored: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SCHED/legacy_personal_job_fixture_loads",restored.has("world"),str(restored.get("error","")))
+	if not restored.has("world"): return
+	world=restored.world;world._create_work()
+	check.call("SCHED/loaded_orphans_retire_without_pruning_history",world.find(world.jobs,old_sleep.id).state=="Canceled" and world.find(world.jobs,old_leisure.id).state=="Canceled" and world.find(world.jobs,complete.id)==complete_before)
+	check.call("SCHED/reconciliation_preserves_owned_rest_and_blocked_colony_work",world.find(world.jobs,active.id).state=="Working" and world.citizens[0].job==active.id and world.find(world.jobs,ordinary.id).state=="Blocked" and world.invariant_errors().is_empty(),str(world.invariant_errors()))
 
 static func work_position(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]
