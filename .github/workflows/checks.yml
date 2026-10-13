@@ -65,6 +65,10 @@ jobs:
           python3 tools/check_suite.py defense
           python3 tools/check_suite.py director
           python3 tools/check_suite.py opportunity
+          python3 tools/check_suite.py charter
+          python3 tools/check_suite.py chronicle
+          python3 tools/check_suite.py scheduler
+          python3 tools/check_suite.py tutorial
       - name: Real Control/input/layout suite
         run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK

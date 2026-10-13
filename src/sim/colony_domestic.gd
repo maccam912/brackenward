@@ -164,7 +164,7 @@ static func _feed_dawn(world: ColonyWorld) -> void:
 						animal.pending=0
 						for job in world.jobs:
 							if job.target==animal.id and job.kind in ["lead_animal","collect_animal","slaughter"] and job.state not in ["Complete","Canceled"]: world._release(job,true)
-					world.facts.append({"tick":world.tick,"actor":animal.id,"job":0,"kind":"animal_hungry","text":animal.name+" lost 10 health after more than two unfed days. Stock barn feed and enable Animals work."})
+					world.emit_fact({"tick":world.tick,"actor":animal.id,"job":0,"kind":"animal_hungry","text":animal.name+" lost 10 health after more than two unfed days. Stock barn feed and enable Animals work."})
 
 static func create_jobs(world: ColonyWorld) -> void:
 	for pen in world.domestic_state.pens:

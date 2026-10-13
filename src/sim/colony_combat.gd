@@ -80,7 +80,6 @@ static func resolve(world: ColonyWorld) -> void:
 				animal.attacker = hit.citizen; animal.origin = Vector2i(animal.x,animal.y)
 		else:
 			people_damage[hit.citizen] = people_damage.get(hit.citizen,0)+hit.damage
-			world.facts.append({"tick":world.tick,"actor":hit.citizen,"job":0,"kind":"boar_injury","text":"%s took %d damage from a wounded boar; retreat begins at health 40." % [world.find(world.citizens,hit.citizen).name,hit.damage]})
 	var enemy_damage: Dictionary = {};var wall_damage: Dictionary = {};var attackers: Dictionary = {}
 	for hit in human_hits:
 		if hit.kind=="citizen": people_damage[hit.target]=people_damage.get(hit.target,0)+hit.damage
@@ -100,11 +99,23 @@ static func resolve(world: ColonyWorld) -> void:
 		# uncapped damage in the same resolution, including to downed people.
 		var attack_damage: int = 0 if person.downed else mini(people_damage[id],maxi(0,person.health-10))
 		var flame_damage: int = fire_damage.people.get(id,0)
-		ColonyCare.hurt(world,person,attack_damage+flame_damage)
-		if flame_damage>0: world.facts.append({"tick":world.tick,"actor":person.id,"job":0,"kind":"fire_injury","text":"%s took %d fire damage from a burning tile; rescue and water remain available." % [person.name,flame_damage]})
+		var causes: Array = []
+		var boar_hits: Array = hits.filter(func(h:Dictionary)->bool:return h.job==0 and h.citizen==id)
+		var road_hits: Array = human_hits.filter(func(h:Dictionary)->bool:return h.kind=="citizen" and h.target==id)
+		if attack_damage>0:
+			var kind: String = "combat_injury" if not boar_hits.is_empty() and not road_hits.is_empty() else ("boar_injury" if not boar_hits.is_empty() else "raid_injury")
+			var source: String = "boar and road attackers" if kind=="combat_injury" else ("a boar" if kind=="boar_injury" else "road attackers")
+			var participants: Array = [person.id]
+			for hit in boar_hits:
+				if not participants.has(hit.animal): participants.append(hit.animal)
+			for hit in road_hits:
+				if not participants.has(hit.source): participants.append(hit.source)
+			causes.append(world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":kind,"text":"%s lost %d health from %s; retreat begins at health 40." % [person.name,attack_damage,source]},{"participants":participants,"location":[person.x,person.y]}))
+		var actual_flame: int = mini(flame_damage,maxi(0,person.health-attack_damage))
+		if actual_flame>0: causes.append(world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"fire_injury","text":"%s lost %d health from a burning tile; rescue and water remain available." % [person.name,actual_flame]},{"location":[person.x,person.y]}))
+		ColonyCare.hurt(world,person,attack_damage+flame_damage,false,causes)
 		if person.downed:
-			var causes: Array = hits.filter(func(h:Dictionary)->bool:return h.job==0 and h.citizen==id)
-			if not causes.is_empty(): world.wildlife_state.injuries[person.injury_id]={"animal":causes[0].animal,"tick":world.tick}
+			if not boar_hits.is_empty(): world.wildlife_state.injuries[person.injury_id]={"animal":boar_hits[0].animal,"tick":world.tick}
 	for id in animal_damage:
 		var animal: Dictionary = world.find(world.wildlife_state.animals,id)
 		animal.health = maxi(0,animal.health-animal_damage[id])

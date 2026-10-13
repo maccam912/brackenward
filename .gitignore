@@ -5,6 +5,7 @@ reports/*.json
 reports/*.png
 reports/*.png.import
 reports/*.log
+reports/*.brackenward
 reports/fixtures/
 platform/android_save/.gradle/
 platform/android_save/build/

@@ -23,10 +23,17 @@ static func initialize(world: ColonyWorld) -> void:
 static func key(a: int,b: int) -> String:
 	return "%d:%d" % [mini(a,b),maxi(a,b)]
 
-static func change(world: ColonyWorld, pair: Dictionary, amount: int) -> void:
+static func change(world: ColonyWorld, pair: Dictionary, amount: int, causes: Array = []) -> void:
+	var before: int = pair.score
 	pair.score = clampi(pair.score+amount,-100,100)
 	pair.last_interaction = world.tick
 	pair.last_decay = world.tick
+	if before<40 and pair.score>=40:
+		var a: Dictionary = world.find(world.citizens,pair.a);var b: Dictionary = world.find(world.citizens,pair.b)
+		var first_key: String = "friendship:"+key(pair.a,pair.b)
+		var first: bool = ColonyChronicle.causes(world,first_key).is_empty()
+		var id: int = world.emit_fact({"tick":world.tick,"actor":pair.a,"job":0,"kind":"friendship" if first else "friendship_renewed","text":a.name+" and "+b.name+(" became friends." if first else " are friends again.")},{"participants":[pair.a,pair.b],"causes":causes,"location":[a.x,a.y]})
+		if first: ColonyChronicle.remember(world,first_key,id)
 
 static func leisure_seat(world: ColonyWorld, citizen: Dictionary) -> Vector2i:
 	var start: Vector2i = Vector2i(citizen.x,citizen.y)
@@ -44,6 +51,9 @@ static func leisure_seat(world: ColonyWorld, citizen: Dictionary) -> Vector2i:
 				queue.append(next)
 	var candidates: Array[Dictionary] = []
 	var occupied: Dictionary = {}
+	if world.charter_state.supper.get("state","") == "Active":
+		for slot in world.charter_state.supper.slots:
+			occupied[Vector2i(slot.x,slot.y)] = true
 	for job in world.jobs:
 		if job.worker > 0: occupied[Vector2i(job.work_x,job.work_y)] = true
 	var cart: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition == "supply_cart")[0]
@@ -88,7 +98,7 @@ static func advance(world: ColonyWorld) -> void:
 	var leisure: Array[Dictionary] = []
 	for citizen in world.citizens:
 		var job: Dictionary = world.find(world.jobs,citizen.job)
-		if citizen.health > 0 and not citizen.departed and not citizen.away and job.get("kind") == "leisure" and job.state == "Working": leisure.append(citizen)
+		if citizen.health > 0 and not citizen.departed and not citizen.away and (job.get("kind") == "leisure" or (job.get("kind")=="supper" and job.amount==1)) and job.state == "Working": leisure.append(citizen)
 	var chosen: Dictionary = {}
 	var paired: Dictionary = {}
 	for citizen in leisure:
@@ -109,12 +119,15 @@ static func advance(world: ColonyWorld) -> void:
 				var a: Dictionary = world.find(world.citizens,pair.a)
 				var b: Dictionary = world.find(world.citizens,pair.b)
 				var gain: int = (1 if a.traits.has("Private") or b.traits.has("Private") else 2)+(1 if a.traits.has("Sociable") else 0)+(1 if b.traits.has("Sociable") else 0)
-				change(world,pair,gain)
+				var shared: int = world.emit_fact({"tick":world.tick,"actor":pair.a,"job":0,"kind":"shared_leisure","text":a.name+" and "+b.name+" shared half an hour of leisure."},{"participants":[pair.a,pair.b],"location":[a.x,a.y]})
+				change(world,pair,gain,[shared])
 				pair.conversation_day = day
 				pair.conversation_ticks = 0
 				if pair.score >= 40:
 					a.friend_leisure_until = world.tick+7200
 					b.friend_leisure_until = world.tick+7200
+					ColonyChronicle.remember(world,"friend_leisure:"+str(a.id),shared)
+					ColonyChronicle.remember(world,"friend_leisure:"+str(b.id),shared)
 		elif not chosen.has(key(pair.a,pair.b)): pair.conversation_ticks = 0
 		if world.tick-pair.last_interaction >= 57600 and world.tick-pair.last_decay >= 57600:
 			pair.score -= signi(pair.score)
@@ -128,6 +141,8 @@ static func advance(world: ColonyWorld) -> void:
 				if citizen.private_leisure_ticks >= 150 and citizen.private_leisure_day != day:
 					citizen.friend_leisure_until = world.tick+7200
 					citizen.private_leisure_day = day
+					var quiet: int = world.emit_fact({"tick":world.tick,"actor":citizen.id,"job":citizen.job,"kind":"quiet_leisure","text":citizen.name+" enjoyed half an hour of quiet leisure."})
+					ColonyChronicle.remember(world,"friend_leisure:"+str(citizen.id),quiet)
 			else: citizen.private_leisure_ticks = 0
 			var table: int = table_at(world,Vector2i(citizen.x,citizen.y))
 			if table > 0 and leisure.filter(func(c:Dictionary)->bool:return table_at(world,Vector2i(c.x,c.y)) == table).size() >= 3:
@@ -182,7 +197,8 @@ static func _disagreement(world: ColonyWorld, pair: Dictionary) -> void:
 			pair.conflict_clock = 0
 			pair.conflict_until = world.tick+14400
 			pair.conflict_cooldown = world.tick+14400
-			world.facts.append({"tick":world.tick,"actor":pair.a,"job":0,"kind":"disagreement","text":a.name+" and "+b.name+" disagree after sharing work in a room. Separate their work or mediate."})
+			var disagreement: int = world.emit_fact({"tick":world.tick,"actor":pair.a,"job":0,"kind":"disagreement","text":a.name+" and "+b.name+" disagree after sharing work in a room. Separate their work or mediate."},{"participants":[a.id,b.id],"location":[a.x,a.y]})
+			ColonyChronicle.remember(world,"conflict:"+key(a.id,b.id),disagreement)
 	else: pair.conflict_clock = 0
 
 static func command(world: ColonyWorld, kind: String, args: Dictionary) -> String:
@@ -196,11 +212,16 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 	else:
 		var request: Dictionary = world.find(world.social_state.requests,args.target)
 		if request.is_empty() or request.state != "Offered": return "This request is no longer offered"
-		if kind == "request_decline": request.state = "Declined"
+		if kind == "request_decline":
+			request.state = "Declined"
+			world.chronicle_state.links.erase("request:"+str(request.id))
 		else:
 			request.state = "Accepted"
 			request.accepted_at = world.tick
 			request.deadline = world.tick+28800
+			var person: Dictionary = world.find(world.citizens,request.actor)
+			var accepted: int = world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"request_accepted","text":person.name+": "+TITLES[request.kind]+" accepted; the promised deadline is four days from now."},{"causes":ColonyChronicle.causes(world,"request:"+str(request.id))})
+			ColonyChronicle.remember(world,"request:"+str(request.id),accepted)
 			if fulfilled(world,request): _resolve(world,request,true)
 	return "accepted"
 
@@ -213,21 +234,21 @@ static func complete_mediation(world: ColonyWorld, job: Dictionary) -> bool:
 	pair.conflict_until = 0
 	return true
 
-static func shared_building(world: ColonyWorld, job: Dictionary) -> void:
+static func shared_building(world: ColonyWorld, job: Dictionary, causes: Array = []) -> void:
 	var workers: Array = job.worker_days.keys().filter(func(id:int)->bool:return job.worker_days[id] == world.tick / 7200)
 	workers.sort()
 	for i in range(workers.size()):
 		for j in range(i+1,workers.size()):
 			var pair: Dictionary = world.social_state.pairs[key(workers[i],workers[j])]
 			if pair.work_day != world.tick / 7200:
-				change(world,pair,1)
+				change(world,pair,1,causes)
 				pair.work_day = world.tick / 7200
 
-static func rescue(world: ColonyWorld, rescuer: int, patient: int, incident: int) -> void:
+static func rescue(world: ColonyWorld, rescuer: int, patient: int, incident: int, cause: int = 0) -> void:
 	var pair: Dictionary = world.social_state.pairs[key(rescuer,patient)]
 	if pair.rescued.has(str(incident)): return
 	pair.rescued.append(str(incident))
-	change(world,pair,25 if world.find(world.citizens,rescuer).traits.has("Kind") else 20)
+	change(world,pair,25 if world.find(world.citizens,rescuer).traits.has("Kind") else 20,[cause] if cause>0 else [])
 
 static func _eligible(citizen: Dictionary, kind: String) -> bool:
 	return {"quiet_bed":citizen.traits.has("Private") or citizen.traits.has("Homebody"),"garden_seat":citizen.traits.has("Outdoorsy") or citizen.preferred in ["Growing","Gathering","Animals"],"supper":citizen.traits.has("Sociable") or citizen.traits.has("Kind"),"learn":citizen.traits.has("Curious") or citizen.preferred == "Research","tool":citizen.preferred in ["Crafting","Building"],"valley":citizen.traits.has("Restless") or citizen.preferred == "Gathering"}[kind]
@@ -253,7 +274,8 @@ static func _offer(world: ColonyWorld) -> void:
 	person.last_request_offer = world.tick
 	person.request_cycle = (REQUESTS.find(choice.kind)+1)%REQUESTS.size()
 	world.social_state.requests.append(choice)
-	world.facts.append({"tick":world.tick,"actor":person.id,"job":0,"kind":"request_offered","text":person.name+" requests "+TITLES[choice.kind]+". Optional; accepting gives four days."})
+	var offered: int = world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"request_offered","text":person.name+" requests "+TITLES[choice.kind]+". Optional; accepting gives four days."})
+	ColonyChronicle.remember(world,"request:"+str(choice.id),offered)
 
 static func fulfilled(world: ColonyWorld, request: Dictionary) -> bool:
 	var person: Dictionary = world.find(world.citizens,request.actor)
@@ -278,7 +300,9 @@ static func _resolve(world: ColonyWorld, request: Dictionary, success: bool) -> 
 	var person: Dictionary = world.find(world.citizens,request.actor)
 	if success: person.fulfilled_request_until = world.tick+14400
 	else: person.broken_promise_until = world.tick+14400
-	world.facts.append({"tick":world.tick,"actor":person.id,"job":0,"kind":"request_fulfilled" if success else "request_failed","text":person.name+": "+TITLES[request.kind]+(" fulfilled." if success else " promise expired. Improve conditions; the mood penalty lasts two days.")})
+	var outcome: int = world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"request_fulfilled" if success else "request_failed","text":person.name+": "+TITLES[request.kind]+(" fulfilled." if success else " promise expired. Improve conditions; the mood penalty lasts two days.")},{"causes":ColonyChronicle.causes(world,"request:"+str(request.id))})
+	ColonyChronicle.remember(world,("request_success:" if success else "request_failure:")+str(person.id),outcome)
+	world.chronicle_state.links.erase("request:"+str(request.id))
 
 static func mood_terms(world: ColonyWorld, citizen: Dictionary) -> Dictionary:
 	var terms: Dictionary = {}

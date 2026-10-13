@@ -85,7 +85,7 @@ static func advance(world: ColonyWorld) -> void:
 		world.weather_state.days.append(_day(world,day+3))
 		for entry in world.weather_state.days:
 			if entry.day == day: world.weather = entry.kind
-		world.facts.append({"tick":world.tick,"actor":0,"job":0,"kind":"weather","text":"Today's weather: "+world.weather.replace("_"," ")})
+		world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"weather","text":"Today's weather: "+world.weather.replace("_"," ")})
 	if world.weather == "flood" and world.tick % 7200 == 1800 and world.weather_state.last_flood_day != day:
 		var mask: Array = []
 		for entry in world.weather_state.days:
@@ -112,7 +112,7 @@ static func advance(world: ColonyWorld) -> void:
 			var job: Dictionary = world.find(world.jobs,id)
 			world._release(job,false)
 			world._block(job,"Flood damaged inputs: move supplies onto high ground")
-		world.facts.append({"tick":world.tick,"actor":0,"job":0,"kind":"flood","text":"Floodwater until 18:00; %d food units lost on low ground. High ground and protected stores are safe." % lost})
+		world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"flood","text":"Floodwater until 18:00; %d food units lost on low ground. High ground and protected stores are safe." % lost})
 	if world.tick % 7200 == 5400 and not world.weather_state.flooded.is_empty():
 		world.weather_state.flooded = []
 		world.flood_cache_valid = false

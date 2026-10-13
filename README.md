@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M5 in progress: physical visitor opportunities and corrected combat**, version `0.5.2-m5`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M6 in progress: Charter, communal supper and causal Chronicle**, version `0.6.0-m6`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 

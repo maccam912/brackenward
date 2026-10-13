@@ -59,7 +59,7 @@ static func advance(world: ColonyWorld) -> void:
 		if state.age >= MATURITY:
 			state.age = MATURITY; state.planted = false; resource.remaining = 8
 			world.navigation_dirty = true
-			world.facts.append({"tick":world.tick,"actor":0,"job":0,"kind":"tree_mature","text":"A replanted tree matured after eight non-winter days."})
+			world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"tree_mature","text":"A replanted tree matured after eight non-winter days."})
 
 static func create_jobs(world: ColonyWorld) -> void:
 	for zone in world.nature_state.forests:

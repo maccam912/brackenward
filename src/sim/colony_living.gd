@@ -60,10 +60,17 @@ static func advance(world: ColonyWorld) -> void:
 				citizen.bed_sleep_ticks += 1
 				if citizen.bed_sleep_ticks >= 1200:
 					citizen.bed_memory_until = world.tick + 7200
+					if citizen.bed_sleep_ticks == 1200:
+						var rested: int = world.emit_fact({"tick":world.tick,"actor":citizen.id,"job":job.id,"kind":"rested_in_bed","text":citizen.name+" completed four hours of sleep in an assigned bed."},{"participants":[citizen.id,bed.id],"location":[citizen.x,citizen.y]})
+						ColonyChronicle.remember(world,"sleep:"+str(citizen.id),rested)
 		else:
 			citizen.bed_sleep_ticks = 0
 		if citizen.leisure_ticks >= (450 if citizen.traits.has("Sociable") else 300):
 			citizen.leisure_memory_until = world.tick + 7200
+			var prior: Array = ColonyChronicle.causes(world,"leisure:"+str(citizen.id))
+			if prior.is_empty() or ColonyChronicle.fact(world.chronicle_state,prior[0]).tick / 7200 != day:
+				var relaxed: int = world.emit_fact({"tick":world.tick,"actor":citizen.id,"job":citizen.job,"kind":"leisure_completed","text":citizen.name+" completed the day's leisure time."})
+				ColonyChronicle.remember(world,"leisure:"+str(citizen.id),relaxed)
 		if comfortable(world,citizen):
 			citizen.warm_until = world.tick + 600
 		if citizen.morale < (200 if citizen.traits.has("Steady") else 250):
@@ -75,7 +82,7 @@ static func advance(world: ColonyWorld) -> void:
 			citizen.break_clock = 0
 			if not job.is_empty() and job.kind not in ["eat", "sleep"]:
 				world._release(job, false)
-			world.facts.append({"tick": world.tick, "actor": citizen.id, "job": 0, "kind": "break", "text": citizen.name + " takes a break: " + str(citizen.mood_terms)})
+			world.emit_fact({"tick": world.tick, "actor": citizen.id, "job": 0, "kind": "break", "text": citizen.name + " takes a break: " + str(citizen.mood_terms)})
 		if citizen.break_until > 0 and world.tick >= citizen.break_until:
 			citizen.break_until = 0
 			citizen.break_cooldown = world.tick + 14400
@@ -87,7 +94,7 @@ static func advance(world: ColonyWorld) -> void:
 			citizen.departure_until = 0
 		if citizen.departure_clock >= 7200 and citizen.departure_until == 0 and not citizen.departed:
 			citizen.departure_until = world.tick + 7200
-			world.facts.append({"tick": world.tick, "actor": citizen.id, "job": 0, "kind": "departure_notice", "text": citizen.name + " may leave in one day: improve bed, food, warmth or workload"})
+			world.emit_fact({"tick": world.tick, "actor": citizen.id, "job": 0, "kind": "departure_notice", "text": citizen.name + " may leave in one day: improve bed, food, warmth or workload"})
 		if world.tick % 300 == 0:
 			_morale(world, citizen, job)
 
@@ -111,6 +118,7 @@ static func comfortable(world: ColonyWorld, citizen: Dictionary) -> bool:
 static func _morale(world: ColonyWorld, citizen: Dictionary, job: Dictionary) -> void:
 	var terms: Dictionary = ColonySocial.mood_terms(world,citizen)
 	terms.merge(ColonyCare.mood_terms(world,citizen))
+	terms.merge(ColonyCharter.mood_terms(world,citizen))
 	if citizen.story_memory_until>world.tick: terms["Shared a traveling story"]=40
 	if citizen.away and citizen.traits.has("Homebody"): terms["Homebody away"]=-40
 	if world.production_state.discoveries.get(citizen.id,0) > world.tick:
@@ -137,7 +145,7 @@ static func _morale(world: ColonyWorld, citizen: Dictionary, job: Dictionary) ->
 		terms["Injured"] = -150
 	if citizen.raw_memory_until > world.tick and not citizen.traits.has("Outdoorsy"):
 		terms["Raw produce"] = -50
-	if not job.is_empty() and job.kind not in ["sleep", "eat", "leisure"]:
+	if not job.is_empty() and job.kind not in ["sleep", "eat", "leisure", "supper", "supper_reserve"]:
 		var inside: bool = world.roofed(Vector2i(citizen.x, citizen.y))
 		if citizen.traits.has("Homebody") and inside and not citizen.away:
 			terms["Homebody indoors"] = 40

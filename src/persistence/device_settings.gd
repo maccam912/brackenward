@@ -2,24 +2,29 @@ class_name DeviceSettings
 extends RefCounted
 ## Device-wide UI preferences. Imported campaigns never replace this record.
 var path: String = "user://device-settings.json"
-var values: Dictionary = {"schema_version":1,"text_scale":1.0,"left_handed":false,"last_slot":1,
+var values: Dictionary = {"schema_version":2,"text_scale":1.0,"left_handed":false,"last_slot":1,"tutorials":{},
 	"cameras":[[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0]]}
 
 func load_local() -> void:
 	if not FileAccess.file_exists(path):
 		return
 	var handle: FileAccess = FileAccess.open(path,FileAccess.READ)
-	if handle == null or handle.get_length() > 16384:
+	if handle == null or handle.get_length() > 1024*1024:
 		return
 	var parser: JSON = JSON.new()
-	if parser.parse(handle.get_as_text()) != OK or not _valid(parser.data):
+	if parser.parse(handle.get_as_text()) != OK:
 		return
-	values = parser.data
+	var candidate: Variant = parser.data
+	if candidate is Dictionary and candidate.get("schema_version")==1 and ColonyCodec._keys(candidate,["schema_version","text_scale","left_handed","last_slot","cameras"]):
+		candidate=candidate.duplicate(true);candidate.schema_version=2;candidate["tutorials"]={}
+	if not _valid(candidate): return
+	values = candidate
 	values.schema_version = int(values.schema_version)
 	values.last_slot = int(values.last_slot)
+	for state in values.tutorials.values(): state.version=int(state.version)
 
 func _valid(data: Variant) -> bool:
-	if not data is Dictionary or not ColonyCodec._keys(data,values.keys()) or data.schema_version != 1 or not data.left_handed is bool or data.text_scale not in [1.0,1.25,1.5] or not data.last_slot is float and not data.last_slot is int:
+	if not data is Dictionary or not ColonyCodec._keys(data,values.keys()) or data.schema_version != 2 or not data.left_handed is bool or data.text_scale not in [1.0,1.25,1.5] or not data.last_slot is float and not data.last_slot is int:
 		return false
 	if data.last_slot != floor(data.last_slot) or data.last_slot < 1 or data.last_slot > 5 or not data.cameras is Array or data.cameras.size() != 5:
 		return false
@@ -31,6 +36,9 @@ func _valid(data: Variant) -> bool:
 				return false
 		if camera[0] < 0 or camera[0] > 128 or camera[1] < 0 or camera[1] > 128 or camera[2] < 16 or camera[2] > 64:
 			return false
+	if not data.tutorials is Dictionary or data.tutorials.size()>1024: return false
+	for campaign_id in data.tutorials:
+		if not campaign_id is String or campaign_id.is_empty() or campaign_id.length()>80 or not ColonyTutorial.valid(data.tutorials[campaign_id]): return false
 	return true
 
 func save_local() -> String:

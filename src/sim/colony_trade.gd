@@ -9,8 +9,8 @@ static func initial_state(seed: int, version: int, site: String) -> Dictionary:
 static func cart(world: ColonyWorld) -> Dictionary:
 	return world.structures.filter(func(s:Dictionary)->bool:return s.definition=="supply_cart")[0]
 
-static func fact(world: ColonyWorld, kind: String, text: String, job: int = 0) -> void:
-	world.facts.append({"tick":world.tick,"actor":0,"job":job,"kind":kind,"text":text})
+static func fact(world: ColonyWorld, kind: String, text: String, job: int = 0, details: Dictionary = {}) -> int:
+	return world.emit_fact({"tick":world.tick,"actor":0,"job":job,"kind":kind,"text":text},details)
 
 static func schedule(world: ColonyWorld, community: String) -> Dictionary:
 	var merchant: Dictionary = {"id":world._id(),"community":community,"state":"Waiting","stock":world.definitions.communities[community].stock.duplicate(),"x":0,"y":0,"entry":Vector2i.ZERO,"route":[],"goal":[],"progress":0,"move_rem":0,"deadline":0,"note":"Waiting for a safe boundary route"}
@@ -147,11 +147,13 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 	job.inputs=exchange.pay.duplicate();exchange.job=job.id
 	if not reserve_payment(world,job): world._release(job,true);return "Payment changed: refresh preview"
 	world.trade_state.exchanges.append(exchange)
-	fact(world,"trade_accepted","Payment reserved for "+merchant.community.capitalize()+". Goods wait for physical delivery; surplus gift value %d gives no reputation." % check.gift,job.id)
+	var accepted: int = fact(world,"trade_accepted","Payment reserved for "+merchant.community.capitalize()+". Goods wait for physical delivery; surplus gift value %d gives no reputation." % check.gift,job.id,{"participants":[merchant.id],"names":{merchant.id:merchant.community.capitalize()+" merchant"},"location":[wagon.x,wagon.y]})
+	ColonyChronicle.remember(world,"trade:"+str(exchange.id),accepted)
 	return "accepted"
 
 static func cancel(world: ColonyWorld, exchange: Dictionary) -> void:
 	world._release(world.find(world.jobs,exchange.job),true);exchange.state="Canceled"
+	world.chronicle_state.links.erase("trade:"+str(exchange.id))
 
 static func ready(world: ColonyWorld, job: Dictionary) -> bool:
 	var exchange: Dictionary = world.find(world.trade_state.exchanges,job.target)
@@ -191,7 +193,14 @@ static func complete(world: ColonyWorld, job: Dictionary) -> void:
 		world.trade_state.reputation[exchange.community]=mini(100,world.trade_state.reputation[exchange.community]+10)
 		world.trade_state.delivery_after[exchange.community]=world.tick+57600
 	exchange.state="Complete";exchange.receipt=world.tick
-	fact(world,"trade_receipt",exchange.community.capitalize()+" received the listed payment at the cart. "+("Delivery earned +10 reputation; next delivery in eight days." if exchange.delivery else "Purchased goods are released here. Surplus gift %d; trade changes no reputation." % exchange.gift),job.id)
+	var changes: Dictionary = {}
+	for item in exchange.pay: changes[item]=-exchange.pay[item]
+	for item in exchange.buy:
+		if world.definitions.items.has(item): changes[item]=changes.get(item,0)+exchange.buy[item]
+	var participants: Array = [merchant.id]
+	if job.worker>0: participants.append(job.worker)
+	fact(world,"trade_receipt",exchange.community.capitalize()+" received the listed payment at the cart. "+("Delivery earned +10 reputation; next delivery in eight days." if exchange.delivery else "Purchased goods are released here. Surplus gift %d; trade changes no reputation." % exchange.gift),job.id,{"participants":participants,"names":{merchant.id:merchant.community.capitalize()+" merchant"},"location":[wagon.x,wagon.y],"changes":changes,"causes":ColonyChronicle.causes(world,"trade:"+str(exchange.id))})
+	world.chronicle_state.links.erase("trade:"+str(exchange.id))
 
 static func validate(data: Variant, definitions: Dictionary, tick: int) -> bool:
 	if not data is Dictionary or not ColonyCodec._keys(data,["rng","next_visit","visit_index","announced","reputation","delivery_after","merchants","exchanges"]) or not data.rng is int or data.rng<=0 or data.rng>=2147483647 or not data.next_visit is int or data.next_visit<31200 or not data.visit_index is int or data.visit_index<0 or data.next_visit!=31200+data.visit_index*28800 or not data.announced is bool or not data.merchants is Array or not data.exchanges is Array: return false

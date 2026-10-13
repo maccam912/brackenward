@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region", "fire", "defense", "director", "opportunity"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region|fire|defense|director|opportunity. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region", "fire", "defense", "director", "opportunity", "charter", "chronicle", "scheduler", "tutorial"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region|fire|defense|director|opportunity|charter|chronicle|scheduler|tutorial. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -49,6 +49,10 @@ func run() -> void:
 		"defense": DefenseTests.run(check)
 		"director": DirectorTests.run(check)
 		"opportunity": OpportunityTests.run(check)
+		"charter": CharterTests.run(check)
+		"chronicle": ChronicleTests.run(check)
+		"scheduler": SchedulerTests.run(check)
+		"tutorial": TutorialTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -470,7 +474,7 @@ func ui() -> void:
 	check("WORK/UI_paused_preference_batch_applies_in_order",colony_game.world.citizens[2].preferences.Gathering == 1 and colony_game.world.citizens[2].preferences.Care == 3 and colony_game.world.pending_commands.is_empty())
 	colony_game.show_person(1)
 	check("PEOPLE/UI_person_has_relationships_and_morale",colony_game.sheet_name == "Mira" and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text == "Relationships"))
-	var saved_social_tick: int = colony_game.world.tick
+	var saved_social_payload: Dictionary = colony_game.world.payload().duplicate(true)
 	colony_game.world.tick = 3*7200+2400
 	ColonyWeather.initialize(colony_game.world)
 	ColonySocial.advance(colony_game.world)
@@ -485,10 +489,10 @@ func ui() -> void:
 	colony_game._process(0)
 	colony_game.runner.pause()
 	check("REQUEST/UI_decline_has_no_penalty",colony_game.world.social_state.requests[-1].state == "Declined" and colony_game.world.citizens[0].broken_promise_until == 0)
-	colony_game.world.tick = saved_social_tick
-	for request in colony_game.world.social_state.requests: request.offered_at = mini(request.offered_at,saved_social_tick)
-	for person in colony_game.world.citizens: person.last_request_offer = mini(person.last_request_offer,saved_social_tick)
-	ColonyWeather.initialize(colony_game.world)
+	var restored_social: Dictionary = ColonyCodec.restore(saved_social_payload)
+	check("REQUEST/UI_fixture_restore_keeps_valid_chronology",restored_social.has("world"),str(restored_social.get("error","")))
+	if not restored_social.has("world"): return
+	colony_game.world=restored_social.world;colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
 	var weather_hash: String = colony_game.world.canonical_hash()
 	var workstation: Dictionary = colony_game.world._structure("workbench",Vector2i(90,63),0)
 	colony_game._map_intent({"kind":"tap","tile":Vector2i(90,63),"point":colony_game.view.tile_to_screen(Vector2(90.5,63.5))})
@@ -818,6 +822,67 @@ func ui() -> void:
 	check("STORY/UI_accepted_work_can_be_inspected",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text.begins_with("Task:")))
 	await process_frame;await process_frame
 	root.get_texture().get_image().save_png("res://reports/opportunity-ui.png")
+	colony_game.world=CharterTests.supper_world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	var charter_ui_hash: String = colony_game.world.canonical_hash()
+	colony_game.show_charter()
+	check("CHARTER/UI_day_one_checklist_is_read_only",colony_game.world.canonical_hash()==charter_ui_hash and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Day thirty-three")))
+	await process_frame;await process_frame
+	root.get_texture().get_image().save_png("res://reports/charter-ui.png")
+	colony_game.show_supper()
+	check("CHARTER/UI_cost_window_waves_and_recovery_explained",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("two meals per home resident") and n.text.contains("18:00-20:00")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("eaten food stays consumed") and n.text.contains("+60")))
+	var reserve_supper: Array = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Reserve meals and evening")
+	check("CHARTER/UI_eligible_supper_has_action",reserve_supper.size()==1)
+	if not reserve_supper.is_empty(): reserve_supper[0].pressed.emit();reserve_supper[0].pressed.emit()
+	check("CHARTER/UI_double_tap_reserves_once",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="start_supper")
+	colony_game.world.step();colony_game.submitted_command=0;colony_game.show_supper()
+	check("CHARTER/UI_pending_supper_shows_actual_bank",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("16 meals still reserved")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Cancel supper"))
+	colony_game.show_rename(0)
+	var settlement_name: LineEdit = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is LineEdit)[0]
+	settlement_name.text="Fern Refuge"
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Save name": child.pressed.emit();break
+	colony_game.world.step();colony_game.submitted_command=0
+	check("CHRONICLE/UI_rename_is_command_with_actual_name",ColonyChronicle.display_name(colony_game.world,0)=="Fern Refuge")
+	colony_game.show_pin_moment()
+	var moment_note: LineEdit = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is LineEdit)[0]
+	moment_note.text="Our first supper is planned."
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Pin this moment": child.pressed.emit();break
+	colony_game.world.step();colony_game.submitted_command=0
+	var ui_pin: Dictionary = colony_game.world.chronicle_state.facts[-1]
+	check("CHRONICLE/UI_pin_records_authored_text",ui_pin.kind=="pin_moment" and ui_pin.text.contains(moment_note.text))
+	colony_game.show_fact(ui_pin.id)
+	check("CHRONICLE/UI_details_no_invented_cause",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("No immediate cause was recorded")))
+	var cause_id: int = colony_game.world.emit_fact({"tick":colony_game.world.tick,"actor":1,"job":0,"kind":"rescue","text":"Ada completed a rescue."},{"causes":[ui_pin.id],"participants":[1,2],"changes":{"herb":-1}})
+	colony_game.show_fact(cause_id)
+	check("CHRONICLE/UI_details_explicit_links_and_delta",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Why: event "+str(ui_pin.id)) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("herb") and n.text.contains("-1")))
+	await process_frame;await process_frame
+	root.get_texture().get_image().save_png("res://reports/chronicle-ui.png")
+	var memory_event: int = colony_game.world.emit_fact({"tick":colony_game.world.tick,"actor":1,"job":0,"kind":"supper_complete","text":"Mira shared a communal supper."},{"participants":[1]})
+	ColonyChronicle.remember(colony_game.world,"supper",memory_event)
+	colony_game.world.charter_state.supper_memories[1]=colony_game.world.tick+600
+	colony_game.show_person_history(1)
+	check("CHRONICLE/UI_active_memory_has_exact_modifier_expiry_and_link",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("+60 morale target") and n.text.contains("2.0 hours remaining")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Remember this event"))
+	colony_game.world.charter_state.completed.assign(["shelter","provision","connection","refuge"])
+	colony_game.show_charter_appearance()
+	check("CHARTER/UI_four_cosmetic_controls",colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text.begins_with("Apply ")).size()==4)
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Apply Settlement banner": child.pressed.emit();break
+	colony_game.world.step();colony_game.submitted_command=0
+	check("CHARTER/UI_appearance_uses_command",colony_game.world.charter_state.appearances.has("shelter"))
+	colony_game.world.charter_state.appearances.assign(["shelter","provision","connection","refuge"])
+	colony_game.close_sheet();colony_game.view.camera_tile=Vector2(67,64);colony_game.view.tile_size=48
+	await process_frame;await process_frame
+	root.get_texture().get_image().save_png("res://reports/charter-cart.png")
+	colony_game.world.charter_state.ending=true
+	colony_game.show_charter_ending()
+	check("CHARTER/UI_ending_pauses_and_offers_four_actions",colony_game.runner.speed==0 and colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text in ["Continue settlement","Save and leave","New seed","View settlement"]).size()==4)
+	colony_game.set_speed(1)
+	check("CHARTER/UI_ending_waits_for_continue",colony_game.runner.speed==0)
+	for child in colony_game.sheet_body.get_children():
+		if child is Button and child.text=="Continue settlement": child.pressed.emit();break
+	colony_game.set_speed(1);colony_game.runner.advance_frame(0.1);colony_game.runner.pause()
+	check("CHARTER/UI_continue_keeps_colony",colony_game.world.charter_state.continued and colony_game.world.citizens.size()==8)
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

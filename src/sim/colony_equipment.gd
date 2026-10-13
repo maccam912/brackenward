@@ -72,7 +72,7 @@ static func complete(world: ColonyWorld, person: Dictionary, job: Dictionary) ->
 	var previous: String = person.equipment[job.definition]
 	if not previous.is_empty(): world._make_stack(previous,1,"ground",0,Vector2i(person.x,person.y),false)
 	person.equipment[job.definition]=item
-	world.facts.append({"tick":world.tick,"actor":person.id,"job":job.id,"kind":"equipment","text":person.name+(" removed "+previous if item.is_empty() else " equipped "+item)+" after fetching it and two work units. Existing gear stays available."})
+	world.emit_fact({"tick":world.tick,"actor":person.id,"job":job.id,"kind":"equipment","text":person.name+(" removed "+previous if item.is_empty() else " equipped "+item)+" after fetching it and two work units. Existing gear stays available."})
 
 static func validate(data: Variant, citizens: Array) -> bool:
 	if not data is Dictionary or data.size()!=citizens.size(): return false

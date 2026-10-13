@@ -60,7 +60,7 @@ static func offer(world: ColonyWorld) -> Dictionary:
 	world.population_state.rng=rng.state
 	var result: Dictionary = {"id":world._id(),"state":"Offered","created":world.tick,"deadline":world.tick+14400,"candidate":candidate,"entry":entry,"actor":0}
 	world.population_state.offers.append(result)
-	world.facts.append({"tick":world.tick,"actor":0,"job":0,"kind":"newcomer_offer","text":candidate.name+" can join if there is a reachable free bed and two days of food for the enlarged household. Declining has no penalty; the offer waits two days."})
+	world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"newcomer_offer","text":candidate.name+" can join if there is a reachable free bed and two days of food for the enlarged household. Declining has no penalty; the offer waits two days."})
 	return result
 
 static func advance(world: ColonyWorld) -> void:
@@ -117,7 +117,7 @@ static func arrival_work(world: ColonyWorld, person: Dictionary, job: Dictionary
 		world._make_stack("travel_ration",4,"store",cart.id,Vector2i(cart.x,cart.y),true)
 		world.find(world.population_state.offers,job.order).state="Arrived"
 		world._complete(person,job)
-		world.facts.append({"tick":world.tick,"actor":person.id,"job":job.id,"kind":"newcomer_arrived","text":person.name+" arrived wearing a toolkit and cloak and deposited four personal rations at the cart."})
+		world.emit_fact({"tick":world.tick,"actor":person.id,"job":job.id,"kind":"newcomer_arrived","text":person.name+" arrived wearing a toolkit and cloak and deposited four personal rations at the cart."})
 
 static func validate(data: Variant, citizens: Array, tick: int) -> bool:
 	if not data is Dictionary or not ColonyCodec._keys(data,["rng","names","name_cursor","offers"]) or not data.rng is int or data.rng<=0 or data.rng>=2147483647 or not data.names is Array or data.names.size()!=24 or not data.name_cursor is int or data.name_cursor<0 or not data.offers is Array: return false

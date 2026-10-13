@@ -225,7 +225,8 @@ static func _host(world: ColonyWorld, event: Dictionary) -> void:
 		event.attendance[person.id]=attendance+1 if sharing else 0
 		if event.attendance[person.id]==150:
 			person.story_memory_until=world.tick+7200
-			world.facts.append({"tick":world.tick,"actor":person.id,"job":0,"kind":"story_leisure","text":person.name+" shared half an hour of stories at the table; morale target +40 for one day."})
+			var memory: int = world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"story_leisure","text":person.name+" shared half an hour of stories at the table; morale target +40 for one day."})
+			ColonyChronicle.remember(world,"story:"+str(person.id),memory)
 	if event.host_until>0 and world.tick>=event.host_until: complete(world,event)
 
 static func complete(world: ColonyWorld, event: Dictionary) -> void:

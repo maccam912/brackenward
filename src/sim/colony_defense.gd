@@ -297,7 +297,7 @@ static func treatment_complete(world: ColonyWorld, job: Dictionary) -> void:
 static func attacks(world: ColonyWorld) -> Array:
 	var result: Array = []
 	for person in ColonyCombat.ordered_actors(world.citizens):
-		if not person.drafted or person.away or person.downed or person.death_recorded or person.departed or (person.health<=40 and not person.stand_fast) or world.tick<person.attack_ready: continue
+		if not person.drafted or person.away or person.downed or person.death_recorded or person.departed or person.break_until>world.tick or (person.health<=40 and not person.stand_fast) or world.tick<person.attack_ready: continue
 		var targets: Array = world.defense_state.enemies.filter(func(e:Dictionary)->bool:
 			var distance: int = ColonyWildlife.distance(person,e);var weapon: Dictionary = ColonyCombat.weapon(person,distance,world.weather)
 			var raid: Dictionary = world.find(world.defense_state.raids,e.raid)

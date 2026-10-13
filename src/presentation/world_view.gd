@@ -379,6 +379,8 @@ func _draw_colony() -> void:
 		if structure.definition in ["bed", "bedroll"]:
 			draw_style_box(_bed_style(), rectangle.grow(-tile_size * 0.12))
 			draw_rect(Rect2(rectangle.position + Vector2.ONE * tile_size * 0.15, Vector2.ONE * tile_size * 0.45), Color("F3E8CC"))
+		elif structure.definition == "supply_cart":
+			_draw_cart(rectangle)
 		elif structure.definition == "hearth":
 			var center: Vector2 = rectangle.get_center()
 			draw_circle(center, tile_size * 0.6, Color("716D88"))
@@ -476,3 +478,32 @@ func refresh_terrain() -> void:
 				elif x == 66 or y in [63,64]: cell = 4
 				if x in range(74,82) and y in range(54,62): cell = 0
 			terrain.set_cell(point,0,Vector2i(cell,0))
+
+func _draw_cart(rectangle: Rect2) -> void:
+	var body: Rect2 = rectangle.grow(-tile_size*0.12)
+	var rewards: Array = world.charter_state.appearances
+	if rewards.has("provision"):
+		draw_rect(rectangle.grow(tile_size*0.18),Color("716D88"),false,maxf(1,tile_size*0.09))
+		for offset in [Vector2(-0.25,-0.25),Vector2(1.05,-0.25),Vector2(-0.25,1.05),Vector2(1.05,1.05)]:
+			draw_circle(rectangle.position+rectangle.size*offset,tile_size*0.12,Color("E9BA67"))
+	draw_rect(body,Color("B96C50"))
+	draw_rect(body,Color("263C3B"),false,maxf(1,tile_size*0.08))
+	for x in [body.position.x,body.end.x]:
+		draw_circle(Vector2(x,body.end.y-tile_size*0.12),tile_size*0.17,Color("263C3B"))
+	if rewards.has("shelter"):
+		var pole: Vector2 = body.position+Vector2(tile_size*0.15,0)
+		draw_line(pole,pole-Vector2(0,tile_size*0.9),Color("263C3B"),maxf(1,tile_size*0.06))
+		var banner: Rect2 = Rect2(pole-Vector2(0,tile_size*0.85),Vector2(tile_size*1.6,tile_size*0.48))
+		draw_rect(banner,Color("F3E8CC"))
+		draw_string(ThemeDB.fallback_font,banner.position+Vector2(3,banner.size.y*0.76),ColonyChronicle.display_name(world,0),HORIZONTAL_ALIGNMENT_LEFT,banner.size.x-6,maxi(8,int(tile_size*0.25)),Color("263C3B"))
+	if rewards.has("connection"):
+		var plaque: Rect2 = Rect2(body.get_center()-Vector2(tile_size*0.35,tile_size*0.22),Vector2(tile_size*0.7,tile_size*0.44))
+		draw_rect(plaque,Color("F3E8CC"))
+		draw_line(plaque.position+plaque.size*Vector2(0.15,0.75),plaque.position+plaque.size*Vector2(0.85,0.25),Color("5F98AC"),maxf(1,tile_size*0.07))
+		for end in [Vector2(0.15,0.75),Vector2(0.85,0.25)]: draw_circle(plaque.position+plaque.size*end,tile_size*0.06,Color("375749"))
+	if rewards.has("refuge"):
+		var sign: Rect2 = Rect2(body.end-Vector2(tile_size*0.4,tile_size*0.4),Vector2(tile_size*0.55,tile_size*0.5))
+		draw_rect(sign,Color("77915A"))
+		var center: Vector2 = sign.get_center()
+		draw_colored_polygon(PackedVector2Array([center+Vector2(-0.2,0)*tile_size,center+Vector2(0,-0.18)*tile_size,center+Vector2(0.2,0)*tile_size]),Color("F3E8CC"))
+		draw_rect(Rect2(center,Vector2(tile_size*0.13,tile_size*0.16)).grow(-0.5),Color("F3E8CC"))

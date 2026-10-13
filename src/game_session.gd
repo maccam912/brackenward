@@ -43,6 +43,7 @@ var seen_opportunity_id: int = 0
 var defend_citizens: Array = []
 var defend_stand_fast: bool = false
 var epilogue_session: String = ""
+var charter_epilogue_session: String = ""
 var awaiting_first_colony: bool = false
 var creation_thread: Thread
 var native_storage: Object
@@ -307,6 +308,9 @@ func _process(delta: float) -> void:
 		return
 	runner.advance_frame(delta)
 	if world is ColonyWorld:
+		if world.charter_state.ending and not world.charter_state.continued and charter_epilogue_session!=world.session_id:
+			charter_epilogue_session=world.session_id
+			show_charter_ending()
 		if world.care_state.ended:
 			seen_care_alert = world.care_state.alert_serial
 			if epilogue_session != world.session_id:
@@ -374,6 +378,8 @@ func set_speed(value: int) -> void:
 	if value > 0 and awaiting_first_colony:
 		show_new_colony(store.slot)
 		return
+	if value>0 and world is ColonyWorld and world.charter_state.ending and not world.charter_state.continued and not world.pending_commands.any(func(c:Dictionary)->bool:return c.kind=="continue_settlement"):
+		show_charter_ending();return
 	if value > 0 and world is ColonyWorld and world.care_state.ended:
 		show_epilogue()
 		return
@@ -651,9 +657,10 @@ func show_sheet(title: String) -> void:
 			if world is ColonyWorld: show_valley()
 		"Journal":
 			if world is ColonyWorld:
+				button("Chronicle",show_chronicle,sheet_body)
+				button("Charter",show_charter,sheet_body)
+				button("Pin a moment",show_pin_moment,sheet_body)
 				_tutorial_sheet()
-				for fact in world.facts.slice(maxi(0, world.facts.size() - 30)):
-					label("%02d:%02d - %s" % [(fact.tick % 7200) / 300, (fact.tick % 300) / 5, fact.text], sheet_body)
 		"Menu":
 			label("Brackenward %s\nCampaigns preserve inventory, work and needs. Time stays paused after recovery." % ProjectSettings.get_setting("application/config/version"), sheet_body)
 			if world is ColonyWorld: button("Mode: "+world.care_state.mode,show_mode,sheet_body)
@@ -1393,6 +1400,8 @@ func _queued_preference(id: int,category: String) -> int:
 func show_person(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_sheet(citizen.name)
+	button("Rename",func()->void:show_rename(id),sheet_body)
+	button("Remembered moments",func()->void:show_person_history(id),sheet_body)
 	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
 	if citizen.health < 100: button("Care and recovery",show_care,sheet_body)
 	label("Active morale causes",sheet_body)
@@ -1455,10 +1464,13 @@ func show_station(station: Dictionary) -> void:
 		label("This structure is gone. Surviving stored goods and fuel remain as physical ground stacks with their ages retained. Rebuilding uses the full original cost: %s; %d WU." % [_cost_text(definition.materials),definition.work_milli/1000],sheet_body)
 		button("Rebuild",func()->void:_submit("rebuild",{"target":station.id});close_sheet(),sheet_body)
 		return
-	show_sheet(station.definition.replace("_"," ").capitalize())
+	show_sheet(ColonyChronicle.display_name(world,station.id))
+	button("Rename",func()->void:show_rename(station.id),sheet_body)
 	var definition: Dictionary = world.definitions.buildings[station.definition]
 	label("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body)
 	if station.definition == "supply_cart":
+		button("Charter",show_charter,sheet_body)
+		button("Communal supper",show_supper,sheet_body)
 		button("Move supply cart",func()->void:begin_cart_move(station),sheet_body)
 		button("Neighbors and trade",show_valley,sheet_body)
 	if station.definition != "supply_cart":
@@ -2166,3 +2178,148 @@ func show_opportunities() -> void:
 			if not job.is_empty(): button("Task: %s · %s" % ["Study together" if job.kind=="minor_study" else ("Repair cart" if event.definition=="stranded_carrier" else "Deliver supplies"),job.state],func()->void:_job_sheet(job),sheet_body)
 	for event in world.opportunity_state.offers.slice(maxi(0,world.opportunity_state.offers.size()-10)):
 		if event.state not in ["Offered","Accepted","Hosted"]: label("%s · %s · %s" % [event.definition.replace("_"," ").capitalize(),event.state,event.reason],sheet_body)
+
+func show_charter() -> void:
+	show_sheet("Charter")
+	label(ColonyChronicle.display_name(world,0)+" - a refuge worth staying in",sheet_body)
+	label("Stages complete in order and remain recorded after later losses. There are no quest deadlines. Insight rewards apply once; the final ceremony can be paused.",sheet_body)
+	button("Communal supper",show_supper,sheet_body)
+	button("Cart appearance",show_charter_appearance,sheet_body)
+	button("Name settlement",func()->void:show_rename(0),sheet_body)
+	for stage in ColonyCharter.checklist(world):
+		label(("Recorded: " if stage.complete else "Next: " if world.charter_state.completed.size()==ColonyCharter.STAGES.find(stage.id) else "Later: ")+stage.title,sheet_body)
+		if stage.complete: label("Day %d snapshot is retained." % world.charter_state.snapshots[stage.id].day,sheet_body)
+		for condition in stage.conditions: label(("[x] " if condition.met else "[ ] ")+condition.text,sheet_body)
+		if stage.reward>0: label("Reward: %d insight and a cosmetic cart appearance." % stage.reward,sheet_body)
+	if world.charter_state.ending:
+		button("Read the epilogue",show_charter_ending,sheet_body)
+	elif world.charter_state.ceremony.get("state","")=="Active":
+		label("Ceremony: %.1f game hours remaining. A hostile arrival cancels it without using supplies." % (maxi(0,world.charter_state.ceremony.end-world.tick)/300.0),sheet_body)
+		button("Cancel ceremony",func()->void:_submit("cancel_ceremony",{});close_sheet(),sheet_body)
+	else:
+		var reason: String = ColonyCharter.ceremony_error(world)
+		if reason.is_empty(): button("Begin two-hour ceremony",func()->void:_submit("start_ceremony",{});close_sheet(),sheet_body)
+		else: label("Ceremony waits: "+reason,sheet_body)
+	button("Food forecast",show_food_forecast,sheet_body)
+	button("Research",show_research,sheet_body)
+
+func show_supper() -> void:
+	show_sheet("Communal supper")
+	label("Commonlife and eight healthy home residents (60+ health, none downed) are needed. Reserve two meals per home resident and at least four reachable table seats for the next 18:00-20:00 window. Each attendee collects one real meal and sits for half an hour. Seats fill in citizen order, in waves.",sheet_body)
+	label("Eight distinct attendees complete the supper. Unused meals return; eaten food stays consumed after cancellation or failure. Attendees gain +60 morale target for two days. The next completed supper can be held after eight days. Escape, rescue and life-critical needs take precedence.",sheet_body)
+	var status: Dictionary = ColonyCharter.supper_status(world)
+	label("%s - %d/8 attended\n%s" % [status.state,status.attended,status.reason],sheet_body)
+	if not status.traveling.is_empty(): label("Traveling: "+", ".join(status.traveling),sheet_body)
+	if not status.waiting.is_empty(): label("Waiting or seated: "+", ".join(status.waiting),sheet_body)
+	if status.state in ColonyCharter.ACTIVE:
+		var supper: Dictionary = world.charter_state.supper
+		label("Day %d, 18:00-20:00. %d meals eaten; %d meals still reserved." % [supper.start/7200+1,supper.eaten.size(),world.stacks.reduce(func(n:int,s:Dictionary)->int:return n+s.reservations.get(supper.job,0),0)],sheet_body)
+		button("Cancel supper",func()->void:_submit("cancel_supper",{});close_sheet(),sheet_body)
+	else:
+		var reason: String = ColonyCharter.supper_error(world)
+		if reason.is_empty(): button("Reserve meals and evening",func()->void:_submit("start_supper",{});close_sheet(),sheet_body)
+		else: label("Before scheduling: "+reason,sheet_body)
+	button("Build a table",func()->void:begin_build("table"),sheet_body)
+	button("Food forecast",show_food_forecast,sheet_body)
+
+func show_charter_appearance() -> void:
+	show_sheet("Cart appearance")
+	label("Charter rewards change the cart's appearance at no resource cost. They have no mechanical effect.",sheet_body)
+	for stage in ColonyCharter.STAGES.slice(0,4):
+		var title: String = {"shelter":"Settlement banner","provision":"Courtyard palette","connection":"Route plaque","refuge":"Refuge sign"}[stage]
+		if world.charter_state.completed.has(stage):
+			var enabled: bool = world.charter_state.appearances.has(stage)
+			button(("Remove " if enabled else "Apply ")+title,func()->void:_submit("charter_appearance",{"definition":stage,"enabled":not enabled});close_sheet(),sheet_body)
+		else: label(title+" waits for "+ColonyCharter.TITLES[stage]+".",sheet_body)
+
+func show_charter_ending() -> void:
+	runner.pause()
+	show_sheet("Brackenward restored")
+	label(ColonyChronicle.display_name(world,0)+" has completed its charter. The beacon watches over a living settlement. These moments come from the colony's recorded history.",sheet_body)
+	for fact in ColonyChronicle.epilogue(world):
+		button("Day %d: %s" % [fact.tick/7200+1,fact.text],func()->void:show_fact(fact.id),sheet_body)
+	button("Continue settlement",func()->void:_submit("continue_settlement",{});close_sheet(),sheet_body)
+	button("Save and leave",func()->void:
+		if save_local().is_empty(): show_sheet("Menu"),sheet_body)
+	button("New seed",show_campaigns,sheet_body)
+	button("View settlement",func()->void:close_sheet();view.camera_tile=Vector2(ColonyTrade.cart(world).x,ColonyTrade.cart(world).y),sheet_body)
+
+func show_chronicle() -> void:
+	show_sheet("Chronicle")
+	button("Pin a moment",show_pin_moment,sheet_body)
+	button("Charter",show_charter,sheet_body)
+	button("Full event ledger",show_ledger,sheet_body)
+	var days: Array = world.chronicle_state.journal
+	if days.is_empty(): label("At 22:00, up to three consequential event chains are recorded for each day. Repeated meals do not fill this journal.",sheet_body)
+	for day in days.slice(maxi(0,days.size()-32)):
+		if day.fact_ids.is_empty(): continue
+		label("Day "+str(day.day+1),sheet_body)
+		for id in day.fact_ids:
+			var fact: Dictionary = ColonyChronicle.fact(world.chronicle_state,id)
+			label(fact.text,sheet_body)
+			button("Details of event "+str(id),func()->void:show_fact(id),sheet_body)
+
+func show_ledger(before: int = 0) -> void:
+	show_sheet("Event ledger")
+	label("Exact simulation facts, including routine work. Recent events and permanent history are retained; causal links appear only when the transaction recorded one.",sheet_body)
+	var records: Array = world.chronicle_state.facts.filter(func(f:Dictionary)->bool:return before==0 or f.id<before)
+	var page: Array = records.slice(maxi(0,records.size()-40))
+	page.reverse()
+	for fact in page:
+		label("Day %d %02d:%02d - %s" % [fact.tick/7200+1,(fact.tick%7200)/300,(fact.tick%300)/5,fact.text],sheet_body)
+		button("Inspect event "+str(fact.id),func()->void:show_fact(fact.id),sheet_body)
+	if records.size()>page.size(): button("Earlier events",func()->void:show_ledger(page[-1].id),sheet_body)
+
+func show_fact(id: int, expanded: bool = false) -> void:
+	var fact: Dictionary = ColonyChronicle.fact(world.chronicle_state,id)
+	show_sheet("Event details")
+	if fact.is_empty(): label("This routine event is outside retained history.",sheet_body);return
+	label("Day %d %02d:%02d\n%s" % [fact.tick/7200+1,(fact.tick%7200)/300,(fact.tick%300)/5,fact.text],sheet_body)
+	if not fact.names.is_empty(): label("Names at the time: "+", ".join(fact.names.values()),sheet_body)
+	if not fact.get("location",[]).is_empty():
+		button("View location",func()->void:close_sheet();view.camera_tile=Vector2(fact.location[0],fact.location[1]),sheet_body)
+	if not fact.changes.is_empty(): label("Recorded inventory changes: "+str(fact.changes),sheet_body)
+	if fact.causes.is_empty(): label("No immediate cause was recorded for this fact. No cause is inferred from nearby events.",sheet_body)
+	var causes: Array = fact.causes if expanded else fact.causes.slice(0,4)
+	for cause in causes:
+		var evidence: Dictionary = ColonyChronicle.fact(world.chronicle_state,cause)
+		label(evidence.text,sheet_body)
+		button("Why: event "+str(cause),func()->void:show_fact(cause),sheet_body)
+	if fact.causes.size()>4 and not expanded: button("Show all causes",func()->void:show_fact(id,true),sheet_body)
+	button("Back to chronicle",show_chronicle,sheet_body)
+
+func show_pin_moment() -> void:
+	show_sheet("Pin a moment")
+	label("Optional personal note. Up to 256 printable Basic Latin characters. Pinning has no reward or simulation effect.",sheet_body)
+	var entry: LineEdit = LineEdit.new();entry.max_length=256;entry.placeholder_text="A moment to remember";entry.custom_minimum_size.y=48;sheet_body.add_child(entry)
+	button("Pin this moment",func()->void:_submit("pin_moment",{"text":entry.text});close_sheet(),sheet_body)
+
+func show_rename(id: int) -> void:
+	show_sheet("Name this place" if id==0 else "Rename")
+	label("Names are cosmetic. Use 1-32 printable Basic Latin characters; existing journal names stay as recorded.",sheet_body)
+	var entry: LineEdit = LineEdit.new();entry.max_length=32;entry.text=ColonyChronicle.display_name(world,id);entry.custom_minimum_size.y=48;sheet_body.add_child(entry)
+	button("Save name",func()->void:_submit("rename",{"target":id,"text":entry.text});close_sheet(),sheet_body)
+
+func show_person_history(id: int) -> void:
+	show_sheet("Remembered moments")
+	label(ColonyChronicle.display_name(world,id),sheet_body)
+	var person: Dictionary = world.find(world.citizens,id)
+	var memories: Array = ColonyChronicle.active_memories(world,person)
+	if memories.is_empty(): label("No timed memories are currently affecting morale.",sheet_body)
+	for memory in memories:
+		label("%s: %+d morale target. Expires day %d at %02d:%02d (%.1f hours remaining)." % [memory.text,memory.modifier,memory.expires/7200+1,(memory.expires%7200)/300,(memory.expires%300)/5,(memory.expires-world.tick)/300.0],sheet_body)
+		if memory.fact_id>0: button("Remember this event",func()->void:show_fact(memory.fact_id),sheet_body)
+		else: label("The original event was not retained in this campaign's history.",sheet_body)
+	for fact in ColonyChronicle.highlights(world,id):
+		label(fact.text,sheet_body)
+		button("Details of event "+str(fact.id),func()->void:show_fact(fact.id),sheet_body)
+
+func show_food_forecast() -> void:
+	show_sheet("Food forecast")
+	var current: Dictionary = FoodForecast.calculate(world)
+	label(current.label,sheet_body)
+	label("This uses accessible, unreserved food already at home and its actual spoilage. Future harvests and expedition rations kept by policy are excluded. Residents need 1000 fullness per day; one meal supplies 500.",sheet_body)
+	button("Gather berries",func()->void:begin_gather("berry_bush"),sheet_body)
+	button("Plant turnips",begin_field,sheet_body)
+	button("Work preferences",func()->void:show_sheet("Work"),sheet_body)
+	button("Weather forecast",show_weather,sheet_body)

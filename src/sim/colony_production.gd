@@ -135,8 +135,12 @@ static func research_work(world: ColonyWorld, citizen: Dictionary, job: Dictiona
 
 static func finish_project(world: ColonyWorld, project: String, actor_id: int = 0) -> void:
 	world.researched.append(project)
+	var participants: Array = []
+	var causes: Array = []
 	for contributor in world.jobs:
 		if contributor.kind != "research" or contributor.definition != project or contributor.state in ["Complete","Canceled"]: continue
+		for id in contributor.pending_xp:
+			if contributor.pending_xp[id]>0 and not participants.has(id): participants.append(id)
 		var actor: Dictionary = world.find(world.citizens,contributor.worker)
 		if actor.is_empty():
 			world._award_xp(contributor)
@@ -149,7 +153,11 @@ static func finish_project(world: ColonyWorld, project: String, actor_id: int = 
 		var next: String = world.production_state.queue[0]
 		if world.definitions.research[next].prerequisites.all(func(id:Variant)->bool:return world.researched.has(id)):
 			world.production_state.project = world.production_state.queue.pop_front()
-	world.facts.append({"tick":world.tick,"actor":actor_id,"job":0,"kind":"research_complete","text":project.capitalize()+" research completed; its catalog unlocks are available."})
+	if actor_id>0 and not participants.has(actor_id): participants.append(actor_id)
+	participants.sort()
+	var discovered: int = world.emit_fact({"tick":world.tick,"actor":actor_id,"job":0,"kind":"research_complete","text":project.capitalize()+" research completed; its catalog unlocks are available."},{"participants":participants,"causes":causes})
+	for person in world.citizens:
+		if person.traits.has("Curious"): ColonyChronicle.remember(world,"discovery:"+str(person.id),discovered)
 
 static func add_insight(world: ColonyWorld, points: int) -> void:
 	# Apply to the current project and eligible queue before capping the bank.

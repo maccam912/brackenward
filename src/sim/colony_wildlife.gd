@@ -39,7 +39,7 @@ static func advance(world: ColonyWorld) -> void:
 			carcass.spoiled = true
 			for job in world.jobs:
 				if job.kind == "butcher" and job.target == carcass.id and job.state not in ["Complete","Canceled"]: world._release(job,true)
-			world.facts.append({"tick":world.tick,"actor":0,"job":0,"kind":"carcass_spoiled","text":"An unbutchered %s carcass spoiled after two days. No food was produced." % carcass.definition})
+			world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"carcass_spoiled","text":"An unbutchered %s carcass spoiled after two days. No food was produced." % carcass.definition})
 	if world.tick%7200 == 1800 and ((world.tick/7200+1)%4 == 0): replenish(world)
 	for animal in world.wildlife_state.animals:
 		if animal.health <= 0: continue
@@ -87,7 +87,7 @@ static func advance(world: ColonyWorld) -> void:
 				if field.x == animal.x and field.y == animal.y and field.planted and field.yield_count > 0:
 					field.yield_count -= 1; animal.crop_day = world.tick/7200
 					field.reason = "Wildlife ate one future crop unit: fence this field or mark a hunt"
-					world.facts.append({"tick":world.tick,"actor":animal.id,"job":0,"kind":"wildlife_crop","text":"A %s ate one future crop unit. Fence this field or designate a hunt." % animal.definition})
+					world.emit_fact({"tick":world.tick,"actor":animal.id,"job":0,"kind":"wildlife_crop","text":"A %s ate one future crop unit. Fence this field or designate a hunt." % animal.definition})
 					break
 
 static func _route(world: ColonyWorld, animal: Dictionary, goal: Vector2i) -> void:
@@ -199,7 +199,7 @@ static func kill(world: ColonyWorld, animal: Dictionary) -> void:
 			else: world._complete(worker,job)
 	var butcher: Dictionary = world._job("butcher","Gathering","Field",carcass.id,Vector2i(animal.x,animal.y),world.definitions.animals[animal.definition].work_milli)
 	butcher.definition = animal.definition
-	world.facts.append({"tick":world.tick,"actor":animal.id,"job":butcher.id,"kind":"hunt_kill","text":"A %s hunt left a carcass. Butchering and hauling are still required; it spoils after two days." % animal.definition})
+	world.emit_fact({"tick":world.tick,"actor":animal.id,"job":butcher.id,"kind":"hunt_kill","text":"A %s hunt left a carcass. Butchering and hauling are still required; it spoils after two days." % animal.definition})
 
 static func butcher(world: ColonyWorld, job: Dictionary) -> void:
 	var carcass: Dictionary = world.find(world.wildlife_state.carcasses,job.target)

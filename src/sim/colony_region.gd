@@ -148,7 +148,8 @@ static func prepare(world: ColonyWorld, args: Dictionary) -> String:
 		for old in world.jobs:
 			if old.kind in ["lead_animal","collect_animal","slaughter"] and old.target==id and old.state not in ["Complete","Canceled"]: world._release(old,true)
 		var lead: Dictionary = world._job("lead_animal","Animals","Field",id,Vector2i(goat.x,goat.y),0);lead.care_goal=[wagon.x,wagon.y];lead.order=trip.id
-	ColonyTrade.fact(world,"expedition_prepare",args.definition.capitalize()+": party and cargo are gathering at the cart; Depart is a separate action.",job.id)
+	var prepared: int = ColonyTrade.fact(world,"expedition_prepare",args.definition.capitalize()+": party and cargo are gathering at the cart; Depart is a separate action.",job.id,{"participants":args.party,"location":[wagon.x,wagon.y]})
+	ColonyChronicle.remember(world,"trip:"+str(trip.id),prepared)
 	return "accepted"
 
 static func assign(world: ColonyWorld, person: Dictionary) -> bool:
@@ -216,7 +217,8 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 		for id in trip.args.party: world.find(world.citizens,id).away=true
 		for id in trip.args.goats: world.find(world.domestic_state.animals,id).away=true
 		start_walk(world,trip,false)
-		ColonyTrade.fact(world,"expedition_depart",trip.args.definition.capitalize()+": departure readiness %d fixed against challenge %d; planned regional trip %d hours." % [trip.readiness,trip.quote.challenge,trip.quote.hours])
+		var departed: int = ColonyTrade.fact(world,"expedition_depart",trip.args.definition.capitalize()+": departure readiness %d fixed against challenge %d; planned regional trip %d hours." % [trip.readiness,trip.quote.challenge,trip.quote.hours],0,{"participants":trip.args.party,"causes":ColonyChronicle.causes(world,"trip:"+str(trip.id))})
+		ColonyChronicle.remember(world,"trip:"+str(trip.id),departed)
 		return "accepted"
 	if kind=="expedition_recall":
 		if trip.state in ["Preparing","Ready"]: cancel(world,trip);return "accepted"
@@ -322,7 +324,9 @@ static func advance(world: ColonyWorld) -> void:
 				progress.returned_at=world.tick
 				if trip.quote.shortfall<=2:
 					for id in trip.args.party: world.find(world.citizens,id).successful_trips+=1
-			ColonyTrade.fact(world,"expedition_return",trip.args.definition.capitalize()+" party returned and finished physical unloading. "+("Declared site outcome committed once." if trip.reward_committed else "Recalled without new site rewards."))
+			var wagon: Dictionary = ColonyTrade.cart(world)
+			ColonyTrade.fact(world,"expedition_return",trip.args.definition.capitalize()+" party returned and finished physical unloading. "+("Declared site outcome committed once." if trip.reward_committed else "Recalled without new site rewards."),0,{"participants":trip.args.party,"location":[wagon.x,wagon.y],"causes":ColonyChronicle.causes(world,"trip:"+str(trip.id))})
+			world.chronicle_state.links.erase("trip:"+str(trip.id))
 	feed_goats(world,trip)
 
 static func feed_goats(world: ColonyWorld, trip: Dictionary) -> void:
@@ -424,6 +428,7 @@ static func collect(world: ColonyWorld, trip: Dictionary, keep: Dictionary) -> S
 			used-=trip.quote.payment[item]
 	if used>trip.quote.return_capacity: return "Return cargo exceeds capacity; leave some rewards here"
 	var progress: Dictionary = world.region_state.progress[trip.args.definition]
+	var changes: Dictionary = keep.duplicate()
 	var point: Vector2i = trip.entry
 	for item in keep:
 		world._make_stack(item,keep[item],"expedition_cargo",trip.id,point,false);world._record("expedition_gain",item,keep[item])
@@ -437,7 +442,9 @@ static func collect(world: ColonyWorld, trip: Dictionary, keep: Dictionary) -> S
 	else:
 		progress.completed=true
 		if trip.quote.shortfall<=2:
-			for item in trip.quote.payment: consume(world,trip,item,trip.quote.payment[item],"traded_out" if ColonyTrade.COMMUNITIES.has(trip.args.definition) else "consumed")
+			for item in trip.quote.payment:
+				consume(world,trip,item,trip.quote.payment[item],"traded_out" if ColonyTrade.COMMUNITIES.has(trip.args.definition) else "consumed")
+				changes[item]=changes.get(item,0)-trip.quote.payment[item]
 			for community in trip.quote.reputation: world.trade_state.reputation[community]=mini(100,world.trade_state.reputation[community]+trip.quote.reputation[community])
 			if ColonyTrade.COMMUNITIES.has(trip.args.definition): world.trade_state.delivery_after[trip.args.definition]=world.tick+57600
 			trip.reward_animal=definition_data(world,trip.args.definition,false).get("animal_reward","")=="pack_goat"
@@ -453,13 +460,17 @@ static func collect(world: ColonyWorld, trip: Dictionary, keep: Dictionary) -> S
 	for id in injured:
 		var person: Dictionary = world.find(world.citizens,id);var damage: int = 20 if trip.quote.shortfall>2 else trip.quote.shortfall*10
 		var floor_health: int = 1 if world.care_state.mode=="Hearthside" else 10
-		ColonyCare.hurt(world,person,mini(damage,maxi(0,person.health-floor_health)));person.stabilized=true;person.bleed_ticks=0
+		var actual: int = mini(damage,maxi(0,person.health-floor_health))
+		var injury: int = world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"expedition_injury","text":person.name+" lost %d health at %s from the previewed readiness shortfall." % [actual,trip.args.definition.capitalize()]},{"participants":[person.id],"location":[],"causes":ColonyChronicle.causes(world,"trip:"+str(trip.id))})
+		ColonyCare.hurt(world,person,actual,false,[injury]);person.stabilized=true;person.bleed_ticks=0
 	if not injured.is_empty() and cargo(world,trip).get("medicine",0)>0:
 		injured.sort_custom(func(a:int,b:int)->bool:return world.find(world.citizens,a).health<world.find(world.citizens,b).health if world.find(world.citizens,a).health!=world.find(world.citizens,b).health else a<b)
+		changes.medicine=changes.get("medicine",0)-1
 		consume(world,trip,"medicine",1);world.find(world.citizens,injured[0]).health=mini(100,world.find(world.citizens,injured[0]).health+20)
 		if world.find(world.citizens,injured[0]).health>20: world.find(world.citizens,injured[0]).downed=false
 	trip.reward_committed=true;trip.state="Returning";trip.remaining=trip.quote.edges*1800
-	ColonyTrade.fact(world,"expedition_outcome",trip.args.definition.capitalize()+": kept "+str(keep)+", left "+str(leftovers)+", insight %d; shortfall %d. Injuries stabilized; anyone at <=20 is carried on the quoted return schedule." % [trip.quote.insight,trip.quote.shortfall])
+	var outcome: int = ColonyTrade.fact(world,"expedition_outcome",trip.args.definition.capitalize()+": kept "+str(keep)+", left "+str(leftovers)+", insight %d; shortfall %d. Injuries stabilized; anyone at <=20 is carried on the quoted return schedule." % [trip.quote.insight,trip.quote.shortfall],0,{"participants":trip.args.party,"changes":changes,"causes":ColonyChronicle.causes(world,"trip:"+str(trip.id))})
+	ColonyChronicle.remember(world,"trip:"+str(trip.id),outcome)
 	return "accepted"
 
 static func visible(world: ColonyWorld, person: Dictionary) -> bool:

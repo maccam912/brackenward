@@ -12,10 +12,13 @@ static func initialize(world: ColonyWorld) -> void:
 	for person in world.citizens:
 		person.merge(citizen_defaults())
 
-static func hurt(world: ColonyWorld, person: Dictionary, damage: int, attack: bool = false) -> void:
+static func hurt(world: ColonyWorld, person: Dictionary, damage: int, attack: bool = false, causes: Array = []) -> void:
 	if person.death_recorded or person.departed or person.hearthside_until > world.tick or (attack and person.downed): return
+	var before: int = person.health
 	person.health = maxi(0,person.health-maxi(0,damage))
 	if attack and person.health <= 20: person.health = maxi(10,person.health)
+	if before>person.health and causes.is_empty():
+		causes=[world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"health_loss","text":"%s lost %d health." % [person.name,before-person.health]})]
 	if person.health < 50:
 		var current: Dictionary = world.find(world.jobs,person.job)
 		if current.get("kind") not in ["eat","sleep","recover","rescue"]: world._release(current,false)
@@ -28,8 +31,9 @@ static func hurt(world: ColonyWorld, person: Dictionary, damage: int, attack: bo
 		person.activity = "Downed: bleeding, needs care"
 		world._release(world.find(world.jobs,person.job),false)
 		world.care_state.alert_serial += 1
-		world.facts.append({"tick":world.tick,"actor":person.id,"job":0,"kind":"downed","text":person.name+" is downed. Bleeding costs 2 health/hour until treatment. Care workers rescue and treat automatically; Treat now overrides Care Off."})
-	if person.health == 0: _zero_health(world,person)
+		var downed_fact: int = world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"downed","text":person.name+" is downed. Bleeding costs 2 health/hour until treatment. Care workers rescue and treat automatically; Treat now overrides Care Off."},{"causes":causes})
+		ColonyChronicle.remember(world,"downed:"+str(person.id),downed_fact)
+	if person.health == 0: _zero_health(world,person,causes)
 
 static func advance(world: ColonyWorld) -> void:
 	for person in world.citizens:
@@ -42,14 +46,15 @@ static func advance(world: ColonyWorld) -> void:
 				person.recovery_rate = 2; person.recovery_until = 0
 				person.recovery_windows.clear()
 				person.healing_ticks = 0
-				world.facts.append({"tick":world.tick,"actor":person.id,"job":0,"kind":"recovered","text":person.name+" wakes at 40 health after Hearthside recovery; rest until 50 before working."})
+				world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"recovered","text":person.name+" wakes at 40 health after Hearthside recovery; rest until 50 before working."})
 			else: continue
 		if person.health <= 20 and not person.downed: hurt(world,person,0)
 		if person.downed and not person.stabilized:
 			person.bleed_ticks += 1
 			if person.bleed_ticks >= 300:
 				person.bleed_ticks -= 300
-				hurt(world,person,2)
+				var bleeding: int = world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"bleeding","text":person.name+" lost %d health from untreated bleeding." % mini(2,person.health)},{"causes":ColonyChronicle.causes(world,"downed:"+str(person.id))})
+				hurt(world,person,2,false,[bleeding])
 		if person.death_recorded: continue
 		var healing_rate: int = recovery(world,person,true).rate
 		refresh_recovery(world,person)
@@ -63,7 +68,7 @@ static func advance(world: ColonyWorld) -> void:
 			if person.health > 20: person.downed = false
 	world.care_state.ended = not world.citizens.any(func(c:Dictionary)->bool:return not c.death_recorded and not c.departed)
 
-static func _zero_health(world: ColonyWorld, person: Dictionary) -> void:
+static func _zero_health(world: ColonyWorld, person: Dictionary, causes: Array = []) -> void:
 	if person.death_recorded or person.hearthside_until > 0: return
 	world._release(world.find(world.jobs,person.job),true)
 	for job in world.jobs:
@@ -72,7 +77,7 @@ static func _zero_health(world: ColonyWorld, person: Dictionary) -> void:
 		person.downed = true; person.stabilized = true
 		person.hearthside_until = world.tick+14400
 		world.care_state.alert_serial += 1
-		world.facts.append({"tick":world.tick,"actor":person.id,"job":0,"kind":"hearthside","text":person.name+" is recovering for two days and will wake at 40 health. Needs and shortages continue."})
+		world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"hearthside","text":person.name+" is recovering for two days and will wake at 40 health. Needs and shortages continue."},{"causes":causes})
 		return
 	var relationships: Dictionary = {}
 	for other in world.citizens:
@@ -92,7 +97,8 @@ static func _zero_health(world: ColonyWorld, person: Dictionary) -> void:
 		if request.actor == person.id and request.state in ["Offered","Accepted"]:
 			request.state = "Declined" if request.state == "Offered" else "Failed"
 	world.care_state.alert_serial += 1
-	world.facts.append({"tick":world.tick,"actor":person.id,"job":0,"kind":"death","text":person.name+" died. Carried goods and worn equipment were dropped. Mark the body tile for burial; relationships and memories remain in the journal."})
+	var death: int = world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"death","text":person.name+" died. Carried goods and worn equipment were dropped. Mark the body tile for burial; relationships and memories remain in the journal."},{"causes":causes})
+	ColonyChronicle.remember(world,"death:"+str(person.id),death)
 	world.care_state.ended = not world.citizens.any(func(c:Dictionary)->bool:return not c.death_recorded and not c.departed)
 
 static func command(world: ColonyWorld, kind: String, args: Dictionary) -> String:
@@ -222,7 +228,11 @@ static func rescue_work(world: ColonyWorld, worker: Dictionary, job: Dictionary)
 	patient.x = worker.x; patient.y = worker.y
 	if arrived:
 		patient.carried_by = 0; worker.carrying_patient = 0
-		ColonySocial.rescue(world,worker.id,patient.id,patient.injury_id)
+		var causes: Array = ColonyChronicle.causes(world,"downed:"+str(patient.id))
+		var text: String = worker.name+" carried "+patient.name+" to safety"+(" after a boar injury." if ColonyChronicle.has_ancestor(world,causes,"boar_injury") else ".")
+		var rescue: int = world.emit_fact({"tick":world.tick,"actor":worker.id,"job":job.id,"kind":"rescue","text":text},{"participants":[worker.id,patient.id],"location":[patient.x,patient.y],"causes":causes})
+		ColonyChronicle.remember(world,"job:"+str(job.id),rescue)
+		ColonySocial.rescue(world,worker.id,patient.id,patient.injury_id,rescue)
 		world._complete(worker,job)
 
 static func complete(world: ColonyWorld, worker: Dictionary, job: Dictionary) -> void:
@@ -234,6 +244,10 @@ static func complete(world: ColonyWorld, worker: Dictionary, job: Dictionary) ->
 		patient.recovery_windows[job.definition] = world.tick+3600
 		refresh_recovery(world,patient)
 		if patient.health > 20: patient.downed = false
+		var changes: Dictionary = {}
+		for item in job.inputs: changes[item]=-job.inputs[item]
+		var treated: int = world.emit_fact({"tick":world.tick,"actor":worker.id,"job":job.id,"kind":"treatment","text":worker.name+" treated "+patient.name+" with "+job.definition+"; bleeding is stopped."},{"participants":[worker.id,patient.id],"location":[patient.x,patient.y],"changes":changes,"causes":ColonyChronicle.causes(world,"downed:"+str(patient.id))})
+		ColonyChronicle.remember(world,"job:"+str(job.id),treated)
 	elif job.kind == "feed":
 		var item: String = job.inputs.keys()[0]
 		patient.fullness = mini(1000,patient.fullness+world.definitions.items[item].fullness)
@@ -241,6 +255,9 @@ static func complete(world: ColonyWorld, worker: Dictionary, job: Dictionary) ->
 		for tag in world.definitions.items[item].tags:
 			if not patient.food_tags.has(tag): patient.food_tags.append(tag)
 		if item not in ["meal","travel_ration"]: patient.raw_memory_until = world.tick+1800
+		var fed: int = world.emit_fact({"tick":world.tick,"actor":worker.id,"job":job.id,"kind":"patient_fed","text":worker.name+" fed one "+item+" to "+patient.name+"."},{"participants":[worker.id,patient.id],"location":[patient.x,patient.y],"changes":{item:-1},"causes":ColonyChronicle.causes(world,"downed:"+str(patient.id))})
+		ColonyChronicle.remember(world,"job:"+str(job.id),fed)
+		if item not in ["meal","travel_ration"]: ColonyChronicle.remember(world,"raw_food:"+str(patient.id),fed)
 
 static func released(world: ColonyWorld, job: Dictionary) -> void:
 	if job.kind == "rescue" and job.worker > 0:

@@ -46,6 +46,8 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		header.erase("defense_state")
 		header.erase("director_state")
 		header.erase("opportunity_state")
+		header.erase("charter_state")
+		header.erase("chronicle_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
 		for key in ["story_memory_until","away","expedition","camp_sleeping"]+ColonyDefense.citizen_defaults().keys(): citizen_template.erase(key)
@@ -178,4 +180,15 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 			person["story_memory_until"]=0
 			person.merge(ColonyCombat.citizen_defaults())
 		result.schema_revision=19
+	if result.get("schema_revision")==19:
+		if not result.get("tick") is int or not result.get("facts") is Array or not result.get("citizens") is Array: return data
+		for fact in result.facts:
+			if not fact is Dictionary or not ColonyCodec._keys(fact,["tick","actor","job","kind","text"]) or not fact.tick is int or not fact.actor is int or not fact.job is int or not fact.kind is String or not fact.text is String: return data
+		for person in result.citizens:
+			if not person is Dictionary or not person.get("id") is int or not person.get("name") is String or not person.get("x") is int or not person.get("y") is int: return data
+		result=result.duplicate(true)
+		result["charter_state"]=ColonyCharter.initial_state(result.tick)
+		result["chronicle_state"]=ColonyChronicle.from_legacy(result)
+		result.facts=result.facts.slice(maxi(0,result.facts.size()-ColonyChronicle.ORDINARY_LIMIT))
+		result.schema_revision=20
 	return result
