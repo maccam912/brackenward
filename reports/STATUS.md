@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.6.2-m6` in progress (schema 20), content `colony-v2`, development colony envelope version 4 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.6.3-m6` in progress (schema 20), content `colony-v2`, development colony envelope version 4 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ Local current suites: 19 unit, 6 prototype integration, 42 colony, 25 survival, 
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
-Current weekly quota policy (user updated 12 October): read account limits periodically and at checkpoint boundaries. Starting remaining usage was 72%; stop at a clean checkpoint if remaining usage falls below 10% or increases above its prior observation, indicating a reset. Last observed: 14% remaining. Earlier thresholds in historical checkpoint notes are superseded.
+Current weekly quota policy (user updated 12 October): read account limits periodically and at checkpoint boundaries. Starting remaining usage was 72%; stop at a clean checkpoint if remaining usage falls below 10% or increases above its prior observation, indicating a reset. Last observed: 9% remaining. Work stopped at the requested threshold; no reset increase was observed. Earlier thresholds in historical checkpoint notes are superseded.
 
 Current local M3 debug APK: `build/brackenward-debug.apk`, 84852748 bytes, SHA-256 `b6a7acfe1944769dfd1ef10f62d62bdefaa306d1b3ab070c377175efa5ca227c`. Generated builds are ignored; downloadable release APKs have their own published checksums.
 
@@ -190,3 +190,22 @@ Reconciliation of an actual day-34 save reduced active jobs from 724 to 64, reta
 Checkpoint validation: all 28 GDScript suites pass, 1,259 checks total; all three real tutorial flows pass another 66 checks. The UI run was repeated in isolation after a concurrently launched graphical smoke caused a focus-loss pause; its final 259 checks pass. Native graphical startup, content validation and four smoke-classification regressions pass. The reviewed 64-command input remains unchanged; the personal-job correction updates the tick-72,000 golden to `f134fd4e3f2489dbdfc7d7e3ec373e9cce4107a3ac0301cc66bbd13e38d7582f`. A separate 204-second run verifies both checkpoints, all 234 invariants and saved-world continuation. Remote CI for this revision remains pending until observed.
 
 Long campaigns also exposed an expensive repeated route search for an unreachable assigned bed (Reed Bend, tick 47,750). Its saved reproduction and phase timings are preserved. The cause and any performance correction remain separate work; full Charter completion and M7 release gates are still pending.
+
+
+## M6 measured work-history optimization — 12 October 2026
+
+Version `0.6.3-m6`, Android code 23, unchanged schema 20. Production now builds temporary indexes of occupied stations, pending output, research assignments and physical stock once per work-creation pass. Newly queued batches update those indexes immediately, preserving stable order and shared Maintain targets. Hauling similarly indexes active source assignments once instead of scanning completed work for every loose stack. History, reserves, materials, priorities and simulation rules are retained. A new production regression covers three stations sharing one Maintain target with a higher-priority duplicate station order.
+
+On the preserved day-34 save, 1,000 ticks retain canonical hash `182085ad25ce9dbc089ed2a50f5d69cfe16580790a0410e6b26a3dd4e26f2ec7`. The measured simulation fell from 27.66 seconds to 15.61 seconds; instrumented production work fell from 12.14 to 2.09 seconds and default work creation from 5.16 to 1.34 seconds. This is a local fixed-snapshot measurement, not the physical-device stress or complete-campaign gate.
+
+The separate route experiment did not improve its repeated unreachable-bed benchmark and was reverted. The repeated large A* search remains unresolved; its exact saved reproduction is retained under local `reports/fixtures/reed-sleep-route-*`. It does not justify changing player needs, path order or bed assignment without further review.
+
+A final post-revert measurement confirms the same 1,000-tick hash in 15.61 seconds. Focused final-source suites pass Production 37, Scheduler 32, Defense 40, Maintenance 32 and Region 98. The full 28-suite reliability checkpoint remains separately recorded above. To reproduce the unresolved movement hotspot:
+
+```sh
+tools/godot.sh --headless --script tools/profile_campaign.gd -- reports/fixtures/reed-sleep-route-47749.brackenward 1
+```
+
+At the next tick, Oren (ID 2) at `(53,63)`, rest 299, repeatedly searches for unreachable assigned bed 2920 at `(61,66)`; the recorded route search costs 3.54 seconds. A route backoff or reachable-rest rule requires a deliberate gameplay regression before implementation.
+
+The final performance replay retains the unchanged reviewed golden: all 64 commands, tick-7,200/tick-72,000 hashes, 234 invariant checks and saved-world continuation pass (208 seconds). The final post-revert fixed-snapshot run and focused movement suites confirm the retained changes. Work stops at 9% weekly remaining (baseline 72%), with no observed reset. Resume from the verified local campaign paths in `CAMPAIGN_EVIDENCE.md`, address the preserved unreachable-rest pathfinding case, then finish the remaining M6 campaign/platform gates before M7. Physical Android, human comprehension, final art/audio/accessibility and release stress tests remain pending.

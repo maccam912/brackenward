@@ -41,6 +41,25 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 	return "accepted"
 
 static func create_jobs(world: ColonyWorld) -> void:
+	# This pass only queues work; it does not reserve or move stock. Index the
+	# current work once, then include each newly queued batch in the same maps.
+	var occupied_stations: Dictionary = {}
+	var research_desks: Dictionary = {}
+	var pending_outputs: Dictionary = {}
+	for job in world.jobs:
+		if job.state in ["Complete","Canceled"]: continue
+		if job.kind in ["cook","craft"]:
+			occupied_stations[job.target]=true
+			for item in job.output: pending_outputs[item]=pending_outputs.get(item,0)+job.output[item]
+		elif job.kind=="research" and job.definition==world.production_state.project: research_desks[job.target]=true
+	var output_batches: Dictionary = {}
+	var material_stock: Dictionary = {}
+	for stack in world.stacks:
+		if stack.count<=0: continue
+		if stack.location=="output": output_batches[stack.owner]=output_batches.get(stack.owner,0)+1
+		if stack.location in ["ground","store","output"] and ColonyFire.usable(world,stack) and world.accessible(Vector2i(stack.x,stack.y)):
+			material_stock[stack.item]=material_stock.get(stack.item,0)+stack.count-world._reserved(stack)
+	var maintained_stock: Dictionary = {}
 	for station in world.structures:
 		if station.health<=0: continue
 		if station.definition == "herbal_bench" and world.researched.has("herbalism") and not world.production_state.orders.any(func(o:Dictionary)->bool:return o.station == station.id):
@@ -51,7 +70,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 		for desk in world.structures:
 			if desk.health<=0: continue
 			if desk.definition != "research_desk" or not desk.cooking: continue
-			var exists: bool = world.jobs.any(func(j:Dictionary)->bool:return j.kind == "research" and j.target == desk.id and j.definition == project and j.state not in ["Complete","Canceled"])
+			var exists: bool = research_desks.has(desk.id)
 			if contributing >= 2: break
 			contributing += 1
 			if not exists:
@@ -63,17 +82,16 @@ static func create_jobs(world: ColonyWorld) -> void:
 		if not order.enabled or order.quantity <= 0: continue
 		var station: Dictionary = world.find(world.structures,order.station)
 		if station.is_empty() or station.health<=0 or not station.cooking: continue
-		if world.jobs.any(func(j:Dictionary)->bool:return j.target == station.id and j.kind in ["cook","craft"] and j.state not in ["Complete","Canceled"]): continue
-		var outputs: int = world.stacks.filter(func(s:Dictionary)->bool:return s.count > 0 and s.location == "output" and s.owner == station.id).size()
+		if occupied_stations.has(station.id): continue
+		var outputs: int = output_batches.get(station.id,0)
 		if outputs >= 2: continue
 		var recipe: Dictionary = world.definitions.recipes[order.recipe]
-		if not recipe.materials.keys().all(func(item:Variant)->bool:return world.available(item) >= recipe.materials[item]): continue
+		if not recipe.materials.keys().all(func(item:Variant)->bool:return material_stock.get(item,0) >= recipe.materials[item]): continue
 		if order.mode == "Maintain":
 			var sufficient: bool = true
 			for item in recipe.outputs:
-				var count: int = policy_stock(world,item)
-				for other in world.jobs:
-					if other.kind in ["cook","craft"] and other.state not in ["Complete","Canceled"]: count += other.output.get(item,0)
+				if not maintained_stock.has(item): maintained_stock[item]=policy_stock(world,item)
+				var count: int = maintained_stock[item]+pending_outputs.get(item,0)
 				if count < order.quantity: sufficient = false
 			if sufficient: continue
 		var inputs: Dictionary = recipe.materials.duplicate()
@@ -98,6 +116,8 @@ static func create_jobs(world: ColonyWorld) -> void:
 		job.inputs = inputs
 		job.output = recipe.outputs.duplicate()
 		job.priority = order.priority
+		occupied_stations[station.id]=true
+		for item in job.output: pending_outputs[item]=pending_outputs.get(item,0)+job.output[item]
 
 static func completed(world: ColonyWorld, job: Dictionary) -> void:
 	var order: Dictionary = world.find(world.production_state.orders,job.order)

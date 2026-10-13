@@ -31,6 +31,15 @@ static func run(check: Callable) -> void:
 	for i in range(1800): w.step()
 	check.call("PRODUCTION/maintain_counts_two_available_units_once",w.total("toolkit") == 6 and w.jobs.filter(func(j:Dictionary)->bool:return j.kind == "craft").size() == 2)
 	w = ColonyTests.world()
+	var stations: Array[int] = []
+	for x in [74,78,82]:
+		bench=w._structure("workbench",Vector2i(x,63),0);stations.append(bench.id)
+		ColonyProduction.command(w,"recipe_order",{"target":bench.id,"definition":"make_toolkit","mode":"Maintain","value":2,"priority":2,"filters":[]})
+	ColonyProduction.command(w,"recipe_order",{"target":stations[0],"definition":"make_toolkit","mode":"Repeat","value":1,"priority":3,"filters":[]})
+	ColonyProduction.create_jobs(w)
+	var batches: Array = w.jobs.filter(func(j:Dictionary)->bool:return j.kind=="craft")
+	check.call("PRODUCTION/shared_maintain_target_counts_new_batches_and_station_occupancy",batches.size()==2 and batches[0].target==stations[0] and batches[1].target==stations[1] and batches[0].priority==3)
+	w = ColonyTests.world()
 	bench = w._structure("workbench",Vector2i(74,63),0)
 	w.queue_command("recipe_order",{"target":bench.id,"definition":"make_bow","mode":"Repeat","value":1,"priority":2,"filters":[]})
 	w.step()

@@ -74,6 +74,44 @@ ledger remained intact. Invariants and a canonical save round trip passed;
 280 scheduler, expedition, Charter, care, defense and construction checks
 passed. Current continuations exercise the fix through ordinary play.
 
+A further 1,000 ticks from that same frozen Day 34 snapshot produced identical
+canonical state before and after the final local lookup optimizations:
+`182085ad25ce9dbc089ed2a50f5d69cfe16580790a0410e6b26a3dd4e26f2ec7`.
+Measured normal simulation time fell from 27.66 to 15.61 seconds with the
+combined production and hauling lookup changes. The instrumented
+production phase fell from 12.14 to 2.09 seconds. Production's 37 checks include
+multiple stations sharing a Maintain target and duplicate orders on one station;
+newly queued work still affects later orders within the same pass.
+
 Neither this document nor the scenario runner marks an incomplete Charter as
 complete. Other sites/modes, all remaining long-run scenarios and cross-platform
 replay remain separate gates.
+
+## Quota stop and exact resume points
+
+All four active campaign processes were stopped when weekly usage reached 9%
+remaining. Their latest daily report, original starting snapshot and final
+snapshot were copied unchanged to the following stable local paths after
+checking each report's canonical hash against its snapshot payload checksum.
+Every checkpoint had already passed the runner's encode/decode verification.
+All retain complete accepted-command and policy-decision lineage. No campaign
+has completed the final Charter ceremony, Continue action or subsequent full day.
+
+| Resume report (relative to repository root) | Saved state | Canonical hash |
+| --- | --- | --- |
+| `reports/quota-stop-20261012-meadow-standard.json` | Day 36, tick 252000; eight residents; four stages; 191 portions | `23712e66f22eb3cb0a0f751e57bb1be2252637a5bc886de96161e372c2cf95cb` |
+| `reports/quota-stop-20261012-pine-hearthside.json` | Day 35, tick 244800; eight residents; two stages; 76 portions | `0b602d782eb5b38434eb63fa18f186bd6a183c3950925bf10541729941932f68` |
+| `reports/quota-stop-20261012-reed-standard.json` | Day 7, tick 43200; five residents; one stage; 48 portions | `40cab44857c6bb8b99263b2eccd42f216888a17bacb08d8dc8e2fa6126657c41` |
+| `reports/quota-stop-20261012-pine-standard.json` | Day 10, tick 64800; six residents; one stage; 27 portions | `45b6b8ed9d6320b8fc700133e22b32cbc663b37e2281c5de5190820f25190479` |
+
+Each report has matching `-initial.brackenward` and `-final.brackenward`
+companions. All four checkpoints retain minimum health 100 and zero ticks
+beyond the starvation grace period. `reports/quota-stop-20261012.json` records
+the exact sources and stopped process identities. Meadow's beacon remains
+blocked on stone (53 physical units against its 60-unit requirement); Pine
+Hearthside still has material blockers for its kilns, smelter and beacon.
+The two Standard campaigns
+that stalled early remain useful reproductions of repeated, expensive path
+searches toward an unreachable assigned bed; they are not successful full runs.
+Resume only after the user authorizes more work, using `--resume` with one of
+the reports above, its matching site/mode and an additional day count.

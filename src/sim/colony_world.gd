@@ -573,6 +573,12 @@ func _create_work() -> void:
 				var job: Dictionary = _job("cook", "Cooking", "Cooking", hearth.id, Vector2i(hearth.x, hearth.y), recipe.work_milli)
 				job.inputs = inputs
 				job.output = recipe.outputs.duplicate()
+	# Completed work remains in history; index only live hauling reservations
+	# once instead of rescanning that history for every loose stack.
+	var haul_sources: Dictionary = {}
+	for existing in jobs:
+		if existing.kind == "haul" and existing.state not in ["Complete", "Canceled"]:
+			haul_sources[existing.source] = true
 	for stack in stacks.duplicate():
 		var invalid_store: bool = false
 		if stack.location == "store":
@@ -580,13 +586,10 @@ func _create_work() -> void:
 			invalid_store = store.is_empty() or not store.filters.has(stack.item)
 		if stack.count == 0 or (stack.location not in ["ground", "output"] and not invalid_store) or _reserved(stack) > 0:
 			continue
-		var exists: bool = false
-		for job in jobs:
-			if job.kind == "haul" and job.source == stack.id and job.state not in ["Complete", "Canceled"]:
-				exists = true
-		if not exists:
+		if not haul_sources.has(stack.id):
 			var job: Dictionary = _job("haul", "Hauling", "", stack.id, Vector2i(stack.x, stack.y), 0)
 			job.source = stack.id
+			haul_sources[stack.id] = true
 
 func _needs(citizen: Dictionary) -> void:
 	if citizen.away:
