@@ -41,8 +41,10 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		header.erase("equipment_state")
 		header.erase("population_state")
 		header.erase("trade_state")
+		header.erase("region_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
+		for key in ["away","expedition","camp_sleeping"]: citizen_template.erase(key)
 		for key in ColonySocial.citizen_defaults(): citizen_template.erase(key)
 		for key in ColonyCare.citizen_defaults(): citizen_template.erase(key)
 		for key in ColonyCombat.citizen_defaults(): citizen_template.erase(key)
@@ -150,4 +152,9 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		while result.trade_state.next_visit<=result.tick:
 			result.trade_state.next_visit+=28800;result.trade_state.visit_index+=1
 		result.schema_revision=15
+	if result.get("schema_revision")==15:
+		result=result.duplicate(true)
+		result["region_state"]=ColonyRegion.initial_state(result.seed,result.generator_version,result.site_id)
+		for person in result.citizens: person.merge({"away":false,"expedition":0,"camp_sleeping":false})
+		result.schema_revision=16
 	return result

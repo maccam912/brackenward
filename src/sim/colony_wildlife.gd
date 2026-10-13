@@ -44,7 +44,7 @@ static func advance(world: ColonyWorld) -> void:
 	for animal in world.wildlife_state.animals:
 		if animal.health <= 0: continue
 		var definition: Dictionary = world.definitions.animals[animal.definition]
-		var near: Array = world.citizens.filter(func(c:Dictionary)->bool:return not c.downed and not c.death_recorded and not c.departed and distance(animal,c) <= definition.flee_range)
+		var near: Array = world.citizens.filter(func(c:Dictionary)->bool:return not c.downed and not c.death_recorded and not c.departed and not c.away and distance(animal,c) <= definition.flee_range)
 		near.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return distance(animal,a)<distance(animal,b) if distance(animal,a)!=distance(animal,b) else a.id<b.id)
 		var aggressor: Dictionary = world.find(world.citizens,animal.attacker)
 		if animal.attacker > 0 and (aggressor.is_empty() or aggressor.downed or aggressor.death_recorded or aggressor.departed or distance(animal,aggressor)>6 or absi(animal.x-animal.origin.x)+absi(animal.y-animal.origin.y)>=12): animal.attacker = 0

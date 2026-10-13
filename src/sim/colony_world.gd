@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 15
+const SCHEMA_REVISION: int = 16
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -30,6 +30,7 @@ var care_state: Dictionary = {}
 var care_destinations: Dictionary = {}
 var population_state: Dictionary = {}
 var trade_state: Dictionary = {}
+var region_state: Dictionary = {}
 var equipment_state: Dictionary = {}
 var construction_state: Dictionary = ColonyConstruction.initial_state()
 var domestic_state: Dictionary = ColonyDomestic.initial_state()
@@ -100,6 +101,7 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		var point: Vector2i = Vector2i(55 - (index % 6) * 2, 54 + (index / 6) * 3)
 		resources.append({"id": _id(), "definition": kind, "x": point.x, "y": point.y, "remaining": definitions.resources[kind].yield_count, "regrow_at": 0})
 
+	region_state=ColonyRegion.initial_state(seed,generator_version,site_id)
 	trade_state=ColonyTrade.initial_state(seed,generator_version,site_id)
 	population_state=ColonyPopulation.initial_state(seed,generator_version,site_id)
 	equipment_state=ColonyEquipment.initial_state(citizens)
@@ -227,6 +229,7 @@ func step() -> void:
 	ColonyCare.advance(self)
 	ColonyWeather.advance(self)
 	ColonyAgriculture.advance(self)
+	ColonyRegion.advance(self)
 	ColonyTrade.advance(self)
 	ColonyPopulation.advance(self)
 	ColonyDomestic.advance(self)
@@ -368,7 +371,8 @@ func _command(command: Dictionary) -> String:
 				return "missing_target"
 			if job.state == "Complete":
 				return "already_completed"
-			_release(job, true)
+			if job.kind=="expedition_pack": ColonyRegion.cancel(self,find(region_state.trips,job.target))
+			else: _release(job, true)
 		"preference":
 			var citizen: Dictionary = find(citizens, args.citizen)
 			if citizen.is_empty() or not args.category in CATEGORIES or not args.value in [0, 1, 2, 3]:
@@ -379,6 +383,7 @@ func _command(command: Dictionary) -> String:
 				if job.kind not in ["eat", "sleep"]:
 					_release(job, false)
 		"field": return ColonyAgriculture.designate(self, args)
+		"expedition_prepare", "expedition_depart", "expedition_cancel", "expedition_recall", "expedition_choice", "expedition_collect": return ColonyRegion.command(self,command.kind,args)
 		"trade", "trade_cancel": return ColonyTrade.command(self,command.kind,args)
 		"newcomer": return ColonyPopulation.command(self,args)
 		"cart_move": return ColonyMaintenance.cart_command(self,args)
@@ -497,7 +502,7 @@ func _create_work() -> void:
 			if job.kind in ["cook","craft"] and job.target == hearth.id and job.state not in ["Complete", "Canceled"]:
 				active = true
 				in_progress += 2
-		if not active and output_batches < 2 and available("meal") + in_progress < citizens.filter(func(c:Dictionary)->bool:return not c.death_recorded and not c.departed).size() * 4:
+		if not active and output_batches < 2 and available("meal") + in_progress < citizens.filter(func(c:Dictionary)->bool:return not c.death_recorded and not c.departed and not c.away).size() * 4:
 			var recipe: Dictionary = definitions.recipes.cook_meals
 			var inputs: Dictionary = recipe.materials.duplicate()
 			var count: int = 0
@@ -537,6 +542,8 @@ func _create_work() -> void:
 			job.source = stack.id
 
 func _needs(citizen: Dictionary) -> void:
+	if citizen.away:
+		ColonyRegion.needs(self,citizen);return
 	if citizen.death_recorded or citizen.departed: return
 	citizen.hunger_rem += 1000
 	citizen.fullness = maxi(0, citizen.fullness - citizen.hunger_rem / 7200)
@@ -567,6 +574,7 @@ func _needs(citizen: Dictionary) -> void:
 		citizen.starving_ticks = 0
 
 func _assign(citizen: Dictionary) -> void:
+	if citizen.away: return
 	if citizen.death_recorded or citizen.departed:
 		citizen.activity = "Died" if citizen.death_recorded else "Departed"
 		return
@@ -622,6 +630,7 @@ func _assign(citizen: Dictionary) -> void:
 		recovery.worker = citizen.id; recovery.state = "Moving"
 		citizen.job = recovery.id
 		return
+	if ColonyRegion.assign(self,citizen): return
 	if not arrival.is_empty() and _reserve(arrival,citizen):
 		citizen.job=arrival.id
 		return
@@ -672,6 +681,8 @@ func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
 	return false
 
 func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+	if citizen.away: return false
+	if job.kind=="expedition_pack" and not ColonyRegion.pack_ready(self,job): return false
 	if job.kind=="trade" and not ColonyTrade.ready(self,job): return false
 	if job.kind=="arrival" and job.target!=citizen.id: return false
 	if job.kind=="cart_move" and job.memo.phase=="prepare":
@@ -780,6 +791,11 @@ func _block(job: Dictionary, reason: String) -> bool:
 func _work(citizen: Dictionary, job: Dictionary) -> void:
 	if job.is_empty():
 		citizen.job = 0
+		return
+	if job.kind=="expedition_walk":
+		ColonyRegion.walk_work(self,citizen,job);return
+	if job.kind=="expedition_meet":
+		if _walk(citizen,Vector2i(ColonyTrade.cart(self).x,ColonyTrade.cart(self).y)): _complete(citizen,job)
 		return
 	if job.kind=="arrival":
 		ColonyPopulation.arrival_work(self,citizen,job)
@@ -957,6 +973,8 @@ func _rate(citizen: Dictionary, job: Dictionary) -> int:
 	return work
 
 func _finish(citizen: Dictionary, job: Dictionary) -> void:
+	if job.kind=="expedition_pack" and not ColonyRegion.pack_ready(self,job):
+		var reason: String = job.reason;_release(job,false);_block(job,reason);return
 	if job.kind=="trade" and not ColonyTrade.ready(self,job):
 		var reason: String = job.reason
 		_release(job,false);_block(job,reason);return
@@ -984,7 +1002,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			return
 	for stack in stacks:
 		if stack.location == "escrow" and stack.owner == job.id:
-			if job.kind in ["stock_feed","equip"]: continue
+			if job.kind in ["stock_feed","equip","expedition_pack"]: continue
 			if job.kind in ["eat","feed"]:
 				var eater: Dictionary = citizen if job.kind == "eat" else find(citizens,job.target)
 				for tag in stack.tags:
@@ -997,6 +1015,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			stack.count = 0
 	var point: Vector2i = Vector2i(job.work_x, job.work_y)
 	match job.kind:
+		"expedition_pack": ColonyRegion.pack_complete(self,job)
 		"trade": ColonyTrade.complete(self,job)
 		"move_furniture": ColonyMaintenance.complete_move(self,job)
 		"repair", "demolish": ColonyMaintenance.complete(self,job)
@@ -1096,7 +1115,7 @@ func _release(job: Dictionary, cancel: bool) -> void:
 		if not animal.is_empty(): animal.handler = 0
 	ColonyCare.released(self,job)
 	for stack in stacks:
-		if cancel or job.kind!="trade": stack.reservations.erase(job.id)
+		if cancel or job.kind not in ["trade","expedition_pack"]: stack.reservations.erase(job.id)
 		if (stack.location == "carry" and stack.job == job.id) or (cancel and stack.location == "escrow" and stack.owner == job.id):
 			stack.location = "ground"
 			if stack.owner > 0 and not find(citizens, stack.owner).is_empty():
@@ -1105,7 +1124,7 @@ func _release(job: Dictionary, cancel: bool) -> void:
 				stack.y = carrier.y
 			stack.owner = 0
 			stack.job = 0
-			if not cancel and job.kind=="trade" and stack.count>0: stack.reservations[job.id]=stack.count
+			if not cancel and job.kind in ["trade","expedition_pack"] and stack.count>0: stack.reservations[job.id]=stack.count
 	if job.worker > 0:
 		var citizen: Dictionary = find(citizens, job.worker)
 		citizen.job = 0
@@ -1220,7 +1239,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
 	var all_ids: Dictionary = {}
-	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses, domestic_state.pens, domestic_state.animals, construction_state.groups, population_state.offers, trade_state.merchants, trade_state.exchanges]:
+	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses, domestic_state.pens, domestic_state.animals, construction_state.groups, population_state.offers, trade_state.merchants, trade_state.exchanges, region_state.trips]:
 		for record: Dictionary in records:
 			if all_ids.has(record.id) or record.id < 1 or record.id >= next_id:
 				errors.append("Invalid/duplicate ID")
@@ -1230,10 +1249,10 @@ func invariant_errors() -> Array[String]:
 			errors.append("Invalid quantity or over-reservation")
 		for job_id in stack.reservations:
 			var job: Dictionary = find(jobs, job_id)
-			if job.is_empty() or (job.worker == 0 and job.kind not in ["trade"]) or job.state in ["Complete", "Canceled"]:
+			if job.is_empty() or (job.worker == 0 and job.kind not in ["trade","expedition_pack"]) or job.state in ["Complete", "Canceled"]:
 				errors.append("Orphan reservation")
-		if stack.count > 0 and stack.location in ["carry", "escrow", "output", "store"]:
-			var owners: Array[Dictionary] = citizens if stack.location == "carry" else (jobs if stack.location == "escrow" else (structures if stack.location == "output" else stores))
+		if stack.count > 0 and stack.location in ["carry", "escrow", "output", "store", "expedition_cargo"]:
+			var owners: Array = region_state.trips if stack.location=="expedition_cargo" else citizens if stack.location == "carry" else (jobs if stack.location == "escrow" else (structures if stack.location == "output" else stores))
 			if find(owners, stack.owner).is_empty():
 				errors.append("Missing physical owner")
 	var work_positions: Dictionary = {}
@@ -1268,7 +1287,7 @@ func invariant_errors() -> Array[String]:
 	return errors
 
 func payload() -> Dictionary:
-	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "trade_state":trade_state, "population_state":population_state, "equipment_state":equipment_state, "construction_state":construction_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
+	return {"content": CONTENT_VERSION, "content_hash":definitions.content_hash, "schema_revision":schema_revision, "generator_version":generator_version, "terrain_state":terrain_state, "region_state":region_state, "trade_state":trade_state, "population_state":population_state, "equipment_state":equipment_state, "construction_state":construction_state, "domestic_state":domestic_state, "wildlife_state":wildlife_state, "nature_state":nature_state, "site_id":site_id, "weather_state":weather_state, "social_state":social_state, "production_state":production_state, "care_state":care_state, "seed": seed, "tick": tick, "session_id": session_id, "next_id": next_id,
 		"next_command_id": next_command_id, "citizens": citizens, "structures": structures, "resources": resources,
 		"stacks": stacks, "jobs": jobs, "stores": stores, "fields": fields, "researched": researched, "weather": weather, "designations": designations, "receipts": receipts,
 		"pending_commands": pending_commands, "facts": facts, "ledger": ledger, "use_rations": use_rations}
@@ -1328,7 +1347,7 @@ func can_step(from: Vector2i, to: Vector2i) -> bool:
 	return absi(elevation(from)-elevation(to)) <= 1
 
 static func citizen_record(id: int, name: String, point: Vector2i, skills: Dictionary, xp: Dictionary, traits: Array, preferred: String, preferences: Dictionary, food: String, weapon: String) -> Dictionary:
-	var result: Dictionary = {"id": id, "name": name, "x": point.x, "y": point.y,
+	var result: Dictionary = {"away":false,"expedition":0,"camp_sleeping":false,"id": id, "name": name, "x": point.x, "y": point.y,
 		"progress": 0, "direction": 0, "edge_x": point.x, "edge_y": point.y, "route": [], "route_goal": [], "move_base_rem": 0, "move_rem": 0, "injury_rem": 0, "travel_credit": 0,
 		"skills": skills, "xp": xp, "traits": traits, "preferred": preferred, "preferences": preferences,
 		"shift": "Normal", "pending_shift": "", "pinned_job": 0, "yesterday_leisure": 0, "leisure_memory_until": 0, "warm_until": 0, "leisure_ticks": 0, "leisure_day": 0, "bed_sleep_ticks": 0, "bed_memory_until": 0, "raw_memory_until": 0, "preferred_work": 0, "preferred_memory_until": 0, "mood_terms": {}, "food_tags": [], "food_tags_day": 0, "break_clock": 0, "break_until": 0, "break_cooldown": 0, "departure_clock": 0, "departure_until": 0, "departed": false,

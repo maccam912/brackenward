@@ -8,8 +8,8 @@ var started: int = 0
 func _initialize() -> void:
 	started = Time.get_ticks_msec()
 	var args: PackedStringArray = OS.get_cmdline_user_args()
-	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade"]:
-		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade. Unknown flags/suites are errors.")
+	if args.size() != 2 or args[0] != "--suite" or not args[1] in ["unit", "integration", "ui", "colony", "survival", "persistence", "seasons", "people", "production", "care", "generation", "nature", "wildlife", "domestic", "construction", "equipment", "maintenance", "population", "trade", "region"]:
+		printerr("Usage: -- --suite unit|integration|ui|colony|survival|persistence|seasons|people|production|care|generation|nature|wildlife|domestic|construction|equipment|maintenance|population|trade|region. Unknown flags/suites are errors.")
 		quit(2)
 		return
 	suite = args[1]
@@ -44,6 +44,7 @@ func run() -> void:
 		"maintenance": MaintenanceTests.run(check)
 		"population": PopulationTests.run(check)
 		"trade": TradeTests.run(check)
+		"region": RegionTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]
 	for item in cases:
@@ -738,6 +739,42 @@ func ui() -> void:
 	var accept_trade: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Accept exchange")[0]
 	accept_trade.pressed.emit();accept_trade.pressed.emit()
 	check("TRADE/UI_confirmation_queues_one_atomic_exchange",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="trade" and colony_game.world.pending_commands[0].args.buy=={"meal":5} and colony_game.world.pending_commands[0].args.pay=={"wood":21})
+	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	colony_game.show_valley()
+	check("REGION/UI_valley_links_map_and_current_trip",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Regional map") and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Expedition status"))
+	colony_game.show_region()
+	var region_scroll: ScrollContainer = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is ScrollContainer)[0]
+	var region_grid: GridContainer = region_scroll.get_child(0)
+	check("REGION/UI_81_map_tiles_and_48_dp_targets",region_grid.get_child_count()==81 and region_grid.get_children().all(func(n:Node)->bool:return n is Button and n.custom_minimum_size.x>=48 and n.custom_minimum_size.y>=48))
+	await process_frame;await process_frame
+	region_scroll.pointer=0;region_scroll.start=region_scroll.get_global_rect().get_center();region_scroll.scroll_origin=region_scroll.scroll_vertical;region_scroll.horizontal_origin=0
+	var horizontal_drag: InputEventScreenDrag = InputEventScreenDrag.new();horizontal_drag.index=0;horizontal_drag.position=region_scroll.start-Vector2(160,0);horizontal_drag.relative=Vector2(-160,0)
+	region_scroll._input(horizontal_drag)
+	check("REGION/UI_map_pans_horizontally_without_selecting",region_scroll.scroll_horizontal>0 and colony_game.world.pending_commands.is_empty())
+	region_scroll.pointer=-1;region_scroll.dragging=false;region_scroll.suppress_mouse=false
+	colony_game.show_expedition_prepare("berry_hollow",false);await process_frame;await process_frame
+	check("EXP/UI_preparation_fits_viewport_width",colony_game.sheet.get_rect().end.x<=colony_game.content.size.x+1,str(colony_game.sheet.get_rect())+" / "+str(colony_game.content.size))
+	colony_game.show_expedition_preview(RegionTests.args("berry_hollow",[1,2,3]))
+	check("EXP/UI_home_worker_shortage_blocks_packing",not colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Start packing"))
+	colony_game.show_expedition_preview(RegionTests.args())
+	check("EXP/UI_exact_time_food_and_capacity_preview",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("18 hours") and n.text.contains("8 travel_ration") and n.text.contains("capacity 24")))
+	var pack_expedition: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Start packing")[0]
+	pack_expedition.pressed.emit();pack_expedition.pressed.emit()
+	check("EXP/UI_packing_confirmation_submits_once",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="expedition_prepare")
+	colony_game.world.step();colony_game.submitted_command=0;colony_game.show_expeditions()
+	check("EXP/UI_depart_waits_for_real_party_and_cargo",not colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Depart"))
+	var ui_trip: Dictionary = ColonyRegion.active(colony_game.world)
+	RegionTests.until(colony_game.world,ui_trip,"Ready");colony_game.show_expeditions()
+	var depart_expedition: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Depart")[0]
+	depart_expedition.pressed.emit()
+	check("EXP/UI_separate_depart_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="expedition_depart" and not colony_game.world.pending_commands[0].args.unprepared)
+	colony_game.world.step();RegionTests.until(colony_game.world,ui_trip,"Decision",false);colony_game.view._process(0)
+	check("EXP/UI_off_map_residents_hide_and_home_workers_stay_visible",not colony_game.view.actors[1].visible and not colony_game.view.actors[2].visible and colony_game.view.actors[0].visible and colony_game.view.actors[3].visible)
+	colony_game._process(0)
+	check("EXP/UI_decision_opens_with_free_choice_and_recall",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Choose continue") and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text.begins_with("Recall without")))
+	var continue_route: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Choose continue")[0]
+	continue_route.pressed.emit()
+	check("EXP/UI_confirm_choice_queues_exact_response",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="expedition_choice" and colony_game.world.pending_commands[0].args.definition=="continue")
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

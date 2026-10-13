@@ -33,7 +33,7 @@ static func hurt(world: ColonyWorld, person: Dictionary, damage: int, attack: bo
 
 static func advance(world: ColonyWorld) -> void:
 	for person in world.citizens:
-		if person.death_recorded or person.departed: continue
+		if person.death_recorded or person.departed or person.away: continue
 		if person.health == 0 and person.hearthside_until == 0: _zero_health(world,person)
 		if person.hearthside_until > 0:
 			if world.tick >= person.hearthside_until:
@@ -165,7 +165,7 @@ static func destination(world: ColonyWorld, patient: Dictionary) -> Dictionary:
 
 static func create_jobs(world: ColonyWorld) -> void:
 	for patient in world.citizens:
-		if patient.death_recorded or patient.departed or patient.carried_by > 0: continue
+		if patient.death_recorded or patient.departed or patient.away or patient.carried_by > 0: continue
 		if patient.downed:
 			var bed: Dictionary = destination(world,patient)
 			# If transport would outlast bleeding, stabilize at the current position first.

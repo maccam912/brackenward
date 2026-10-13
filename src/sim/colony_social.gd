@@ -65,7 +65,7 @@ static func leisure_seat(world: ColonyWorld, citizen: Dictionary) -> Vector2i:
 		var private_tier: int = 0
 		var near_friend: bool = false
 		for other in world.citizens:
-			if other.id == citizen.id or other.departed or other.health == 0: continue
+			if other.id == citizen.id or other.departed or other.away or other.health == 0: continue
 			var near: bool = absi(point.x-other.x)+absi(point.y-other.y) <= 2
 			if near and citizen.traits.has("Private"): private_tier = 1
 			var job: Dictionary = world.find(world.jobs,other.job)
@@ -88,7 +88,7 @@ static func advance(world: ColonyWorld) -> void:
 	var leisure: Array[Dictionary] = []
 	for citizen in world.citizens:
 		var job: Dictionary = world.find(world.jobs,citizen.job)
-		if citizen.health > 0 and not citizen.departed and job.get("kind") == "leisure" and job.state == "Working": leisure.append(citizen)
+		if citizen.health > 0 and not citizen.departed and not citizen.away and job.get("kind") == "leisure" and job.state == "Working": leisure.append(citizen)
 	var chosen: Dictionary = {}
 	var paired: Dictionary = {}
 	for citizen in leisure:
@@ -233,7 +233,7 @@ static func _eligible(citizen: Dictionary, kind: String) -> bool:
 	return {"quiet_bed":citizen.traits.has("Private") or citizen.traits.has("Homebody"),"garden_seat":citizen.traits.has("Outdoorsy") or citizen.preferred in ["Growing","Gathering","Animals"],"supper":citizen.traits.has("Sociable") or citizen.traits.has("Kind"),"learn":citizen.traits.has("Curious") or citizen.preferred == "Research","tool":citizen.preferred in ["Crafting","Building"],"valley":citizen.traits.has("Restless") or citizen.preferred == "Gathering"}[kind]
 
 static func _offer(world: ColonyWorld) -> void:
-	var people: Array = world.citizens.filter(func(c:Dictionary)->bool:return c.health > 0 and not c.departed and REQUESTS.any(func(kind:String)->bool:return _eligible(c,kind)))
+	var people: Array = world.citizens.filter(func(c:Dictionary)->bool:return c.health > 0 and not c.departed and not c.away and REQUESTS.any(func(kind:String)->bool:return _eligible(c,kind)))
 	people.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.last_request_offer < b.last_request_offer or (a.last_request_offer == b.last_request_offer and a.id < b.id))
 	if people.is_empty(): return
 	var person: Dictionary = people[0]

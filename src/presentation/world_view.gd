@@ -80,11 +80,12 @@ func _process(delta: float) -> void:
 			point.x += float(citizen.progress) / 10000.0 * citizen.direction
 		actors[i].position = point * 16.0
 		if world is ColonyWorld:
-			actors[i].visible = not citizen.death_recorded and not citizen.departed and citizen.carried_by == 0
+			actors[i].visible = not citizen.death_recorded and not citizen.departed and citizen.carried_by == 0 and ColonyRegion.visible(world,citizen)
 			actors[i].rotation = PI*0.5 if citizen.downed else 0.0
 			actors[i].modulate = Color("E9BA67") if citizen.health < 50 else Color.WHITE
 		if citizen.id == follow_id:
-			camera_tile = point
+			if world is ColonyWorld and not ColonyRegion.visible(world,citizen): follow_id=0
+			else: camera_tile = point
 	_update_transform()
 	queue_redraw()
 	carried_overlay.queue_redraw()

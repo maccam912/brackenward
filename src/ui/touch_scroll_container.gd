@@ -6,6 +6,7 @@ extends ScrollContainer
 var pointer: int = -1
 var start: Vector2 = Vector2.ZERO
 var scroll_origin: int = 0
+var horizontal_origin: int = 0
 var dragging: bool = false
 var suppress_mouse: bool = false
 
@@ -23,6 +24,7 @@ func _input(event: InputEvent) -> void:
 		return
 	if event is InputEventPanGesture and get_global_rect().has_point(event.position):
 		scroll_vertical += roundi(get_v_scroll_bar().page * event.delta.y / 8.0)
+		if horizontal_scroll_mode!=SCROLL_MODE_DISABLED: scroll_horizontal+=roundi(get_h_scroll_bar().page*event.delta.x/8.0)
 		get_viewport().set_input_as_handled()
 		return
 	if (event is InputEventMouseButton or event is InputEventMouseMotion) and event.device == -1 and suppress_mouse:
@@ -39,6 +41,7 @@ func _input(event: InputEvent) -> void:
 				pointer = event.index
 				start = event.position
 				scroll_origin = scroll_vertical
+				horizontal_origin = scroll_horizontal
 				dragging = false
 				suppress_mouse = false
 		elif event.index == pointer:
@@ -49,12 +52,13 @@ func _input(event: InputEvent) -> void:
 			dragging = false
 	elif event is InputEventScreenDrag and event.index == pointer:
 		var delta: Vector2 = (event.position-start)/get_global_transform().get_scale()
-		if not dragging and absf(delta.y) > 8:
+		if not dragging and (absf(delta.y)>8 or (horizontal_scroll_mode!=SCROLL_MODE_DISABLED and absf(delta.x)>8)):
 			dragging = true
 			suppress_mouse = true
 			propagate_notification(Control.NOTIFICATION_SCROLL_BEGIN)
 		if dragging:
 			scroll_vertical = scroll_origin-roundi(delta.y)
+			if horizontal_scroll_mode!=SCROLL_MODE_DISABLED: scroll_horizontal=horizontal_origin-roundi(delta.x)
 			get_viewport().set_input_as_handled()
 
 func _notification(what: int) -> void:

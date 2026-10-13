@@ -115,17 +115,22 @@ static func preview(world: ColonyWorld, merchant: Dictionary, buy: Dictionary, p
 		if animal_count+reserved_pen+info.count>info.capacity or animal_count+reserved+world.domestic_state.animals.filter(func(a:Dictionary)->bool:return a.health>0).size()>12: return {"error":"Reserve enough pen tiles and barn slots for all purchased animals; domestic cap twelve"}
 	return {"error":"","cost":cost,"offered":offered,"gift":offered-cost,"multiplier":multiplier}
 
-static func reserve_payment(world: ColonyWorld, job: Dictionary) -> bool:
+static func reservation_plan(world: ColonyWorld, inputs: Dictionary, point: Vector2i) -> Dictionary:
 	var requests: Array = []
-	for item in job.inputs:
-		var needed: int = job.inputs[item]
+	for item in inputs:
+		var needed: int = inputs[item]
 		var sources: Array = world.stacks.filter(func(s:Dictionary)->bool:return s.item==item and s.count>world._reserved(s) and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
-		sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(world,a,b,Vector2i(job.x,job.y)))
+		sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(world,a,b,point))
 		for stack in sources:
-			var count: int = mini(needed,stack.count-world._reserved(stack));requests.append({"stack":stack,"count":count});needed-=count
+			var count: int = mini(needed,stack.count-world._reserved(stack));requests.append({"stack":stack.id,"count":count});needed-=count
 			if needed==0: break
-		if needed>0: return false
-	for request in requests: request.stack.reservations[job.id]=request.count
+		if needed>0: return {"error":"Missing "+item}
+	return {"error":"","requests":requests}
+
+static func reserve_payment(world: ColonyWorld, job: Dictionary) -> bool:
+	var plan: Dictionary = reservation_plan(world,job.inputs,Vector2i(job.x,job.y))
+	if not plan.error.is_empty(): return false
+	for request in plan.requests: world.find(world.stacks,request.stack).reservations[job.id]=request.count
 	return true
 
 static func command(world: ColonyWorld, kind: String, args: Dictionary) -> String:

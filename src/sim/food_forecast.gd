@@ -11,8 +11,8 @@ static func expiry_ticks(world: ColonyWorld, stack: Dictionary) -> int:
 		denominator = world.definitions.buildings[store.definition].age_denominator
 	return maxi(0,((shelf-stack.age)*4-stack.age_rem+4/denominator-1)/(4/denominator))
 
-static func calculate(world: ColonyWorld, resident_override: int = -1) -> Dictionary:
-	var residents: int = world.citizens.filter(func(c: Dictionary)->bool:return not c.death_recorded and not c.departed).size()
+static func calculate(world: ColonyWorld, resident_override: int = -1, removed_by_stack: Dictionary = {}) -> Dictionary:
+	var residents: int = world.citizens.filter(func(c: Dictionary)->bool:return not c.death_recorded and not c.departed and not c.away).size()
 	if resident_override>=0: residents=resident_override
 	if residents == 0:
 		return {"portions":0,"ticks":0,"label":"No residents at home"}
@@ -23,7 +23,7 @@ static func calculate(world: ColonyWorld, resident_override: int = -1) -> Dictio
 		var definition: Dictionary = world.definitions.items[stack.item]
 		if definition.fullness == 0 or stack.location not in ["ground","store","output"] or (stack.item == "travel_ration" and not world.use_rations) or not world.accessible(Vector2i(stack.x,stack.y)):
 			continue
-		var count: int = stack.count - world._reserved(stack)
+		var count: int = stack.count - world._reserved(stack) - removed_by_stack.get(stack.id,0)
 		if count <= 0:
 			continue
 		var expiry: int = expiry_ticks(world,stack)

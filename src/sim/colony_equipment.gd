@@ -44,7 +44,7 @@ static func _create(world: ColonyWorld, person: Dictionary, slot: String, item: 
 
 static func create_jobs(world: ColonyWorld) -> void:
 	for person in world.citizens:
-		if person.death_recorded or person.departed or person.downed: continue
+		if person.death_recorded or person.departed or person.downed or person.away: continue
 		for slot in SLOTS:
 			if world.jobs.any(func(j:Dictionary)->bool:return j.kind=="equip" and j.target==person.id and j.definition==slot and j.state not in ["Complete","Canceled"]): continue
 			var worn: String = person.equipment[slot]

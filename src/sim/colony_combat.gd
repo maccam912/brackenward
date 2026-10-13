@@ -43,7 +43,7 @@ static func resolve(world: ColonyWorld) -> void:
 	for animal in world.wildlife_state.animals:
 		if animal.health<=0 or animal.definition != "boar" or animal.attacker == 0 or world.tick<animal.cooldown: continue
 		var target: Dictionary = world.find(world.citizens,animal.attacker)
-		var candidates: Array = world.citizens.filter(func(c:Dictionary)->bool:return not c.downed and not c.death_recorded and not c.departed and ColonyWildlife.distance(c,animal)<=1)
+		var candidates: Array = world.citizens.filter(func(c:Dictionary)->bool:return not c.downed and not c.death_recorded and not c.departed and not c.away and ColonyWildlife.distance(c,animal)<=1)
 		candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.id<b.id)
 		if not candidates.is_empty() and (target.is_empty() or ColonyWildlife.distance(target,animal)>1): target = candidates[0]
 		if target.is_empty() or target.downed or target.death_recorded or target.departed or ColonyWildlife.distance(animal,target)>1: continue

@@ -36,6 +36,7 @@ var journal_elapsed: float = 0.0
 var file_dialog: FileDialog
 var catalog_strings: Dictionary = {}
 var seen_care_alert: int = -1
+var seen_region_alert: int = -1
 var epilogue_session: String = ""
 var awaiting_first_colony: bool = false
 var creation_thread: Thread
@@ -309,6 +310,9 @@ func _process(delta: float) -> void:
 		elif world.care_state.alert_serial > seen_care_alert:
 			seen_care_alert = world.care_state.alert_serial
 			if world.citizens.any(func(c:Dictionary)->bool:return c.downed or c.death_recorded): show_care()
+	if world is ColonyWorld and world.region_state.alert_serial>seen_region_alert:
+		seen_region_alert=world.region_state.alert_serial
+		if ColonyRegion.critical(world): show_expeditions()
 	if runner.speed_reduced:
 		notice = "Speed reduced to keep the colony responsive."
 		runner.speed_reduced = false
@@ -459,7 +463,7 @@ func _map_intent(action: Dictionary) -> void:
 	if action.kind == "notice": notice=action.text;return
 	var candidates: Array[Dictionary] = []
 	for citizen in world.citizens:
-		if world is ColonyWorld and (citizen.death_recorded or citizen.departed or citizen.carried_by>0): continue
+		if world is ColonyWorld and (citizen.death_recorded or citizen.departed or citizen.carried_by>0 or not ColonyRegion.visible(world,citizen)): continue
 		var separation: float = view.tile_to_screen(view.citizen_point(citizen)).distance_to(action.point)
 		if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"citizen","object":citizen,"rank":0,"distance":separation})
 	if world is ColonyWorld:
@@ -1827,6 +1831,8 @@ func show_newcomers() -> void:
 
 func show_valley() -> void:
 	show_sheet("Valley and neighbors")
+	button("Regional map",show_region,sheet_body)
+	button("Expedition status",show_expeditions,sheet_body)
 	label("Merchants visit every four days, beginning day five. One-day notice; their 24-hour stay starts at the cart. Prices per unit are rounded up: 120% normally, 110% at Friendly (40), 100% at Trusted (70). Selling uses base value. Trade gives no reputation; listed deliveries give ten, once per eight days.",sheet_body)
 	label("Next visit: %s in %.1f game hours" % [ColonyTrade.COMMUNITIES[world.trade_state.visit_index%3].capitalize(),maxf(0,(world.trade_state.next_visit-world.tick)/300.0)],sheet_body)
 	for community in ColonyTrade.COMMUNITIES:
@@ -1885,3 +1891,115 @@ func _preview_trade(merchant: Dictionary, buy: Dictionary, pay: Dictionary, pen:
 	label("Price %d · offer %d · surplus gift %d. The gift gives no extra reputation. Supplies stay reserved until physical payment or cancellation. Animals go to pen %d." % [quote.cost,quote.offered,quote.gift,pen],sheet_body)
 	button("Accept delivery" if delivery else "Accept exchange",func()->void:_submit("trade",{"target":merchant.id,"buy":buy,"pay":pay,"pen":pen,"delivery":delivery});close_sheet(),sheet_body)
 	button("Cancel preview",show_valley,sheet_body)
+
+func show_region() -> void:
+	show_sheet("Regional map")
+	label("Known 9 x 9 valley. H is home, S is a site, N is a neighbor. Pan the map to see the edges. Each edge costs six game hours in either direction; no impassable edges. Beyond one edge requires Trailcraft. Transit scenery has no rewards.",sheet_body)
+	var scroll: ScrollContainer = TouchScrollContainer.new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO;scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO;scroll.custom_minimum_size=Vector2(0,420);sheet_body.add_child(scroll)
+	var grid: GridContainer = GridContainer.new();grid.columns=9;scroll.add_child(grid)
+	for node in world.region_state.nodes:
+		var mark: String = "H" if node.definition=="home" else ("S" if node.definition in ColonyRegion.SITES else ("N" if node.definition in ColonyTrade.COMMUNITIES else ""))
+		var tile: Button = button(mark,func()->void:
+			if node.definition=="home": show_station(ColonyTrade.cart(world))
+			else: show_expedition_prepare(node.definition,false),grid,48)
+		tile.tooltip_text=node.scenery if node.definition=="transit" else node.definition.capitalize()
+		tile.disabled=node.definition=="transit"
+	button("Current expedition",show_expeditions,sheet_body)
+	for definition in ColonyRegion.SITES+ColonyTrade.COMMUNITIES:
+		var path: Array = ColonyRegion.route(world,definition)
+		var progress: Dictionary = world.region_state.progress[definition]
+		button(definition.capitalize()+" · "+str(path.size()-1)+" edges"+(" · landmark" if progress.completed and definition in ColonyRegion.SITES and world.definitions.expeditions[definition].cooldown_days==0 else ""),func()->void:show_expedition_prepare(definition,false),sheet_body)
+		if not progress.leftovers.is_empty() and not progress.pickup_used:
+			button("Pick up leftovers: "+definition.capitalize(),func()->void:show_expedition_prepare(definition,true),sheet_body)
+
+func show_expedition_prepare(definition: String, pickup: bool) -> void:
+	show_sheet(definition.capitalize())
+	var data: Dictionary = ColonyRegion.definition_data(world,definition,pickup)
+	var edges: int = ColonyRegion.route(world,definition).size()-1
+	label("%d edges each way · %d site hours · %d regional hours total\nSkill %s / challenge %d\nContract inputs: %s\nReward: %s; %d insight; %s" % [edges,data.site_hours,edges*12+data.site_hours,data.skill,data.challenge,_cost_text(data.payment),_cost_text(data.rewards),data.insight,str(data.reputation)],sheet_body)
+	label("Packing plan: select two to four residents; leave two at home. Health 70, fullness 500, rest 500 required.",sheet_body)
+	var rules: VBoxContainer = VBoxContainer.new();sheet_body.add_child(rules);rules.visible=false
+	button("Travel and outcome rules",func()->void:rules.visible=not rules.visible,sheet_body)
+	label("Select two to four healthy residents and leave two at home. Each needs health 70, fullness 500, rest 500. Packs hold twelve units per resident, plus twelve per adult goat. Rations must cover the quoted trip plus one reserve day. Local walking and physical packing/unloading are visible too. A shortfall of 1-2 gives 75% item rewards and injures the leader 10 per point; more than two requires explicit Attempt unprepared, gives no items and injures two travelers 20 each. Expedition injury floors are 10 health in Standard and 1 in Hearthside; injuries are stabilized and carried home.",rules)
+	var people: Dictionary = {};var goats: Dictionary = {};var extras: Dictionary = {}
+	for person in ColonyRegion.home(world):
+		var choice: CheckButton = CheckButton.new();choice.text=person.name;choice.custom_minimum_size.y=48;choice.button_pressed=person.id in [2,3];sheet_body.add_child(choice);people[person.id]=choice
+		label("%s %d · health %d · fullness %d · rest %d\n%s" % [data.skill,person.skills[data.skill],person.health,person.fullness,person.rest,"Unarmed" if person.equipment.weapon.is_empty() else person.equipment.weapon.capitalize()],sheet_body)
+	for animal in world.domestic_state.animals:
+		if animal.definition!="pack_goat" or animal.health<=0 or animal.away: continue
+		var choice: CheckButton = CheckButton.new();choice.text=animal.name;choice.custom_minimum_size.y=48;sheet_body.add_child(choice);goats[animal.id]=choice
+		label("Twelve extra cargo units; two grain/vegetable feed per trip day",sheet_body)
+	var feed: CycleChoiceButton = CycleChoiceButton.new();feed.add_item("Grain feed");feed.add_item("Vegetable feed");feed.custom_minimum_size.y=48;sheet_body.add_child(feed)
+	var variant: CycleChoiceButton = CycleChoiceButton.new();variant.add_item("Stone 24" if definition=="old_quarry" and not pickup else "Listed reward")
+	if definition=="old_quarry" and not pickup: variant.add_item("Iron ore 12")
+	variant.custom_minimum_size.y=48;sheet_body.add_child(variant)
+	var pens: Array = world.domestic_state.pens
+	var pen: CycleChoiceButton = CycleChoiceButton.new();pen.add_item("No animal destination")
+	for enclosure in pens: pen.add_item("Returning goat to pen "+str(enclosure.id))
+	pen.custom_minimum_size.y=48;sheet_body.add_child(pen)
+	var extra_panel: VBoxContainer = VBoxContainer.new();sheet_body.add_child(extra_panel);extra_panel.visible=false
+	button("Optional extra cargo",func()->void:extra_panel.visible=not extra_panel.visible,sheet_body)
+	for item in ColonyTrade.accessible_goods(world):
+		var available: int = ColonyTrade.accessible_goods(world)[item]
+		if available<=0: continue
+		label(item.capitalize()+" extra",extra_panel)
+		var count: SpinBox = SpinBox.new();count.max_value=available;count.custom_minimum_size=Vector2(96,48);extra_panel.add_child(count);extras[item]=count
+	button("Preview packing plan",func()->void:
+		var plan: Dictionary = {"definition":definition,"party":[],"goats":[],"cargo":{},"feed":"grain" if feed.selected==0 else "vegetable","pen":0 if pen.selected==0 else pens[pen.selected-1].id,"variant":variant.selected,"pickup":pickup}
+		for id in people:
+			if people[id].button_pressed: plan.party.append(id)
+		for id in goats:
+			if goats[id].button_pressed: plan.goats.append(id)
+		for item in extras:
+			if extras[item].value>0: plan.cargo[item]=int(extras[item].value)
+		show_expedition_preview(plan),sheet_body)
+
+func show_expedition_preview(plan: Dictionary) -> void:
+	var quote: Dictionary = ColonyRegion.preview(world,plan)
+	show_sheet("Expedition packing preview")
+	if not quote.error.is_empty(): label(quote.error,sheet_body);button("Change party or cargo",func()->void:show_expedition_prepare(plan.definition,plan.pickup),sheet_body);return
+	label("%s · %d hours · readiness %d / challenge %d\nPack: %s\nDeparture capacity %d; return capacity %d\nExpected items: %s; insight %d\nHome forecast without travelers: %s" % [plan.definition.capitalize(),quote.hours,quote.readiness,quote.challenge,_cost_text(quote.inputs),quote.capacity,quote.return_capacity,_cost_text(quote.rewards),quote.insight,quote.home_forecast.label],sheet_body)
+	var removed: Array[String] = []
+	for id in plan.party:
+		var person: Dictionary = world.find(world.citizens,id);removed.append(person.name+" · "+str(person.skills))
+	label("Skills leaving home:\n"+"\n".join(removed),sheet_body)
+	label("One midpoint choice with a free Continue option; optional choices cannot spend the return reserve. Reward capacity is reviewed before collection; leftovers allow one later pickup. Recall returns along elapsed outbound travel and retains unconsumed cargo. Readiness is frozen on Depart, after this packing step.",sheet_body)
+	button("Start packing",func()->void:_submit("expedition_prepare",plan);close_sheet(),sheet_body)
+	button("Change plan",func()->void:show_expedition_prepare(plan.definition,plan.pickup),sheet_body)
+
+func show_expeditions() -> void:
+	show_sheet("Expedition")
+	var trip: Dictionary = ColonyRegion.active(world)
+	if trip.is_empty(): label("No expedition is active. Choose a known site on the regional map.",sheet_body);button("Regional map",show_region,sheet_body);return
+	label(trip.args.definition.capitalize()+" · "+trip.state+"\n"+trip.note,sheet_body)
+	label("Party: "+", ".join(trip.args.party.map(func(id:int)->String:return world.find(world.citizens,id).name))+"\nCargo: "+_cost_text(ColonyRegion.cargo(world,trip))+"\nReadiness %d / %d · remaining phase %.1f hours" % [trip.readiness,trip.quote.challenge,trip.remaining/300.0],sheet_body)
+	if trip.state in ["Preparing","Ready"]:
+		var error: String = ColonyRegion.ready(world,trip)
+		label("Ready for Depart" if error.is_empty() else error,sheet_body)
+		if error.is_empty():
+			if trip.quote.shortfall>2:
+				button("Review Attempt unprepared",func()->void:
+					show_sheet("Attempt unprepared?");label("No item reward, half insight, twenty health damage to each of the two lowest-ID travelers. One packed medicine is used only if an injury occurs, restoring twenty to the most injured. Readiness is fixed at departure. This is an explicit risk choice.",sheet_body)
+					button("Attempt unprepared",func()->void:_submit("expedition_depart",{"target":trip.id,"unprepared":true});close_sheet(),sheet_body),sheet_body)
+			else: button("Depart",func()->void:_submit("expedition_depart",{"target":trip.id,"unprepared":false});close_sheet(),sheet_body)
+		button("Cancel packing",func()->void:_submit("expedition_cancel",{"target":trip.id});close_sheet(),sheet_body)
+	elif trip.state=="Decision":
+		var options: Array = [["wait","repair","continue"],["give","continue"],["survey","continue"]][trip.decision]
+		var descriptions: Dictionary = {"wait":"Wait for carrier: +6 hours, cloth 4","repair":"Repair path: wood 4, cloth 4, no delay","give":"Give rations: 2 rations, +3 Road reputation","survey":"Survey shortcut: +6 hours, +80 insight","continue":"Continue on the original route: free"}
+		if world.tick<world.region_state.progress[trip.args.definition].decision_after: label("Optional bonus is cooling down; no extra reward until eight days after the last bonus.",sheet_body)
+		for option in options:
+			var error: String = "" if option=="continue" else ColonyRegion.choice_error(world,trip,option)
+			label(descriptions[option]+(" · "+error if not error.is_empty() else ""),sheet_body)
+			if error.is_empty(): button("Choose "+option,func()->void:_submit("expedition_choice",{"target":trip.id,"definition":option});close_sheet();runner.set_speed(runner.previous_speed),sheet_body)
+	elif trip.state=="Collect":
+		label("Declared outcome: %s; insight %d; shortfall %d. Contract payment %s is consumed only on full/partial success. Health damage: %d%s. Kept goods remain in cargo on recall after collection; unkept goods stay here for one pickup." % [_cost_text(trip.quote.rewards),trip.quote.insight,trip.quote.shortfall,_cost_text(trip.quote.payment),20 if trip.quote.shortfall>2 else trip.quote.shortfall*10," to each of the two lowest IDs" if trip.quote.shortfall>2 else " to the highest relevant-skill leader"],sheet_body)
+		var default: Dictionary = ColonyRegion.default_keep(world,trip);var quantities: Dictionary = {}
+		for item in trip.quote.rewards:
+			label(item.capitalize()+" · "+str(trip.quote.rewards[item])+" available",sheet_body)
+			var count: SpinBox = SpinBox.new();count.max_value=trip.quote.rewards[item];count.value=default.get(item,0);count.custom_minimum_size=Vector2(96,48);sheet_body.add_child(count);quantities[item]=count
+		button("Collect kept rewards and return",func()->void:
+			var keep: Dictionary = {}
+			for item in quantities:
+				if quantities[item].value>0: keep[item]=int(quantities[item].value)
+			_submit("expedition_collect",{"target":trip.id,"keep":keep});close_sheet();runner.set_speed(runner.previous_speed),sheet_body)
+	if trip.state not in ["Preparing","Ready","Returning","Walking in","Unloading"]: button("Recall without committing new site rewards",func()->void:_submit("expedition_recall",{"target":trip.id});close_sheet();runner.set_speed(runner.previous_speed),sheet_body)

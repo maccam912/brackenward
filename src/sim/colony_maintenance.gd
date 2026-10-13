@@ -201,5 +201,8 @@ static func cart_work(world: ColonyWorld, citizen: Dictionary, job: Dictionary) 
 		var store: Dictionary = world.find(world.stores,cart.id);store.tiles=[current]
 		for stack in world.stacks:
 			if stack.location=="store" and stack.owner==cart.id: stack.x += delta.x;stack.y += delta.y
+			if stack.location=="expedition_cargo":
+				var trip: Dictionary = world.find(world.region_state.trips,stack.owner)
+				if trip.get("state") in ["Preparing","Ready"]: stack.x+=delta.x;stack.y+=delta.y
 		world.care_destinations.clear()
 	if arrived: world._complete(citizen,job)

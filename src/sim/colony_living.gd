@@ -95,6 +95,7 @@ static func temperature(world: ColonyWorld) -> int:
 	return [12, 24, 10, -5][ColonyAgriculture.season(world.tick)] - (10 if world.weather == "cold_snap" else 0)
 
 static func comfortable(world: ColonyWorld, citizen: Dictionary) -> bool:
+	if citizen.away: return true
 	if temperature(world) + (12 if citizen.equipment.cloak == "cloak" else 0) >= 5:
 		return true
 	var point: Vector2i = Vector2i(citizen.x, citizen.y)
@@ -110,6 +111,7 @@ static func comfortable(world: ColonyWorld, citizen: Dictionary) -> bool:
 static func _morale(world: ColonyWorld, citizen: Dictionary, job: Dictionary) -> void:
 	var terms: Dictionary = ColonySocial.mood_terms(world,citizen)
 	terms.merge(ColonyCare.mood_terms(world,citizen))
+	if citizen.away and citizen.traits.has("Homebody"): terms["Homebody away"]=-40
 	if world.production_state.discoveries.get(citizen.id,0) > world.tick:
 		terms["Discovery"] = 60
 	if citizen.bed_memory_until > world.tick:
@@ -136,7 +138,7 @@ static func _morale(world: ColonyWorld, citizen: Dictionary, job: Dictionary) ->
 		terms["Raw produce"] = -50
 	if not job.is_empty() and job.kind not in ["sleep", "eat", "leisure"]:
 		var inside: bool = world.roofed(Vector2i(citizen.x, citizen.y))
-		if citizen.traits.has("Homebody") and inside:
+		if citizen.traits.has("Homebody") and inside and not citizen.away:
 			terms["Homebody indoors"] = 40
 		if citizen.traits.has("Outdoorsy") and not inside:
 			terms["Outdoorsy at work"] = 40

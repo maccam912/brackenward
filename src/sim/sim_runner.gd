@@ -26,14 +26,16 @@ func pause() -> void:
 func advance_frame(delta: float) -> int:
 	if speed == 0:
 		return 0
+	if world is ColonyWorld and ColonyRegion.critical(world) and not world.pending_commands.any(func(c:Dictionary)->bool:return c.kind in ["expedition_choice","expedition_collect","expedition_recall"]):
+		pause();return 0
 	accumulator += delta * float(speed)
 	var count: int = 0
 	while accumulator + 0.000000001 >= 0.1 and count < 8:
-		var alert: int = world.care_state.alert_serial if world is ColonyWorld else 0
+		var alert: int = world.care_state.alert_serial+world.region_state.alert_serial if world is ColonyWorld else 0
 		world.step()
 		accumulator -= 0.1
 		count += 1
-		if world is ColonyWorld and (world.care_state.ended or world.care_state.alert_serial > alert):
+		if world is ColonyWorld and (world.care_state.ended or world.care_state.alert_serial+world.region_state.alert_serial > alert):
 			pause()
 			return count
 	if accumulator > 1.0:

@@ -17,8 +17,7 @@ static func initial_state(seed: int, version: int, site: String) -> Dictionary:
 static func boundary(world: ColonyWorld) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for y in range(128):
-		for x in range(128):
-			if x not in [0,127] and y not in [0,127]: continue
+		for x in (range(128) if y in [0,127] else [0,127]):
 			var p: Vector2i = Vector2i(x,y)
 			if world.walkable(p) and world.accessible(p) and ColonyDanger.safe(world,p): result.append(p)
 	return result
@@ -77,8 +76,9 @@ static func acceptance(world: ColonyWorld, request: Dictionary) -> Dictionary:
 	var beds: Array = world.structures.filter(func(s:Dictionary)->bool:return s.health>0 and s.definition in ["bed","bedroll"] and s.user==0 and world.accessible(Vector2i(s.x,s.y)))
 	beds.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.id<b.id)
 	if beds.is_empty(): return {"error":"Build one reachable free bed or bedroll first"}
-	var forecast: Dictionary = FoodForecast.calculate(world,living(world)+1)
-	if forecast.ticks<14400: return {"error":"Need two stored-food days for %d residents after joining; currently %s" % [living(world)+1,forecast.label]}
+	var home_count: int = ColonyRegion.home(world).size()+1
+	var forecast: Dictionary = FoodForecast.calculate(world,home_count)
+	if forecast.ticks<14400: return {"error":"Need two stored-food days for %d residents after joining; currently %s" % [home_count,forecast.label]}
 	return {"error":"","bed":beds[0].id}
 
 static func command(world: ColonyWorld, args: Dictionary) -> String:
