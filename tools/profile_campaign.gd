@@ -22,6 +22,7 @@ class ProfileWorld extends ColonyWorld:
 				receipts[command.id] = _command(command) if command.session == session_id else "wrong_session"
 				command_trace.append({"tick": tick, "command": command.duplicate(true)})
 		pending_commands.clear()
+		_profile("work_budget",func()->void:work_budget.reconcile(self))
 		_profile("ColonyDefense.advance",func()->void:ColonyDefense.advance(self))
 		_profile("ColonyCare.advance",func()->void:ColonyCare.advance(self))
 		_profile("ColonyWeather.advance",func()->void:ColonyWeather.advance(self))
@@ -48,6 +49,7 @@ class ProfileWorld extends ColonyWorld:
 			_profile("ColonyDomestic.create_jobs",func()->void:ColonyDomestic.create_jobs(self))
 			_profile("ColonyConstruction.create_helpers",func()->void:ColonyConstruction.create_helpers(self))
 			_profile("ColonyEquipment.create_jobs",func()->void:ColonyEquipment.create_jobs(self))
+			_profile("work_budget",func()->void:work_budget.reconcile(self))
 			for citizen in citizens:
 				_profile("_assign",func()->void:_assign(citizen))
 		for citizen in citizens:
@@ -64,6 +66,7 @@ class ProfileWorld extends ColonyWorld:
 		_profile("ColonyOpportunities.advance",func()->void:ColonyOpportunities.advance(self))
 		_profile("ColonyCharter.advance",func()->void:ColonyCharter.advance(self))
 		_profile("ColonyChronicle.advance",func()->void:ColonyChronicle.advance(self))
+		_profile("work_budget",func()->void:work_budget.reconcile(self))
 		committing_work=false;in_tick=false
 
 func _initialize() -> void:

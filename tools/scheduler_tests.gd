@@ -2,6 +2,8 @@ class_name SchedulerTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	WorkBudgetTests.run(check)
+	MovementCostTests.run(check)
 	StorageQueryTests.run(check)
 	obstructed_start(check)
 	StackQueryTests.run(check)

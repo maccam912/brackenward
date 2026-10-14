@@ -56,6 +56,15 @@ def main():
            any(not re.fullmatch(r"[a-f0-9]{64}", item["canonical_hash"]) for item in evidence["checkpoints"]) or \
            "REPLAY PASS:" not in clean:
             raise RuntimeError("Replay did not produce complete passing evidence")
+        if int(evidence.get("schema_revision", 0)) == 23:
+            audit = report.with_name(report.stem + "-schema22-audit.json")
+            audit.unlink(missing_ok=True)
+            run_engine(binary, ["--script", "tools/check_budget_replay_preservation.gd", "--",
+                               "--report", str(report), "--audit", str(audit)], 180, logs)
+            if not json.loads(audit.read_text()).get("passed"):
+                raise RuntimeError("Schema-22 gameplay/foreign-fixture preservation audit failed")
+            evidence["schema22_gameplay_preservation"] = True
+            report.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         if isinstance(error, subprocess.TimeoutExpired) and error.stdout:
             logs.append(error.stdout.decode(errors="replace") if isinstance(error.stdout, bytes) else error.stdout)

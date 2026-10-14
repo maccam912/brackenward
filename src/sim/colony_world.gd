@@ -2,8 +2,8 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 22
+const CONTENT_VERSION: String = "colony-v3"
+const SCHEMA_REVISION: int = 23
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -11,6 +11,8 @@ const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
 # They cannot return to the shared work queue after their owner leaves them.
 const PERSONAL_JOBS: Array[String] = ["eat","sleep","leisure","recover","depart","escape","step_aside","shelter","defend","expedition_meet","expedition_walk"]
 var definitions: Dictionary
+var work_budget: ColonyWorkBudget = ColonyWorkBudget.new()
+var stone_path_tiles: Dictionary = {}
 var tick: int = 1800
 var seed: int = 104729
 var session_id: String = "m1-local"
@@ -171,6 +173,7 @@ func _refresh_navigation() -> void:
 		care_destinations.clear()
 		solid_tiles.clear()
 		bridge_tiles.clear()
+		stone_path_tiles.clear()
 		wildlife_obstacles.clear()
 		door_tiles.clear()
 		for resource in resources:
@@ -179,6 +182,8 @@ func _refresh_navigation() -> void:
 		for structure in structures:
 			if structure.health<=0: continue
 			if structure.definition=="bridge": bridge_tiles[Vector2i(structure.x,structure.y)]=true
+			if structure.definition=="stone_path":
+				for tile in footprint(structure): stone_path_tiles[tile]=true
 			if structure.definition in ["door","reinforced_gate"]:
 				for tile in footprint(structure): door_tiles[tile]=structure.id
 			if structure.definition not in ["wood_floor","stone_path","bridge"]:
@@ -309,6 +314,7 @@ func step() -> void:
 			receipts[command.id] = _command(command) if command.session == session_id else "wrong_session"
 			command_trace.append({"tick": tick, "command": command.duplicate(true)})
 	pending_commands.clear()
+	work_budget.reconcile(self)
 	ColonyDefense.advance(self)
 	ColonyCare.advance(self)
 	ColonyWeather.advance(self)
@@ -335,6 +341,7 @@ func step() -> void:
 		ColonyDomestic.create_jobs(self)
 		ColonyConstruction.create_helpers(self)
 		ColonyEquipment.create_jobs(self)
+		work_budget.reconcile(self)
 		for citizen in citizens:
 			_assign(citizen)
 	for citizen in citizens:
@@ -351,6 +358,7 @@ func step() -> void:
 	ColonyOpportunities.advance(self)
 	ColonyCharter.advance(self)
 	ColonyChronicle.advance(self)
+	work_budget.reconcile(self)
 	committing_work=false;in_tick=false
 
 func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0, excluded_structure: int = 0) -> String:
@@ -567,9 +575,10 @@ func _command(command: Dictionary) -> String:
 	return "accepted"
 
 func _job(kind: String, category: String, skill: String, target: int, point: Vector2i, effort: int) -> Dictionary:
+	var state: String = work_budget.initial_state(self,kind)
 	var job: Dictionary = {"id": _id(), "kind": kind, "category": category, "skill": skill, "target": target,
 		"x": point.x, "y": point.y, "definition": "", "rotation": 0, "required": effort, "work": 0,
-		"state": "Ready", "worker": 0, "priority": 2, "created": tick, "inputs": {}, "output": {},
+		"state": state, "queue_state":"Ready" if state=="Queued" else "", "worker": 0, "priority": 2, "created": tick, "inputs": {}, "output": {},
 		"source": 0, "destination": 0, "work_x": point.x, "work_y": point.y, "reason": "", "retry": 0, "worker_days": {}, "order":0, "care_goal":[], "emergency":false, "amount":0, "memo":{},
 		"rate_remainders": {}, "pending_xp": {}}
 	jobs.append(job)
@@ -593,6 +602,7 @@ func unfinished_jobs() -> Array:
 	return job_query_live.filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"])
 
 func reset_job_queries() -> void:
+	work_budget.reset()
 	job_query_tick=-1;job_query_count=0;job_query_source=[];job_query_live=[]
 
 func nonempty_stacks() -> Array:
@@ -733,7 +743,7 @@ func _assign(citizen: Dictionary) -> void:
 	if ColonyCharter.assign(self,citizen): return
 	# Query lists preserve job order and share the live dictionaries, so releases
 	# and failed reservations below remain visible to subsequent queries.
-	var open_jobs: Array = unfinished_jobs()
+	var open_jobs: Array = unfinished_jobs().filter(func(j:Dictionary)->bool:return j.state!="Queued")
 	var arrivals: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.kind=="arrival" and j.target==citizen.id)
 	var arrival: Dictionary = {} if arrivals.is_empty() else arrivals[0]
 	var preparing: bool = ColonyRegion.preparing(self,citizen)
@@ -868,6 +878,7 @@ func _job_rank(job: Dictionary, citizen: Dictionary) -> int:
 	return rank*255+254-absi(citizen.x-job.x)-absi(citizen.y-job.y)
 
 func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary = {}) -> bool:
+	if job.state=="Queued": return false
 	if job.kind in ["minor_work","minor_study"] and not ColonyOpportunities.reserve(self,job,citizen): return false
 	if job.kind=="enemy_treat" and find(defense_state.enemies,job.target).get("state")!="Downed": _release(job,true);return false
 	if job.kind=="raid_pay" and find(defense_state.raids,job.target).get("state")!="Payment": return _block(job,"Payment is no longer awaiting delivery")
@@ -997,6 +1008,7 @@ func _block(job: Dictionary, reason: String) -> bool:
 		return false
 	if job.state in ["Complete","Canceled"]: return false
 	job.state = "Blocked"
+	job.queue_state=""
 	job.reason = reason
 	job.retry = tick + 50
 	return false
@@ -1528,6 +1540,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [],
 
 func invariant_errors() -> Array[String]:
 	var errors: Array[String] = []
+	if jobs.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,tick)).size()>ColonyWorkBudget.LIMIT: errors.append("Executable job limit exceeded")
 	var all_ids: Dictionary = {}
 	for records in [citizens, structures, resources, stacks, jobs, fields, social_state.requests, production_state.orders, care_state.bodies, nature_state.forests, wildlife_state.animals, wildlife_state.carcasses, domestic_state.pens, domestic_state.animals, construction_state.groups, population_state.offers, trade_state.merchants, trade_state.exchanges, region_state.trips, fire_state.fires, defense_state.raids, defense_state.enemies, director_state.history, opportunity_state.offers, opportunity_state.visitors, ([director_state.major] if not director_state.major.is_empty() else [])]:
 		for record: Dictionary in records:
@@ -1619,9 +1632,9 @@ func is_flooded(tile: Vector2i) -> bool:
 	return flood_cache.has(tile)
 
 func tile_move_cost(tile: Vector2i) -> int:
-	if structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition=="bridge" and footprint(s).has(tile)): return 10
-	for structure in structures:
-		if structure.health>0 and structure.definition == "stone_path" and footprint(structure).has(tile): return 8
+	_refresh_navigation()
+	if bridge_tiles.has(tile): return 10
+	if stone_path_tiles.has(tile): return 8
 	if is_flooded(tile): return 15
 	if generator_version > 0 and terrain_state.bridges.has(tile): return 10
 	if weather == "snow": return 12

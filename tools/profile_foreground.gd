@@ -96,6 +96,7 @@ var trace_spikes: bool = false
 var speed: int = 1
 var camera: String = "close"
 var quality: String = "Balanced"
+var center: Vector2 = Vector2(68,63)
 
 func _initialize() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
@@ -113,8 +114,13 @@ func _initialize() -> void:
 			"--speed": speed=int(args[index+1]) if args[index+1].is_valid_int() else -1
 			"--camera": camera=args[index+1]
 			"--quality": quality=args[index+1]
+			"--center":
+				var parts: PackedStringArray = args[index+1].split(",")
+				if parts.size()!=2 or not parts[0].is_valid_int() or not parts[1].is_valid_int(): quit(2);return
+				center=Vector2(int(parts[0]),int(parts[1]))
 			_: quit(2);return
 	if seconds<3 or seconds>1800 or speed not in [1,2,4] or camera not in ["close","far"] or quality not in ["Battery","Balanced","Smooth"]: quit(2);return
+	if center.x<0 or center.x>127 or center.y<0 or center.y>127: quit(2);return
 	call_deferred("run")
 
 func run() -> void:
@@ -145,6 +151,7 @@ func run() -> void:
 	root.add_child(game);game.close_sheet();game._tutorial_dismiss()
 	for key in game.settings.values.auto_pauses: game.settings.values.auto_pauses[key]=false
 	game.settings.values.quality=quality;game._apply_device_settings()
+	game.view.center_camera(center)
 	if camera=="far": game.view.zoom_at(0.01,game.view.size*0.5)
 	var initial_counts: Dictionary = StressFixture.counts(world)
 	if not game.save_local().is_empty(): quit(2);return
@@ -165,6 +172,7 @@ func run() -> void:
 	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"save_finish":stats(game.finish_us),"snapshot_preparation_capture":stats(game.preparation_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors(),"trace_spikes":trace_spikes,"slow_frames":game.slow_frames,"phase_peaks_us":game.phase_peaks,"slow_jobs":world.slow_jobs if trace_spikes else []}
 	result["audio_update_frames"]=stats(game.soundscape.update_us)
 	result["requested_speed"]=speed;result["camera"]=camera;result["quality"]=quality
+	result["camera_center"]=[game.view.camera_center().x,game.view.camera_center().y];result["tile_size"]=game.view.tile_size
 	result["initial_counts"]=initial_counts;result["final_counts"]=StressFixture.counts(world)
 	result["final_speed"]=final_speed;result["remaining_logical_backlog_seconds"]=final_accumulator
 	result["simulation_ticks"]=stats(world.tick_us) if trace_spikes else {}

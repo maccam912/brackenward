@@ -73,13 +73,10 @@ static func physical_meal(check: Callable) -> void:
 		if meal.state=="Complete": break
 	check.call("MEAL/consumes_one_portion_only_after_seated_work",meal.state=="Complete" and meal.work==2000 and person.fullness>350 and Vector2i(person.x,person.y)==Vector2i(67,65) and world.ledger.consumed.get("meal",0)==1 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
 	check.call("SAVE/physical_dining_continuation_is_exact",restored.has("world") and restored.world.canonical_hash()==world.canonical_hash())
-	var legacy: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/m6-before-table-dining-7200.brackenward"))
-	var acknowledged: Dictionary = legacy.world.payload().duplicate(true) if legacy.has("world") else {}
-	# Strip only the declared cosmetic additions and compare every acknowledged
-	# gameplay value under the fixture's original schema-20 header.
-	if not acknowledged.is_empty():
-		acknowledged.schema_revision=20
-		for resident in acknowledged.citizens: resident.erase("appearance")
+	var bytes: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/m6-before-table-dining-7200.brackenward")
+	var legacy: Dictionary = ColonyCodec.decode(bytes)
+	var original: Dictionary = ColonyState.unpack(JSON.parse_string(JSON.parse_string(bytes.get_string_from_utf8()).payload))
+	var acknowledged: Dictionary = SchemaCompatibility.normalize(legacy.world,original) if legacy.has("world") else {}
 	check.call("SAVE/pre_dining_m6_save_preserves_acknowledged_state",legacy.has("world") and legacy.world.schema_revision==ColonyWorld.SCHEMA_REVISION and JSON.stringify(ColonyState.pack(acknowledged),"",true).sha256_text()=="7503e2583def16f67d81735c214f17f22e541aec17fc47c4da53495fe787a22d",str(legacy.get("error","")))
 	if not legacy.has("world"): return
 	var legacy_copy: Dictionary = ColonyCodec.decode(ColonyCodec.encode(legacy.world))

@@ -18,3 +18,5 @@ tests/fixtures/schema21-delta.frames -text
 assets/licenses/kenney_interface_sounds.txt -text
 assets/licenses/kenney_rpg_audio.txt -text
 assets/licenses/kenney_tiny_town.txt -text
+tests/fixtures/schema22-budget-upgrade.brackenward -text
+tests/fixtures/schema22-replay-golden.json text eol=lf

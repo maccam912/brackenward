@@ -125,9 +125,8 @@ static func beds(check: Callable) -> void:
 	var legacy: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/campaign-replay-7200.brackenward")
 	var payload: Dictionary = ColonyState.unpack(JSON.parse_string(JSON.parse_string(legacy.get_string_from_utf8()).payload))
 	loaded=ColonyCodec.decode(legacy)
-	var expected: Dictionary = payload.duplicate(true);expected.schema_revision=ColonyWorld.SCHEMA_REVISION
-	for resident in expected.citizens: resident["appearance"]=ColonyAppearance.defaults(resident.id)
-	check.call("SAVE/schema_twenty_upgrade_only_adds_declared_cosmetics_and_header",loaded.has("world") and loaded.world.payload()==expected and payload.schema_revision==20,str(loaded.get("error","")))
+	var preserved: Dictionary = SchemaCompatibility.normalize(loaded.world,payload) if loaded.has("world") else {}
+	check.call("SAVE/schema_twenty_upgrade_preserves_all_acknowledged_gameplay_fields",loaded.has("world") and preserved==payload and payload.schema_revision==20,str(loaded.get("error","")))
 
 static func quiet_room(world: ColonyWorld) -> Dictionary:
 	for y in range(75,79):

@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.6-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.7-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content version. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -70,3 +70,5 @@ The woodland environment uses a shared atlas for all 34 structures in four rotat
 Build imports and exports reject Godot script/engine errors even if the engine returns zero. Native desktop package metadata follows the project version and Android build number; CI adds exact commit provenance. Exported startup checks run from an empty directory and require the application's graceful, audio-drained exit marker.
 
 The synthetic crowded-colony fixture is separate from ordinary-play evidence. It validates and round-trips through the actual save codec. The foreground profiler accepts speed, close/far camera, graphics quality and up to 1,800 measured wall-clock seconds, records actual load at each end, and checks that runtime/media/profiling sources stayed unchanged. See [reports/STRESS_EVIDENCE.md](reports/STRESS_EVIDENCE.md) for measured results and remaining gates.
+
+Large painted orders retain every tile while at most 512 tasks execute. Waiting targets keep their materials and progress; Work shows their queued count and pages through 32 orders at a time. Emergency, pinned and usable work receive capacity first. Content `colony-v3` / schema 23 imports earlier campaigns without discarding their orders; older builds cannot open new saves. The crowded-colony timing gate still fails and remains under active optimization.

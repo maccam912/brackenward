@@ -929,6 +929,7 @@ func ui() -> void:
 	await AnimalUITests.run(colony_game,check)
 	await DiagnosticsUITests.run(colony_game,check)
 	await EnvironmentUITests.run(colony_game,check)
+	await WorkBudgetUITests.run(colony_game,check)
 	TutorialUITests.run(colony_game,check)
 	colony_game._tutorial_state().forecast_pinned=false
 	ColonyTutorial.replay(colony_game._tutorial_state(),"follow")

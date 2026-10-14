@@ -23,6 +23,7 @@ var sheet_body: VBoxContainer
 var sheet_feedback: Label
 var inspector: PanelContainer
 var selected: int = 0
+var work_orders_page: int = 0
 var sheet_name: String = ""
 var sheet_camera_center: Vector2 = Vector2.ZERO
 var text_scale: float = 1.0
@@ -1340,6 +1341,7 @@ func _resource_sheet(resource: Dictionary) -> void:
 func _job_sheet(job: Dictionary) -> void:
 	show_sheet("Work order")
 	label("%s: %s\nWork %d/%d WU\n%s" % [job.kind.capitalize(), job.state, job.work / 1000, job.required / 1000, job.reason], sheet_body)
+	if job.state=="Queued": label("Waiting for work capacity. The order keeps its tile, progress and materials. Raise priority or choose Do next to bring it forward.",sheet_body).name="QueuedOrderExplanation"
 	if not job.inputs.is_empty():
 		label("Required: " + _cost_text(job.inputs) + "\nDelivered materials remain refundable until completion.", sheet_body)
 	if job.category in ColonyWorld.CATEGORIES:
@@ -1371,12 +1373,30 @@ func _work_sheet() -> void:
 	label("Storage",sheet_body)
 	for store in world.stores:
 		button("Storage " + str(store.id),func() -> void: _storage_sheet(store),sheet_body)
-	label("Current orders", sheet_body)
-	for job in world.jobs:
-		if job.state not in ["Complete", "Canceled"]:
-			button("%s - %s" % [job.kind.capitalize(), job.state], func() -> void: _job_sheet(job), sheet_body)
-			if not job.reason.is_empty():
-				label(job.reason, sheet_body)
+	var orders: Array = world.unfinished_jobs()
+	var queued: int = orders.filter(func(j:Dictionary)->bool:return j.state=="Queued").size()
+	label("Current orders: %d total; %d waiting for capacity. Every marked tile is kept." % [orders.size(),queued],sheet_body).name="WorkOrderCounts"
+	var pages: int = maxi(1,(orders.size()+31)/32)
+	work_orders_page=clampi(work_orders_page,0,pages-1)
+	if pages>1:
+		var pager: HBoxContainer = HBoxContainer.new();sheet_body.add_child(pager)
+		var previous: Button = button("Previous",func()->void:_show_work_page(work_orders_page-1),pager,96)
+		previous.name="WorkOrdersPrevious";previous.disabled=work_orders_page==0
+		label("%d / %d" % [work_orders_page+1,pages],pager)
+		var next: Button = button("Next",func()->void:_show_work_page(work_orders_page+1),pager,72)
+		next.name="WorkOrdersNext";next.disabled=work_orders_page==pages-1
+	for job in orders.slice(work_orders_page*32,(work_orders_page+1)*32):
+		button("%s - %s" % [job.kind.capitalize(), job.state], func() -> void: _job_sheet(job), sheet_body).name="WorkOrderRow"+str(job.id)
+		if not job.reason.is_empty(): label(job.reason,sheet_body)
+
+func _show_work_page(page: int) -> void:
+	work_orders_page=page;show_sheet("Work")
+	_scroll_work_orders.call_deferred()
+
+func _scroll_work_orders() -> void:
+	if sheet_name!="Work" or not is_instance_valid(sheet_body): return
+	var heading: Control = sheet_body.get_node_or_null("WorkOrderCounts")
+	if heading!=null: (sheet_body.get_parent() as ScrollContainer).ensure_control_visible(heading)
 
 func _tutorial_sheet() -> void:
 	label("First steps", sheet_body)
@@ -1711,6 +1731,9 @@ func _performance_report() -> Dictionary:
 	var memory: int = OS.get_static_memory_usage()
 	var metadata: Dictionary = {"build":str(ProjectSettings.get_setting("application/config/version")),"engine":Engine.get_version_info().string,"platform":OS.get_name(),"os_version":OS.get_version().left(128),"device_model":OS.get_model_name().left(128),"gpu":RenderingServer.get_video_adapter_name().left(128),"renderer":RenderingServer.get_current_rendering_method(),"quality":settings.values.quality,"fps_cap":Engine.max_fps,"engine_static_memory_bytes":memory if memory>0 else null,"viewport":[get_viewport_rect().size.x,get_viewport_rect().size.y]}
 	if world is ColonyWorld:
+		var orders: Array = world.unfinished_jobs()
+		metadata["executable_jobs"]=orders.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,world.tick)).size()
+		metadata["queued_orders"]=orders.filter(func(j:Dictionary)->bool:return j.state=="Queued").size()
 		metadata.merge({"content":world.CONTENT_VERSION,"schema":world.SCHEMA_REVISION,"site":world.site_id,"seed":str(world.seed),"tick":str(world.tick),"resident_records":world.citizens.size(),"structure_records":world.structures.size(),"nonempty_stacks":world.nonempty_stacks().size(),"unfinished_jobs":world.unfinished_jobs().size(),"pooled_extra_actors":view.extra_actors.size(),"visible_extra_actors":view.extra_actors.values().filter(func(actor:Node)->bool:return actor.visible).size(),"writer_busy":save_queue.busy(),"snapshot_preparing":save_queue.preparing(),"storage_error_present":not storage_error.is_empty(),"saving_disabled":saving_disabled})
 	return diagnostics.report(metadata)
 

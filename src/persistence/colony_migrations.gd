@@ -204,4 +204,12 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 			if not person is Dictionary or not person.get("id") is int: return data
 			if not person.has("appearance"): person["appearance"]=ColonyAppearance.defaults(person.id)
 		result.schema_revision=22
+	if result.get("schema_revision")==22:
+		if not result.get("jobs") is Array: return data
+		result=result.duplicate(true)
+		for job in result.jobs:
+			if not job is Dictionary: return data
+			if not job.has("queue_state"): job["queue_state"]=""
+		result.schema_revision=23
+		ColonyWorkBudget.migrate(result)
 	return result

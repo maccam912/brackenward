@@ -2,7 +2,7 @@ class_name ColonyCatalog
 extends RefCounted
 ## I/O boundary. ColonyWorld receives validated immutable definitions as values.
 
-static func load_data(path: String = "res://data/catalogs/colony_v2.json") -> Dictionary:
+static func load_data(path: String = "res://data/catalogs/colony_v3.json") -> Dictionary:
 	var parsed: Variant = JSON.parse_string(FileAccess.get_file_as_string(path))
 	assert(parsed is Dictionary, "Missing colony catalog")
 	var result: Dictionary = {"version": parsed.version, "content_hash": JSON.stringify(_integers(parsed),"",true).sha256_text()}

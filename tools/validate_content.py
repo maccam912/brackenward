@@ -211,3 +211,7 @@ for d in new_ids['communities'].values():
 assert sum(d.get('initial_count',0) for d in new_ids['animals'].values())==16
 assert sum(d['cost'] for d in new_ids['enemies'].values())==7
 print('Validated additive wildlife, enemy, expedition, community, event and charter catalogs; released v1 contracts remain immutable.')
+budget_catalog=json.loads((root / 'data/catalogs/colony_v3.json').read_text())
+assert budget_catalog['version']=='colony-v3'
+assert {**budget_catalog,'version':'colony-v2'}==next_catalog, 'Work-budget content revision may not change released recipes, quantities, geometry or progression'
+print('Validated work-budget content v3; every catalog value except the version is identical to retained v2.')

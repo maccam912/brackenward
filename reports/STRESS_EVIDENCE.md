@@ -35,7 +35,7 @@ simulation without runtime grants or replenishment; report ending counts, since
 threats retreat and work completes. Do not describe these as thirty seconds with
 all original actors still active.
 
-The initial canonical hash is
+The original schema-22/content-v2 initial canonical hash is
 `d58ddba9cd57e6cbf36a25668e1de2f836645abe5bfc22d77454c8d21d706843`.
 The retained local snapshot is 912,039 bytes with SHA-256
 `427e716b0583ebf73da9e82d090167c9c5799d57bc1be419594ebed3662b3d68`.
@@ -124,3 +124,45 @@ error or invariant failure. Its extra paused warmup moves initial room/render
 preparation outside measurement, so its maximum is not a direct comparison with
 older profiles that included those first callbacks. Physical new-colony Android
 stutter still needs actual phone evidence.
+
+## 0.7.7 bounded-work checkpoint
+
+Schema 23/content v3 retains all order targets and limits executable work to 512;
+the Work sheet pages thirty-two controls at a time. This closes the independent
+job-count contract, while timing remains a failing gate. Admission and static
+movement-cost caches have exact uncached/reference regressions. No history or
+material record is discarded to improve timing.
+
+The v3 fixture has the same declared object load, canonical hash
+`6f87e9c02248e6ccdd4753a3c46c0d1a14e42c71676275e0e7ed1fc067357610`,
+917,415 bytes and SHA-256
+`5ec03da3bd7ed46cd7ba32042699643e43827920e4d505b24d4030db9303fd5c`.
+The final runs use `--center 68,72` to include the busiest pile area, rather than
+the former default 68,63; these render timings are not direct camera-matched
+comparisons with 0.7.6. Host, viewport and Balanced/30 FPS are unchanged.
+Runtime/media/profiling source fingerprint
+`e749114e7bbf87f1165b3cd0e5d925b5d87fe19057c3bb75e652e920fced75ff`
+matches before and after all four runs.
+
+| View / speed | Wall seconds | Logical ticks | Main p95 / max ms | Main callbacks >50 ms | Tick p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Close / 1x | 30.045 | 300 | 19.432 / 137.686 | 13 | 44.081 |
+| Close / 4x | 30.001 | 1,199 | 50.354 / 139.563 | 46 | 40.043 |
+| Far / 1x | 30.004 | 299 | 19.751 / 140.530 | 14 | 44.021 |
+| Far / 4x | 30.003 | 1,199 | 51.444 / 147.494 | 45 | 39.864 |
+
+Wall-clock frame gaps reach 149.593, 150.499, 151.064 and 157.891 ms respectively,
+with 17, 97, 17 and 96 gaps over 50 ms. Requested speeds remain unchanged, logical
+backlog remains below 0.1 second, and no storage pause/error or invariant failure
+occurs. Every end state retains twenty residents, twelve domestic animals,
+thirty-two wildlife, eight neutral visitors, 192 crop tiles and rain. Threats
+retreat. Both 1x runs end with 400 structures, 1,035 stacks and 268 active targets;
+both 4x runs end with 401 structures, 1,059 stacks and 267 targets. These are
+changing real simulation loads, not sustained constant peak load.
+
+The separate new-colony run measures 65.033 seconds and 650 ticks: main callback
+p95 0.859 / max 3.311 ms, tick p95 0.805 / max 3.212 ms, frame-gap max 35.310 ms
+with none over 50 ms. Save capture max 2.181 ms, preparation capture 0.677 ms and
+completion 0.719 ms. Its tutorial is dismissed; active guidance needs its own
+measurement. Physical Android stutter, the 4 ms stress tick target and all full
+release performance gates remain open.

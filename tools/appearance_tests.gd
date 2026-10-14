@@ -49,7 +49,10 @@ static func run(check: Callable) -> void:
 	for pair in [["schema21-delta.brackenward","snapshot-0000000001.brackenward"],["schema21-delta.frames","journal-0000000001.frames"]]:
 		DirAccess.copy_absolute("res://tests/fixtures/"+pair[0],store.directory.path_join(pair[1]))
 	loaded=store.load_latest()
-	check.call("SAVE/schema21_delta_migrates_exact_acknowledged_final_payload",loaded.has("world") and loaded.world.tick==metadata.end_tick and JSON.stringify(ColonyState.pack(without_appearance(loaded.world)),"",true).sha256_text()==metadata.final_canonical_hash,str(loaded.get("error","")))
+	var envelope: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/schema21-delta.brackenward"))
+	var original: Dictionary = ColonyState.unpack(JSON.parse_string(envelope.payload))
+	var acknowledged: Dictionary = SchemaCompatibility.normalize(loaded.world,original) if loaded.has("world") else {}
+	check.call("SAVE/schema21_delta_migrates_exact_acknowledged_final_payload",loaded.has("world") and loaded.world.tick==metadata.end_tick and JSON.stringify(ColonyState.pack(acknowledged),"",true).sha256_text()==metadata.final_canonical_hash,str(loaded.get("error","")))
 	var originals: bool = true
 	for pair in [["schema21-delta.brackenward","snapshot-0000000001.brackenward"],["schema21-delta.frames","journal-0000000001.frames"]]:
 		originals=originals and FileAccess.get_sha256(store.directory.path_join(pair[1]))==metadata[pair[0]] and FileAccess.get_sha256(store.directory.path_join("migration-backup-"+pair[1]))==metadata[pair[0]]

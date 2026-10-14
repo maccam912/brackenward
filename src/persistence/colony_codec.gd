@@ -24,7 +24,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		if legacy.has("error"): return legacy
 		return restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
-	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content != "colony-v1" and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
+	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content != "colony-v1" and envelope.content != "colony-v2" and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
 		return {"error":"Unsupported save version/content: this build supports version 5 plus earlier colony migration"}
 	if not envelope.generator_version is float or (envelope.generator_version != 0 and envelope.generator_version != 1) or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
 		return {"error":"Invalid snapshot metadata"}
@@ -54,6 +54,12 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/colony_v1.json")
 		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released catalog; original files retained"}
 		data = ColonyMigrations.catalog_v1(data,world.definitions,previous.items.keys())
+	if data.get("content") == "colony-v2":
+		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/colony_v2.json")
+		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released v2 catalog; original files retained"}
+		# Every definition is identical in v3. Change only its declared header;
+		# unlike older acquisition upgrades, preserve even user filter ordering.
+		data=data.duplicate(true);data.content=ColonyWorld.CONTENT_VERSION;data.content_hash=world.definitions.content_hash
 	if initialize_weather and data.get("weather_state") == {}:
 		# Only pure legacy migration supplies the empty initial schedule.
 		world.tick = data.tick
@@ -224,7 +230,8 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 			if feed_units>24 or output_units>24: return "Barn buffer exceeds 24 units"
 	var job_template: Dictionary = world._job("gather", "Gathering", "Field", world.resources[0].id, Vector2i(1, 1), 1000)
 	for job in data.jobs:
-		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate", "craft", "research", "rescue", "treat", "feed", "bury", "recover", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "escape", "stock_feed", "lead_animal", "collect_animal", "slaughter", "build_helper", "step_aside", "equip", "repair", "demolish", "move_furniture", "cart_move", "arrival", "trade", "expedition_pack", "expedition_meet", "expedition_walk", "extinguish", "defend", "shelter", "raid_pay", "enemy_treat", "minor_work", "minor_study", "supper", "supper_reserve"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or (job.worker>0 and not citizen_ids.has(job.worker)) or job.state not in ["Ready", "Blocked", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
+		if not job.get("queue_state") is String or job.queue_state not in ["","Ready","Blocked","Fetching","Moving","Working","Delivering"] or (job.get("state")=="Queued" and (job.get("worker")!=0 or job.queue_state.is_empty())): return "Invalid queued work contract"
+		if not _record(job, job_template) or job.kind not in ["gather", "haul", "cook", "build", "eat", "sleep", "prepare", "sow", "harvest", "replant", "leisure", "depart", "fuel", "mediate", "craft", "research", "rescue", "treat", "feed", "bury", "recover", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "escape", "stock_feed", "lead_animal", "collect_animal", "slaughter", "build_helper", "step_aside", "equip", "repair", "demolish", "move_furniture", "cart_move", "arrival", "trade", "expedition_pack", "expedition_meet", "expedition_walk", "extinguish", "defend", "shelter", "raid_pay", "enemy_treat", "minor_work", "minor_study", "supper", "supper_reserve"] or not _position(job) or job.work < 0 or job.work > job.required or job.worker < 0 or (job.worker>0 and not citizen_ids.has(job.worker)) or job.state not in ["Ready", "Blocked", "Queued", "Fetching", "Moving", "Working", "Delivering", "Complete", "Canceled"]:
 			return "Invalid job"
 		if job.kind in ["minor_work","minor_study"] and not ColonyOpportunities.valid_job(data,job,world.definitions): return "Invalid opportunity work contract"
 		if job.kind in ["supper","supper_reserve"] and not ColonyCharter.valid_job(data,job): return "Invalid communal supper task"
