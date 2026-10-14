@@ -35,7 +35,9 @@ jobs:
       - name: Install Android toolchain packages
         run: sdkmanager 'platforms;android-36' 'build-tools;36.1.0' 'ndk;29.0.14206865' 'cmake;3.10.2.4988404'
       - name: Validate media and prototype contract
-        run: python3 tools/validate_content.py
+        run: |
+          python3 tools/test_gdscript_strings.py
+          python3 tools/validate_content.py
       - name: Install Linux UI test dependencies
         run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
       - name: Import project

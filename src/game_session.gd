@@ -21,6 +21,7 @@ var placement_wide_row: HBoxContainer
 var sheet: PanelContainer
 var sheet_body: VBoxContainer
 var sheet_feedback: Label
+var text_entry_error: String = ""
 var inspector: PanelContainer
 var selected: int = 0
 var work_orders_page: int = 0
@@ -167,7 +168,7 @@ func _make_world_view() -> WorldView:
 
 func _build_theme() -> void:
 	var ui_theme: Theme = Theme.new()
-	ui_theme.default_font = load("res://assets/exported/fonts/kenney_mini.ttf")
+	ui_theme.default_font = ColonyFonts.body()
 	ui_theme.default_font_size = int(16 * text_scale)
 	ui_theme.set_color("font_color", "Label", Color("F8F3E7"))
 	for state in ["font_color","font_hover_color","font_focus_color","font_pressed_color","font_hover_pressed_color"]:
@@ -198,9 +199,11 @@ func _box(color: Color, border: Color = Color("77915A")) -> StyleBoxFlat:
 
 func button(label: String, callback: Callable, parent: Node, width: float = 48.0) -> Button:
 	var result: Button = Button.new()
-	result.text = label
+	result.text = ColonyFonts.display(label)
 	result.clip_text = true
-	result.tooltip_text = label
+	result.tooltip_text = ColonyFonts.display(label)
+	var font_warning: String = ColonyFonts.warning(label)
+	if not font_warning.is_empty(): result.tooltip_text+="\n"+font_warning
 	result.name = label.validate_node_name() if not label.is_empty() else "Action"
 	result.custom_minimum_size = Vector2(width, 48)
 	result.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -234,7 +237,9 @@ func direction_button(title: String, direction: Vector2, callback: Callable, par
 
 func label(text: String, parent: Node) -> Label:
 	var result: Label = Label.new()
-	result.text = text
+	result.text = ColonyFonts.display(text)
+	result.tooltip_text=ColonyFonts.warning(text)
+	if not result.tooltip_text.is_empty(): result.text+="\n"+result.tooltip_text
 	result.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	result.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	parent.add_child(result)
@@ -454,11 +459,12 @@ func _advance_frame(delta: float) -> void:
 				if is_instance_valid(soundscape): soundscape.cue("cue_warning",2,"",0.9)
 				if warning==3 and settings.values.auto_pauses.low_food: runner.pause()
 			food_warning_level = warning
-	notice_label.text = ("Unsaved progress | " if saving_disabled else "") + notice
+	notice_label.text = ColonyFonts.display(("Unsaved progress | " if saving_disabled else "") + notice)
 	if is_instance_valid(sheet_feedback):
-		sheet_feedback.text = notice
-		sheet_feedback.visible=sheet_name not in ["Welcome","Style"] and not notice.is_empty() and not notice.begins_with("Paused. Choose")
-	preview_label.text = _preview_text()
+		var feedback: String = text_entry_error if not text_entry_error.is_empty() else notice
+		sheet_feedback.text = ColonyFonts.display(feedback)
+		sheet_feedback.visible=sheet_name not in ["Welcome","Style"] and not feedback.is_empty() and not feedback.begins_with("Paused. Choose")
+	preview_label.text = ColonyFonts.display(_preview_text())
 	if is_instance_valid(soundscape): soundscape.observe()
 	journal_elapsed += delta
 	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony:
@@ -748,6 +754,7 @@ func close_inspector() -> void:
 
 func show_sheet(title: String) -> void:
 	listening_binding=""
+	text_entry_error=""
 	if sheet==null: sheet_camera_center=view.camera_center()
 	runner.pause()
 	view.cancel_gesture()
@@ -767,8 +774,9 @@ func show_sheet(title: String) -> void:
 	heading.autowrap_mode=TextServer.AUTOWRAP_OFF
 	heading.clip_text=true
 	heading.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
-	heading.tooltip_text=title
-	heading.add_theme_font_override("font", load("res://assets/exported/fonts/kenney_bold.ttf"))
+	heading.tooltip_text=ColonyFonts.display(title)
+	if not ColonyFonts.warning(title).is_empty(): heading.tooltip_text+="\n"+ColonyFonts.warning(title)
+	heading.add_theme_font_override("font", ColonyFonts.heading())
 	heading.add_theme_font_size_override("font_size", int(16 * text_scale))
 	var close_button: Button = button("Close", close_sheet, top, 64)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
@@ -783,7 +791,7 @@ func show_sheet(title: String) -> void:
 	scroll.add_child(sheet_body)
 	sheet_full_heading=label(title,sheet_body)
 	sheet_full_heading.name="FullSheetHeading"
-	sheet_full_heading.add_theme_font_override("font",load("res://assets/exported/fonts/kenney_bold.ttf"))
+	sheet_full_heading.add_theme_font_override("font",ColonyFonts.heading())
 	sheet_full_heading.add_theme_font_size_override("font_size",int(16*text_scale))
 	top.resized.connect(_adapt_sheet_heading)
 	call_deferred("_adapt_sheet_heading")
@@ -867,13 +875,15 @@ func _adapt_sheet_heading() -> void:
 	var available: float = top.size.x-top.get_theme_constant("separation")*2
 	for child in top.get_children():
 		if child is Button: available-=child.get_combined_minimum_size().x
-	var width: float = sheet_heading.get_theme_font("font").get_string_size(sheet_name,HORIZONTAL_ALIGNMENT_LEFT,-1,sheet_heading.get_theme_font_size("font_size")).x
-	var fits: bool = width<=available
-	sheet_heading.text=sheet_name if fits else ""
+	var title: String = ColonyFonts.display(sheet_name)
+	var width: float = sheet_heading.get_theme_font("font").get_string_size(title,HORIZONTAL_ALIGNMENT_LEFT,-1,sheet_heading.get_theme_font_size("font_size")).x
+	var fits: bool = width<=available and ColonyFonts.warning(sheet_name).is_empty()
+	sheet_heading.text=title if fits else ""
 	sheet_full_heading.visible=not fits
 
 func close_sheet() -> void:
 	listening_binding=""
+	text_entry_error=""
 	if is_instance_valid(view): view.inspected_tiles.clear();view.inspected_object=0
 	if sheet != null:
 		sheet.queue_free()
@@ -1309,6 +1319,7 @@ func _update_inspector() -> void:
 		if citizen.departure_until>world.tick: inspector_details.text+="\n"+departure_description(citizen)
 	else:
 		inspector_details.text = "%s - looking around\nM0 touch fixture movement." % citizen.name
+	inspector_details.text=ColonyFonts.display(inspector_details.text)
 
 func _submit(kind: String, args: Dictionary) -> void:
 	if quitting: return
@@ -1659,16 +1670,18 @@ func show_named_snapshots() -> void:
 func _name_snapshot(index: int, exists: bool, previous_name: String) -> void:
 	show_sheet("Name snapshot")
 	label("Replacing %s requires confirmation." % previous_name if exists else "Name this paused snapshot.",sheet_body)
+	label("Use 1-64 printable Basic Latin characters: English letters, numbers, spaces and punctuation.",sheet_body)
 	var entry: LineEdit = LineEdit.new()
 	entry.placeholder_text = "Snapshot name"
 	entry.max_length = 64
 	entry.custom_minimum_size = Vector2(48,48)
 	entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sheet_body.add_child(entry)
+	entry.text_changed.connect(_clear_text_entry_error)
 	button("Continue" if exists else "Save snapshot",func() -> void:
 		var snapshot_name: String = entry.text.strip_edges()
-		if snapshot_name.is_empty():
-			notice = "Enter a snapshot name."
+		if not ColonyChronicle._printable(snapshot_name,64):
+			_text_entry_error("Snapshot names require 1-64 printable Basic Latin characters.")
 			return
 		if exists:
 			show_sheet("Confirm snapshot replacement")
@@ -2552,11 +2565,11 @@ func show_expedition_prepare(definition: String, pickup: bool) -> void:
 	label("Select two to four healthy residents and leave two at home. Each needs health 70, fullness 500, rest 500. Packs hold twelve units per resident, plus twelve per adult goat. Rations must cover the quoted trip plus one reserve day. Local walking and physical packing/unloading are visible too. A shortfall of 1-2 gives 75% item rewards and injures the leader 10 per point; more than two requires explicit Attempt unprepared, gives no items and injures two travelers 20 each. Expedition injury floors are 10 health in Standard and 1 in Hearthside; injuries are stabilized and carried home.",rules)
 	var people: Dictionary = {};var goats: Dictionary = {};var extras: Dictionary = {}
 	for person in ColonyRegion.home(world):
-		var choice: CheckButton = CheckButton.new();choice.text=person.name;choice.custom_minimum_size.y=48;choice.button_pressed=person.id in [2,3];sheet_body.add_child(choice);people[person.id]=choice
+		var choice: CheckButton = CheckButton.new();choice.text=ColonyFonts.display(person.name);choice.tooltip_text=ColonyFonts.warning(person.name);choice.custom_minimum_size.y=48;choice.button_pressed=person.id in [2,3];sheet_body.add_child(choice);people[person.id]=choice
 		label("%s %d · health %d · fullness %d · rest %d\n%s" % [data.skill,person.skills[data.skill],person.health,person.fullness,person.rest,"Unarmed" if person.equipment.weapon.is_empty() else person.equipment.weapon.capitalize()],sheet_body)
 	for animal in world.domestic_state.animals:
 		if animal.definition!="pack_goat" or animal.health<=0 or animal.away: continue
-		var choice: CheckButton = CheckButton.new();choice.text=animal.name;choice.custom_minimum_size.y=48;sheet_body.add_child(choice);goats[animal.id]=choice
+		var choice: CheckButton = CheckButton.new();choice.text=ColonyFonts.display(animal.name);choice.tooltip_text=ColonyFonts.warning(animal.name);choice.custom_minimum_size.y=48;sheet_body.add_child(choice);goats[animal.id]=choice
 		label("Twelve extra cargo units; two grain/vegetable feed per trip day",sheet_body)
 	var feed: CycleChoiceButton = CycleChoiceButton.new();feed.add_item("Grain feed");feed.add_item("Vegetable feed");feed.custom_minimum_size.y=48;sheet_body.add_child(feed)
 	var variant: CycleChoiceButton = CycleChoiceButton.new();variant.add_item("Stone 24" if definition=="old_quarry" and not pickup else "Listed reward")
@@ -2682,7 +2695,7 @@ func show_squad(initial: Array) -> void:
 	var people: Dictionary = {}
 	for person in ColonyRegion.home(world):
 		if person.downed: continue
-		var choice: CheckButton = CheckButton.new();choice.text=person.name;choice.button_pressed=initial.has(person.id);choice.custom_minimum_size.y=48;sheet_body.add_child(choice);people[person.id]=choice
+		var choice: CheckButton = CheckButton.new();choice.text=ColonyFonts.display(person.name);choice.tooltip_text=ColonyFonts.warning(person.name);choice.button_pressed=initial.has(person.id);choice.custom_minimum_size.y=48;sheet_body.add_child(choice);people[person.id]=choice
 		label("Health %d · Guard %d · %s" % [person.health,person.skills.Guard,"Unarmed" if person.equipment.weapon.is_empty() else person.equipment.weapon],sheet_body)
 	button("Choose rally on map",func()->void:
 		var selected: Array = []
@@ -2872,13 +2885,31 @@ func show_pin_moment() -> void:
 	show_sheet("Pin a moment")
 	label("Optional personal note. Up to 256 printable Basic Latin characters. Pinning has no reward or simulation effect.",sheet_body)
 	var entry: LineEdit = LineEdit.new();entry.max_length=256;entry.placeholder_text="A moment to remember";entry.custom_minimum_size.y=48;sheet_body.add_child(entry)
-	button("Pin this moment",func()->void:_submit("pin_moment",{"text":entry.text});close_sheet(),sheet_body)
+	entry.text_changed.connect(_clear_text_entry_error)
+	button("Pin this moment",func()->void:
+		if not ColonyChronicle._printable(entry.text.strip_edges(),256,true):
+			_text_entry_error("Moment text supports up to 256 printable Basic Latin characters.");return
+		_submit("pin_moment",{"text":entry.text});close_sheet(),sheet_body)
 
 func show_rename(id: int) -> void:
 	show_sheet("Name this place" if id==0 else "Rename")
 	label("Names are cosmetic. Use 1-32 printable Basic Latin characters; existing journal names stay as recorded.",sheet_body)
 	var entry: LineEdit = LineEdit.new();entry.max_length=32;entry.text=ColonyChronicle.display_name(world,id);entry.custom_minimum_size.y=48;sheet_body.add_child(entry)
-	button("Save name",func()->void:_submit("rename",{"target":id,"text":entry.text});close_sheet(),sheet_body)
+	entry.text_changed.connect(_clear_text_entry_error)
+	button("Save name",func()->void:
+		if not ColonyChronicle._printable(entry.text.strip_edges(),32):
+			_text_entry_error("Names require 1-32 printable Basic Latin characters after trimming.");return
+		_submit("rename",{"target":id,"text":entry.text});close_sheet(),sheet_body)
+
+func _text_entry_error(message: String) -> void:
+	text_entry_error=message
+	if is_instance_valid(sheet_feedback): sheet_feedback.text=ColonyFonts.display(message);sheet_feedback.show()
+
+func _clear_text_entry_error(_text: String) -> void:
+	text_entry_error=""
+	if is_instance_valid(sheet_feedback):
+		sheet_feedback.text=ColonyFonts.display(notice)
+		sheet_feedback.visible=not notice.is_empty() and not notice.begins_with("Paused. Choose")
 
 func show_person_history(id: int) -> void:
 	show_sheet("Remembered moments")

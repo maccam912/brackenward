@@ -5,6 +5,7 @@ import hashlib
 import json
 import re
 import struct
+from gdscript_strings import extract_strings
 
 root = Path(__file__).resolve().parents[1]
 fixture = json.loads((root / "data/prototype.json").read_text())
@@ -50,8 +51,28 @@ if any(asset["id"] == "woodland_environment" for asset in manifest):
         assert x+w <= width and y+h <= height, semantic
     print(f"Validated 19 retained CC0 component files/licenses and {len(artwork['rectangles'])} environment atlas rectangles.")
 
-# TrueType cmap format 4, validating Basic Latin actually present in both licensed fonts.
+# Validate every shipped string character, including legacy facts displayed by
+# current UI. En dashes have one explicit presentation-only ASCII substitution.
+required_text = set(chr(cp) for cp in range(32, 127))
+for script in (root / "src").rglob("*.gd"):
+    for value in extract_strings(script.read_text()):
+        required_text.update(ch for ch in value.replace("\u2013", "-") if ord(ch) >= 32)
+for path in (root / "data/catalogs").glob("en*.json"):
+    def strings(value):
+        if isinstance(value, str):
+            yield value
+        elif isinstance(value, dict):
+            for child in value.values():
+                yield from strings(child)
+        elif isinstance(value, list):
+            for child in value:
+                yield from strings(child)
+    for value in strings(json.loads(path.read_text())):
+        required_text.update(ch for ch in value.replace("\u2013", "-") if ord(ch) >= 32)
+
+# TrueType cmap format 4; Mini is the sole explicit fallback for Bold.
 for name in ("kenney_mini.ttf", "kenney_bold.ttf"):
+    assert "allow_system_fallback=false" in (root / "assets/exported/fonts" / (name + ".import")).read_text(), name
     data = (root / "assets/exported/fonts" / name).read_bytes()
     tables = struct.unpack_from(">H", data, 4)[0]
     cmap = next(struct.unpack_from(">I", data, 12 + i * 16 + 8)[0]
@@ -65,7 +86,7 @@ for name in ("kenney_mini.ttf", "kenney_bold.ttf"):
     delta = start + segments * 2
     ranges = delta + segments * 2
     supported = set()
-    for cp in range(32, 127):
+    for cp in sorted(ord(ch) for ch in required_text):
         for i in range(segments):
             lo = struct.unpack_from(">H", data, start + i * 2)[0]
             hi = struct.unpack_from(">H", data, end + i * 2)[0]
@@ -73,12 +94,15 @@ for name in ("kenney_mini.ttf", "kenney_bold.ttf"):
                 shift = struct.unpack_from(">h", data, delta + i * 2)[0]
                 offset = struct.unpack_from(">H", data, ranges + i * 2)[0]
                 glyph = ((cp + shift) & 65535) if offset == 0 else struct.unpack_from(">H", data, ranges + i * 2 + offset + (cp - lo) * 2)[0]
+                if offset and glyph:
+                    glyph = (glyph + shift) & 65535
                 if glyph:
                     supported.add(chr(cp))
                 break
-    required = set(chr(cp) for cp in range(32, 127)) if name == "kenney_mini.ttf" else set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .!?")
+    required = required_text if name == "kenney_mini.ttf" else set("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 .!?")
     missing = required - supported
-    assert not missing, f"{name}: missing Basic Latin {missing}"
+    assert not missing, f"{name}: missing shipped text characters {missing}"
+print(f"Validated {len(required_text)} shipped text characters against actual licensed font glyphs, explicit punctuation mapping and disabled system fallback.")
 for folder in ("src/sim", "src/generation"):
     if (root / folder).exists():
         for script in (root / folder).rglob("*.gd"):

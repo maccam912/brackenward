@@ -25,6 +25,8 @@ static func run(check: Callable) -> void:
 	for row in rows:
 		retained[row.index] = FileAccess.get_file_as_bytes(store.directory.path_join(row.file))
 	check.call("SAVE/occupied_named_requires_choice",not store.save_named(w,1,"Unconfirmed overwrite").is_empty() and FileAccess.get_file_as_bytes(store.directory.path_join(rows[0].file)) == retained[1])
+	for name in ["Caf\u00e9", "Bad\tname", "Bad\nname"]:
+		check.call("SAVE/unsupported_named_text_never_replaces_existing_%d" % name.hash(),store.save_named(w,1,name,true).contains("Basic Latin") and FileAccess.get_file_as_bytes(store.directory.path_join(rows[0].file))==retained[1])
 	for i in range(5): w.step()
 	check.call("SAVE/confirmed_named_replaces_only_one",store.save_named(w,1,"Later spring",true).is_empty() and store.named_snapshots()[0].name == "Later spring")
 	var unchanged: bool = true

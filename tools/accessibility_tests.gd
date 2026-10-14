@@ -2,6 +2,7 @@ class_name AccessibilityTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	FontTests.run(check)
 	var root: String = "user://accessibility-%d" % Time.get_ticks_usec()
 	DirAccess.make_dir_recursive_absolute(root)
 	var settings: DeviceSettings = DeviceSettings.new();settings.path=root.path_join("settings.json")

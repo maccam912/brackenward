@@ -370,8 +370,8 @@ func named_snapshots() -> Array[Dictionary]:
 	return result
 
 func save_named(world: ColonyWorld, index: int, name: String, replace: bool = false) -> String:
-	if index < 1 or index > 10 or name.strip_edges().is_empty() or name.length() > 64:
-		return "Choose a snapshot slot 1–10 and a name of 1–64 characters"
+	if index < 1 or index > 10 or name.strip_edges().is_empty() or not ColonyChronicle._printable(name,64):
+		return "Choose a snapshot slot 1-10 and a name of 1-64 printable Basic Latin characters"
 	var rows: Array[Dictionary] = named_snapshots()
 	if rows[index-1].exists and not replace:
 		return "This named snapshot is occupied. Explicitly choose which snapshot to replace."
