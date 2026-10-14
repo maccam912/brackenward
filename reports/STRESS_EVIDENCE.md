@@ -206,3 +206,33 @@ and explicit tuple comparator match all canonical fields at each of 300 crowded
 ticks in an extended local comparison; the regular suite retains 120 ticks to
 fit CI's timeout. Frozen ordinary-play replay and schema-22 gameplay hashes also
 match. These checks constrain behavioral changes but do not replace device tests.
+
+## 0.7.11 typed admission and perishable/heating work
+
+The fixed-tick benchmark preserves its full final hash after typed/preallocated
+admission and a separate perishable inventory view. Average instrumented admission
+cost changes from 2.610 to 2.267 ms per tick; living/aging changes from 0.973 to
+0.557 ms. Uninstrumented 1,200-tick totals are 13.096 and 12.231 seconds. The former
+heating loop remains a test reference, including cold weather and same-room warmth.
+An actual snowy Winter save also matches frozen source after 1,200 more ticks;
+full hashes/provenance are recorded in STATUS.md.
+
+The final native rows retain the v3 fixture and camera center 68,72, Balanced/30
+FPS, 960x600, with three frozen Winter workers running concurrently. Source
+fingerprint `c4b27906ac2ff0ebcc231ad15d904e427c9e745e46daf18f12fb047ce3826607`
+matches before/after every run. These remain provisional CPU measurements.
+
+| View / speed | Wall seconds | Logical ticks | Main p95 / max ms | Main callbacks >50 ms | Tick p50 / p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Close / 1x | 30.023 | 299 | 14.432 / 154.660 | 12 | 6.787 / 46.874 |
+| Close / 4x | 30.009 | 1,199 | 45.818 / 154.812 | 31 | 6.651 / 35.190 |
+| Far / 1x | 30.020 | 299 | 14.096 / 150.050 | 13 | 6.759 / 44.533 |
+| Far / 4x | 30.009 | 1,199 | 44.278 / 150.590 | 32 | 6.581 / 35.335 |
+
+Max frame gaps are 171.772, 170.941, 166.035 and 164.782 ms respectively, with
+20, 76, 20 and 72 gaps over 50 ms. Every run retains its requested speed and under
+0.1 second logical backlog, with clean invariants/storage. The end loads match
+the corresponding 0.7.7 1x/4x rows: active threats retreat, 1x ends with 400
+structures/1,035 stacks/268 targets, 4x with 401/1,059/267; the other actor/crop
+counts and rain remain. The tick and frame requirements still fail, and these
+runs do not satisfy any physical performance gate.

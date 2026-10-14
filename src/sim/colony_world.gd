@@ -91,6 +91,7 @@ var stack_query_tick: int = -1
 var stack_query_count: int = 0
 var stack_query_source: Array = []
 var stack_query_live: Array = []
+var stack_query_perishable: Array = []
 
 func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 	definitions = catalog.duplicate(true)
@@ -607,6 +608,14 @@ func reset_job_queries() -> void:
 	job_query_tick=-1;job_query_count=0;job_query_source=[];job_query_live=[]
 
 func nonempty_stacks() -> Array:
+	_refresh_stack_queries()
+	return stack_query_live.filter(func(s:Dictionary)->bool:return s.count>0)
+
+func perishable_stacks() -> Array:
+	_refresh_stack_queries()
+	return stack_query_perishable.filter(func(s:Dictionary)->bool:return s.count>0)
+
+func _refresh_stack_queries() -> void:
 	# Depleted records remain authoritative history. Runtime transfers create a
 	# new record; _merge_stored only merges into a still-positive stack. A zero
 	# record never becomes goods again. Imports explicitly reset this cache.
@@ -614,15 +623,17 @@ func nonempty_stacks() -> Array:
 		reset_stack_queries();stack_query_source=stacks
 	if stack_query_tick!=tick:
 		stack_query_live=stack_query_live.filter(func(s:Dictionary)->bool:return s.count>0)
+		stack_query_perishable=stack_query_perishable.filter(func(s:Dictionary)->bool:return s.count>0)
 		stack_query_tick=tick
 	for index in range(stack_query_count,stacks.size()):
 		var stack: Dictionary = stacks[index]
-		if stack.count>0: stack_query_live.append(stack)
+		if stack.count>0:
+			stack_query_live.append(stack)
+			if definitions.items[stack.item].shelf_ticks>0: stack_query_perishable.append(stack)
 	stack_query_count=stacks.size()
-	return stack_query_live.filter(func(s:Dictionary)->bool:return s.count>0)
 
 func reset_stack_queries() -> void:
-	stack_query_tick=-1;stack_query_count=0;stack_query_source=[];stack_query_live=[]
+	stack_query_tick=-1;stack_query_count=0;stack_query_source=[];stack_query_live=[];stack_query_perishable=[]
 
 func _perimeter(tiles: Array[Vector2i]) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []

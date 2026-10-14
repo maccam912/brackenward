@@ -2,7 +2,7 @@ class_name ColonyLiving
 extends RefCounted
 
 static func advance(world: ColonyWorld) -> void:
-	for stack in world.nonempty_stacks():
+	for stack in world.perishable_stacks():
 		if stack.count == 0:
 			continue
 		var shelf: int = world.definitions.items[stack.item].shelf_ticks
@@ -28,21 +28,20 @@ static func advance(world: ColonyWorld) -> void:
 				world._release(job, false)
 				world._block(job, "Held inputs spoiled: gather fresh food")
 			stack.reservations.clear()
-	for hearth in world.structures:
-		if hearth.health<=0: continue
-		if hearth.definition != "hearth":
-			continue
-		var occupied: bool = false
-		for citizen in world.citizens:
-			if citizen.death_recorded or citizen.departed: continue
-			var point: Vector2i = Vector2i(citizen.x, citizen.y)
-			occupied = occupied or absi(point.x - hearth.x) + absi(point.y - hearth.y) <= 3 or (world.roofed(point) and world.room_tiles.get(point) == world.room_tiles.get(Vector2i(hearth.x, hearth.y), -1))
-		if temperature(world) < 8 and occupied and hearth.fuel > 0:
-			hearth.heat_ticks += 1
-			if hearth.heat_ticks >= 1800:
-				hearth.heat_ticks -= 1800
-				hearth.fuel -= 1
-				world._record("consumed", "wood", 1)
+	if temperature(world)<8:
+		for hearth in world.structures:
+			if hearth.health<=0 or hearth.definition!="hearth" or hearth.fuel<=0: continue
+			var occupied: bool = false
+			for citizen in world.citizens:
+				if citizen.death_recorded or citizen.departed: continue
+				var point: Vector2i = Vector2i(citizen.x,citizen.y)
+				if absi(point.x-hearth.x)+absi(point.y-hearth.y)<=3 or (world.roofed(point) and world.room_tiles.get(point)==world.room_tiles.get(Vector2i(hearth.x,hearth.y),-1)):
+					occupied=true;break
+			if occupied:
+				hearth.heat_ticks+=1
+				if hearth.heat_ticks>=1800:
+					hearth.heat_ticks-=1800;hearth.fuel-=1
+					world._record("consumed","wood",1)
 	for citizen in world.citizens:
 		if citizen.death_recorded or citizen.departed: continue
 		var day: int = world.tick / 7200

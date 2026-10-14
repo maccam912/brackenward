@@ -2,6 +2,7 @@ class_name StackQueryTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	perishable_queries(check)
 	var world: ColonyWorld = ColonyTests.world()
 	var starting_records: int = world.stacks.size()
 	for stack in world.stacks:
@@ -40,3 +41,25 @@ static func run(check: Callable) -> void:
 	world.nonempty_stacks();meal.age=world.definitions.items.meal.shelf_ticks-1
 	ColonyLiving.advance(world)
 	check.call("STACK/spoilage_retires_goods_with_exact_ledger_and_unchanged_history",meal.count==0 and not world.nonempty_stacks().has(meal) and world.ledger.spoiled.meal==spoiled and world.find(world.stacks,meal.id).age==world.definitions.items.meal.shelf_ticks and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+
+static func perishable_queries(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world();var before: String = world.canonical_hash()
+	var expected: Array = world.stacks.filter(func(s:Dictionary)->bool:return s.count>0 and world.definitions.items[s.item].shelf_ticks>0)
+	var query: Array = world.perishable_stacks()
+	check.call("STACK/perishable_query_matches_full_record_filter",query==expected and world.canonical_hash()==before)
+	query.reverse();query.clear()
+	check.call("STACK/perishable_caller_cannot_change_index_order",world.perishable_stacks()==expected)
+	var grain: Dictionary = world._make_stack("grain",8,"ground",0,Vector2i(75,70),true)
+	var wood: Dictionary = world._make_stack("wood",1,"ground",0,Vector2i(75,70),true)
+	check.call("STACK/new_same_tick_perishables_enter_separate_view",world.perishable_stacks().back()==grain and not world.perishable_stacks().has(wood))
+	grain.count=0;world._record("consumed","grain",8)
+	check.call("STACK/same_tick_consumption_leaves_perishable_history_intact",not world.perishable_stacks().has(grain) and world.find(world.stacks,grain.id).count==0)
+	var decoded: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/perishable_query_rebuilds_after_roundtrip",decoded.has("world") and decoded.world.canonical_hash()==world.canonical_hash() and decoded.world.perishable_stacks()==world.perishable_stacks(),str(decoded.get("error","")))
+	world.tick+=1;world.perishable_stacks()
+	check.call("STACK/next_tick_prunes_depleted_perishables",not world.stack_query_perishable.has(grain) and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	var previous: Dictionary = world.perishable_stacks()[0]
+	world.stacks=world.stacks.duplicate(true)
+	check.call("STACK/replaced_table_rebuilds_perishable_record_identity",not is_same(world.perishable_stacks()[0],previous) and is_same(world.perishable_stacks()[0],world.stacks[0]))
+	world.stacks.clear()
+	check.call("STACK/cleared_table_has_no_phantom_perishables",world.perishable_stacks().is_empty())

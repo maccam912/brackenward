@@ -9,6 +9,7 @@ class UncachedBudget extends ColonyWorkBudget:
 		used=result.used
 
 static func run(check: Callable) -> void:
+	scheduling_bounds(check)
 	precomputed_order(check)
 	stress_tick_order(check)
 	public_orders(check)
@@ -41,6 +42,15 @@ static func run(check: Callable) -> void:
 	world.tick+=50
 	ColonyWorkBudget.reconcile_records(world.citizens,jobs,world.tick)
 	check.call("BUDGET/due_retry_reenters_with_original_blocked_state",blocked.state=="Blocked" and jobs.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,world.tick)).size()==512)
+
+static func scheduling_bounds(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var resource: Dictionary = world.resources[0]
+	var job: Dictionary = world._job("gather","Gathering","Field",resource.id,Vector2i(resource.x,resource.y),16000)
+	job.definition=resource.definition
+	for change in [{"priority":0},{"priority":-1},{"priority":4},{"created":-1},{"created":world.tick+1},{"retry":-1}]:
+		var payload: Dictionary = world.payload().duplicate(true);payload.jobs[0].merge(change,true)
+		check.call("SAVE/admission_metadata_bounds_%s" % str(change),ColonyCodec.restore(payload).get("error","")=="Invalid job scheduling metadata")
 
 static func precomputed_order(check: Callable) -> void:
 	for variant in range(8):

@@ -2,6 +2,7 @@ class_name SurvivalTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	LivingHeatTests.run(check)
 	RoomGeometryTests.run(check)
 	var w: ColonyWorld = ColonyTests.world()
 	w.queue_command("field", {"crop":"turnip", "tiles":[Vector2i(74,54)]})

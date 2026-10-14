@@ -30,22 +30,28 @@ func after_commands(world: ColonyWorld, had_commands: bool) -> void:
 
 func reconcile(world: ColonyWorld) -> void:
 	var jobs: Array = world.unfinished_jobs();var pinned: Dictionary = {}
+	var tick: int = world.tick
 	var enabled: Dictionary = enabled_categories(world.citizens)
 	for person in world.citizens:
 		if person.pinned_job>0 and not person.death_recorded and not person.departed: pinned[person.pinned_job]=true
 	# Admission depends on these bounded integer terms, not position, progress,
 	# quantities or presentation. Comparing the native packed vector avoids
 	# re-sorting every queued order on ticks where admission cannot change.
-	var signature: PackedInt64Array = PackedInt64Array([ordinary_limit(world.citizens)])
+	var signature: PackedInt64Array = PackedInt64Array()
+	signature.resize(jobs.size()+1);signature[0]=ordinary_limit(world.citizens)
 	var inconsistent: bool = false
-	for job in jobs:
-		var code: int = int(job.worker>0)+2*int(protected(job))
-		var eligible: bool = not (job.retry>world.tick and job.state in ["Blocked","Queued"] and not pinned.has(job.id))
+	var cursor: int = 1
+	for job: Dictionary in jobs:
+		var id: int = job.id;var worker: int = job.worker;var state: String = job.state
+		var is_pinned: bool = pinned.has(id)
+		var code: int = int(worker>0)+2*int(job.kind=="supper_reserve" or (worker>0 and job.kind in PERSONAL))
+		var eligible: bool = not (job.retry>tick and (state=="Blocked" or state=="Queued") and not is_pinned)
 		if not eligible: code+=4
 		if code==0:
-			code=8*int(job.emergency)+16*int(pinned.has(job.id))+32*mini(3,job.priority+(world.tick-job.created)/7200)+128*int(job.category=="" or enabled.has(job.category))
-			if admitted_ids.has(job.id)!=(job.state!="Queued"): inconsistent=true
-		signature.append(job.id*256+code)
+			var category: String = job.category;var priority: int = job.priority;var created: int = job.created
+			code=8*int(job.emergency)+16*int(is_pinned)+32*mini(3,priority+(tick-created)/7200)+128*int(category=="" or enabled.has(category))
+			if admitted_ids.has(id)!=(state!="Queued"): inconsistent=true
+		signature[cursor]=id*256+code;cursor+=1
 	if not inconsistent and signature==fingerprint: return
 	var result: Dictionary = reconcile_records(world.citizens,jobs,world.tick,true)
 	used=result.used;admitted_ids=result.admitted;fingerprint=signature
