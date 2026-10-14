@@ -944,6 +944,7 @@ func ui() -> void:
 	ClockUITests.run(colony_game,check)
 	await QuietSleepTests.ui(colony_game,check)
 	TextTests.ui(colony_game,check)
+	TextTests.literal_routes(colony_game,check)
 	await AppearanceUITests.run(colony_game,check)
 	await FontUITests.run(colony_game,check)
 	await AccessibilityUITests.run(colony_game,check)

@@ -74,6 +74,11 @@ static func ui(game: GameSession, check: Callable) -> void:
 	game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Cancel")[0].pressed.emit()
 	check.call("DELETE/UI_cancel_preserves_snapshot",store.named_snapshots()[0].valid and game.sheet_name=="Named snapshots")
 	game.show_delete_saves(1,1)
+	var stale: Button=game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Permanently delete")[0]
+	ColonyChronicle.command(game.world,"rename",{"target":1,"text":"Delete saves"});game.show_person(1)
+	var before_stale: String=game.world.canonical_hash();stale.pressed.emit()
+	check.call("DELETE/UI_resident_name_cannot_reactivate_a_stale_delete_review",game.sheet_name=="Delete saves" and game.sheet_route.is_empty() and store.named_snapshots()[0].valid and store.named_snapshots()[1].valid and game.world.canonical_hash()==before_stale)
+	game.show_delete_saves(1,1)
 	var confirm: Button=game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Permanently delete")[0]
 	confirm.pressed.emit();confirm.pressed.emit()
 	check.call("DELETE/UI_confirm_removes_one_named_slot_without_touching_campaign",not store.named_snapshots()[0].exists and store.named_snapshots()[1].valid and ColonyStore.occupied(1,root) and not game.awaiting_first_colony)

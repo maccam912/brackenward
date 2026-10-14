@@ -78,3 +78,22 @@ static func ui(game: GameSession, check: Callable) -> void:
 	var before_bed: String=game.world.canonical_hash();game.show_station(bed)
 	check.call("TEXT/UI_bed_station_reports_current_recovery_rate",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.begins_with("Rest 75/hour.")) and game.world.canonical_hash()==before_bed)
 	game.close_sheet()
+
+static func literal_routes(game: GameSession, check: Callable) -> void:
+	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()
+	var cart: Dictionary=ColonyTrade.cart(game.world)
+	for name in ["Build","Menu","Work","Delete saves","Save problem"]:
+		for target in [1,cart.id]:
+			var result: String=ColonyChronicle.command(game.world,"rename",{"target":target,"text":name})
+			var before: String=game.world.canonical_hash()
+			if target==1: game.show_person(target)
+			else: game.show_station(cart)
+			var literal: bool=game.sheet_name==name and game.sheet_route.is_empty() and game.sheet_title_key.is_empty() and game.sheet_full_heading.text==name
+			var clean: bool=game.sheet_body.get_node_or_null("WorkOrderCounts")==null and not game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text in ["Paint stockpile","Manage saves"])
+			game.close_sheet()
+			check.call("TEXT/UI_%s_named_%s_stays_a_read_only_literal_card" % ["resident" if target==1 else "station",name.to_lower().replace(" ","_")],result=="accepted" and literal and clean and game.sheet==null and game.sheet_route.is_empty() and game.runner.speed==0 and game.world.canonical_hash()==before and game.world.pending_commands.is_empty())
+	for route in ["Build","Menu"]:
+		game.show_sheet(route,ColonyText.sheet_key(route))
+		var expected: String="Paint stockpile" if route=="Build" else "Manage saves"
+		check.call("TEXT/UI_builtin_%s_keeps_its_explicit_route_and_actions" % route.to_lower(),game.sheet_route==route and not game.sheet_title_key.is_empty() and game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text==expected))
+	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()

@@ -200,6 +200,8 @@ Dragging in designation mode creates a preview only. Rectangles have nudge arrow
 
 Camera controls: no rotation, no inertial pan by default, no edge scrolling on phone. Desktop supports left select, right cancel, middle drag, wheel zoom, WASD/arrow pan, Space pause, 1/2/3 for 1×/2×/4×, B Build, J Work, P People, V Valley, L Journal, and Escape close. Rebinding is supported for these actions. Menu > Settings > Keyboard controls captures a key or modifier shortcut, names conflicting assignments, supports cancellation, and restores all defaults. Rebound manual pan stops camera follow. Device settings schema 3 upgrades earlier preferences without changing cameras or tutorial state. No keyboard shortcut is required for any feature.
 
+Panel action identity is separate from its displayed caption. Resident/building/animal names and other detail titles remain literal data, including names such as Build, Menu, Work, Delete saves and Save problem. They cannot populate navigation controls, suppress autosaves, close a recovery panel or reactivate a stale deletion callback. Modal presence depends on the panel itself. Built-in navigation retains explicit routes and translation keys; literal detail headings retain their full names without interpreting message parameters. Menu > Manage saves opens campaign management, including campaign and named-snapshot deletion.
+
 Building rotation is a 48 dp button cycling 0°, 90°, 180°, 270°; preview always shows entrances and work positions. A mirrored left-handed layout moves the pause cluster and portrait action buttons to the left without changing label reading order.
 
 ### 4.3 Information hierarchy

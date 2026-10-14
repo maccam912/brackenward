@@ -48,7 +48,7 @@ The ignored local APK can predate source; identify the tested build in Menu.
    map mark and the next preview can be confirmed without running time. Repeat
    after entering from 1x/2x/4x: confirmation resumes that same selected speed.
    Zoom out to the new limit and check selection, warnings and map readability.
-8. In Menu > Campaigns / saves, review and delete an old campaign and a named
+8. In Menu > Manage saves, review and delete an old campaign and a named
    snapshot. Check the listed targets, cancel once, then confirm the intended
    deletion; other campaigns/snapshots remain usable after restart.
 9. Observe residents with different energy: only tired residents start sleeping;

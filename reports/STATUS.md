@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.32-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.33-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.32-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `b2870e7` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-b2870e7fcf97); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,441 checks, zero failures, including 604 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.32; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,454 checks, zero failures, including 617 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.33; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2266,3 +2266,36 @@ completed at this observation); physical/human and M7 performance gates remain.
 Both d6b3dab and b2870e7 remote workflows pass all four native targets and debug
 publication; b2870e7 APK/provenance/checksum assets were explicitly verified.
 Current revision CI is separate. Weekly remaining last observed 67%; work continues.
+
+
+## 0.7.33 literal detail titles and discoverable save management
+
+Opening a resident/building/animal whose cosmetic name matched Build, Menu or
+Work previously also populated that navigation panel. The same caption was
+used by save/recovery and deletion guards. Detail cards now retain their exact
+literal headings while a separate explicit action route controls navigation,
+autosave/recovery handling, Work-page scrolling and delete callbacks. Modal
+presence checks the actual panel. Built-in panels retain their prior routes,
+keys/actions and captions; no world field, command, need, resource or saved format
+changes. Other dynamic detail/lesson titles use the same literal boundary.
+
+Ten name-collision cases cover residents and stations named Build, Menu, Work,
+Delete saves and Save problem, preserving read-only state, exact headings,
+paused time and normal closing. Two controls verify real Build/Menu navigation
+still populates its intended actions. A separate isolated filesystem/UI regression
+keeps a stale delete callback, opens a resident named Delete saves, emits that
+old callback and verifies both snapshots and world remain unchanged. Actual
+explicit deletion still works afterward. Current Menu now labels Campaign slots
+as Manage saves, making the requested deletion path clearer; it opens the same
+campaign management. Named snapshots retain their own delete controls.
+
+Native UI passes 617 checks and persistence 321; the maintained 28-suite total
+is 2,454. The first new UI run had one menu-label assertion failure before the
+intentional label change; its log remains. The second run passes all 617,
+including the full prior placement/camera/save/audio/viewport battery. Current
+content/media validation passes. Native sixty-frame startup/audio drain passes,
+and Android export/aapt verify 0.7.33-m7 / local code 72. Simulation code is
+unchanged from the independently replayed 0.7.32 checkpoint; current remote CI
+and physical Android remain separate. A longer frozen-source native soak is
+next, with graphical tests serialized around it. Weekly remaining last observed
+67%; authorized implementation and polish continue.

@@ -30,6 +30,7 @@ var inspector: PanelContainer
 var selected: int = 0
 var work_orders_page: int = 0
 var sheet_name: String = ""
+var sheet_route: String = ""
 var sheet_title_key: String = ""
 var sheet_camera_center: Vector2 = Vector2.ZERO
 var sheet_entry_speed: int = 0
@@ -486,17 +487,17 @@ func _advance_frame(delta: float) -> void:
 	if is_instance_valid(sheet_feedback):
 		var feedback: String = text_entry_error if not text_entry_error.is_empty() else notice
 		sheet_feedback.text = ColonyFonts.display(feedback)
-		sheet_feedback.visible=sheet_name not in ["Welcome","Style"] and not feedback.is_empty() and not feedback.begins_with("Paused. Choose")
+		sheet_feedback.visible=sheet_route not in ["Welcome","Style"] and not feedback.is_empty() and not feedback.begins_with("Paused. Choose")
 	# A canceled/confirmed preview must not keep validating its hidden footprint.
 	if placement.visible: preview_label.text = ColonyFonts.display(_preview_text())
 	if is_instance_valid(soundscape): soundscape.observe()
 	journal_elapsed += delta
-	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_name!="Delete saves":
+	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_route!="Delete saves":
 		var new_commands: bool = world.next_command_id!=store.journal_payload.get("next_command_id",world.next_command_id)
 		if world.tick!=store.journal_tick or new_commands: _start_background_save(world.tick==store.journal_tick)
 		journal_elapsed = 0.0
 	autosave_elapsed += delta
-	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_name!="Delete saves":
+	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_route!="Delete saves":
 		if store is ColonyStore:
 			if not save_queue.preparing() and not save_queue.ready(world): _start_snapshot_preparation()
 			if save_queue.ready(world) and not save_queue.busy():
@@ -581,7 +582,7 @@ func set_speed(value: int) -> void:
 	if value > 0 and not storage_error.is_empty() and not saving_disabled:
 		_storage_failed(storage_error)
 		return
-	if not sheet_name.is_empty() or backgrounded or (placement.visible and value != 0):
+	if sheet!=null or backgrounded or (placement.visible and value != 0):
 		notice = "Close the panel or confirm/cancel the area before resuming."
 		return
 	runner.set_speed(value)
@@ -811,7 +812,10 @@ func close_inspector() -> void:
 	view.selected_id = 0
 	view.inspected_tiles.clear();view.inspected_object=0
 
-func show_sheet(title: String, title_key: String = "") -> void:
+func show_details(title: String) -> void:
+	show_sheet(title,"",true)
+
+func show_sheet(title: String, title_key: String = "", literal_title: bool = false) -> void:
 	listening_binding=""
 	text_entry_error=""
 	if notice==ColonyText.text("ui.notice.running"): notice=ColonyText.text("ui.notice.paused")
@@ -824,6 +828,7 @@ func show_sheet(title: String, title_key: String = "") -> void:
 		sheet.queue_free()
 	close_inspector()
 	sheet_name = title
+	sheet_route="" if literal_title else title
 	sheet_title_key=title_key
 	var display_title: String=ColonyText.text(title_key) if not title_key.is_empty() else title
 	sheet = PanelContainer.new()
@@ -860,8 +865,8 @@ func show_sheet(title: String, title_key: String = "") -> void:
 	top.resized.connect(_adapt_sheet_heading)
 	call_deferred("_adapt_sheet_heading")
 	sheet_feedback = label(notice, sheet_body)
-	sheet_feedback.visible=title!="Welcome" and not notice.is_empty() and not notice.begins_with("Paused. Choose")
-	match title:
+	sheet_feedback.visible=sheet_route!="Welcome" and not notice.is_empty() and not notice.begins_with("Paused. Choose")
+	match sheet_route:
 		"Welcome":
 			label(ColonyText.text("ui.help.sheet.four_travelers_a_ruined_wayhouse_make_a"), sheet_body)
 			label(ColonyText.text("ui.help.sheet.start_paused_gather_berries_and_wood_place"), sheet_body)
@@ -923,7 +928,7 @@ func show_sheet(title: String, title_key: String = "") -> void:
 				_save_settings()
 				show_sheet("Menu","ui.sheet.menu"), sheet_body)
 			if world is ColonyWorld:
-				button(ColonyText.text("ui.action.campaign_slots"),show_campaigns,sheet_body)
+				button(ColonyText.text("ui.action.manage_saves"),show_campaigns,sheet_body)
 				button(ColonyText.text("ui.action.named_snapshots"),show_named_snapshots,sheet_body)
 				button(ColonyText.text("ui.action.weather_forecast"),show_weather,sheet_body)
 				label("Travel rations are expedition reserves. Home use is " + ("on" if world.use_rations else "off") + ".",sheet_body)
@@ -954,6 +959,7 @@ func close_sheet() -> void:
 		sheet.queue_free()
 		sheet = null
 	sheet_name = ""
+	sheet_route=""
 	sheet_title_key=""
 	sheet_entry_speed=0
 	notice = ColonyText.text("ui.notice.paused")
@@ -1054,7 +1060,7 @@ func _write_local_save() -> String:
 		saving_disabled = false
 		storage_error = ""
 		notice = "Saved and verified at tick %d." % world.tick
-		if sheet_name == "Save problem":
+		if sheet_route == "Save problem":
 			close_sheet()
 	else:
 		_storage_failed(error)
@@ -1419,7 +1425,7 @@ func _sync_placement_world() -> void:
 	placement_commands.clear()
 
 func _resource_sheet(resource: Dictionary) -> void:
-	show_sheet(resource.definition.capitalize())
+	show_details(resource.definition.capitalize())
 	var definition: Dictionary = world.definitions.resources[resource.definition]
 	label("%d %s remaining | %d WU %s" % [resource.remaining, definition.item, definition.work_milli / 1000, "per unit" if definition.per_unit else "per harvest"], sheet_body)
 	label(ColonyText.text("ui.help.resource_sheet.a_gatherer_works_beside_the_resource_the"), sheet_body)
@@ -1492,7 +1498,7 @@ func _show_work_page(page: int) -> void:
 	_scroll_work_orders.call_deferred()
 
 func _scroll_work_orders() -> void:
-	if sheet_name!="Work" or not is_instance_valid(sheet_body): return
+	if sheet_route!="Work" or not is_instance_valid(sheet_body): return
 	var heading: Control = sheet_body.get_node_or_null("WorkOrderCounts")
 	if heading!=null: (sheet_body.get_parent() as ScrollContainer).ensure_control_visible(heading)
 
@@ -1545,7 +1551,7 @@ func _tutorial_show_me() -> void:
 	var card: Dictionary = ColonyTutorial.card(world,_tutorial_state(),tutorial_suggestions)
 	if card.is_empty(): show_tutorials();return
 	if not card.prerequisite.is_empty():
-		show_sheet(card.title);label(card.prerequisite,sheet_body)
+		show_details(card.title);label(card.prerequisite,sheet_body)
 		button(ColonyText.text("ui.action.skip_this_lesson"),func()->void:_tutorial_skip();close_sheet(),sheet_body)
 		return
 	match card.action:
@@ -1603,7 +1609,7 @@ func begin_field() -> void:
 	notice = "Turnips: prepare 4 WU, sow 1 WU, harvest 2 WU per tile. Two days of growth gives four vegetables."
 
 func _field_sheet(field: Dictionary) -> void:
-	show_sheet(field.crop.capitalize())
+	show_details(field.crop.capitalize())
 	var definition: Dictionary = world.definitions.crops[field.crop]
 	label("%s\nGrowth %d/%d | Yield %d\nSoil %d%% | %s" % [field.reason,field.growth,definition.growth,field.yield_count,field.fertility/10,"Automatic replanting" if field.replant else "Replant off"],sheet_body)
 	if field.planted:
@@ -1708,7 +1714,7 @@ func show_delete_saves(number: int, snapshot: int = 0) -> void:
 		else: show_named_snapshots(),sheet_body)
 
 func _delete_saves(owner: ColonyStore, session: String, review: Dictionary) -> void:
-	if store!=owner or world.session_id!=session or sheet_name!="Delete saves": return
+	if store!=owner or world.session_id!=session or sheet_route!="Delete saves": return
 	_finish_background_save(true,false)
 	var result: Dictionary=deletion.commit(owner,review)
 	if (result.deleted or result.get("unsafe_to_resume",false)) and review.snapshot==0 and review.slot==store.slot:
@@ -2035,7 +2041,7 @@ func show_weather() -> void:
 func show_work_preferences(id: int) -> void:
 	_tutorial_action("work_preferences",{"citizen":id})
 	var citizen: Dictionary = world.find(world.citizens,id)
-	show_sheet(citizen.name+" - Work")
+	show_details(citizen.name+" - Work")
 	label(citizen.activity+"\nCategories set to Off retain their queued jobs for other eligible workers. Hunger, sleep and taking a break come first.",sheet_body)
 	button(citizen.shift,func() -> void:
 		_submit("schedule",{"citizen":id,"shift":"Night shift" if citizen.shift == "Normal" else "Normal"}),sheet_body)
@@ -2056,7 +2062,7 @@ func _queued_preference(id: int,category: String) -> int:
 func show_beds(id: int) -> void:
 	var person: Dictionary = world.find(world.citizens,id)
 	if person.is_empty(): return
-	show_sheet("Bed: "+person.name)
+	show_details("Bed: "+person.name)
 	label(ColonyBeds.description(world,person),sheet_body)
 	label(ColonyText.text("ui.help.beds.choose_a_free_bed_or_bedroll_assignment"),sheet_body)
 	if person.bed>0: button(ColonyText.text("ui.action.unassign_current_bed"),func()->void:show_bed_choice(id,0),sheet_body)
@@ -2070,7 +2076,7 @@ func show_beds(id: int) -> void:
 func show_bed_choice(id: int, target: int) -> void:
 	var person: Dictionary = world.find(world.citizens,id)
 	if person.is_empty(): return
-	show_sheet(person.name+" bed")
+	show_details(person.name+" bed")
 	var error: String = ColonyBeds.quote(world,id,target)
 	if not error.is_empty(): label(error,sheet_body)
 	else:
@@ -2109,7 +2115,7 @@ func departure_description(person: Dictionary) -> String:
 
 func show_person(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id)
-	show_sheet(citizen.name)
+	show_details(citizen.name)
 	sheet_body.add_child(CitizenArt.portrait(citizen.appearance))
 	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.appearance"),func()->void:show_appearance(id),sheet_body)
 	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(id),sheet_body)
@@ -2188,7 +2194,7 @@ func show_station(station: Dictionary) -> void:
 		label("This structure is gone. Surviving stored goods and fuel remain as physical ground stacks with their ages retained. Rebuilding uses the full original cost: %s; %d WU." % [_cost_text(definition.materials),definition.work_milli/1000],sheet_body)
 		button(ColonyText.text("ui.action.rebuild"),func()->void:_submit("rebuild",{"target":station.id});close_sheet(),sheet_body)
 		return
-	show_sheet(ColonyChronicle.display_name(world,station.id))
+	show_details(ColonyChronicle.display_name(world,station.id))
 	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(station.id),sheet_body)
 	var definition: Dictionary = world.definitions.buildings[station.definition]
 	label("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body)
@@ -2468,7 +2474,7 @@ func show_wildlife() -> void:
 			view.camera_tile = Vector2(animal.x,animal.y); _wildlife_sheet(animal),sheet_body)
 
 func _wildlife_sheet(animal: Dictionary) -> void:
-	show_sheet(_catalog_name(animal.definition))
+	show_details(_catalog_name(animal.definition))
 	var definition: Dictionary = world.definitions.animals[animal.definition]
 	label("Health %d/%d. %s" % [animal.health,definition.health,catalog_strings.get(animal.definition+".description","")],sheet_body)
 	label("After butchering (%d WU): %s. Carcass spoils in two days; outputs need hauling. Hunters retreat at health 40." % [definition.work_milli/1000,_cost_text(definition.outputs)],sheet_body)
@@ -2524,14 +2530,14 @@ func show_pen(pen: Dictionary) -> void:
 	for animal in animals: button(animal.name+" · health "+str(animal.health),func()->void:show_domestic_animal(animal),sheet_body)
 
 func show_domestic_animal(animal: Dictionary) -> void:
-	show_sheet(animal.name)
+	show_details(animal.name)
 	var definition: Dictionary = world.definitions.animals[animal.definition]
 	label("%s · health %d/%d. %s" % [_catalog_name(animal.definition),animal.health,definition.health,"Juvenile: %.1f days until maturity" % ((animal.juvenile_until-world.tick)/7200.0) if animal.juvenile_until>world.tick else "Adult"],sheet_body)
 	label("%d unfed days. Two days of grace; then 10 health/day. Feeding restores 10/day. %d products await collection; no milk from goats away on expedition." % [animal.unfed,animal.pending],sheet_body)
 	button(ColonyText.text("ui.action.inspect_pen"),func()->void:show_pen(world.find(world.domestic_state.pens,animal.pen)),sheet_body)
 	if animal.away: label(ColonyText.text("ui.help.domestic_animal.away_on_expedition_local_work_unavailable"),sheet_body);return
 	button(ColonyText.text("ui.action.slaughter"),func()->void:
-		show_sheet("Slaughter "+animal.name)
+		show_details("Slaughter "+animal.name)
 		label("Confirm slaughter of %s? Ten WU produces %s. This kills this named animal. Slaughter and breeding are optional; the charter can be completed without them." % [animal.name,_cost_text(definition.slaughter_outputs)],sheet_body)
 		button("Confirm slaughter "+animal.name,func()->void:_submit("slaughter",{"target":animal.id});close_sheet(),sheet_body),sheet_body)
 
@@ -2542,7 +2548,7 @@ func begin_lodge() -> void:
 
 func show_equipment(id: int) -> void:
 	var person: Dictionary = world.find(world.citizens,id)
-	show_sheet(person.name+" · Equipment")
+	show_details(person.name+" · Equipment")
 	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_work_preferences(id),sheet_body)
 	label(ColonyText.text("ui.help.equipment.the_wearer_fetches_each_item_and_equips"),sheet_body)
 	label(ColonyText.text("ui.help.equipment.missing_toolkit_half_build_craft_field_speed"),sheet_body)
@@ -2562,7 +2568,7 @@ func show_equipment(id: int) -> void:
 		if not person.equipment[slot].is_empty(): button("Remove "+slot+"; stop replacements",func()->void:_submit("equip",{"target":id,"slot":slot,"item":""});close_sheet(),sheet_body)
 
 func show_maintenance(station: Dictionary) -> void:
-	show_sheet(_catalog_name(station.definition)+" · Maintenance")
+	show_details(_catalog_name(station.definition)+" · Maintenance")
 	var definition: Dictionary = world.definitions.buildings[station.definition]
 	var missing: int = definition.health-station.health
 	if missing>0:
@@ -2699,7 +2705,7 @@ func show_region() -> void:
 			button("Pick up leftovers: "+definition.capitalize(),func()->void:show_expedition_prepare(definition,true),sheet_body)
 
 func show_expedition_prepare(definition: String, pickup: bool) -> void:
-	show_sheet(definition.capitalize())
+	show_details(definition.capitalize())
 	var data: Dictionary = ColonyRegion.definition_data(world,definition,pickup)
 	var edges: int = ColonyRegion.route(world,definition).size()-1
 	label("%d edges each way · %d site hours · %d regional hours total\nSkill %s / challenge %d\nContract inputs: %s\nReward: %s; %d insight; %s" % [edges,data.site_hours,edges*12+data.site_hours,data.skill,data.challenge,_cost_text(data.payment),_cost_text(data.rewards),data.insight,str(data.reputation)],sheet_body)
@@ -2867,7 +2873,7 @@ func begin_defend_rally(people: Array, stand_fast: bool) -> void:
 	notice="Choose a rally point and Confirm. The squad holds within two tiles."
 
 func show_enemy(enemy: Dictionary) -> void:
-	show_sheet(enemy.definition.capitalize())
+	show_details(enemy.definition.capitalize())
 	var definition: Dictionary = world.definitions.enemies[enemy.definition]
 	label("%s · health %d/%d · armor %d\n%s · %d damage every %d ticks; objective %s\nCollected goods: %s" % [enemy.state,enemy.health,definition.health,definition.armor,definition.weapon,definition.damage,definition.cooldown,definition.objective,str(enemy.loot)],sheet_body)
 	if enemy.state=="Downed":
