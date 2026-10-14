@@ -1,0 +1,239 @@
+{
+  "author": "Brackenward project",
+  "rate": 22050,
+  "bpm": 80,
+  "bars": 30,
+  "music_seconds": 90,
+  "chords_midi": {
+    "D": [
+      50,
+      54,
+      57
+    ],
+    "G": [
+      43,
+      47,
+      50
+    ],
+    "Bm": [
+      47,
+      50,
+      54
+    ],
+    "A": [
+      45,
+      49,
+      52
+    ],
+    "Em": [
+      40,
+      43,
+      47
+    ]
+  },
+  "progressions": {
+    "day": [
+      "D",
+      "G",
+      "Bm",
+      "A",
+      "D",
+      "Em",
+      "G",
+      "A",
+      "Em",
+      "A"
+    ],
+    "night": [
+      "D",
+      "Bm",
+      "G",
+      "A",
+      "D",
+      "G",
+      "Em",
+      "A",
+      "G",
+      "A"
+    ],
+    "tension": [
+      "Bm",
+      "Bm",
+      "Em",
+      "Em",
+      "G",
+      "G",
+      "Em",
+      "A",
+      "Bm",
+      "A"
+    ]
+  },
+  "melody_midi": [
+    74,
+    76,
+    78,
+    81,
+    78,
+    76,
+    74,
+    71,
+    69,
+    71,
+    74,
+    76,
+    78,
+    76,
+    71,
+    69,
+    74,
+    78,
+    81,
+    83,
+    81,
+    78,
+    76,
+    74,
+    71,
+    74,
+    76,
+    78,
+    76,
+    73
+  ],
+  "numpy": "2.5.2",
+  "libsndfile": "libsndfile-1.2.2",
+  "ffmpeg": "ffmpeg version 9.0.1 Copyright (c) 2000-2026 the FFmpeg developers",
+  "assets": {
+    "music_day": {
+      "seconds": 90.0,
+      "decoded_seconds": 90.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.5226929783821106,
+      "rms": 0.1121007651090622,
+      "loop": true,
+      "boundary_step": 0.025996454060077667,
+      "maximum_sample_step": 0.13829433917999268,
+      "sha256": "fe17b458d0de8d5ee6088189221a1424695c696bcf42df700986b47925a806fe"
+    },
+    "music_night": {
+      "seconds": 90.0,
+      "decoded_seconds": 90.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.5193849802017212,
+      "rms": 0.1103111132979393,
+      "loop": true,
+      "boundary_step": 0.014016304165124893,
+      "maximum_sample_step": 0.11994360387325287,
+      "sha256": "05d7bdbc7049d58b02e72c59af50d99089a7010c3288f415fadaa91eb63333e4"
+    },
+    "music_tension": {
+      "seconds": 90.0,
+      "decoded_seconds": 90.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.5359238982200623,
+      "rms": 0.11116135865449905,
+      "loop": true,
+      "boundary_step": 0.01454228162765503,
+      "maximum_sample_step": 0.13122454285621643,
+      "sha256": "2a2767fe236b23aa58ef1c4a3d61a4a6cd01069f50a0c2beb2cb30b70ad83bfe"
+    },
+    "ambient_rain": {
+      "seconds": 12.0,
+      "decoded_seconds": 12.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.36542925238609314,
+      "rms": 0.06698230654001236,
+      "loop": true,
+      "boundary_step": 0.031852517277002335,
+      "maximum_sample_step": 0.2673875689506531,
+      "sha256": "fda19ee3f6eef921d53709f4277226900c2972dfe4445c33e8c9198549601551"
+    },
+    "ambient_river": {
+      "seconds": 12.0,
+      "decoded_seconds": 12.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.3211378753185272,
+      "rms": 0.06291108578443527,
+      "loop": true,
+      "boundary_step": 0.020381323993206024,
+      "maximum_sample_step": 0.15725508332252502,
+      "sha256": "a9a70d290966fcae9705c9895f56b395d2e1e2c28089bfb51e94e2aa64351dc3"
+    },
+    "ambient_wind": {
+      "seconds": 12.0,
+      "decoded_seconds": 12.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.331246554851532,
+      "rms": 0.06041305884718895,
+      "loop": true,
+      "boundary_step": 0.0030480660498142242,
+      "maximum_sample_step": 0.0398457795381546,
+      "sha256": "328472bf1509528e559a223e8a889401a24ebf4abae9e3c6078874c81e32d4d4"
+    },
+    "ambient_fire": {
+      "seconds": 12.0,
+      "decoded_seconds": 12.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.3514932096004486,
+      "rms": 0.07289618998765945,
+      "loop": true,
+      "boundary_step": 0.06785783171653748,
+      "maximum_sample_step": 0.19886969029903412,
+      "sha256": "f48fcac54ec69e058b7c2330392ec5b8e8a2943b46f302430196bc5bdf5f9e70"
+    },
+    "cue_warning": {
+      "seconds": 2.0,
+      "decoded_seconds": 2.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.4964868426322937,
+      "rms": 0.09117080271244049,
+      "loop": false,
+      "boundary_step": 0.0017716326983645558,
+      "maximum_sample_step": 0.13195008039474487,
+      "sha256": "c68e9118323941ef94d3c8524002cfd9648200ada9d343e751bc313f81a772fd"
+    },
+    "cue_critical": {
+      "seconds": 3.0,
+      "decoded_seconds": 3.0,
+      "decoded_trim_frames": 0,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.49538764357566833,
+      "rms": 0.11571235954761505,
+      "loop": false,
+      "boundary_step": 0.0013597112847492099,
+      "maximum_sample_step": 0.035037603229284286,
+      "sha256": "4df67a8e7d4ad6f26f167618d56f4f8575044ad7f29212cf3c2945cdeb1eac16"
+    },
+    "cue_opportunity": {
+      "seconds": 1.0,
+      "decoded_seconds": 0.988390022675737,
+      "decoded_trim_frames": 256,
+      "sample_rate": 22050,
+      "channels": 2,
+      "peak": 0.5037894248962402,
+      "rms": 0.14769308269023895,
+      "loop": false,
+      "boundary_step": 0.00860163476318121,
+      "maximum_sample_step": 0.17089658975601196,
+      "sha256": "d9ba94cdc255793032503e1a342211150d253252722da622bf3b70c84c767b79"
+    }
+  }
+}

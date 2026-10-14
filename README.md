@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.1-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.2-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -15,7 +15,7 @@ Bootstrap supports macOS universal, Linux x86-64 and Windows x86-64. Set `BRACKE
 
 Begin opens a paused map. Tap a traveler, use Follow, drag to pan, or use the camera buttons. Work offers resource gathering orders. Build offers stockpiles, turnip fields and initial structures; tap a tree or plant for a gathering card. Placement keeps your current camera position and zoom. Build -> Paint stockpile opens a one-tile preview at the visible center. Tap to start a fresh single tile (including doors and walls), or drag a line/rectangle; nudge it, then Confirm. The order stays pending until the next simulation tick. Workers carry at most eight units and fetch inputs before work; canceling unfinished orders returns unconsumed supplies. Pause / 1x / 2x / 4x control time. Menu offers verified local save/load and document import/export. Resident and bed cards offer assignment and unassignment, showing safety, ownership and actual rest rates. Assignment reserves a bed; residents still walk there to sleep. Closing a panel leaves time paused. Backgrounding freezes time and cancels touches; returning stays paused.
 
-Desktop shortcuts: WASD/arrows pan; Space toggles pause; 1/2/3 select speeds; B/J/P/V/L open Build/Work/People/Valley/Journal; Escape closes the top interaction, then opens Menu. Zoom uses the wheel or buttons. Rebinding and the remaining accessibility/audio settings are later work.
+Desktop shortcuts: WASD/arrows pan; Space toggles pause; 1/2/3 select speeds; B/J/P/V/L open Build/Work/People/Valley/Journal; Escape closes the top interaction, then opens Menu. Zoom uses the wheel or buttons. Menu > Settings offers keyboard rebinding, accessibility preferences and independent sound controls.
 
 ```sh
 tools/godot.sh --headless --editor --import
@@ -55,6 +55,8 @@ python3 tools/replay_campaign.py --report reports/replay-local.json
 
 The scenario harness saves verified daily checkpoints, original/final snapshots and its public command trace. Add `--resume reports/charter-latest.json` with a different output report to continue that exact save; `--days` then means additional days. Policy success is measured separately from simulation invariants. Replay uses frozen commands, canonical hashes at ticks 7,200 and 72,000, and continuation from a committed foreign-host save. CI runs it on Windows, Linux, Apple Silicon and Intel Mac; a workflow configuration alone is not a passing platform result.
 
-The first M7 art checkpoint adds original animated adult citizens, matching portraits, independent cosmetic choices in People > Appearance, and labeled trait pictograms. The indexed art uses one shared atlas and per-citizen palette materials. Original authoring sources and inspected contact sheets are retained; animal/environment art, final audio and other release gates remain in progress.
+The first M7 art checkpoint adds original animated adult citizens, matching portraits, independent cosmetic choices in People > Appearance, and labeled trait pictograms. The indexed art uses one shared atlas and per-citizen palette materials. Original authoring sources and inspected contact sheets are retained; animal/environment art and other release gates remain in progress.
 
 Menu > Settings contains reduced motion, high-contrast selection, pause-on-inspect, 30/60 FPS graphics presets, individual automatic pauses and keyboard rebinding (including modifier shortcuts). Device preferences upgrade separately from campaign saves. Automatic warnings remain visible when their pause is disabled; a departure card shows its remaining game time and recovery threshold.
+
+Original day/night/tension music and environmental loops now accompany licensed interface/work sounds. Settings offers Master, Music, Effects and Interface volumes; optional Android vibration starts off. Backgrounding stops sound and resume discards old cues. Essential warnings retain their visible notices when muted. The pinned thirty-run first-Winter matrix passes on all sites; physical audio/performance and human listening gates remain separate.

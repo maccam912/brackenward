@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.1-m7` in progress (campaign schema 22, device settings schema 3), content `colony-v2`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.2-m7` in progress (campaign schema 22, device settings schema 4), content `colony-v2`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -11,22 +11,22 @@ Checkpoint: `0.7.1-m7` in progress (campaign schema 22, device settings schema 3
 | Prototype save recovery | Pass, local subset | Checksum/schema/bounds rejection, pending command and movement round trip, three verified immutable generations, interrupted temp ignored, damaged latest falls back |
 | Background / return | Pass, local subset | Simulation stops, gestures canceled, resume paused; Android 35 emulator also preserved the 4x2 unconfirmed preview across rotation; physical task battery still Not run |
 | Android storage plugin | Pass, build/unit/emulator subset | Original Kotlin v2 plugin; 4 JUnit bounded-stream tests; source builds debug/release AARs; Android 35 arm64 emulator picker export/import passed: checksum verified, tick 1861 restored to exported tick 1800; Home froze the imported state; export and import cancellations left state unchanged; same-identity APK update preserved three private saves |
-| Android arm64 APK | Pass, debug/emulator subset | 80 MiB; min SDK 29 / target 36; arm64-v8a only; merged manifest requests no permissions; installed and launched on Android 35 emulator (SwiftShader/ANGLE), not a physical phone |
+| Android arm64 APK | Pass, debug/emulator subset | 96 MiB current debug package; min SDK 29 / target 36; arm64-v8a only; merged manifest requests only optional-feature VIBRATE; installed and launched on Android 35 emulator (SwiftShader/ANGLE), not a physical phone |
 | macOS native launch | Pass | macOS 26.6.2, Apple Silicon, Apple M5 Pro, OpenGL 4.1 Compatibility via Metal 90.5; native scene/UI runner launched |
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `e7623d7`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38517543639) passed the full suite, all four desktop replay/startup targets, exports and publication. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
+| Remote CI | Pass at `8b65337`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38529212522) passed the full suite, all four desktop replay/startup targets, exports and publication. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
-| M3–M6 gameplay and progression | Pass, automated campaign/native subset | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. All three Standard-site and Pine Shelf Hearthside vegetarian Charters pass, including ceremony, Continue and later play. The separate Winter sweep, M7 and physical/human gates remain. |
-| M7 release quality | In progress | Original animated citizens, matching portraits and editable cosmetics are implemented. Animal/environment art, final audio, accessibility/rebinding, balance, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `e7623d7` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-e7623d78ffd0); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
+| M3–M6 gameplay and progression | Pass, automated campaign/native subset | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. All three Standard-site and Pine Shelf Hearthside vegetarian Charters pass, including ceremony, Continue and later play. The pinned 30-run Winter matrix also passes; M7 and physical/human gates remain. |
+| M7 release quality | In progress | Original animated citizens/portraits, editable cosmetics, audio, accessibility and rebinding are implemented. Animal/environment art, balance, stress optimization and platform/human release gates remain. |
+| Development APK publication | Pass at `8b65337` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-8b653372722f); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 1,697 checks, zero failures, including 411 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 1,755 checks, zero failures, including 438 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -513,3 +513,71 @@ audio, optional haptics, final rendering/balance/stress, and physical/human rele
 gates. Implementation continues under the user's weekly-usage stop rule.
 
 All three real tutorial flows also pass 22 checks each after the device-settings upgrade. Latest weekly remaining is 90%; the next batch is audio and further release media.
+
+## M7 audio and frozen Winter matrix — 14 October 2026
+
+Version `0.7.2-m7`, Android build 41, adds three original 90-second music loops,
+four environmental loops, three short bell/pluck cues and fourteen licensed Kenney
+interface/work/door/footstep clips. The original score, deterministic synth sources,
+container durations, decoded measurements and SHA-256 values are retained. Native
+libsndfile/Vorbis performs Ogg encoding; no commercial samples are used. Both copied
+Kenney licenses retain their exact source bytes. The manifest verifies all 48 shipped
+media entries. No human-listening or physical audio certificate is inferred.
+
+The presenter reuses twelve prioritized effect players plus three streaming music
+players. Critical cues displace lower voices and duck the background; work variants
+share a three-per-second cap. Footsteps require twelve-tile visible proximity. Real
+work progress, door crossings, arrivals and hazards drive cues without changing any
+world field, RNG stream or gameplay time. Tension starts only with active arrived
+enemies, ordinary music crossfades over four seconds, and danger exit fades over
+eight. A bounded monotonic presentation clock avoids losing a fresh cue after a
+slow preceding frame. Music and ambient loops share stable phases.
+
+Device settings schema 4 adds Master/Music/Effects/Interface volume and haptics off
+by default. Exact schema-1/2/3 upgrades preserve existing settings; invalid keys,
+nonfinite/range-invalid volumes and malformed booleans retain defaults. Imported
+campaigns do not replace preferences. Touch volume sliders preserve a press until
+release, distinguish horizontal adjustment from vertical scrolling, filter duplicate
+emulated mouse events and retain keyboard/mouse operation. Portrait and landscape
+150% screenshots were inspected; the four sliders retain 48 dp targets. Optional
+Android vibration uses the normal VIBRATE permission; no network, microphone,
+notification, contact, location or broad storage permission is requested.
+
+Backgrounding stops sound before save I/O and resume takes a fresh observation
+baseline without replaying old cues. Controlled exit waits up to one second for
+weak playback references to clear across real AudioServer updates, failing closed
+if they remain. Forced engine shutdown had exposed retained streaming resources;
+its original diagnostic log is retained. The corrected native startup harness uses
+an isolated temporary campaign/preferences directory, requires sixty real processed
+frames and an explicit audio-drained exit marker, and treats the engine frame limit
+only as a failure fallback. Final native launch and all UI teardown logs are clean.
+
+All 27 headless suites pass 1,317 checks and the final native UI suite passes 438
+(total 1,755 across 28 suites). Three real tutorial flows pass 22 each; five native
+startup-parser tests and four Kotlin plugin tests are separate. The independent
+82.4-second replay retains 62 accepted commands, 234 invariant checkpoints, both
+unchanged schema-22 hashes and the exact original foreign-save continuation. The
+65-second fresh-colony CPU profile advances 650 ticks over two snapshot preparations
+with no storage pause/error or invariant failure: callback maximum 19.02 ms, none
+over 50 ms; separate audio-update maximum 0.384 ms, median 0.025 ms; checkpoint
+capture 2.16 ms, preparation capture 0.75 ms, completion 0.96 ms. These measure macOS
+callbacks with dummy audio, not the audio thread, GPU or physical phone.
+
+The frozen `88ee5e83861b8bd639a2237deca0fb9ae838e2a6` first-Winter sweep
+finishes 30/30 at tick 239,400, all minimum health 100, no starvation-grace violations.
+A separate audit verifies every exact report/snapshot pair, clean unchanged source,
+all site/seed combinations, zero script/engine errors and successful process exits.
+The current schema-22 upgrader also passes all thirty final saves: removing only the
+declared cosmetics/header upgrade reproduces each exact schema-21 gameplay hash;
+current round trips pass and source bytes stay unchanged. Detailed source/digest
+evidence is in CAMPAIGN_EVIDENCE.md. The now-unused managed validation checkout
+was archived after its clean-source check; raw evidence stays in this workspace.
+
+The preceding `8b65337` checkpoint passed remote CI, all four native replay/startup
+targets, exports and APK publication. This audio checkpoint's remote result is
+reported separately after push. Local APK export and package metadata are recorded
+after completion below. Remaining M7 work includes animal/environment media, final
+rendering/balance/stress, diagnostics, localization coverage and physical/human gates.
+Latest weekly remaining is 88%; work continues under the authorized stop rule.
+
+Local Android export passes with four Kotlin tests. `aapt` verifies `0.7.2-m7` / build 41, min SDK 29, target 36, arm64 only and VIBRATE as the sole permission. Native startup, content validation and APK construction are distinct from physical audio/listening/performance.

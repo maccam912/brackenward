@@ -27,6 +27,14 @@ class NativeSmokeTests(unittest.TestCase):
         self.assertTrue(inspect_output(renderer, 1, True)["failures"])
         self.assertTrue(inspect_output(renderer + "\x1b[31mSCRIPT ERROR: failed\x1b[0m\n", 0, True)["failures"])
 
+    def test_native_app_must_finish_its_own_frames_and_audio_shutdown(self):
+        renderer = "OpenGL API 4.1 - Compatibility - Using Device: Apple - GPU\n"
+        self.assertTrue(inspect_output(renderer, 0, True, app_exit_required=True)["failures"])
+        marker = "BRACKENWARD_NATIVE_SMOKE_EXIT frames=60 audio_drained=true isolated=true\n"
+        self.assertFalse(inspect_output(renderer + marker, 0, True, app_exit_required=True)["failures"])
+        self.assertTrue(inspect_output(renderer + marker.replace("audio_drained=true", "audio_drained=false"), 0, True, app_exit_required=True)["failures"])
+        self.assertTrue(inspect_output(renderer + marker.replace("isolated=true", "isolated=false"), 0, True, app_exit_required=True)["failures"])
+
 
 if __name__ == "__main__":
     unittest.main()

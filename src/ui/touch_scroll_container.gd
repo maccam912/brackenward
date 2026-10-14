@@ -9,6 +9,8 @@ var scroll_origin: int = 0
 var horizontal_origin: int = 0
 var dragging: bool = false
 var suppress_mouse: bool = false
+var horizontal_control: bool = false
+var horizontal_locked: bool = false
 
 func _init() -> void:
 	# Keep the native emulated-mouse drag from starting in parallel with the
@@ -44,6 +46,8 @@ func _input(event: InputEvent) -> void:
 				horizontal_origin = scroll_horizontal
 				dragging = false
 				suppress_mouse = false
+				horizontal_control=find_children("*","HSlider",true,false).any(func(slider:Node)->bool:return slider.is_visible_in_tree() and slider.get_global_rect().has_point(event.position))
+				horizontal_locked=false
 		elif event.index == pointer:
 			if dragging:
 				get_viewport().set_input_as_handled()
@@ -52,6 +56,9 @@ func _input(event: InputEvent) -> void:
 			dragging = false
 	elif event is InputEventScreenDrag and event.index == pointer:
 		var delta: Vector2 = (event.position-start)/get_global_transform().get_scale()
+		if horizontal_control and not dragging:
+			if horizontal_locked: return
+			if delta.length()>8 and absf(delta.x)>absf(delta.y): horizontal_locked=true;return
 		if not dragging and (absf(delta.y)>8 or (horizontal_scroll_mode!=SCROLL_MODE_DISABLED and absf(delta.x)>8)):
 			dragging = true
 			suppress_mouse = true
@@ -67,3 +74,4 @@ func _notification(what: int) -> void:
 		pointer = -1
 		dragging = false
 		suppress_mouse = false
+		horizontal_control=false;horizontal_locked=false

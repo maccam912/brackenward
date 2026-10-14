@@ -1,15 +1,19 @@
 class_name DeviceSettings
 extends RefCounted
 ## Device-wide UI preferences. Imported campaigns never replace this record.
+const VERSION: int = 4
 var path: String = "user://device-settings.json"
 var values: Dictionary = defaults()
 
 static func defaults() -> Dictionary:
-	return {"schema_version":3,"text_scale":1.0,"left_handed":false,"last_slot":1,"tutorials":{},
+	return {"schema_version":VERSION,"text_scale":1.0,"left_handed":false,"last_slot":1,"tutorials":{},
 		"cameras":[[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0]],
 		"reduced_motion":false,"high_contrast":false,"inspector_pause":false,"quality":"Balanced",
 		"auto_pauses":SimRunner.default_auto_pauses(),
-		"bindings":ControlBindings.DEFAULTS.duplicate(true)}
+		"bindings":ControlBindings.DEFAULTS.duplicate(true),"audio":audio_defaults(),"haptics":false}
+
+static func audio_defaults() -> Dictionary:
+	return {"master":0.8,"music":0.35,"effects":0.6,"ui":0.6}
 
 func load_local() -> void:
 	if not FileAccess.file_exists(path):
@@ -24,7 +28,11 @@ func load_local() -> void:
 	if candidate is Dictionary and candidate.get("schema_version")==1 and ColonyCodec._keys(candidate,["schema_version","text_scale","left_handed","last_slot","cameras"]):
 		candidate=candidate.duplicate(true);candidate.schema_version=2;candidate["tutorials"]={}
 	if candidate is Dictionary and candidate.get("schema_version")==2 and ColonyCodec._keys(candidate,["schema_version","text_scale","left_handed","last_slot","cameras","tutorials"]):
-		var upgraded: Dictionary = defaults();upgraded.merge(candidate,true);upgraded.schema_version=3;candidate=upgraded
+		candidate=candidate.duplicate(true);candidate.schema_version=3
+		candidate["reduced_motion"]=false;candidate["high_contrast"]=false;candidate["inspector_pause"]=false;candidate["quality"]="Balanced"
+		candidate["auto_pauses"]=SimRunner.default_auto_pauses();candidate["bindings"]=ControlBindings.DEFAULTS.duplicate(true)
+	if candidate is Dictionary and candidate.get("schema_version")==3 and ColonyCodec._keys(candidate,["schema_version","text_scale","left_handed","last_slot","cameras","tutorials","reduced_motion","high_contrast","inspector_pause","quality","auto_pauses","bindings"]):
+		candidate=candidate.duplicate(true);candidate.schema_version=4;candidate["audio"]=audio_defaults();candidate["haptics"]=false
 	if not _valid(candidate): return
 	values = candidate
 	values.schema_version = int(values.schema_version)
@@ -33,12 +41,15 @@ func load_local() -> void:
 	for action in values.bindings: values.bindings[action]=values.bindings[action].map(func(code:Variant)->int:return int(code))
 
 func _valid(data: Variant) -> bool:
-	if not data is Dictionary or not ColonyCodec._keys(data,defaults().keys()) or data.schema_version != 3 or not data.left_handed is bool or data.text_scale not in [1.0,1.25,1.5] or not data.last_slot is float and not data.last_slot is int:
+	if not data is Dictionary or not ColonyCodec._keys(data,defaults().keys()) or data.schema_version != VERSION or not data.left_handed is bool or data.text_scale not in [1.0,1.25,1.5] or not data.last_slot is float and not data.last_slot is int:
 		return false
-	for key in ["reduced_motion","high_contrast","inspector_pause"]:
+	for key in ["reduced_motion","high_contrast","inspector_pause","haptics"]:
 		if not data[key] is bool: return false
 	if data.quality not in ["Battery","Balanced","Smooth"] or not ControlBindings.valid(data.bindings): return false
 	if not data.auto_pauses is Dictionary or not ColonyCodec._keys(data.auto_pauses,defaults().auto_pauses.keys()) or not data.auto_pauses.values().all(func(v:Variant)->bool:return v is bool): return false
+	if not data.audio is Dictionary or not ColonyCodec._keys(data.audio,audio_defaults().keys()): return false
+	for level in data.audio.values():
+		if (not level is float and not level is int) or not is_finite(float(level)) or level<0 or level>1: return false
 	if data.last_slot != floor(data.last_slot) or data.last_slot < 1 or data.last_slot > 5 or not data.cameras is Array or data.cameras.size() != 5:
 		return false
 	for camera: Variant in data.cameras:

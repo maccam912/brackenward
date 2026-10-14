@@ -64,6 +64,10 @@ var inspector_portrait: TextureRect
 var listening_binding: String = ""
 var sheet_heading: Label
 var sheet_full_heading: Label
+var soundscape: ColonyAudio
+var quitting: bool = false
+var native_smoke_target: int = 0
+var native_smoke_remaining: int = 0
 var rotation_button: Button
 var placement_kind: String = "stockpile"
 var paint_build_definition: String = ""
@@ -89,6 +93,15 @@ var forecast: Dictionary = {"portions":24,"ticks":21600,"label":"24 portions | 3
 
 func _ready() -> void:
 	Engine.max_fps = 30
+	get_tree().auto_accept_quit=false
+	var arguments: PackedStringArray = OS.get_cmdline_user_args()
+	var smoke: int = arguments.find("--native-smoke-frames")
+	if smoke>=0:
+		if arguments.count("--native-smoke-frames")!=1 or smoke+1>=arguments.size() or not arguments[smoke+1].is_valid_int() or int(arguments[smoke+1])<1 or int(arguments[smoke+1])>600:
+			push_error("Invalid native smoke frame target");get_tree().quit(2);return
+		native_smoke_target=int(arguments[smoke+1]);native_smoke_remaining=native_smoke_target
+		store.root_directory="user://native-smoke-%d" % Time.get_ticks_usec();store.select_slot(1)
+		settings.path=store.root_directory.path_join("settings.json")
 	settings.load_local()
 	text_scale = float(settings.values.text_scale)
 	left_handed = settings.values.left_handed
@@ -115,6 +128,8 @@ func _ready() -> void:
 	view = WorldView.new()
 	content.add_child(view)
 	view.setup(world)
+	if world is ColonyWorld:
+		soundscape=_make_soundscape();add_child(soundscape);soundscape.bind_world(world,view)
 	_apply_device_settings()
 	_restore_camera()
 	view.intent.connect(_map_intent)
@@ -132,7 +147,12 @@ func _ready() -> void:
 	elif store is ColonyStore and store.root_directory == ColonyStore.CAMPAIGN_ROOT and not ColonyStore.occupied(store.slot):
 		awaiting_first_colony = true
 		show_new_colony(store.slot)
+	if native_smoke_target>0:
+		awaiting_first_colony=true;show_new_colony(1)
 	if world is ColonyWorld and not awaiting_first_colony: save_queue.prime(world)
+
+func _make_soundscape() -> ColonyAudio:
+	return ColonyAudio.new()
 
 func _build_theme() -> void:
 	var ui_theme: Theme = Theme.new()
@@ -181,7 +201,9 @@ func button(label: String, callback: Callable, parent: Node, width: float = 48.0
 			result.mouse_filter = Control.MOUSE_FILTER_PASS
 			break
 		ancestor = ancestor.get_parent()
-	if callback.is_valid(): result.pressed.connect(callback)
+	if callback.is_valid(): result.pressed.connect(func()->void:
+		if is_instance_valid(soundscape): soundscape.cue("ui_cancel" if label in ["Cancel","Close"] or label.begins_with("Back") else "ui_select")
+		callback.call())
 	parent.add_child(result)
 	controls.append(result)
 	return result
@@ -327,6 +349,10 @@ func _build_placement() -> void:
 	placement.add_child(placement_wide_row)
 
 func _process(delta: float) -> void:
+	if quitting: return
+	if native_smoke_remaining>0:
+		native_smoke_remaining-=1
+		if native_smoke_remaining==0: quit_application();return
 	if not is_node_ready() or backgrounded:
 		return
 	save_clock+=delta
@@ -385,6 +411,7 @@ func _process(delta: float) -> void:
 		runner.speed_reduced = false
 	if submitted_command > 0 and world.receipts.has(submitted_command):
 		var receipt: String = world.receipts[submitted_command]
+		if is_instance_valid(soundscape): soundscape.cue("ui_confirm" if receipt=="accepted" else "ui_error")
 		notice = "Order accepted. Resume to watch the work." if receipt == "accepted" else "Order rejected: " + receipt
 		submitted_command = 0
 		confirm_button.disabled = false
@@ -402,6 +429,7 @@ func _process(delta: float) -> void:
 			var warning: int = 3 if forecast.ticks < 3600 else (2 if forecast.ticks < 7200 else (1 if forecast.ticks < 14400 else 0))
 			if warning > food_warning_level:
 				notice = forecast.label + ". Gather food, plant turnips, and keep Cooking enabled. Ration policy is in Menu."
+				if is_instance_valid(soundscape): soundscape.cue("cue_warning",2,"",0.9)
 				if warning==3 and settings.values.auto_pauses.low_food: runner.pause()
 			food_warning_level = warning
 	notice_label.text = ("Unsaved progress | " if saving_disabled else "") + notice
@@ -409,6 +437,7 @@ func _process(delta: float) -> void:
 		sheet_feedback.text = notice
 		sheet_feedback.visible=sheet_name not in ["Welcome","Style"] and not notice.is_empty() and not notice.begins_with("Paused. Choose")
 	preview_label.text = _preview_text()
+	if is_instance_valid(soundscape): soundscape.observe()
 	journal_elapsed += delta
 	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony:
 		if world.tick!=store.journal_tick: _start_background_save(false)
@@ -451,6 +480,7 @@ func _storage_wait_required() -> bool:
 	return store is ColonyStore and not saving_disabled and not recovery_failed and not awaiting_first_colony and world.tick!=store.journal_tick and save_clock-durable_at>=1.75
 
 func set_speed(value: int) -> void:
+	if quitting: return
 	if value>0 and _storage_wait_required():
 		notice="Saving is still in progress. Resume after saving finishes."
 		return
@@ -944,6 +974,7 @@ func _replace_world(state: RefCounted) -> void:
 	runner = SimRunner.new(world)
 	_apply_device_settings()
 	view.world = world
+	if is_instance_valid(soundscape): soundscape.bind_world(world,view)
 	for actor in view.actors:
 		if actor is CitizenSprite: actor.reset_pose()
 	view.refresh_terrain()
@@ -1042,13 +1073,16 @@ func suspend() -> void:
 	if backgrounded:
 		return
 	backgrounded = true
+	if is_instance_valid(soundscape): soundscape.suspend()
 	runner.pause()
 	view.cancel_gesture()
 	if not saving_disabled and not recovery_failed:
 		save_local()
 
 func resume_from_background() -> void:
+	if quitting: return
 	backgrounded = false
+	if is_instance_valid(soundscape): soundscape.resume()
 	runner.pause()
 	view.cancel_gesture()
 	notice = "While you were away, nothing advanced."
@@ -1071,10 +1105,21 @@ func _notification(what: int) -> void:
 	elif what == NOTIFICATION_WM_GO_BACK_REQUEST:
 		back()
 	elif what == NOTIFICATION_WM_CLOSE_REQUEST:
-		suspend()
-		get_tree().quit()
+		quit_application()
+
+func quit_application() -> void:
+	if quitting: return
+	quitting=true;suspend()
+	if is_instance_valid(content): content.process_mode=Node.PROCESS_MODE_DISABLED
+	var released: bool = true
+	if is_instance_valid(soundscape): released=await soundscape.drain()
+	if not released: push_error("Audio shutdown timed out; streaming playbacks remain in use")
+	if native_smoke_target>0: print("BRACKENWARD_NATIVE_SMOKE_EXIT frames=%d audio_drained=%s isolated=true" % [native_smoke_target-native_smoke_remaining,str(released)])
+	get_tree().quit(0 if released else 1)
 
 func back() -> void:
+	if quitting: return
+	if is_instance_valid(soundscape): soundscape.cue("ui_cancel")
 	view.cancel_gesture()
 	if sheet != null:
 		close_sheet()
@@ -1086,6 +1131,7 @@ func back() -> void:
 		show_sheet("Menu")
 
 func _unhandled_key_input(event: InputEvent) -> void:
+	if quitting: return
 	if get_viewport().gui_get_focus_owner() is LineEdit or get_viewport().gui_get_focus_owner() is TextEdit:
 		return
 	if not event is InputEventKey or not event.pressed or event.echo:
@@ -1094,6 +1140,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	get_viewport().set_input_as_handled()
 
 func _input(event: InputEvent) -> void:
+	if quitting: return
 	if not event is InputEventKey or not event.pressed or event.echo: return
 	if not listening_binding.is_empty():
 		if event.keycode in [KEY_SHIFT,KEY_CTRL,KEY_ALT,KEY_META]: get_viewport().set_input_as_handled();return
@@ -1204,6 +1251,7 @@ func _update_inspector() -> void:
 		inspector_details.text = "%s - looking around\nM0 touch fixture movement." % citizen.name
 
 func _submit(kind: String, args: Dictionary) -> void:
+	if quitting: return
 	if awaiting_first_colony:
 		notice = "Choose a site and create this colony first."
 		return
@@ -1598,6 +1646,7 @@ func _apply_device_settings() -> void:
 	if is_instance_valid(view):
 		view.reduced_motion=settings.values.reduced_motion
 		view.high_contrast=settings.values.high_contrast
+	if is_instance_valid(soundscape): soundscape.apply_settings(settings.values.audio,settings.values.haptics)
 
 func show_accessibility() -> void:
 	show_sheet("Settings")
@@ -1619,7 +1668,28 @@ func show_accessibility() -> void:
 	quality.item_selected.connect(func(index:int)->void:settings.values.quality=["Battery","Balanced","Smooth"][index];_apply_device_settings();_save_settings())
 	label("Battery / Balanced: 30 fps. Smooth: 60 fps. Simulation rules stay the same.",sheet_body)
 	button("Automatic pauses",show_auto_pauses,sheet_body)
+	button("Sound",show_audio_settings,sheet_body)
 	button("Keyboard controls",show_controls,sheet_body)
+
+func show_audio_settings() -> void:
+	show_sheet("Sound")
+	label("Warnings stay visible when sound is muted.",sheet_body)
+	for channel in settings.values.audio:
+		var name: String = {"master":"Master","music":"Music","effects":"Effects","ui":"Interface"}[channel]
+		var title: Label = label(name+": %d%%" % roundi(settings.values.audio[channel]*100),sheet_body)
+		var slider: TouchVolumeSlider = TouchVolumeSlider.new();slider.name="Volume_"+channel
+		slider.min_value=0;slider.max_value=100;slider.step=1;slider.value=settings.values.audio[channel]*100
+		slider.custom_minimum_size=Vector2(48,48);slider.size_flags_horizontal=Control.SIZE_EXPAND_FILL;sheet_body.add_child(slider)
+		slider.value_changed.connect(func(value:float)->void:
+			settings.values.audio[channel]=value/100.0;title.text=name+": %d%%" % roundi(value)
+			if is_instance_valid(soundscape): soundscape.apply_settings(settings.values.audio,settings.values.haptics))
+		slider.drag_ended.connect(func(changed:bool)->void:
+			if changed: _save_settings())
+		slider.focus_exited.connect(_save_settings)
+	if OS.has_feature("android"):
+		button("Vibration: "+("On" if settings.values.haptics else "Off"),func()->void:settings.values.haptics=not settings.values.haptics;_apply_device_settings();_save_settings();show_audio_settings(),sheet_body).name="Haptics"
+	else: label("Vibration is available on Android.",sheet_body)
+	button("Back to settings",show_accessibility,sheet_body)
 
 func show_auto_pauses() -> void:
 	show_sheet("Auto pauses")

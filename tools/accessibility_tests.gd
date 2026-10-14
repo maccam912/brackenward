@@ -19,7 +19,7 @@ static func run(check: Callable) -> void:
 	var file: FileAccess = FileAccess.open(settings.path,FileAccess.WRITE);file.store_string(JSON.stringify(old));file.close()
 	var original: PackedByteArray = FileAccess.get_file_as_bytes(settings.path)
 	loaded=DeviceSettings.new();loaded.path=settings.path;loaded.load_local()
-	var expected: Dictionary = DeviceSettings.defaults();expected.merge(old,true);expected.schema_version=3
+	var expected: Dictionary = DeviceSettings.defaults();expected.merge(old,true);expected.schema_version=DeviceSettings.VERSION
 	for camera in expected.cameras:
 		for index in range(3): camera[index]=float(camera[index])
 	check.call("SETTINGS/schema_two_preserves_every_existing_preference",loaded.values==expected and FileAccess.get_file_as_bytes(settings.path)==original)

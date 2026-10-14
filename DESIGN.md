@@ -904,6 +904,8 @@ Use the listed Kenney Interface Sounds for select, confirm, cancel, and an inval
 
 Warn with a soft two-note chime, critical with three low bell strikes, opportunity with one upward pluck. Every essential sound has a caption/icon equivalent. Limit effects to 12 concurrent voices, prioritize critical > selected action > nearby work > ambient, and cap repeated same-kind work sounds to 3/second. Mute footsteps beyond 12 visible tiles. Default sliders: music 35%, effects 60%, UI 60%; master 80%. Backgrounding stops audio immediately; resuming does not replay the queued sound backlog. No voice acting is required.
 
+The M7 implementation retains original synth/score sources in `tools/author_audio.py` and `data/audio_score.json`, ten original Ogg streams and fourteen verified Kenney clips. Three streaming music players sit outside the twelve-effect voice pool. Device settings schema 4 adds independent master/music/effects/interface gains and optional Android vibration (off); malformed levels fail validation and older preferences preserve their existing values. Sound observes completed simulation state without writing world fields, clocks or RNG. Touch sliders commit taps on release, lock horizontal changes and leave vertical gestures to sheet scrolling. Controlled exit waits for stopped streaming playbacks to release before closing; backgrounding stops audio before save work. Native startup tests require a positive isolated application-exit marker after sixty processed frames, with drained audio; a forced engine frame limit alone cannot pass. Human listening, physical audio focus and hardware performance remain release gates.
+
 ## 20 Technology and architecture
 
 ### 20.1 Committed stack

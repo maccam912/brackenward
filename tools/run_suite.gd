@@ -31,6 +31,7 @@ func run() -> void:
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
 		"persistence":
+			AudioTests.run(check)
 			AccessibilityTests.run(check)
 			AppearanceTests.run(check)
 			PreparedSnapshotTests.run(check)
@@ -920,6 +921,7 @@ func ui() -> void:
 	await PlacementUITests.run(colony_game,check)
 	await AppearanceUITests.run(colony_game,check)
 	await AccessibilityUITests.run(colony_game,check)
+	await AudioUITests.run(colony_game,check)
 	TutorialUITests.run(colony_game,check)
 	colony_game._tutorial_state().forecast_pinned=false
 	ColonyTutorial.replay(colony_game._tutorial_state(),"follow")
@@ -950,6 +952,7 @@ func ui() -> void:
 	check("TUTORIAL/UI_pinned_forecast_remains_after_prompt_dismissed",colony_game.guidance_panel.visible and colony_game.guidance_forecast.visible and colony_game.guidance_forecast.text.contains("meal portions/day") and colony_game.guidance_forecast_button.visible)
 	await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://reports/tutorial-pinned-food.png")
+	check("AUDIO/UI_shutdown_releases_all_mixer_playbacks",await colony_game.soundscape.drain())
 	colony_game.queue_free()
 	await process_frame
 	if failures.is_empty():

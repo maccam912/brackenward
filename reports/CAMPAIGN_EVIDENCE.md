@@ -208,3 +208,13 @@ The M6 ordinary campaign set now includes all three Standard sites and Pine
 Hearthside, with ceremony, Continue and later play. These local simulation
 certificates remain separate from current-source Winter sweeps, M7 media,
 accessibility/stress work, physical Android and human-comprehension gates.
+
+14 October frozen first-Winter matrix: all 30 runs at exactly `88ee5e8` pass
+through tick 239,400 with eight living residents, minimum health 100 and no hunger
+or starvation-grace violations. A separate fail-closed audit checks exact source,
+logs, report/snapshot pairs, unique combinations and process exits. Current schema-22
+loading preserves all thirty old gameplay payloads exactly after removing only
+declared cosmetics/header metadata; source files remain untouched. Full source,
+harness and evidence digests are in [WINTER_MATRIX.md](WINTER_MATRIX.md). This is
+separate from a repeated full campaign under later presentation code and from
+physical/human release gates.

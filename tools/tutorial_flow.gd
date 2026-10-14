@@ -90,6 +90,7 @@ func run() -> void:
 	game.show_sheet("Menu");press(game.sheet_body,"Save colony")
 	var saved_hash: String = game.world.canonical_hash()
 	var saved_state: Dictionary = game._tutorial_state().duplicate(true)
+	if not await game.soundscape.drain(): failures+=1;printerr("Audio restart did not drain")
 	game.queue_free();await process_frame
 	create_session()
 	check("FLOW/mid_lesson_restart_preserves_world_and_evidence",game.world.canonical_hash()==saved_hash and game._tutorial_state()==saved_state and game.text_scale==1.25 and game.left_handed and game.runner.speed==0)
@@ -142,8 +143,10 @@ func run() -> void:
 
 func finish() -> void:
 	if is_instance_valid(game):
+		game.runner.pause()
 		if failures>0:
 			print(JSON.stringify({"seed":seed_value,"site":site,"tick":game.world.tick,"tutorial":game._tutorial_state(),"receipts":game.world.receipts,"active_jobs":game.world.jobs.filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"]),"commands":game.world.command_trace}))
-		game.queue_free()
+		if not await game.soundscape.drain(): failures+=1;printerr("Audio teardown did not drain")
+		game.queue_free();await process_frame
 	print("Discovered/run: %d; failures: %d; elapsed: %d ms; site: %s; seed: %d; max ticks: %d" % [checks,failures,Time.get_ticks_msec()-started,site,seed_value,TICK_LIMIT])
 	quit(0 if failures==0 else 1)

@@ -26,7 +26,7 @@ def is_software_renderer(renderer):
     ))
 
 
-def inspect_output(output, returncode, graphical):
+def inspect_output(output, returncode, graphical, app_exit_required=False):
     """Require positive graphical evidence, even when Godot exits successfully."""
     clean = ANSI.sub("", output)
     errors = ERROR.findall(clean)
@@ -38,6 +38,8 @@ def inspect_output(output, returncode, graphical):
         failures.append("Godot reported script or engine errors")
     if graphical and not renderer:
         failures.append("No OpenGL Compatibility renderer startup evidence")
+    if app_exit_required and not re.search(r"(?m)^BRACKENWARD_NATIVE_SMOKE_EXIT frames=60 audio_drained=true isolated=true$", clean):
+        failures.append("No isolated 60-frame application exit with drained streaming audio")
     return {"failures": failures, "errors": errors, "renderer_startup": renderer}
 
 
@@ -49,7 +51,7 @@ def run_stage(command, graphical):
             text=True, encoding="utf-8", errors="replace", timeout=180,
         )
         output = result.stdout
-        evidence = inspect_output(output, result.returncode, graphical)
+        evidence = inspect_output(output, result.returncode, graphical, app_exit_required=graphical)
         evidence["returncode"] = result.returncode
     except subprocess.TimeoutExpired as error:
         output = error.stdout or ""
@@ -83,6 +85,7 @@ def main():
         "host": {"system": platform.system(), "release": platform.release(), "machine": platform.machine()},
         "engine": version, "project": str(ROOT / "project.godot"),
         "import_skipped": args.skip_import, "requested_quit_after": 60,
+        "forced_quit_fallback_frames": 1200, "isolated_campaign_data": True,
         "log": str(log_path), "stages": {}, "failures": [],
     }
     logs = []
@@ -99,7 +102,8 @@ def main():
             report["failures"].extend(evidence["failures"])
         if not report["failures"]:
             command = [str(binary), "--path", str(ROOT), "--audio-driver", "Dummy",
-                       "--rendering-method", "gl_compatibility", "--quit-after", "60"]
+                       "--rendering-method", "gl_compatibility", "--quit-after", "1200",
+                       "--", "--native-smoke-frames", "60"]
             evidence, output = run_stage(command, graphical=True)
             report["stages"]["native_launch"] = evidence
             logs.append("Graphical native launch\n" + output)

@@ -58,6 +58,7 @@ var navigation_dirty: bool = true
 var solid_tiles: Dictionary = {}
 var bridge_tiles: Dictionary = {}
 var wildlife_obstacles: Dictionary = {}
+var door_tiles: Dictionary = {}
 var reachable_cells: PackedByteArray = PackedByteArray()
 var reachable_home: Dictionary:
 	get:
@@ -171,12 +172,15 @@ func _refresh_navigation() -> void:
 		solid_tiles.clear()
 		bridge_tiles.clear()
 		wildlife_obstacles.clear()
+		door_tiles.clear()
 		for resource in resources:
 			if resource.remaining > 0 and definitions.resources[resource.definition].solid:
 				solid_tiles[Vector2i(resource.x,resource.y)] = true
 		for structure in structures:
 			if structure.health<=0: continue
 			if structure.definition=="bridge": bridge_tiles[Vector2i(structure.x,structure.y)]=true
+			if structure.definition in ["door","reinforced_gate"]:
+				for tile in footprint(structure): door_tiles[tile]=structure.id
 			if structure.definition not in ["wood_floor","stone_path","bridge"]:
 				for tile in footprint(structure): wildlife_obstacles[tile]=true
 			if structure.definition != "supply_cart" and definitions.buildings[structure.definition].solid:

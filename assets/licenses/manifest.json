@@ -238,5 +238,245 @@
     "sha256": "0eeb580d026514076562cbfe15b8408294fe177f29dbb01ee1dc03d034902a0c",
     "edited": false,
     "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "music_day",
+    "path": "assets/exported/audio/music_day.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "fe17b458d0de8d5ee6088189221a1424695c696bcf42df700986b47925a806fe",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "music_night",
+    "path": "assets/exported/audio/music_night.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "05d7bdbc7049d58b02e72c59af50d99089a7010c3288f415fadaa91eb63333e4",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "music_tension",
+    "path": "assets/exported/audio/music_tension.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "2a2767fe236b23aa58ef1c4a3d61a4a6cd01069f50a0c2beb2cb30b70ad83bfe",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "ambient_rain",
+    "path": "assets/exported/audio/ambient_rain.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "fda19ee3f6eef921d53709f4277226900c2972dfe4445c33e8c9198549601551",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "ambient_river",
+    "path": "assets/exported/audio/ambient_river.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "a9a70d290966fcae9705c9895f56b395d2e1e2c28089bfb51e94e2aa64351dc3",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "ambient_wind",
+    "path": "assets/exported/audio/ambient_wind.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "328472bf1509528e559a223e8a889401a24ebf4abae9e3c6078874c81e32d4d4",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "ambient_fire",
+    "path": "assets/exported/audio/ambient_fire.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "f48fcac54ec69e058b7c2330392ec5b8e8a2943b46f302430196bc5bdf5f9e70",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "cue_warning",
+    "path": "assets/exported/audio/cue_warning.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "c68e9118323941ef94d3c8524002cfd9648200ada9d343e751bc313f81a772fd",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "cue_critical",
+    "path": "assets/exported/audio/cue_critical.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "4df67a8e7d4ad6f26f167618d56f4f8575044ad7f29212cf3c2945cdeb1eac16",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "cue_opportunity",
+    "path": "assets/exported/audio/cue_opportunity.ogg",
+    "source": "tools/author_audio.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "d9ba94cdc255793032503e1a342211150d253252722da622bf3b70c84c767b79",
+    "edited": false,
+    "evidence": "assets/licenses/original_audio.md"
+  },
+  {
+    "id": "ui_select",
+    "path": "assets/exported/audio/ui_select.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/Interface Sounds/Audio/select_001.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "510deb19199cfbba6ee90c85b70ff00d429ee8437d5be196c2b2c7cfca01fc50",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_interface_sounds.txt"
+  },
+  {
+    "id": "ui_confirm",
+    "path": "assets/exported/audio/ui_confirm.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/Interface Sounds/Audio/confirmation_001.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "1d59821014076adf376ae092a556ff7ee4816f5532a8ae0719b6d44d244bfbc1",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_interface_sounds.txt"
+  },
+  {
+    "id": "ui_cancel",
+    "path": "assets/exported/audio/ui_cancel.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/Interface Sounds/Audio/back_001.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "275226b7a353a6406a1876f595ac9c0864b5ea2f5468f4f22af3e7dcef65266e",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_interface_sounds.txt"
+  },
+  {
+    "id": "ui_error",
+    "path": "assets/exported/audio/ui_error.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/Interface Sounds/Audio/error_001.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "350f02aab97813254a8701a0a4f5735a4ae43c27366c374f4837bd07c777c426",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_interface_sounds.txt"
+  },
+  {
+    "id": "chop",
+    "path": "assets/exported/audio/chop.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/chop.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "41095dffee1ff2d0715c4eadd82ae7846dfd4d67327088a69848a9bd2e08db1b",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "cloth",
+    "path": "assets/exported/audio/cloth.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/cloth1.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "3598f30f9afa294e4834fab7a3b1b76fbd0588607fdcd848fc87c2c9a0011d3f",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "book",
+    "path": "assets/exported/audio/book.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/bookFlip1.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "517ef793533e893a7a023a97e5d3b225b3e779563d1888cd5d6581640e9c725f",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "door_open",
+    "path": "assets/exported/audio/door_open.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/doorOpen_1.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "a3f9deb5ac1b6e1cbb8f6a5de93f1940d4d00eb4a4424ae4f2f3f7a9170dd9b0",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "door_close",
+    "path": "assets/exported/audio/door_close.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/doorClose_1.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "68eec543408b4c296fed6820df9b8e986ee9708289ce60145c4934aff514e4ee",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "footstep_0",
+    "path": "assets/exported/audio/footstep_0.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/footstep00.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "d0daf7bc4bee8633e6d20aad1f88798f2bd7b948be0f644c2f21c41a42c1e3c5",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "footstep_1",
+    "path": "assets/exported/audio/footstep_1.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/footstep01.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "99514f67612034154c1a5f152b029fca130fdcd1594527257988ad9619052d34",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "footstep_2",
+    "path": "assets/exported/audio/footstep_2.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/footstep02.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "4114ecb7bb1a939b65896fba95af09d1dc0fe89fabaf63c4d2934e60bfa35ac6",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "footstep_3",
+    "path": "assets/exported/audio/footstep_3.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/footstep03.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "6cb4ddfd75ec915b3de63b742999b9a4cd647cd2f23180ddf33abc3962cc90b6",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "footstep_4",
+    "path": "assets/exported/audio/footstep_4.ogg",
+    "source": "Kenney Game Assets All-in-1 3.5.0/Audio/RPG Audio/Audio/footstep04.ogg",
+    "author": "Kenney",
+    "license": "CC0-1.0",
+    "sha256": "d5fc12c4eb2df153957c4726309297c5c5228c79b5a97c562e6ffdd0b7e4829b",
+    "edited": false,
+    "evidence": "assets/licenses/kenney_rpg_audio.txt"
   }
 ]
