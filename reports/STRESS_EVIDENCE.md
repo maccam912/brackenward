@@ -409,7 +409,7 @@ instrumented work is 4.326/0.650 seconds. One old campaign worker overlaps each
 short run; this is not an isolated or phone benchmark.
 
 The following thirty-second native source measurements use 960x600, Balanced,
-close view centered at 68,72, active saves and Dummy audio. The late rows use that
+close view centered at 68,63, active saves and Dummy audio. The late rows use that
 snapshot; fresh rows use an ordinary generated four-resident colony with the lodge
 guide active. Scope fingerprint is
 `22c714886e42c33f095c1fc9acd7a110854e20208711fe64ceb4733a991fca72`
@@ -473,7 +473,7 @@ Android, all-alert and long-soak gates remain open.
 ## 0.7.18 localization cost check
 
 Two thirty-second native fresh Meadow Reach/104729 profiles keep the lodge guide
-active, real foreground saves, close camera at 68,72, 960x600, Balanced and Dummy
+active, real foreground saves, close camera at 68,63, 960x600, Balanced and Dummy
 audio. Runtime/media/profiler fingerprint
 `d69d0a461d4a586d3bf6a47b8e001581c453b6621215880256ab7671ee9fc3b4`
 (296 files) is unchanged. Background Winter workers overlap both; tutorial/export
@@ -491,3 +491,54 @@ retain four residents, ten structures, seven positive stacks and sixteen wildlif
 no active targets, crops, domestic animals, hostiles, visitors or Chronicle entries
 are present. The formatter/catalog have no observed fresh-guide timing regression
 on this host. Crowded, late-campaign and physical Android gates remain open.
+
+
+## 0.7.19 reciprocal ownership and hidden preview work
+
+`tools/profile_history.gd -- SNAPSHOT 1200 reservation` retains the exact 2f1a8fb
+reservation/filter and dictionary-reference lookup path. Four alternating pairs
+compare it with current reciprocal ownership enumeration and ID-to-row offsets.
+Every complete result hash and invariant set matches. Median original/current CPU
+seconds are fresh 0.393062/0.400365, cold 2.858674/2.807195, late
+6.782724/5.926181 and crowded 8.952732/8.965696. The late case improves about
+13%; the others show little change. Three frozen Winter workers overlap these
+contended development measurements. The existing three snapshot hashes remain
+exact; no new resource grants, save fields, content rule or order changes occur.
+
+The foreground harness adds an explicit canceled-floor setup: begin a real floor
+preview at 50,48 through 65,63 (256 cells), compute it, then cancel. It refuses
+setup if any command was submitted or the placement controls remain visible.
+Measure 30 seconds at each speed, 960x600, Balanced, Dummy audio, close camera
+center 68,63. Before/after code shares the final simulation optimization and the
+same profiler; only GameSession's hidden-preview guard and project version differ
+within the 296-file scoped source manifests. The saved pre-fix GameSession bytes
+and both per-file manifests remain in ignored reports. All traces reset derived
+record/job/stack/navigation/room state after cloning.
+
+Before fingerprint:
+`e7ba7d0f3b7718be230453ada549de6314e5698e4da3885a636edcc1607a51bc`.
+After fingerprint:
+`b4240276e5896dc1553c16bc19d36e288055b51aa622b810449679e43e41a05e`.
+Each remains unchanged during both of its rows. Three frozen Winter workers are
+present at each endpoint; concurrency is not sampled continuously. No other GUI
+profile runs simultaneously. Timing is foreground CPU work, not GPU/phone timing.
+
+| Case | Wall seconds | Ticks | Main CPU p95 / max ms | Preview calls / p95 ms | Tick p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Before / 1x | 30.033 | 300 | 8.813 / 11.891 | 901 / 7.850 | 0.841 |
+| Before / 4x | 30.032 | 1,201 | 9.743 / 13.718 | 901 / 8.713 | 0.808 |
+| After / 1x | 30.000 | 299 | 0.906 / 3.102 | 0 / no samples | 0.843 |
+| After / 4x | 30.033 | 1,201 | 1.309 / 3.767 | 0 / no samples | 0.804 |
+
+Every row keeps its requested speed, clean storage/invariants and backlog below
+0.1 second (after 1x ends at 0.099337 seconds, within one pending logical tick).
+No main/tick callback exceeds 50 ms. All initial/final loads remain four residents,
+ten structures, seven positive stacks, sixteen wildlife and clear weather; no
+targets, crops, domestic animals, hostiles, visitors or Chronicle entries are present.
+The controls remain hidden throughout measurement. UI regression tests separately
+prove visible previews still refresh and confirmation submits/executes real work.
+The broad crowded/late/Android, all-alert and thirty-minute-soak gates remain open.
+
+The earlier 0.7.16 and 0.7.18 camera-center descriptions above were corrected to
+68,63 from their actual recorded camera_center fields; their measured values and
+scope fingerprints are unchanged.

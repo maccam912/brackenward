@@ -28,6 +28,7 @@ class FullReservationWorld extends ColonyWorld:
 		return {}
 
 static func run(check: Callable) -> void:
+	owned_history(check)
 	history_lookup(check)
 	historical_inventory(check)
 	runtime_deadlines(check)
@@ -64,6 +65,28 @@ static func run(check: Callable) -> void:
 	world.tick+=50
 	ColonyWorkBudget.reconcile_records(world.citizens,jobs,world.tick)
 	check.call("BUDGET/due_retry_reenters_with_original_blocked_state",blocked.state=="Blocked" and jobs.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,world.tick)).size()==512)
+
+static func owned_history(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var first: Dictionary = world._job("leisure","","",0,Vector2i(50,60),0)
+	var second: Dictionary = world._job("leisure","","",0,Vector2i(51,60),0)
+	first.worker=world.citizens[0].id;world.citizens[0].job=first.id;first.state="Complete"
+	second.worker=world.citizens[1].id;world.citizens[1].job=second.id
+	world.jobs.reverse();world.record_indexes.clear();world.reset_job_queries()
+	var decoded: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("READ/terminal_owned_history_is_an_accepted_save",decoded.has("world") and world.invariant_errors().is_empty(),str(decoded.get("error",world.invariant_errors())))
+	if not decoded.has("world"): return
+	world=decoded.world;first=world.find(world.jobs,first.id);second=world.find(world.jobs,second.id)
+	world.in_tick=true;world.assigning_work=true;world.reservation_query_ready=false
+	var owned: Array = world._reservation_jobs()
+	check.call("READ/owned_lookup_keeps_terminal_records_and_imported_array_order",owned.map(func(j:Dictionary)->int:return j.id)==[second.id,first.id] and is_same(owned[1],first))
+	world._release(second,false)
+	check.call("READ/same_search_release_updates_borrowed_owned_reference",owned[0].worker==0 and is_same(world._reservation_jobs()[0],second))
+	world.reservation_query_ready=false
+	check.call("READ/next_search_rebuilds_current_ownership",world._reservation_jobs().map(func(j:Dictionary)->int:return j.id)==[first.id])
+	world.in_tick=false;world.reservation_query_ready=false
+	second.worker=world.citizens[1].id;world.citizens[1].job=0
+	check.call("READ/direct_search_keeps_full_history_for_incomplete_fixtures",world._reservation_jobs().map(func(j:Dictionary)->int:return j.id)==[second.id,first.id])
 
 static func history_lookup(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()

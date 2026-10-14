@@ -312,9 +312,10 @@ func _find_history(records: Array, id: int, table: String) -> Dictionary:
 	if state.scanned<records.size():
 		for index in range(state.scanned,records.size()):
 			var record: Dictionary = records[index]
-			if not state.by_id.has(record.id): state.by_id[record.id]=record
+			if not state.by_id.has(record.id): state.by_id[record.id]=index
 		state.scanned=records.size()
-	return state.by_id.get(id,{})
+	var offset: int = state.by_id.get(id,-1)
+	return {} if offset<0 else records[offset]
 
 func queue_command(kind: String, args: Dictionary, command_id: int = 0, expected_session: String = "") -> int:
 	var id: int = command_id if command_id > 0 else next_command_id
@@ -941,7 +942,19 @@ func _reservation_jobs() -> Array:
 	# Direct reservation/storage calls keep the full-history reference behavior.
 	if not assigning_work: return jobs
 	if not reservation_query_ready:
-		reservation_query_jobs=jobs.filter(func(job:Dictionary)->bool:return job.worker>0)
+		if not in_tick:
+			reservation_query_jobs=jobs.filter(func(job:Dictionary)->bool:return job.worker>0)
+		else:
+			# A validated complete tick has reciprocal worker/citizen.job links,
+			# including any accepted terminal record that still owns its worker.
+			# Use those few links, then restore original array order (not ID order).
+			_find_history(jobs,0,"jobs")
+			var positions: Dictionary = record_indexes.history_jobs.by_id
+			reservation_query_jobs=[]
+			for person in citizens:
+				var owned: Dictionary = find(jobs,person.job)
+				if not owned.is_empty() and owned.worker>0: reservation_query_jobs.append(owned)
+			reservation_query_jobs.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return positions[a.id]<positions[b.id])
 		reservation_query_ready=true
 	return reservation_query_jobs
 

@@ -61,6 +61,12 @@ class ProfileSession extends GameSession:
 	var ui_phases: Dictionary = {}
 	var phase_peaks: Dictionary = {}
 	var guidance_us: Array[int] = []
+	var preview_us: Array[int] = []
+	func _preview_text() -> String:
+		var started: int = Time.get_ticks_usec();var result: String = super._preview_text()
+		var duration: int = Time.get_ticks_usec()-started;preview_us.append(duration)
+		if trace_spikes: ui_phases.preview=ui_phases.get("preview",0)+duration
+		return result
 	func _process(delta: float) -> void:
 		processed_delta_seconds+=delta
 		if trace_spikes: world.phases.clear();ui_phases.clear()
@@ -101,6 +107,7 @@ var camera: String = "close"
 var quality: String = "Balanced"
 var center: Vector2 = Vector2(68,63)
 var tutorial: String = "none"
+var preview_setup: String = "none"
 
 func _initialize() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
@@ -119,6 +126,7 @@ func _initialize() -> void:
 			"--camera": camera=args[index+1]
 			"--quality": quality=args[index+1]
 			"--tutorial": tutorial=args[index+1]
+			"--preview": preview_setup=args[index+1]
 			"--center":
 				var parts: PackedStringArray = args[index+1].split(",")
 				if parts.size()!=2 or not parts[0].is_valid_int() or not parts[1].is_valid_int(): quit(2);return
@@ -127,6 +135,7 @@ func _initialize() -> void:
 	if seconds<3 or seconds>1800 or speed not in [1,2,4] or camera not in ["close","far"] or quality not in ["Battery","Balanced","Smooth"]: quit(2);return
 	if center.x<0 or center.x>127 or center.y<0 or center.y>127: quit(2);return
 	if tutorial!="none" and not ColonyTutorial.TITLES.has(tutorial): quit(2);return
+	if preview_setup not in ["none","canceled_floor"]: quit(2);return
 	call_deferred("run")
 
 func run() -> void:
@@ -147,7 +156,8 @@ func run() -> void:
 			if world.get(field) is Array: measured.get(field).assign(world.get(field))
 			else: measured.set(field,world.get(field))
 		if measured.canonical_hash()!=world.canonical_hash(): printerr("Trace-world capture mismatch");quit(2);return
-		measured.reset_job_queries();measured.reset_stack_queries();world=measured
+		measured.record_indexes.clear();measured.reset_job_queries();measured.reset_stack_queries()
+		measured.navigation_dirty=true;measured.reachability_dirty=true;measured.rooms_dirty=true;world=measured
 	var scratch: String = "user://foreground-profile-%d" % Time.get_ticks_usec()
 	var game: ProfileSession = ProfileSession.new()
 	game.trace_spikes=trace_spikes
@@ -157,6 +167,11 @@ func run() -> void:
 	root.add_child(game);game.close_sheet();game._tutorial_dismiss()
 	if tutorial!="none":
 		ColonyTutorial.replay(game._tutorial_state(),tutorial);game._refresh_guidance()
+	if preview_setup=="canceled_floor":
+		game.begin_build("wood_floor")
+		game.view.preview_start=Vector2i(50,48);game.view.preview_end=Vector2i(65,63)
+		game._preview_text();game.cancel_placement()
+		if not world.pending_commands.is_empty() or game.placement.visible: printerr("Preview setup submitted work or stayed visible");quit(2);return
 	for key in game.settings.values.auto_pauses: game.settings.values.auto_pauses[key]=false
 	game.settings.values.quality=quality;game._apply_device_settings()
 	game.view.center_camera(center)
@@ -166,7 +181,7 @@ func run() -> void:
 	var warmup_end: int = Time.get_ticks_usec()+1000000
 	while Time.get_ticks_usec()<warmup_end: await process_frame
 	game.frame_us.clear();game.capture_us.clear();game.finish_us.clear();game.preparation_us.clear()
-	game.guidance_us.clear()
+	game.guidance_us.clear();game.preview_us.clear()
 	game.phase_peaks.clear();game.slow_frames.clear()
 	if trace_spikes: world.tick_us.clear();world.slow_jobs.clear();world.phases.clear()
 	game.view.update_us.clear();game.view.draw_us.clear();game.view.draw_command_us=0;game.soundscape.update_us.clear()
@@ -189,6 +204,8 @@ func run() -> void:
 	result["requested_speed"]=speed;result["camera"]=camera;result["quality"]=quality
 	result["tutorial_requested"]=tutorial;result["tutorial_final"]=game._tutorial_state().active if game._tutorial_state().enabled else "none"
 	result["guidance_refresh"]=stats(game.guidance_us)
+	result["preview_setup"]=preview_setup;result["placement_final_visible"]=game.placement.visible
+	result["preview_refresh"]=stats(game.preview_us)
 	result["camera_center"]=[game.view.camera_center().x,game.view.camera_center().y];result["tile_size"]=game.view.tile_size
 	result["initial_counts"]=initial_counts;result["final_counts"]=StressFixture.counts(world)
 	result["final_speed"]=final_speed;result["remaining_logical_backlog_seconds"]=final_accumulator

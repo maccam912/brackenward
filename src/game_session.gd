@@ -464,7 +464,8 @@ func _advance_frame(delta: float) -> void:
 		var feedback: String = text_entry_error if not text_entry_error.is_empty() else notice
 		sheet_feedback.text = ColonyFonts.display(feedback)
 		sheet_feedback.visible=sheet_name not in ["Welcome","Style"] and not feedback.is_empty() and not feedback.begins_with("Paused. Choose")
-	preview_label.text = ColonyFonts.display(_preview_text())
+	# A canceled/confirmed preview must not keep validating its hidden footprint.
+	if placement.visible: preview_label.text = ColonyFonts.display(_preview_text())
 	if is_instance_valid(soundscape): soundscape.observe()
 	journal_elapsed += delta
 	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony:

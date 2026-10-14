@@ -924,6 +924,7 @@ func ui() -> void:
 	await AsyncSaveTests.ui(colony_game,check)
 	await PreparedSnapshotTests.ui(colony_game,check)
 	await PlacementUITests.run(colony_game,check)
+	PlacementUITests.inactive_preview(colony_game,check)
 	TextTests.ui(colony_game,check)
 	await AppearanceUITests.run(colony_game,check)
 	await FontUITests.run(colony_game,check)

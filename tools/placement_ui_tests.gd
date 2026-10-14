@@ -1,6 +1,13 @@
 class_name PlacementUITests
 extends RefCounted
 
+class CountingPlacementWorld extends ColonyWorld:
+	var ui_placement_queries: int = 0
+	func _init(catalog: Dictionary) -> void: super(catalog)
+	func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0, excluded_structure: int = 0) -> String:
+		if not in_tick: ui_placement_queries+=1
+		return super(kind,anchor,rotation,excluded_job,excluded_structure)
+
 static func run(game: GameSession, check: Callable) -> void:
 	game._replace_world(ColonyTests.world())
 	game.close_inspector()
@@ -137,3 +144,27 @@ static func bed_assignment(game: GameSession, check: Callable) -> void:
 		clear[0].pressed.emit();game.set_speed(1);game.runner.advance_frame(0.1);game.runner.pause();game._process(0.0)
 		check.call("BED/UI_unassign_releases_real_bed_%d" % viewport_size.x,world.citizens[0].bed==0 and bed.user==0)
 	game._replace_world(ColonyTests.world());game.close_sheet();game.close_inspector();game._tutorial_dismiss()
+
+
+static func inactive_preview(game: GameSession, check: Callable) -> void:
+	var world: CountingPlacementWorld = CountingPlacementWorld.new(ColonyTests.world().definitions)
+	game._replace_world(world);game.close_sheet();game._tutorial_dismiss()
+	var previous_saving_disabled: bool = game.saving_disabled;game.saving_disabled=true
+	game.begin_build("wood_floor");game.view.preview_start=Vector2i(50,48);game.view.preview_end=Vector2i(65,63)
+	world.ui_placement_queries=0;game._advance_frame(0.0)
+	check.call("PLACE/UI_visible_area_really_validates_its_cells",world.ui_placement_queries>0 and game.preview_label.text.contains("16×16"))
+	game.cancel_placement();world.ui_placement_queries=0
+	var before_tick: int = world.tick
+	game.runner.set_speed(1)
+	for index in range(50): game._advance_frame(0.1)
+	game.runner.pause()
+	check.call("PLACE/UI_canceled_area_does_no_hidden_validation_as_time_advances",world.ui_placement_queries==0 and world.tick>before_tick and not game.placement.visible and world.pending_commands.is_empty() and world.invariant_errors().is_empty(),str([world.ui_placement_queries,world.tick,before_tick,world.invariant_errors()]))
+	game.begin_build("wood_floor");game.view.preview_start=Vector2i(50,48);game.view.preview_end=Vector2i(51,49)
+	world.ui_placement_queries=0;game._advance_frame(0.0)
+	check.call("PLACE/UI_reopened_preview_refreshes_its_new_geometry",world.ui_placement_queries>0 and game.preview_label.text.contains("2×2"))
+	game.confirm_placement();var command_id: int = game.submitted_command
+	world.ui_placement_queries=0;game.runner.set_speed(1)
+	for index in range(50): game._advance_frame(0.1)
+	game.runner.pause()
+	check.call("PLACE/UI_confirmed_area_does_no_hidden_validation_while_work_runs",command_id>0 and world.receipts.get(command_id)=="accepted" and world.ui_placement_queries==0 and not game.placement.visible and world.invariant_errors().is_empty(),str([command_id,world.receipts,world.ui_placement_queries,world.invariant_errors()]))
+	game.saving_disabled=previous_saving_disabled
