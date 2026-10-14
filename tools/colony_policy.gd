@@ -272,19 +272,23 @@ func _charter(world: ColonyWorld) -> void:
 func _expedition(world: ColonyWorld) -> void:
 	var trip: Dictionary = ColonyRegion.active(world)
 	if not trip.is_empty():
-		if trip.state in ["Preparing","Ready"] and ColonyRegion.ready(world,trip).is_empty(): issue(world,"expedition_depart",{"target":trip.id,"unprepared":false})
+		var data: Dictionary = ColonyRegion.definition_data(world,trip.args.definition,trip.args.pickup)
+		if trip.state in ["Preparing","Ready"] and not data.get("seasons",[0,1,2,3]).has(ColonyAgriculture.season(world.tick)):
+			issue(world,"expedition_cancel",{"target":trip.id})
+		elif trip.state in ["Preparing","Ready"] and ColonyRegion.ready(world,trip).is_empty(): issue(world,"expedition_depart",{"target":trip.id,"unprepared":false})
 		elif trip.state=="Decision": issue(world,"expedition_choice",{"target":trip.id,"definition":"continue"})
 		elif trip.state=="Collect": issue(world,"expedition_collect",{"target":trip.id,"keep":ColonyRegion.default_keep(world,trip)})
 		return
 	if world.citizens.filter(func(c:Dictionary)->bool:return not c.death_recorded and not c.departed and not c.away).size()<8 or FoodForecast.calculate(world).ticks<21600: return
-	var destination: String = ""
-	for definition in ["berry_hollow","broken_causeway"]:
-		if world.region_state.progress[definition].returned_at==0: destination=definition;break
-	if destination.is_empty(): return
-	var skill: String = world.definitions.expeditions[destination].skill
-	var travelers: Array = world.citizens.filter(func(c:Dictionary)->bool:return c.id!=1 and not c.away and not c.downed and not c.death_recorded and not c.departed and c.health>=70 and c.rest>=500 and c.fullness>=500)
-	travelers.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.skills[skill]>b.skills[skill] or (a.skills[skill]==b.skills[skill] and a.id<b.id))
-	if travelers.size()<4: return
-	var args: Dictionary = {"definition":destination,"party":travelers.slice(0,4).map(func(c:Dictionary)->int:return c.id),"goats":[],"cargo":{},"feed":"grain","pen":0,"variant":0,"pickup":false}
-	var quote: Dictionary = ColonyRegion.preview(world,args)
-	if quote.error.is_empty() and quote.shortfall==0 and quote.home_forecast.ticks>=21600: issue(world,"expedition_prepare",args)
+	for destination in ["berry_hollow","broken_causeway"]:
+		var data: Dictionary = world.definitions.expeditions[destination]
+		if world.region_state.progress[destination].returned_at>0 or not data.get("seasons",[0,1,2,3]).has(ColonyAgriculture.season(world.tick)): continue
+		var skill: String = data.skill
+		var travelers: Array = world.citizens.filter(func(c:Dictionary)->bool:return c.id!=1 and not c.away and not c.downed and not c.death_recorded and not c.departed and c.health>=70 and c.rest>=500 and c.fullness>=500)
+		travelers.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.skills[skill]>b.skills[skill] or (a.skills[skill]==b.skills[skill] and a.id<b.id))
+		for count in range(mini(4,travelers.size()),1,-1):
+			var args: Dictionary = {"definition":destination,"party":travelers.slice(0,count).map(func(c:Dictionary)->int:return c.id),"goats":[],"cargo":{},"feed":"grain","pen":0,"variant":0,"pickup":false}
+			var quote: Dictionary = ColonyRegion.preview(world,args)
+			if quote.error.is_empty() and quote.shortfall==0 and quote.home_forecast.ticks>=21600:
+				issue(world,"expedition_prepare",args)
+				return

@@ -2,6 +2,7 @@ class_name SchedulerTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	DiningTests.run(check)
 	var ordered: ColonyWorld = ColonyTests.world()
 	var reversed: ColonyWorld = ColonyTests.world()
 	reversed.citizens.reverse()

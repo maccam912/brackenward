@@ -827,6 +827,10 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 		positions=_perimeter(ColonyMaintenance.move_footprint(self,job)) if job.memo.phase=="rebuild" else _perimeter(footprint(find(structures,job.target)))
 	elif job.kind in ["build","build_helper"]:
 		positions = _perimeter(footprint(job))
+	elif job.kind=="eat":
+		var food: Dictionary = find(stacks,job.source)
+		if food.is_empty(): return _block(job,"Food moved or spoiled: choose another portion")
+		positions.append(ColonySocial.meal_seat(self,citizen,Vector2i(food.x,food.y)))
 	elif job.kind in ["repair","demolish", "gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "stock_feed", "lead_animal", "collect_animal", "slaughter", "enemy_treat"]:
 		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["repair","demolish","cook","fuel","craft","research","fish"] else _perimeter([point])
 	else:

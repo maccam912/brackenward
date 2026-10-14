@@ -51,7 +51,9 @@ func run() -> void:
 		"defense": DefenseTests.run(check)
 		"director": DirectorTests.run(check)
 		"opportunity": OpportunityTests.run(check)
-		"charter": CharterTests.run(check)
+		"charter":
+			CharterTests.run(check)
+			PolicyTests.run(check)
 		"chronicle": ChronicleTests.run(check)
 		"scheduler": SchedulerTests.run(check)
 		"tutorial": TutorialTests.run(check)

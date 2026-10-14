@@ -35,6 +35,35 @@ static func change(world: ColonyWorld, pair: Dictionary, amount: int, causes: Ar
 		var id: int = world.emit_fact({"tick":world.tick,"actor":pair.a,"job":0,"kind":"friendship" if first else "friendship_renewed","text":a.name+" and "+b.name+(" became friends." if first else " are friends again.")},{"participants":[pair.a,pair.b],"causes":causes,"location":[a.x,a.y]})
 		if first: ColonyChronicle.remember(world,first_key,id)
 
+static func meal_seat(world: ColonyWorld, citizen: Dictionary, pickup: Vector2i) -> Vector2i:
+	var tables: Array = world.structures.filter(func(s:Dictionary)->bool:return s.health>0 and s.definition=="table" and not ColonyFire.burning(world,"structure",s.id))
+	if tables.is_empty(): return pickup
+	var occupied: Dictionary = {}
+	for person in world.citizens:
+		var job: Dictionary = world.find(world.jobs,person.job)
+		if person.id!=citizen.id and job.get("worker",0)>0: occupied[Vector2i(job.work_x,job.work_y)]=true
+	if world.charter_state.supper.get("state","") in ColonyCharter.ACTIVE:
+		for slot in world.charter_state.supper.slots: occupied[Vector2i(slot.x,slot.y)]=true
+	var distance: Dictionary = {pickup:0}
+	var queue: Array[Vector2i] = [pickup]
+	var cursor: int = 0
+	while cursor<queue.size():
+		var point: Vector2i = queue[cursor];cursor+=1
+		if distance[point]>=12: continue
+		for delta in ColonyNavigation.NEIGHBORS:
+			var next: Vector2i = point+delta
+			if not distance.has(next) and world.walkable(next) and world.can_step(point,next) and ColonyDanger.safe(world,next):
+				distance[next]=distance[point]+1;queue.append(next)
+	var choices: Array[Dictionary] = []
+	for table in tables:
+		for point in seats_for(world,table):
+			if distance.has(point) and not occupied.has(point): choices.append({"point":point,"distance":distance[point],"table":table.id})
+	choices.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
+		if a.distance!=b.distance: return a.distance<b.distance
+		if a.table!=b.table: return a.table<b.table
+		return a.point.y*128+a.point.x<b.point.y*128+b.point.x)
+	return pickup if choices.is_empty() else choices[0].point
+
 static func leisure_seat(world: ColonyWorld, citizen: Dictionary) -> Vector2i:
 	var start: Vector2i = Vector2i(citizen.x,citizen.y)
 	var distance: Dictionary = {start:0}

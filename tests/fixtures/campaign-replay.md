@@ -55,3 +55,22 @@ The tick-7,200 canonical state and original foreign snapshot bytes remain
 unchanged (`9d1636a4bc1b2764b49b85578c8aff224f44e6922205b2cad1f15dd7b234aa4a`).
 A separate non-recording replay verifies both checkpoints and continuation from
 that retained snapshot. Future receipt failures retain a diagnostic snapshot.
+
+13 October physical table dining: meals now include a real walk to an available
+table seat within 12 safe path tiles of pickup. This intentionally changes work
+timing; the previous fixed schedule attempted its later action before Farming
+was complete. A fresh ordinary ten-day `first_week` run passed with 62 accepted
+public commands and exact final snapshot round trip. All 62 commands before
+tick 72,000 were captured with their original times and order; verification
+does not run the adaptive policy. Input provenance records the source report
+digest and canonical hash. Both expected receipts and prerequisites stay strict.
+
+The new canonical hashes are
+`7ca1d514105bbdffce924e17ab43b5eeb87d3c255e5057de5edeec95acb63a20`
+at 7,200 and
+`70095612774548710d434881d0902802d86ed71aefb33c6c4e98dd41fa474b65`
+at 72,000. The current foreign save SHA-256 is
+`ed04e21b0da3c5076fc66da1e27246257f6dbdf77fd9bbfaf00bc8b9bec318f9`.
+The unchanged earlier foreign bytes remain in
+`m6-before-table-dining-7200.brackenward`; scheduler tests verify its original
+acknowledged state and exact continued simulation under the current rules.
