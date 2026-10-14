@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.34-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.35-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.34-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `b2870e7` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-b2870e7fcf97); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,466 checks, zero failures, including 617 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.34; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,488 checks, zero failures, including 623 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.35; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2367,3 +2367,38 @@ before comparing that checkpoint restores exact equality; no assertion or saved
 state was relaxed. Original failed artifacts remain. This diagnostic invokes the
 main checkout's toolchain explicitly and reports its actual source version;
 it is separate from the frozen Winter sweep and cannot repair its audit status.
+
+
+## 0.7.35 accessible entrances and causal hunger explanations
+
+Exact replay of 264 commands reaches the Pine-73 pre-starvation tick 134,159,
+matching all eighteen original daily hashes on current 0.7.34. Four newcomers
+have fullness 1 and no feasible food inside the lodge at (68,60). Tree 2110,
+replanted by command 135 at tick 65,401, is now solid at (72,66), immediately
+outside the only door (72,65). The other residents can reach 22 meals, 156
+mushrooms and 260 vegetables. No danger, flood or expedition explains the split.
+The later recorded tree cut reopens access. This establishes an avoidable planner
+obstruction; it does not change the failed Winter/soak reports into passes.
+
+The ordinary-command planning policy now protects built/unfinished and planned
+door approaches, avoids future-solid saplings at lodge/grow-room entrances, and
+repairs older entrance trees through actual clear/gather work. It grants no
+resources, instant destruction, movement or workers. Read-only approach queries
+include rotated doors and gates; the policy builds one per-call approach set.
+Runtime planting, maturity, food, activity strings and saved formats are unchanged.
+Resource cards explain that maturity makes trees solid and point out entrance
+sites while retaining normal actions. Hungry residents with stocked food but
+no feasible safe portion get a detail-card access warning covering entrances,
+danger and reservations. The warning disappears after access reopens without
+a simulation tick. Existing meal/patient/expedition states retain their context.
+
+Sixteen new policy regressions include real blocked-room geometry, physical
+cutting and eating, exact save continuation, Queued door proposals, planned rooms,
+rotations, duplicate suppression and normal public replanting. Six new native UI
+checks exercise literal names, both tree states, paused/read-only observations,
+instant access updates and excluded resident states. Charter passes 89, native
+UI 623, nature 18 and persistence 321; the maintained 28-suite total is 2,488.
+Native sixty-frame startup/audio drain and final Android export pass; aapt verifies
+0.7.35-m7 / local code 74. Content/media validation passes 443 UI keys and unchanged
+v6 gameplay catalog hash. Fresh clean-source Winter validation and current remote
+CI remain separate. Weekly remaining last observed 66%; work continues.

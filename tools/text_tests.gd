@@ -78,6 +78,31 @@ static func ui(game: GameSession, check: Callable) -> void:
 	var before_bed: String=game.world.canonical_hash();game.show_station(bed)
 	check.call("TEXT/UI_bed_station_reports_current_recovery_rate",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.begins_with("Rest 75/hour.")) and game.world.canonical_hash()==before_bed)
 	game.close_sheet()
+	access_help(game,check)
+
+static func access_help(game: GameSession, check: Callable) -> void:
+	game._replace_world(PolicyTests.enclosed_tree_world());game.close_sheet();game._tutorial_dismiss()
+	var person: Dictionary=game.world.citizens[0];person.name="Mira {portions}"
+	var tree: Dictionary=game.world.resources[-1]
+	var before: String=game.world.canonical_hash()
+	game.show_person(person.id)
+	check.call("TEXT/UI_trapped_hungry_person_explains_stored_but_unreachable_food",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Mira {portions} cannot reach") and n.text.contains("blocked entrances") and n.text.contains("reservations")))
+	check.call("TEXT/UI_food_access_diagnosis_is_read_only_and_paused",game.world.canonical_hash()==before and game.world.pending_commands.is_empty() and game.runner.speed==0)
+	game._resource_sheet(tree)
+	check.call("TEXT/UI_mature_tree_at_door_explains_cutting_to_reopen_access",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("beside a door or gate") and n.text.contains("gather a mature tree")) and game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Gather") and game.world.canonical_hash()==before)
+	tree.remaining=0;game.world.navigation_dirty=true;game.world.reachability_dirty=true
+	before=game.world.canonical_hash();game._resource_sheet(tree)
+	check.call("TEXT/UI_stump_warns_before_replanting_a_future_solid_exit",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Mature trees are solid")) and game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Replant tree (4 WU)") and game.world.canonical_hash()==before)
+	check.call("TEXT/UI_reopened_exit_clears_food_access_warning_without_ticking",game.food_access_description(person).is_empty() and game.world.canonical_hash()==before)
+	tree.remaining=8;game.world.navigation_dirty=true;game.world.reachability_dirty=true
+	var excluded: bool=true
+	for state in ["away","downed","departed","death_recorded"]:
+		person[state]=true
+		excluded=excluded and game.food_access_description(person).is_empty()
+		person[state]=false
+	person.fullness=500
+	check.call("TEXT/UI_access_warning_only_describes_living_home_hungry_walkers",excluded and game.food_access_description(person).is_empty())
+	game.close_sheet()
 
 static func literal_routes(game: GameSession, check: Callable) -> void:
 	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()

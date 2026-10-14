@@ -520,6 +520,9 @@ Berry bushes give 4 berries per harvest, 8 WU, and regrow after 2 days in Spring
 
 Mature trees give 8 wood at 16 WU. Cutting leaves a stump with a visible Replant action, 4 WU, no material cost. New trees mature after 8 non-winter days; before maturity they can be cleared for no wood at 2 WU. Naturally generated mature trees do not spread during play. A Forest zone means automatically cut only mature trees above a player reserve of 50%, rounded up, and replant cleared cells; default reserve 75%. Explicit individual cut orders can go below that reserve with the resulting tree count shown.
 
+Mature trees are solid and may block a doorway when a sapling grows. Resource cards must explain this before replanting, identify door/gate approaches including unfinished blueprints, and retain the ordinary clear/cut actions. A hungry home resident with stored unreserved food but no safe reachable portion gets an explicit access warning in their detail card; colony runway is not a promise that every resident can reach those stocks. These are read-only presentation checks. They do not change tree growth, food rules, saved activities or commands. Long-run planning policies keep planned and built entrance approaches free of replanted trees, avoid saplings when choosing a future lodge entrance, and repair older obstructed entrances through actual clear/gather work, never instant removal.
+
+
 Stone deposits yield 200 stone, clay banks 120 clay, and iron seams 80 ore per tile, at 2/2/4 WU per unit. Nodes disappear only at exhaustion. These finite deposits must last a charter campaign under the validation budget; renewable wood, trade, and expedition quarry supplies sustain later play. No mine tunnel or cave-in subsystem exists.
 
 ## 10 Animals and food gathering

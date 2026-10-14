@@ -27,6 +27,27 @@ in `reports/winter-release-v6-ffdce48/`.
 | Pine 73 report | `4e7c573fbac04ea73718db989c27a5c08ad38e858f93c68d6c0932cde24402dc` |
 | Pine 73 final snapshot | `25edf7a2519f88918fbfff8724667fbcd13b4cabb1c6dd554fd4968a6fe5198b` |
 
+### Pine 73 causal replay and repair under validation
+
+Current 0.7.34 replays 264 retained public commands from the original initial save
+to tick 134,159. All eighteen original daily canonical checkpoints match exactly;
+invariants, unchanged inputs and read-only observation pass. At this point the
+four newcomers are inside the lodge at origin (68,60), behind its door (72,65).
+Replanted tree 2110 at (72,66) is mature and solid. Each has fullness 1 and no
+feasible food, while the other four residents can reach the same 22 meals,
+156 mushrooms and 260 vegetables. There is no danger, flood or expedition.
+The policy replanted this tree through public command 135 at tick 65,401; the
+later normal gather command at 138,901 eventually reopens the entrance.
+The shortage is a specific avoidable obstruction, not missing global supplies.
+
+The diagnostic report/snapshot SHAs are
+2c1747ad1073eca2217e46cfeb481e4a20b1950bfe3bb93249357741f99d7cbf /
+3e25d57798a1fe8e8c8ea5f167534699c9fbbad319b144d349af98d2b101caff.
+The failed first replay and corrected pending-command canaries remain retained.
+Current 0.7.35 repairs only the planning policy and player-facing explanations;
+ordinary simulation rules and the old failed evidence remain intact. Fresh
+clean-source Winter evidence is required after the revised policy.
+
 ## Frozen content v4 / schema 23
 
 All **30/30 fresh first-Winter runs** pass at clean, unchanged source

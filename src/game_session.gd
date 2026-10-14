@@ -1429,6 +1429,10 @@ func _resource_sheet(resource: Dictionary) -> void:
 	var definition: Dictionary = world.definitions.resources[resource.definition]
 	label("%d %s remaining | %d WU %s" % [resource.remaining, definition.item, definition.work_milli / 1000, "per unit" if definition.per_unit else "per harvest"], sheet_body)
 	label(ColonyText.text("ui.help.resource_sheet.a_gatherer_works_beside_the_resource_the"), sheet_body)
+	if resource.definition=="tree":
+		label(ColonyText.text("ui.help.resource_sheet.tree_passage"),sheet_body)
+		if ColonyNature.door_approach(world,Vector2i(resource.x,resource.y)):
+			label(ColonyText.text("ui.help.resource_sheet.tree_at_door"),sheet_body)
 	if resource.definition == "tree" and resource.remaining == 0:
 		var state: Dictionary = ColonyNature.tree(world,resource.id)
 		label("Growing: %.1f of eight non-winter days. Winter pauses growth." % (float(state.age)/7200.0) if state.planted else "Stump. Replant for 4 WU; no material cost. Eight non-winter days to maturity.",sheet_body)
@@ -2113,6 +2117,13 @@ func show_appearance(id: int, draft: Dictionary = {}) -> void:
 func departure_description(person: Dictionary) -> String:
 	return "Departure ultimatum: %.1f game hours remaining. Reach morale 300 before the deadline. Improve bed, food, warmth or workload; inspect the active morale causes." % [maxi(0,person.departure_until-world.tick)/300.0]
 
+func food_access_description(person: Dictionary) -> String:
+	if person.death_recorded or person.departed or person.downed or person.away or person.fullness>350: return ""
+	var current: Dictionary=world.find(world.jobs,person.job)
+	if current.get("kind")=="eat" or not world._food(person,current).is_empty(): return ""
+	if FoodForecast.calculate(world).portions<=0: return ""
+	return ColonyText.text("ui.help.person.food_access",{"name":person.name})
+
 func show_person(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_details(citizen.name)
@@ -2122,6 +2133,8 @@ func show_person(id: int) -> void:
 	button(ColonyText.text("ui.action.remembered_moments"),func()->void:show_person_history(id),sheet_body)
 	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
 	label(ColonyBeds.description(world,citizen),sheet_body)
+	var food_access: String=food_access_description(citizen)
+	if not food_access.is_empty(): label(food_access,sheet_body)
 	label(ColonyText.text("ui.help.person.rest_policy",{"tired":ColonyRest.TIRED,"preferred":ColonyRest.PREFERRED_TIRED,"rested":ColonyRest.RESTED,"bed":ColonyRest.BED,"bedroll":ColonyRest.BEDROLL,"ground":ColonyRest.GROUND}),sheet_body)
 	if not citizen.death_recorded and not citizen.departed and not citizen.downed and not citizen.away and citizen.fullness<=350 and citizen.rest<=300:
 		label(ColonyText.text("ui.help.person.food_and_rest_priority"),sheet_body)

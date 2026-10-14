@@ -8,6 +8,25 @@ static func initial_state(tick: int = 1800) -> Dictionary:
 static func tree(world: ColonyWorld, id: int) -> Dictionary:
 	return world.nature_state.trees.get(id,{"planted":false,"age":0})
 
+## Read-only warning/planner query; planting and maturity rules remain unchanged.
+static func door_approach(world: ColonyWorld, point: Vector2i) -> bool:
+	return door_approaches(world).has(point)
+
+static func door_approaches(world: ColonyWorld) -> Dictionary:
+	var result: Dictionary={}
+	for structure in world.structures:
+		if structure.health<=0 or structure.definition not in ["door","reinforced_gate"]: continue
+		_record_approaches(world,structure,result)
+	for job in world.unfinished_jobs():
+		if job.kind!="build" or job.state in ["Complete","Canceled"] or job.definition not in ["door","reinforced_gate"]: continue
+		_record_approaches(world,job,result)
+	return result
+
+static func _record_approaches(world: ColonyWorld, door: Dictionary, result: Dictionary) -> void:
+	for tile in world.footprint(door):
+		for direction in ([Vector2i.UP,Vector2i.DOWN] if door.rotation%2==0 else [Vector2i.LEFT,Vector2i.RIGHT]):
+			result[tile+direction]=true
+
 static func command(world: ColonyWorld, kind: String, args: Dictionary) -> String:
 	if kind == "forest":
 		if args.value not in [50,75,100] or args.tiles.is_empty(): return "Forest reserve must be 50, 75 or 100 percent"

@@ -50,6 +50,7 @@ func plan(world: ColonyWorld) -> void:
 	var long_campaign: bool = scenario!="first_week"
 	if long_campaign:
 		_assign_beds(world)
+		if _repair_entrance_trees(world): return
 		if _repair_lodge_access(world): return
 	if long_campaign: _gather(world,"stone_node",100,2)
 	if not _present(world,"table"):
@@ -75,7 +76,7 @@ func plan(world: ColonyWorld) -> void:
 		_fields(world,"flax",12,false)
 		_fields(world,"turnip",24,false)
 	if world.researched.has("storecraft") and grow_origin.x<0:
-		grow_origin=_empty_room(world)
+		grow_origin=_empty_room(world,3)
 		if grow_origin.x>=0:
 			issue(world,"build",{"definition":"door","x":grow_origin.x+3,"y":grow_origin.y+5,"rotation":0})
 			var walls: Array[Vector2i] = []
@@ -104,10 +105,33 @@ func plan(world: ColonyWorld) -> void:
 			if offer.state=="Offered" and ColonyPopulation.acceptance(world,offer).error.is_empty(): issue(world,"newcomer",{"target":offer.id,"accept":true});break
 	for person in residents:
 		if person.equipment.cloak.is_empty() and world.available("cloak")>0: issue(world,"equip",{"target":person.id,"slot":"cloak","item":"cloak"})
-	for resource in world.resources:
-		if resource.definition=="tree" and resource.remaining==0 and not ColonyNature.tree(world,resource.id).planted and ColonyNature.plantable(world,Vector2i(resource.x,resource.y)) and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target==resource.id and j.kind=="plant_tree" and j.state not in ["Complete","Canceled"]):
-			issue(world,"replant_tree",{"target":resource.id});break
+	_replant_trees(world)
 	if scenario=="vegetarian_charter": _charter(world)
+
+func _planned_approach(point: Vector2i) -> bool:
+	for origin in lodge_origins:
+		if point==origin+Vector2i(4,6): return true
+	return grow_origin.x>=0 and point==grow_origin+Vector2i(3,6)
+
+func _replant_trees(world: ColonyWorld) -> void:
+	var approaches: Dictionary=ColonyNature.door_approaches(world)
+	for resource in world.resources:
+		var point: Vector2i=Vector2i(resource.x,resource.y)
+		if resource.definition!="tree" or resource.remaining!=0 or ColonyNature.tree(world,resource.id).planted or not ColonyNature.plantable(world,point): continue
+		if _planned_approach(point) or approaches.has(point): continue
+		if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target==resource.id and j.kind=="plant_tree" and j.state not in ["Complete","Canceled"]): continue
+		issue(world,"replant_tree",{"target":resource.id});return
+
+func _repair_entrance_trees(world: ColonyWorld) -> bool:
+	var approaches: Dictionary=ColonyNature.door_approaches(world)
+	for resource in world.resources:
+		if resource.definition!="tree" or (resource.remaining==0 and not ColonyNature.tree(world,resource.id).planted): continue
+		var point: Vector2i=Vector2i(resource.x,resource.y)
+		if not approaches.has(point): continue
+		if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target==resource.id and j.kind in ["gather","plant_tree","clear_sapling"] and j.state not in ["Complete","Canceled"]): continue
+		if world.pending_commands.any(func(c:Dictionary)->bool:return c.kind in ["gather","replant_tree","clear_sapling"] and c.args.target==resource.id): continue
+		issue(world,"gather" if resource.remaining>0 else "clear_sapling",{"target":resource.id});return true
+	return false
 
 func _finished_research_staffing(world: ColonyWorld) -> void:
 	if not RESEARCH.all(func(id:String)->bool:return world.researched.has(id)): return
@@ -148,7 +172,7 @@ func _build(world: ColonyWorld, definition: String) -> bool:
 				issue(world,"build",{"definition":definition,"x":x,"y":y,"rotation":0});return true
 	return false
 
-func _empty_room(world: ColonyWorld) -> Vector2i:
+func _empty_room(world: ColonyWorld, entrance_x: int = 4) -> Vector2i:
 	var cart: Vector2i = _cart(world)
 	var occupied: Dictionary = {}
 	for structure in world.structures:
@@ -163,6 +187,9 @@ func _empty_room(world: ColonyWorld) -> Vector2i:
 			if job.definition=="door":
 				for direction in ([Vector2i.UP,Vector2i.DOWN] if job.rotation%2==0 else [Vector2i.LEFT,Vector2i.RIGHT]): occupied[Vector2i(job.x,job.y)+direction]=true
 	for field in world.fields: occupied[Vector2i(field.x,field.y)]=true
+	# A passable sapling will become solid during this long campaign.
+	for resource in world.resources:
+		if resource.definition=="tree" and ColonyNature.tree(world,resource.id).planted: occupied[Vector2i(resource.x,resource.y)]=true
 	for command in world.pending_commands:
 		if command.kind=="field":
 			for point in command.args.tiles: occupied[point]=true
@@ -178,6 +205,8 @@ func _empty_room(world: ColonyWorld) -> Vector2i:
 						var point: Vector2i = Vector2i(xx,yy)
 						if occupied.has(point) or _reserved_plan(point) or not world.walkable(point) or world.is_flooded(point) or world.elevation(point)<2: valid=false;break
 					if not valid: break
+				var approach: Vector2i=Vector2i(x+entrance_x,y+6)
+				if occupied.has(approach) or _reserved_plan(approach) or not world.walkable(approach) or not world.accessible(approach) or not world.can_step(approach-Vector2i.DOWN,approach): valid=false
 				if valid and ColonyConstruction.lodge_error(world,Vector2i(x,y)).is_empty(): return Vector2i(x,y)
 	return Vector2i(-1,-1)
 
