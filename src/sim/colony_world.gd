@@ -282,6 +282,8 @@ func find(records: Array, id: int) -> Dictionary:
 		if is_same(records,get(name)):
 			table = name
 			break
+	if in_tick and (table=="stacks" or table=="jobs"):
+		return _find_history(records,id,table)
 	if not table.is_empty():
 		var index: Dictionary = record_indexes.get(table,{})
 		if index.has(id):
@@ -296,6 +298,23 @@ func find(records: Array, id: int) -> Dictionary:
 		if record.id == id:
 			return record
 	return {}
+
+func _find_history(records: Array, id: int, table: String) -> Dictionary:
+	# These large runtime tables append immutable IDs; depleted/terminal
+	# rows remain saved history. Build once, then scan only new rows. A complete
+	# ID map also answers misses without rescanning every historical record.
+	# Imports/generation clear record_indexes; replacement/shrink is detected.
+	var key: String = "history_"+table
+	var state: Dictionary = record_indexes.get(key,{})
+	if state.is_empty() or not is_same(state.source,records) or state.scanned>records.size():
+		state={"source":records,"scanned":0,"by_id":{}}
+		record_indexes[key]=state
+	if state.scanned<records.size():
+		for index in range(state.scanned,records.size()):
+			var record: Dictionary = records[index]
+			if not state.by_id.has(record.id): state.by_id[record.id]=record
+		state.scanned=records.size()
+	return state.by_id.get(id,{})
 
 func queue_command(kind: String, args: Dictionary, command_id: int = 0, expected_session: String = "") -> int:
 	var id: int = command_id if command_id > 0 else next_command_id

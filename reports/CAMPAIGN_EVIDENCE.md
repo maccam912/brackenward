@@ -218,3 +218,49 @@ declared cosmetics/header metadata; source files remain untouched. Full source,
 harness and evidence digests are in [WINTER_MATRIX.md](WINTER_MATRIX.md). This is
 separate from a repeated full campaign under later presentation code and from
 physical/human release gates.
+
+
+## Frozen v3 Charter sweep — 14 October 2026
+
+The four-case seed-104729 sweep pinned
+`a853f3b23df147618cf8d522ab1c0233377e533f` requested 96 ordinary days per case.
+It finished with source unchanged: one settlement loss and three one-hour timeouts,
+**zero completed 96-day certificates**. No failed case was retried unchanged.
+The independent audit fails as expected because the requested final reports do not
+exist for the timeouts and Pine Standard lost its population. Verified periodic
+snapshots remain useful partial evidence; they are not substituted for endpoints.
+
+| Site / mode | Result | Last verified tick | Living | Minimum health | Beyond-grace ticks | Ceremony / Continue |
+| --- | --- | ---: | ---: | ---: | ---: | --- |
+| Pine Shelf / Standard | Settlement lost | 155,759 (final) | 0 | 4 | 51,592 | Incomplete |
+| Meadow Reach / Standard | One-hour timeout | 612,000 (partial) | 8 | 5 | 28,796 | Complete at 399,901 / yes |
+| Reed Bend / Standard | One-hour timeout | 640,800 (partial) | 8 | 100 | 0 | Complete at 262,801 / yes |
+| Pine Shelf / Hearthside | One-hour timeout | 676,800 (partial) | 8 | 100 | 0 | Complete at 291,001 / yes |
+
+All listed partial snapshots have exact report/envelope checksums, codec round
+trips and no recorded invariant failure. Their accumulated invariant checks are
+2,034 / 2,130 / 2,250 in table order for the three timeouts. All three partials
+completed five Charter stages and continued for many ordinary days afterward.
+The Pine loss exposed the planner's missed Stand down interval; that planner uses
+public commands and was corrected in 0.7.14. Manual player drafting rules did not
+change. The immutable loss, crisis checkpoint, raw logs and bounded outcomes remain
+retained in ignored local reports.
+
+A separate clean run pinned `977313e33b848b469dab31bd45e5ece7c546b837` uses the
+corrected planner for Pine Standard. It also reaches the one-hour bound. Its final
+verified periodic snapshot is tick 612,000, eight living residents, minimum health
+100, no beyond-grace ticks, all five stages, ceremony completed at 373,501 and
+Continue. Its source is unchanged and its snapshot is retained as the provenance
+for later performance fixtures. It is still a partial result, not a 96-day pass.
+
+Raw old-sweep directory: `reports/charter-release-v3-a853f3b/`. SHA-256 digests:
+source manifest `36d4aff20011a517b18d148ff25b4fb27ef1733fb9dcb9b35278a3fa36e5368c`;
+completion `a1423b77e2d0646f51c5238932691c6791623ec1e23eafc9754e8540b3a91324`;
+failed audit `e7efacb0a358c036651116e309d1d77447d02ab4bc6acf880ef5407f54c22a1d`.
+The frozen checkouts are archived after completion, preserving recoverable Git
+snapshots; all report/checkpoint evidence resides outside those checkouts.
+
+These runs use colony-v3. They neither certify the later food-recovery v4 gameplay
+nor replace the older v2 certificates above. The fresh v4 Winter matrix remains a
+separate running validation. Physical-device, human and performance release gates
+remain open.

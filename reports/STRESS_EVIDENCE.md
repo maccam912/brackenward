@@ -431,3 +431,40 @@ four residents, ten structures, seven positive stacks and sixteen wildlife, with
 no active target, crop, domestic animal, visitor or hostile. Fresh guidance is
 smooth on this host; late-game and crowded tick budgets still fail. Android,
 all-alert stress, thirty-minute soak and hardware memory/thermal gates remain open.
+
+
+## 0.7.17 complete ID maps for retained history
+
+Job and stack lookup uses complete derived ID maps within trusted ticks. The map
+scans only appended records, answers absent IDs immediately and retains original
+dictionary references. It resets on import/generation, source-array replacement
+or shrink. Fields, stores, other small tables and direct calls retain their original
+lazy/full-scan behavior. No saved field, selection order, ledger or content rule
+changes. History is never removed. The extra maps cost memory proportional to
+retained job/stack IDs; they are not a hardware memory certification.
+
+An initial attempt applied complete maps to five tables. It preserved state but
+slowed the cold fixture in every alternating pair, so that broader path is not
+shipped. Final code limits maps to the two large histories and avoids empty range
+allocation/cache-map writes on repeated reads. `tools/profile_history.gd` retains
+the original 44fffb9 positive-only lazy lookup, alternates execution order over four
+pairs, compares complete final hashes/invariants and records snapshot hashes.
+Every measured continuation is 1,200 ticks; timing excludes clone creation and
+post-run hashes/invariants. Three frozen Winter workers overlap these runs;
+scheduler checks also overlap the fresh/cold cases. They remain contended local
+CPU observations, not isolated, foreground-frame or physical-device measurements.
+
+| Fixture | Original median seconds | Current median seconds | State equality |
+| --- | ---: | ---: | --- |
+| Fresh Meadow Reach / seed 104729 | 0.431493 | 0.430595 | All eight worlds exact |
+| Actual snowy checkpoint | 2.854603 | 2.865872 | All eight worlds exact |
+| Day 86 daytime continuation | 7.021411 | 6.684699 | All eight worlds exact |
+| Synthetic crowded | 8.656637 | 8.744747 | All eight worlds exact |
+
+The late continuation improves about 5%; the other fixtures show no useful speedup.
+These results do not establish lower frame-time tails. Full current canonical
+hashes remain `3169d6dd685eaa1fe7d8271849d88bec8292709ca366ae613de637adeb02c598`
+(cold), `38c3c1ff65e2bfd52b6a79e5c0d3ff1b2416ffafd36720add35e71d100654506`
+(late) and `46cc90218fa6bbf435dfed45acec80cfb6a80e2357600dd392b06e9284e5f919`
+(crowded). Runtime-canonical and conservation checks pass; the crowded-colony,
+Android, all-alert and long-soak gates remain open.

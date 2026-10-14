@@ -22,8 +22,13 @@ class FullReservationWorld extends ColonyWorld:
 		return jobs
 	func _work_inventory() -> Array:
 		return stacks
+	func _find_history(records: Array, id: int, _table: String) -> Dictionary:
+		for record in records:
+			if record.id==id: return record
+		return {}
 
 static func run(check: Callable) -> void:
+	history_lookup(check)
 	historical_inventory(check)
 	runtime_deadlines(check)
 	scheduling_bounds(check)
@@ -59,6 +64,38 @@ static func run(check: Callable) -> void:
 	world.tick+=50
 	ColonyWorkBudget.reconcile_records(world.citizens,jobs,world.tick)
 	check.call("BUDGET/due_retry_reenters_with_original_blocked_state",blocked.state=="Blocked" and jobs.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,world.tick)).size()==512)
+
+static func history_lookup(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	world.in_tick=true
+	var exact: bool = true
+	for table in ["citizens","structures","resources","stacks","jobs"]:
+		var records: Array = world.get(table)
+		for record in records:
+			exact=exact and is_same(world.find(records,record.id),record)
+		exact=exact and world.find(records,world.next_id+100).is_empty()
+	check.call("READ/history_index_returns_original_records_and_absent_ids",exact)
+	var missing: int = world.next_id
+	check.call("READ/missing_history_id_is_not_a_future_tombstone",world.find(world.stacks,missing).is_empty())
+	var added: Dictionary = world._make_stack("wood",1,"ground",0,Vector2i(50,60),true)
+	check.call("READ/same_tick_append_is_visible_after_negative_lookup",added.id==missing and is_same(world.find(world.stacks,missing),added))
+	added.count=0
+	check.call("READ/index_keeps_mutable_historical_record_reference",is_same(world.find(world.stacks,missing),added) and world.find(world.stacks,missing).count==0)
+	var replacement: Dictionary = added.duplicate(true);replacement.count=7
+	world.stacks=[replacement]
+	check.call("READ/history_array_replacement_rebuilds_index",is_same(world.find(world.stacks,missing),replacement))
+	world.stacks.clear()
+	check.call("READ/history_shrink_discards_removed_ids",world.find(world.stacks,missing).is_empty())
+	var outside: Dictionary = world._make_stack("wood",1,"ground",0,Vector2i(50,60),false)
+	world.in_tick=false
+	world.find(world.stacks,outside.id)
+	world.record_indexes.clear()
+	world.stacks.assign([replacement])
+	check.call("READ/reset_clears_complete_and_direct_lookup_indexes",world.find(world.stacks,outside.id).is_empty() and is_same(world.find(world.stacks,missing),replacement))
+	world.in_tick=true
+	check.call("READ/reset_view_rebuilds_with_reused_container",is_same(world.find(world.stacks,missing),replacement))
+	var untracked: Array = [{"id":5,"value":"first"},{"id":5,"value":"second"}]
+	check.call("READ/non_world_arrays_keep_first_record_scan",is_same(world.find(untracked,5),untracked[0]))
 
 static func historical_inventory(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]
