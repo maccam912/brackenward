@@ -308,13 +308,14 @@ func step() -> void:
 	citizens.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.id<b.id)
 	tick += 1
 	path_requests = 0
+	var had_commands: bool = not pending_commands.is_empty()
 	pending_commands.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.id < b.id)
 	for command in pending_commands:
 		if not receipts.has(command.id):
 			receipts[command.id] = _command(command) if command.session == session_id else "wrong_session"
 			command_trace.append({"tick": tick, "command": command.duplicate(true)})
 	pending_commands.clear()
-	work_budget.reconcile(self)
+	work_budget.after_commands(self,had_commands)
 	ColonyDefense.advance(self)
 	ColonyCare.advance(self)
 	ColonyWeather.advance(self)
@@ -942,12 +943,15 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 			unsafe_position = true
 			continue
 		var occupied: bool = false
-		for other in jobs:
-			# Personal eating must remain possible when travelers share the cart
-			# tile, including when someone is resting there. It owns food, not a
-			# productive work position.
-			if job.kind!="eat" and other.kind!="eat" and other.worker > 0 and other.id != job.id and other.work_x == position.x and other.work_y == position.y:
-				occupied = true
+		if job.kind=="haul" and job.worker==0 and storage_context.has("work_positions"):
+			# Consecutive failed unowned haul probes cannot change another task's
+			# ownership. Their existing search-local context is valid until success.
+			occupied=storage_context.work_positions.has(position)
+		else:
+			for other in jobs:
+				# Personal eating owns food rather than a productive work position.
+				if job.kind!="eat" and other.kind!="eat" and other.worker > 0 and other.id != job.id and other.work_x == position.x and other.work_y == position.y:
+					occupied = true
 		if not occupied:
 			work_position = position
 			break
@@ -1497,7 +1501,7 @@ func _food(citizen: Dictionary) -> Dictionary:
 	return {}
 
 func _storage_context() -> Dictionary:
-	var result: Dictionary = {"occupied":{},"tiles":{},"working_tiles":{}}
+	var result: Dictionary = {"occupied":{},"tiles":{},"working_tiles":{},"work_positions":{}}
 	var reserved: Dictionary = {};var carried: Dictionary = {}
 	for stack in nonempty_stacks():
 		if stack.location=="store":
@@ -1508,6 +1512,7 @@ func _storage_context() -> Dictionary:
 		for job_id in stack.reservations: reserved[job_id]=reserved.get(job_id,0)+stack.reservations[job_id]
 		if stack.location=="carry": carried[stack.job]=carried.get(stack.job,0)+stack.count
 	for job in jobs:
+		if job.worker>0 and job.kind!="eat": result.work_positions[Vector2i(job.work_x,job.work_y)]=true
 		if job.kind!="haul" or job.worker<=0: continue
 		result.occupied[job.destination]=result.occupied.get(job.destination,0)+reserved.get(job.id,0)+carried.get(job.id,0)
 		result.working_tiles[Vector3i(job.destination,job.work_x,job.work_y)]=true

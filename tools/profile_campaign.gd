@@ -16,13 +16,14 @@ class ProfileWorld extends ColonyWorld:
 		citizens.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.id<b.id)
 		tick += 1
 		path_requests = 0
+		var had_commands: bool = not pending_commands.is_empty()
 		pending_commands.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.id < b.id)
 		for command in pending_commands:
 			if not receipts.has(command.id):
 				receipts[command.id] = _command(command) if command.session == session_id else "wrong_session"
 				command_trace.append({"tick": tick, "command": command.duplicate(true)})
 		pending_commands.clear()
-		_profile("work_budget",func()->void:work_budget.reconcile(self))
+		_profile("work_budget",func()->void:work_budget.after_commands(self,had_commands))
 		_profile("ColonyDefense.advance",func()->void:ColonyDefense.advance(self))
 		_profile("ColonyCare.advance",func()->void:ColonyCare.advance(self))
 		_profile("ColonyWeather.advance",func()->void:ColonyWeather.advance(self))

@@ -3,6 +3,7 @@ extends RefCounted
 
 static func run(check: Callable) -> void:
 	input_prefix(check)
+	haul_work_positions(check)
 	var world: ColonyWorld = ColonyTests.world()
 	world.stores[0].filters=[]
 	var point: Vector2i = Vector2i(75,70)
@@ -41,6 +42,40 @@ static func run(check: Callable) -> void:
 	var popped: Array = []
 	while not queue.heap.is_empty(): popped.append(queue.pop().id)
 	check.call("SCHED/lazy_heap_yields_exact_original_order",popped==expected.map(func(j:Dictionary)->int:return j.id) and queue.pop().is_empty())
+
+static func haul_work_positions(check: Callable) -> void:
+	for occupied in ["none","sleep","eat","haul","full_store"]:
+		var original: ColonyWorld = ColonyTests.world()
+		var owner: Dictionary = original.citizens[1]
+		var point: Vector2i = Vector2i(74,70)
+		if occupied in ["sleep","eat"]:
+			if occupied=="sleep": owner.rest=50
+			else: owner.fullness=100
+			original._assign(owner)
+			var owned: Dictionary = original.find(original.jobs,owner.job)
+			check.call("STORE/position_fixture_has_real_"+occupied,owned.get("kind")==occupied,str(owned))
+			point=Vector2i(owned.work_x,owned.work_y)
+		elif occupied=="haul":
+			var existing: Dictionary = original._make_stack("wood",8,"ground",0,point,true)
+			var owned: Dictionary = original._job("haul","Hauling","",existing.id,point,0);owned.source=existing.id
+			check.call("STORE/position_fixture_reserves_real_haul",original._reserve(owned,owner))
+			owner.job=owned.id;point=Vector2i(owned.work_x,owned.work_y)
+		elif occupied=="full_store":
+			original.stores[0].capacity=original._storage_context().occupied[original.stores[0].id]
+		var source: Dictionary = original._make_stack("wood",8,"ground",0,point,true)
+		var job: Dictionary = original._job("haul","Hauling","",source.id,point,0);job.source=source.id
+		var decoded: Dictionary = ColonyCodec.restore(original.payload().duplicate(true))
+		check.call("STORE/position_fixture_roundtrips_"+occupied,decoded.has("world"),str(decoded.get("error","")))
+		if not decoded.has("world"): continue
+		var cached: ColonyWorld = decoded.world
+		var context: Dictionary = cached._storage_context()
+		var expected: bool = original._reserve(job,original.citizens[0])
+		var actual: bool = cached._reserve(cached.find(cached.jobs,job.id),cached.citizens[0],context)
+		check.call("STORE/search_local_position_matches_full_history_"+occupied,expected==actual and original.canonical_hash()==cached.canonical_hash(),str([expected,actual,job.reason]))
+		if actual:
+			original.citizens[0].job=job.id;cached.citizens[0].job=job.id
+			original._release(job,true);cached._release(cached.find(cached.jobs,job.id),true)
+			check.call("STORE/search_local_position_cancel_is_exact_"+occupied,original.canonical_hash()==cached.canonical_hash() and original.invariant_errors().is_empty(),str(original.invariant_errors()))
 
 static func input_prefix(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world();var choices: Array = []

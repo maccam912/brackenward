@@ -2,11 +2,15 @@ class_name WorkBudgetTests
 extends RefCounted
 
 class UncachedBudget extends ColonyWorkBudget:
+	func after_commands(world: ColonyWorld, _had_commands: bool) -> void:
+		reconcile(world)
 	func reconcile(world: ColonyWorld) -> void:
 		var result: Dictionary = reconcile_records(world.citizens,world.unfinished_jobs(),world.tick)
 		used=result.used
 
 static func run(check: Callable) -> void:
+	precomputed_order(check)
+	stress_tick_order(check)
 	public_orders(check)
 	legacy_upgrade(check)
 	var world: ColonyWorld = ColonyTests.world();var jobs: Array = []
@@ -37,6 +41,38 @@ static func run(check: Callable) -> void:
 	world.tick+=50
 	ColonyWorkBudget.reconcile_records(world.citizens,jobs,world.tick)
 	check.call("BUDGET/due_retry_reenters_with_original_blocked_state",blocked.state=="Blocked" and jobs.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,world.tick)).size()==512)
+
+static func precomputed_order(check: Callable) -> void:
+	for variant in range(8):
+		var world: ColonyWorld = ColonyTests.world();world.tick+=40000
+		for index in range(1200):
+			var job: Dictionary = world._job("build",ColonyWorld.CATEGORIES[index%10],"Build",0,Vector2i(index%128,index/128),16000)
+			job.id=1000000000-1200+index;job.created=world.tick-index*71;job.priority=index%4
+			job.emergency=(index+variant)%17==0;job.state="Blocked" if index%23==0 else "Ready";job.queue_state=""
+			job.retry=world.tick+50 if index%23==0 else 0
+			if index%97==0: world.citizens[index%4].pinned_job=job.id
+		for person in world.citizens:
+			person.away=variant%3==1;person.downed=variant%3==2
+			person.preferences.Building=variant%4;person.preferences.Cooking=0
+		var reference: Array = world.jobs.duplicate(true);var actual: Array = world.jobs.duplicate(true)
+		if variant>=4:
+			for index in range(7): reference[index].worker=world.citizens[index%4].id;actual[index].worker=reference[index].worker
+		var expected: Dictionary = ColonyWorkBudget.reconcile_records(world.citizens,reference,world.tick)
+		var result: Dictionary = ColonyWorkBudget.reconcile_records(world.citizens,actual,world.tick,true)
+		check.call("BUDGET/precomputed_admission_matches_tuple_order_%d" % variant,result==expected and actual==reference)
+
+static func stress_tick_order(check: Callable) -> void:
+	var fixture: Dictionary = StressFixture.make()
+	if not fixture.has("world"): check.call("BUDGET/stress_reference_fixture_constructs",false,str(fixture));return
+	var first: Dictionary = ColonyCodec.decode(ColonyCodec.encode(fixture.world))
+	var second: Dictionary = ColonyCodec.decode(ColonyCodec.encode(fixture.world))
+	if not first.has("world") or not second.has("world"): check.call("BUDGET/stress_reference_fixture_restores",false);return
+	second.world.work_budget=UncachedBudget.new()
+	var exact: bool = true;var mismatch: int = 0
+	for index in range(120):
+		first.world.step();second.world.step()
+		if first.world.canonical_hash()!=second.world.canonical_hash(): exact=false;mismatch=first.world.tick;break
+	check.call("BUDGET/stress_matches_original_three_pass_order_each_tick",exact and first.world.invariant_errors().is_empty(),str([mismatch,first.world.invariant_errors()]))
 
 static func public_orders(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world();var tiles: Array[Vector2i] = []

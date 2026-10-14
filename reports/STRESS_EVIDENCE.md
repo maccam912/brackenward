@@ -166,3 +166,43 @@ with none over 50 ms. Save capture max 2.181 ms, preparation capture 0.677 ms an
 completion 0.719 ms. Its tutorial is dismissed; active guidance needs its own
 measurement. Physical Android stutter, the 4 ms stress tick target and all full
 release performance gates remain open.
+
+## 0.7.9 search-local positions and admission work
+
+A matched close/4x pair uses the same v3 snapshot, 960x600 Balanced preset and
+camera center 68,72. Both runs overlap the same three-worker frozen Winter matrix;
+these are provisional comparisons under competing CPU work, not isolated release
+measurements. Baseline is frozen `fe118288c17efc56a252318d042c4bc1af1c2ac6` with
+source fingerprint `e749114e7bbf87f1165b3cd0e5d925b5d87fe19057c3bb75e652e920fced75ff`;
+final source fingerprint is
+`a43cfd294951943300f196e65cae4b8d5af2d70c6a5d3772c83f72cc0e8fa9aa`.
+Each fingerprint matches before/after its run. The final profiler additionally
+clears warmup phase traces and reports post-measurement save draining separately.
+
+| Metric | Frozen baseline | Final 0.7.9 candidate |
+| --- | ---: | ---: |
+| Measured wall seconds | 30.024 | 30.008 |
+| Logical ticks | 1,199 | 1,199 |
+| Tick p50 / p95 / max ms | 8.975 / 37.782 / 165.668 | 7.320 / 35.790 / 151.979 |
+| Main callback p95 / max ms | 55.241 / 166.584 | 44.640 / 152.960 |
+| Main callbacks >50 ms | 49 | 29 |
+| Hauling reservation phase peak ms | 49.280 | 4.436 |
+| Admission phase peak ms | 41.201 | 17.285 |
+| Frame-gap max ms | 179.163 | 164.276 |
+| Frame gaps >50 ms | 104 | 86 |
+
+The two end-load counts match: twenty residents, twelve domestic animals,
+thirty-two wildlife, eight neutral visitors, no remaining active threats, 401
+structures, 1,059 nonempty stacks, 267 active targets, 192 crops, 1,041 Chronicle
+entries and rain. Both retain requested 4x speed and under 0.1 second backlog,
+with clean invariants/storage. The final diagnostics count 491 executable tasks,
+655 queued orders and 1,366 total unfinished records; the remainder waits on
+future retries. The 4 ms tick budget and frame requirements still fail.
+
+The final source uses one search-local owned-work-position map for consecutive
+failed unowned hauling probes, precomputed admission sort keys and no redundant
+start-of-tick admission on unchanged ticks. The full former three-pass schedule
+and explicit tuple comparator match all canonical fields at each of 300 crowded
+ticks in an extended local comparison; the regular suite retains 120 ticks to
+fit CI's timeout. Frozen ordinary-play replay and schema-22 gameplay hashes also
+match. These checks constrain behavioral changes but do not replace device tests.

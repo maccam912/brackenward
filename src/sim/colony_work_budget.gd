@@ -23,6 +23,11 @@ func initial_state(world: ColonyWorld, kind: String) -> String:
 	if used<ordinary_limit(world.citizens): used+=1;return "Ready"
 	return "Queued"
 
+func after_commands(world: ColonyWorld, had_commands: bool) -> void:
+	# The previous complete tick already reconciled unchanged orders. Retry/age
+	# changes are reconciled before assignment and at this tick's complete state.
+	if had_commands: reconcile(world)
+
 func reconcile(world: ColonyWorld) -> void:
 	var jobs: Array = world.unfinished_jobs();var pinned: Dictionary = {}
 	var enabled: Dictionary = enabled_categories(world.citizens)
@@ -42,7 +47,7 @@ func reconcile(world: ColonyWorld) -> void:
 			if admitted_ids.has(job.id)!=(job.state!="Queued"): inconsistent=true
 		signature.append(job.id*256+code)
 	if not inconsistent and signature==fingerprint: return
-	var result: Dictionary = reconcile_records(world.citizens,jobs,world.tick)
+	var result: Dictionary = reconcile_records(world.citizens,jobs,world.tick,true)
 	used=result.used;admitted_ids=result.admitted;fingerprint=signature
 
 static func ordinary_limit(citizens: Array) -> int:
@@ -63,7 +68,7 @@ static func protected(job: Dictionary) -> bool:
 static func executable(job: Dictionary, tick: int) -> bool:
 	return job.state not in TERMINAL and job.state!="Queued" and (job.worker>0 or job.state!="Blocked" or job.retry<=tick)
 
-static func reconcile_records(citizens: Array, jobs: Array, tick: int) -> Dictionary:
+static func reconcile_records(citizens: Array, jobs: Array, tick: int, precompute_keys: bool = false) -> Dictionary:
 	var candidates: Array = [];var occupied: int = 0;var pinned: Dictionary = {}
 	var enabled: Dictionary = enabled_categories(citizens)
 	for person in citizens:
@@ -75,13 +80,25 @@ static func reconcile_records(citizens: Array, jobs: Array, tick: int) -> Dictio
 		candidates.append(job)
 	var available: int = maxi(0,ordinary_limit(citizens)-occupied)
 	if candidates.size()>available:
-		candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
-			if a.emergency!=b.emergency: return a.emergency
-			if pinned.has(a.id)!=pinned.has(b.id): return pinned.has(a.id)
-			var ae: bool = a.category=="" or enabled.has(a.category);var be: bool = b.category=="" or enabled.has(b.category)
-			if ae!=be: return ae
-			var aa: int = mini(3,a.priority+(tick-a.created)/7200);var bb: int = mini(3,b.priority+(tick-b.created)/7200)
-			return aa>bb if aa!=bb else a.id<b.id)
+		if precompute_keys:
+			var keys: Dictionary = {}
+			for job in candidates:
+				# Valid age/priority occupies two bits; ID is validated below 1e9.
+				var rank: int = 16*int(job.emergency)+8*int(pinned.has(job.id))+4*int(job.category=="" or enabled.has(job.category))+mini(3,job.priority+(tick-job.created)/7200)
+				keys[job.id]=Vector2i(rank,-job.id)
+			candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
+				var aa: Vector2i = keys[a.id];var bb: Vector2i = keys[b.id]
+				return aa.x>bb.x if aa.x!=bb.x else aa.y>bb.y)
+		else:
+			# Retain the explicit tuple comparator as an independent reference
+			# for migration and runtime-cache/order regression comparisons.
+			candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
+				if a.emergency!=b.emergency: return a.emergency
+				if pinned.has(a.id)!=pinned.has(b.id): return pinned.has(a.id)
+				var ae: bool = a.category=="" or enabled.has(a.category);var be: bool = b.category=="" or enabled.has(b.category)
+				if ae!=be: return ae
+				var aa: int = mini(3,a.priority+(tick-a.created)/7200);var bb: int = mini(3,b.priority+(tick-b.created)/7200)
+				return aa>bb if aa!=bb else a.id<b.id)
 	var selected_ids: Dictionary = {}
 	for index in range(candidates.size()):
 		var job: Dictionary = candidates[index]

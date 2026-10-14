@@ -167,6 +167,8 @@ func run() -> void:
 	while Time.get_ticks_usec()<warmup_end: await process_frame
 	game.frame_us.clear();game.capture_us.clear();game.finish_us.clear();game.preparation_us.clear()
 	game.guidance_us.clear()
+	game.phase_peaks.clear();game.slow_frames.clear()
+	if trace_spikes: world.tick_us.clear();world.slow_jobs.clear();world.phases.clear()
 	game.view.update_us.clear();game.view.draw_us.clear();game.view.draw_command_us=0;game.soundscape.update_us.clear()
 	game.diagnostics.reset()
 	game.processed_delta_seconds=0.0
@@ -177,8 +179,12 @@ func run() -> void:
 	var measured_wall_seconds: float = float(Time.get_ticks_usec()-measurement_started)/1000000.0
 	var final_speed: int = game.runner.speed
 	var final_accumulator: float = game.runner.accumulator
+	var measured_finish: Array[int] = game.finish_us.duplicate()
+	var measured_diagnostics: Dictionary = game._performance_report()
+	var drain_started: int = Time.get_ticks_usec()
 	game.runner.pause();game._finish_background_save(true)
-	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"save_finish":stats(game.finish_us),"snapshot_preparation_capture":stats(game.preparation_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors(),"trace_spikes":trace_spikes,"slow_frames":game.slow_frames,"phase_peaks_us":game.phase_peaks,"slow_jobs":world.slow_jobs if trace_spikes else []}
+	var drain_us: int = Time.get_ticks_usec()-drain_started
+	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"save_finish":stats(measured_finish),"post_measurement_save_drain_us":drain_us,"snapshot_preparation_capture":stats(game.preparation_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors(),"trace_spikes":trace_spikes,"slow_frames":game.slow_frames,"phase_peaks_us":game.phase_peaks,"slow_jobs":world.slow_jobs if trace_spikes else []}
 	result["audio_update_frames"]=stats(game.soundscape.update_us)
 	result["requested_speed"]=speed;result["camera"]=camera;result["quality"]=quality
 	result["tutorial_requested"]=tutorial;result["tutorial_final"]=game._tutorial_state().active if game._tutorial_state().enabled else "none"
@@ -195,7 +201,7 @@ func run() -> void:
 	if not result.source_unchanged: result.storage_error="Profile source changed during measurement"
 	result["view_update_frames"]=stats(game.view.update_us)
 	result["view_draw_frames"]=stats(game.view.draw_us)
-	result["in_game_diagnostics"]=game._performance_report()
+	result["in_game_diagnostics"]=measured_diagnostics
 	if not await game.soundscape.drain(): result.storage_error="Audio streaming shutdown did not drain"
 	DirAccess.make_dir_recursive_absolute(report_path.get_base_dir())
 	var file: FileAccess = FileAccess.open(report_path,FileAccess.WRITE);file.store_string(JSON.stringify(result,"\t",true));file.close()
