@@ -30,3 +30,5 @@ addons/android_save/*.aar
 __pycache__/
 /data/build.json
 reports/animals-validation/
+reports/diagnostics-validation/
+reports/diagnostics-flows/

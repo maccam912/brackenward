@@ -56,6 +56,9 @@ var document_request: int = 0
 var exporting: bool = false
 var export_bytes: PackedByteArray = PackedByteArray()
 var document_pending: bool = false
+var document_kind: String = "save"
+var diagnostic_preview: Dictionary = {}
+var diagnostics: FrameDiagnostics = FrameDiagnostics.new()
 var test_insets: Vector4 = Vector4.ZERO
 var controls: Array[Button] = []
 var nav_labels: Array[Label] = []
@@ -125,11 +128,14 @@ func _ready() -> void:
 	content = Control.new()
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(content)
+	diagnostics.tick=world.tick;diagnostics.speed=runner.speed
 	view = _make_world_view()
+	view.diagnostics=diagnostics
 	content.add_child(view)
 	view.setup(world)
 	if world is ColonyWorld:
 		soundscape=_make_soundscape();add_child(soundscape);soundscape.bind_world(world,view)
+		soundscape.diagnostics=diagnostics
 	_apply_device_settings()
 	_restore_camera()
 	view.intent.connect(_map_intent)
@@ -352,6 +358,12 @@ func _build_placement() -> void:
 	placement.add_child(placement_wide_row)
 
 func _process(delta: float) -> void:
+	var started: int = Time.get_ticks_usec()
+	if is_node_ready() and not backgrounded and not quitting: diagnostics.frame(started,world.tick,runner.speed)
+	_advance_frame(delta)
+	if not backgrounded and not quitting: diagnostics.record("session",Time.get_ticks_usec()-started)
+
+func _advance_frame(delta: float) -> void:
 	if quitting: return
 	if native_smoke_remaining>0:
 		native_smoke_remaining-=1
@@ -364,9 +376,13 @@ func _process(delta: float) -> void:
 	if not preparation.get("error","").is_empty(): _storage_failed(preparation.error)
 	if store is ColonyStore and world.tick==store.journal_tick: durable_at=save_clock
 	if _storage_wait_required() and runner.speed>0:
+		diagnostics.count("slow_storage_pauses")
 		runner.pause()
 		notice="Saving is slow; paused to protect recent progress. Resume after saving finishes."
+	var tick_before: int = world.tick
+	var simulation_started: int = Time.get_ticks_usec()
 	runner.advance_frame(delta)
+	if world.tick>tick_before: diagnostics.record("simulation_batch",Time.get_ticks_usec()-simulation_started)
 	if not runner.notice.is_empty(): notice=runner.notice;runner.notice=""
 	view.simulation_speed=runner.speed
 	guidance_elapsed += delta
@@ -410,6 +426,7 @@ func _process(delta: float) -> void:
 			seen_opportunity_id=event.id
 			if event.state=="Offered": notice=event.definition.replace("_"," ").capitalize()+" offer: open Valley > Visitor opportunities. Two game days; declining has no penalty."
 	if runner.speed_reduced:
+		diagnostics.count("speed_reductions")
 		notice = "Speed reduced to keep the colony responsive."
 		runner.speed_reduced = false
 	if submitted_command > 0 and world.receipts.has(submitted_command):
@@ -457,15 +474,25 @@ func _process(delta: float) -> void:
 			autosave_elapsed = 0.0
 
 func _start_background_save(full_snapshot: bool) -> void:
+	var started: int = Time.get_ticks_usec()
 	save_requested_at=save_clock
 	var error: String = save_queue.start(store,world,full_snapshot)
+	diagnostics.record("save_capture",Time.get_ticks_usec()-started)
 	if not error.is_empty(): _storage_failed(error)
 
 func _start_snapshot_preparation() -> void:
+	var started: int = Time.get_ticks_usec()
 	var error: String = save_queue.start_preparation(world)
+	diagnostics.record("snapshot_capture",Time.get_ticks_usec()-started)
 	if not error.is_empty(): _storage_failed(error)
 
 func _finish_background_save(wait: bool = false, report_error: bool = true) -> String:
+	var started: int = Time.get_ticks_usec()
+	var error: String = _poll_background_save(wait,report_error)
+	diagnostics.record("save_finish",Time.get_ticks_usec()-started)
+	return error
+
+func _poll_background_save(wait: bool, report_error: bool) -> String:
 	if wait: save_queue.discard_preparation()
 	var result: Dictionary = save_queue.poll(wait)
 	if result.is_empty(): return ""
@@ -800,6 +827,7 @@ func show_sheet(title: String) -> void:
 				_tutorial_sheet()
 		"Menu":
 			button("Settings",show_accessibility,sheet_body)
+			button("Performance report",show_diagnostics,sheet_body)
 			label("Brackenward %s\nCampaigns preserve inventory, work and needs. Time stays paused after recovery." % ProjectSettings.get_setting("application/config/version"), sheet_body)
 			if world is ColonyWorld: button("Mode: "+world.care_state.mode,show_mode,sheet_body)
 			if world is ColonyWorld: button("Map and seed",show_map_details,sheet_body)
@@ -924,6 +952,12 @@ func _resize() -> void:
 	_layout()
 
 func save_local() -> String:
+	var started: int = Time.get_ticks_usec()
+	var error: String = _write_local_save()
+	diagnostics.record("save_explicit",Time.get_ticks_usec()-started)
+	return error
+
+func _write_local_save() -> String:
 	if awaiting_first_colony: return ""
 	_finish_background_save(true,false)
 	if recovery_failed:
@@ -954,9 +988,11 @@ func load_local() -> void:
 
 func _replace_world(state: RefCounted) -> void:
 	_finish_background_save(true,false)
+	diagnostics.reset();diagnostic_preview.clear()
 	durable_at=save_clock
 	journal_elapsed=0.0
 	world = state
+	diagnostics.tick=world.tick;diagnostics.speed=0
 	# Every caller supplies a loaded, imported or newly adopted campaign. The
 	# first-launch placeholder must no longer block play or persistence.
 	awaiting_first_colony = false
@@ -997,6 +1033,7 @@ func choose_document(export: bool) -> void:
 		return
 	runner.pause()
 	view.cancel_gesture()
+	document_kind="save"
 	exporting = export
 	document_request += 1
 	if export:
@@ -1019,14 +1056,21 @@ func choose_document(export: bool) -> void:
 	file_dialog.filters = PackedStringArray(["*.brackenward ; Brackenward colony"])
 	file_dialog.current_file = "brackenward-colony.brackenward" if export else ""
 	add_child(file_dialog)
-	file_dialog.file_selected.connect(_desktop_selected)
-	file_dialog.canceled.connect(func() -> void:
-		document_pending = false
-		notice = "Picker canceled. Saves unchanged.")
+	var request: int = document_request
+	file_dialog.file_selected.connect(func(path:String)->void:_desktop_selected(path,request))
+	file_dialog.canceled.connect(func()->void:_cancel_document(request))
 	file_dialog.popup_centered(Vector2i(720, 480))
 
-func _desktop_selected(path: String) -> void:
+func _cancel_document(request: int) -> void:
+	if request!=document_request or not document_pending: return
+	document_pending=false
+	if is_instance_valid(file_dialog): file_dialog.queue_free();file_dialog=null
+	notice="Performance report export canceled." if document_kind=="diagnostics" else "Picker canceled. Saves unchanged."
+
+func _desktop_selected(path: String, request: int = -1) -> void:
+	if not document_pending or (request>=0 and request!=document_request): return
 	document_pending = false
+	if is_instance_valid(file_dialog): file_dialog.queue_free();file_dialog=null
 	if exporting:
 		var file: FileAccess = FileAccess.open(path, FileAccess.WRITE)
 		if file == null:
@@ -1036,7 +1080,8 @@ func _desktop_selected(path: String) -> void:
 		file.flush()
 		var error: Error = file.get_error()
 		file.close()
-		notice = "Export written and verified." if error == OK and not store.decode(FileAccess.get_file_as_bytes(path)).has("error") else "Export write/verification failed."
+		var verified: bool = FileAccess.get_file_as_bytes(path)==export_bytes if document_kind=="diagnostics" else not store.decode(FileAccess.get_file_as_bytes(path)).has("error")
+		notice = ("Performance report written and verified." if document_kind=="diagnostics" else "Export written and verified.") if error==OK and verified else "Export write/verification failed."
 	else:
 		var file: FileAccess = FileAccess.open(path, FileAccess.READ)
 		if file == null or file.get_length() > ColonyCodec.MAX_BYTES:
@@ -1045,15 +1090,17 @@ func _desktop_selected(path: String) -> void:
 		_accept_import(file.get_buffer(file.get_length()))
 
 func _native_result(request: int, result: String, bytes: PackedByteArray) -> void:
-	if request != document_request:
+	if request != document_request or not document_pending:
 		return
 	if result not in ["export_selected", "import_selected"]:
 		document_pending = false
 	match result:
 		"export_selected": native_storage.writeSelectedDocument(request, export_bytes)
 		"import_selected": native_storage.readSelectedDocument(request, ColonyCodec.MAX_BYTES)
-		"read": _accept_import(bytes)
-		"written": notice = "Export written and verified."
+		"read":
+			if document_kind=="save": _accept_import(bytes)
+			else: notice="Unexpected document response. No campaign imported."
+		"written": notice = "Performance report written and verified." if document_kind=="diagnostics" else "Export written and verified."
 		"canceled": notice = "Picker canceled. Saves unchanged."
 		_: notice = "Document operation failed: " + result
 
@@ -1076,6 +1123,7 @@ func suspend() -> void:
 	if backgrounded:
 		return
 	backgrounded = true
+	diagnostics.count("backgrounds");diagnostics.foreground=false;diagnostics.break_frame_clock()
 	if is_instance_valid(soundscape): soundscape.suspend()
 	runner.pause()
 	view.cancel_gesture()
@@ -1085,6 +1133,7 @@ func suspend() -> void:
 func resume_from_background() -> void:
 	if quitting: return
 	backgrounded = false
+	diagnostics.foreground=true;diagnostics.break_frame_clock()
 	if is_instance_valid(soundscape): soundscape.resume()
 	runner.pause()
 	view.cancel_gesture()
@@ -1471,6 +1520,7 @@ func _storage_sheet(storage: Dictionary) -> void:
 			_submit("stock_filter",{"target":storage.id,"filters":filters,"priority":storage.priority}),sheet_body)
 
 func _storage_failed(error: String) -> void:
+	diagnostics.count("storage_alerts")
 	storage_error = error
 	runner.pause()
 	view.cancel_gesture()
@@ -1650,6 +1700,55 @@ func _apply_device_settings() -> void:
 		view.reduced_motion=settings.values.reduced_motion
 		view.high_contrast=settings.values.high_contrast
 	if is_instance_valid(soundscape): soundscape.apply_settings(settings.values.audio,settings.values.haptics)
+
+func _performance_report() -> Dictionary:
+	var memory: int = OS.get_static_memory_usage()
+	var metadata: Dictionary = {"build":str(ProjectSettings.get_setting("application/config/version")),"engine":Engine.get_version_info().string,"platform":OS.get_name(),"os_version":OS.get_version().left(128),"device_model":OS.get_model_name().left(128),"gpu":RenderingServer.get_video_adapter_name().left(128),"renderer":RenderingServer.get_current_rendering_method(),"quality":settings.values.quality,"fps_cap":Engine.max_fps,"engine_static_memory_bytes":memory if memory>0 else null,"viewport":[get_viewport_rect().size.x,get_viewport_rect().size.y]}
+	if world is ColonyWorld:
+		metadata.merge({"content":world.CONTENT_VERSION,"schema":world.SCHEMA_REVISION,"site":world.site_id,"seed":str(world.seed),"tick":str(world.tick),"resident_records":world.citizens.size(),"structure_records":world.structures.size(),"nonempty_stacks":world.nonempty_stacks().size(),"unfinished_jobs":world.unfinished_jobs().size(),"pooled_extra_actors":view.extra_actors.size(),"visible_extra_actors":view.extra_actors.values().filter(func(actor:Node)->bool:return actor.visible).size(),"writer_busy":save_queue.busy(),"snapshot_preparing":save_queue.preparing(),"storage_error_present":not storage_error.is_empty(),"saving_disabled":saving_disabled})
+	return diagnostics.report(metadata)
+
+func show_diagnostics(refresh: bool = true) -> void:
+	show_sheet("Performance report")
+	if refresh or diagnostic_preview.is_empty(): diagnostic_preview=_performance_report()
+	label("Device, seed and timing measurements. Review before sharing.",sheet_body)
+	button("View included report",func()->void:
+		show_sheet("Included report");label(JSON.stringify(diagnostic_preview,"  ",true),sheet_body)
+		button("Back to report",func()->void:show_diagnostics(false),sheet_body),sheet_body).name="PreviewDiagnostics"
+	button("Export this report",choose_diagnostics,sheet_body).name="ExportDiagnostics"
+	button("Copy this report",func()->void:
+		var bytes: PackedByteArray = _diagnostic_bytes()
+		if bytes.is_empty(): return
+		DisplayServer.clipboard_set(bytes.get_string_from_utf8());notice="Performance report copied.",sheet_body).name="CopyDiagnostics"
+	button("Reset measurements",func()->void:diagnostics.reset();show_diagnostics(),sheet_body).name="ResetDiagnostics"
+	label("%s | %s | %s" % [diagnostic_preview.metadata.build,diagnostic_preview.metadata.platform,diagnostic_preview.metadata.device_model],sheet_body)
+	label("Includes device/OS/GPU, map seed/tick, object counts, timing buckets and the latest 32 slow callbacks. Names, saves, document paths and credentials are excluded. Nothing is uploaded automatically.",sheet_body)
+	if diagnostic_preview.timings.is_empty(): label("No samples yet. Close this panel, play through the problem, then reopen it.",sheet_body)
+	for entry in diagnostic_preview.timings:
+		var upper: String = ">1000" if entry.p95_bucket_upper_ms==null else str(entry.p95_bucket_upper_ms)
+		label("%s / %s: %d samples, max %.1f ms, %d over 50 ms; p95 bucket upper %s ms." % [entry.stage.replace("_"," "),"Paused" if entry.speed==0 else "%dx" % entry.speed,entry.count,entry.max_ms,entry.over_50ms,upper],sheet_body)
+	label("Nested callback times overlap; do not add them together. Reset before a measurement run. Background time is excluded and resume stays paused. CPU timings do not measure GPU, audio thread, Android PSS, battery or thermals.",sheet_body)
+
+func _diagnostic_bytes() -> PackedByteArray:
+	var bytes: PackedByteArray = JSON.stringify(diagnostic_preview,"\t",true).to_utf8_buffer()
+	if diagnostic_preview.get("format")!="brackenward-performance" or bytes.size()>FrameDiagnostics.MAX_EXPORT_BYTES:
+		notice="Performance report is unavailable or exceeds its 64 KiB limit.";return PackedByteArray()
+	return bytes
+
+func choose_diagnostics() -> void:
+	if document_pending: notice="A document operation is already open. Finish or cancel it first.";return
+	var bytes: PackedByteArray = _diagnostic_bytes()
+	if bytes.is_empty(): return
+	runner.pause();view.cancel_gesture();exporting=true;document_kind="diagnostics";export_bytes=bytes;document_request+=1;document_pending=true
+	if native_storage!=null:
+		native_storage.chooseExportDestination(document_request,"brackenward-performance.json");return
+	file_dialog=FileDialog.new();file_dialog.access=FileDialog.ACCESS_FILESYSTEM;file_dialog.use_native_dialog=true
+	file_dialog.file_mode=FileDialog.FILE_MODE_SAVE_FILE;file_dialog.filters=PackedStringArray(["*.json ; Performance report"]);file_dialog.current_file="brackenward-performance.json"
+	add_child(file_dialog)
+	var request: int = document_request
+	file_dialog.file_selected.connect(func(path:String)->void:_desktop_selected(path,request))
+	file_dialog.canceled.connect(func()->void:_cancel_document(request))
+	file_dialog.popup_centered(Vector2i(720,480))
 
 func show_accessibility() -> void:
 	show_sheet("Settings")

@@ -131,6 +131,7 @@ func run() -> void:
 	root.add_child(game);game.close_sheet();game._tutorial_dismiss()
 	if not game.save_local().is_empty(): quit(2);return
 	game.frame_us.clear();game.capture_us.clear();game.finish_us.clear();game.preparation_us.clear()
+	game.diagnostics.reset()
 	var initial_tick: int = world.tick
 	game.runner.set_speed(1)
 	await create_timer(seconds).timeout
@@ -139,6 +140,7 @@ func run() -> void:
 	result["audio_update_frames"]=stats(game.soundscape.update_us)
 	result["view_update_frames"]=stats(game.view.update_us)
 	result["view_draw_frames"]=stats(game.view.draw_us)
+	result["in_game_diagnostics"]=game._performance_report()
 	if not await game.soundscape.drain(): result.storage_error="Audio streaming shutdown did not drain"
 	DirAccess.make_dir_recursive_absolute(report_path.get_base_dir())
 	var file: FileAccess = FileAccess.open(report_path,FileAccess.WRITE);file.store_string(JSON.stringify(result,"\t",true));file.close()

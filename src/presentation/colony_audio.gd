@@ -28,6 +28,7 @@ var water_distance: int = 1000
 var history: Array[Dictionary] = []
 var clock_us: int = 0
 var pending_playbacks: Array[WeakRef] = []
+var diagnostics: FrameDiagnostics
 
 func _enter_tree() -> void:
 	active_instances+=1
@@ -150,6 +151,11 @@ func _step_clock() -> float:
 	return delta
 
 func _process(_delta: float) -> void:
+	var started: int = Time.get_ticks_usec()
+	_update_audio()
+	if diagnostics!=null and not suspended and is_instance_valid(view) and view.is_visible_in_tree(): diagnostics.record("audio_update",Time.get_ticks_usec()-started)
+
+func _update_audio() -> void:
 	if suspended or not is_instance_valid(world) or not is_instance_valid(view): return
 	if not view.is_visible_in_tree():
 		if not auto_hidden: stop_all();auto_hidden=true

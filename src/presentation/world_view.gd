@@ -43,6 +43,7 @@ var extra_order_changed: bool = false
 var simulation_speed: int = 0
 var reduced_motion: bool = false
 var high_contrast: bool = false
+var diagnostics: FrameDiagnostics
 
 func setup(state: RefCounted) -> void:
 	world = state
@@ -76,6 +77,11 @@ func setup(state: RefCounted) -> void:
 	_update_transform()
 
 func _process(delta: float) -> void:
+	var started: int = Time.get_ticks_usec()
+	_update_frame(delta)
+	if diagnostics!=null and is_visible_in_tree(): diagnostics.record("map_update",Time.get_ticks_usec()-started)
+
+func _update_frame(delta: float) -> void:
 	tutorial_animation=0.0 if reduced_motion else fmod(tutorial_animation+delta,1.4)
 	var action: Dictionary = gestures.elapse(delta)
 	if not action.is_empty():
@@ -271,6 +277,11 @@ func _update_transform() -> void:
 	actor_layer.position = ground.position
 
 func _draw() -> void:
+	var started: int = Time.get_ticks_usec()
+	_draw_frame()
+	if diagnostics!=null: diagnostics.record("map_draw_commands",Time.get_ticks_usec()-started)
+
+func _draw_frame() -> void:
 	if world == null:
 		return
 	# Fixture landmarks are retained only for the M0 regression scene.
