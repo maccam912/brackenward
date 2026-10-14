@@ -56,7 +56,15 @@ var flood_cache_valid: bool = false
 var weather: String = "clear"
 var navigation_dirty: bool = true
 var solid_tiles: Dictionary = {}
-var reachable_home: Dictionary = {}
+var bridge_tiles: Dictionary = {}
+var reachable_cells: PackedByteArray = PackedByteArray()
+var reachable_home: Dictionary:
+	get:
+		# Keep the inspectable tile map without allocating it during gameplay.
+		var result: Dictionary = {}
+		for index in range(reachable_cells.size()):
+			if reachable_cells[index]: result[Vector2i(index%SIZE,index/SIZE)]=true
+		return result
 var reachability_dirty: bool = true
 var record_indexes: Dictionary = {}
 var designations: Array[Vector2i] = []
@@ -138,49 +146,78 @@ static func inside(point: Vector2i) -> bool:
 	return point.x >= 0 and point.y >= 0 and point.x < SIZE and point.y < SIZE
 
 func is_water(point: Vector2i) -> bool:
-	if structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition=="bridge" and s.x==point.x and s.y==point.y): return false
+	_refresh_navigation()
+	if bridge_tiles.has(point): return false
 	if generator_version > 0 and inside(point): return terrain_state.elevation[point.y*128+point.x] == 0 and not terrain_state.bridges.has(point)
 	return point.x >= 32 and point.x <= 35 and point.y not in [63, 64]
 
 func walkable(point: Vector2i) -> bool:
 	if not inside(point) or is_water(point):
 		return false
+	return not solid_tiles.has(point)
+
+func _refresh_navigation() -> void:
 	if navigation_dirty:
 		care_destinations.clear()
 		solid_tiles.clear()
+		bridge_tiles.clear()
 		for resource in resources:
 			if resource.remaining > 0 and definitions.resources[resource.definition].solid:
 				solid_tiles[Vector2i(resource.x,resource.y)] = true
 		for structure in structures:
 			if structure.health<=0: continue
+			if structure.definition=="bridge": bridge_tiles[Vector2i(structure.x,structure.y)]=true
 			if structure.definition != "supply_cart" and definitions.buildings[structure.definition].solid:
 				for tile in footprint(structure):
 					solid_tiles[tile] = true
 		navigation_dirty = false
 		reachability_dirty = true
-	return not solid_tiles.has(point)
 
 func accessible(point: Vector2i) -> bool:
-	walkable(Vector2i.ZERO)
+	_refresh_navigation()
 	if reachability_dirty:
-		reachable_home.clear()
-		var queue: Array[Vector2i] = []
+		# Reachability needs membership only. Packed row-major cells avoid four
+		# full walkability/bridge/height queries for every tile in the colony.
+		var passable: PackedByteArray = PackedByteArray();passable.resize(SIZE*SIZE);passable.fill(1)
+		var bridges: PackedByteArray = PackedByteArray();bridges.resize(SIZE*SIZE)
+		if generator_version>0:
+			for index in range(SIZE*SIZE):
+				if terrain_state.elevation[index]==0: passable[index]=0
+			for tile in terrain_state.bridges:
+				passable[tile.y*SIZE+tile.x]=1;bridges[tile.y*SIZE+tile.x]=1
+		else:
+			for y in range(SIZE):
+				if y in [63,64]: continue
+				for x in range(32,36): passable[y*SIZE+x]=0
+		for tile in bridge_tiles:
+			if inside(tile): passable[tile.y*SIZE+tile.x]=1
+		for tile in solid_tiles:
+			if inside(tile): passable[tile.y*SIZE+tile.x]=0
+		var seen: PackedByteArray = PackedByteArray();seen.resize(SIZE*SIZE)
+		var queue: PackedInt32Array = PackedInt32Array();queue.resize(SIZE*SIZE)
+		var tail: int = 0
 		for citizen in citizens:
 			var start: Vector2i = Vector2i(citizen.x,citizen.y)
-			if citizen.health > 0 and not citizen.departed and walkable(start) and not reachable_home.has(start):
-				reachable_home[start] = true
-				queue.append(start)
+			var index: int = start.y*SIZE+start.x
+			if citizen.health > 0 and not citizen.departed and inside(start) and passable[index] and not seen[index]:
+				seen[index]=1
+				queue[tail]=index;tail+=1
 		var cursor: int = 0
-		while cursor < queue.size():
-			var tile: Vector2i = queue[cursor]
+		var steps: Array[int] = [-SIZE,1,SIZE,-1]
+		while cursor < tail:
+			var index: int = queue[cursor]
+			var column: int = index%SIZE
 			cursor += 1
-			for delta in ColonyNavigation.NEIGHBORS:
-				var neighbor: Vector2i = tile + delta
-				if not reachable_home.has(neighbor) and walkable(neighbor) and can_step(tile,neighbor):
-					reachable_home[neighbor] = true
-					queue.append(neighbor)
+			for direction in range(4):
+				var next: int = index+steps[direction]
+				if next<0 or next>=SIZE*SIZE or (direction==1 and column==SIZE-1) or (direction==3 and column==0): continue
+				if seen[next] or not passable[next]: continue
+				if generator_version>0 and not bridges[index] and not bridges[next] and absi(terrain_state.elevation[index]-terrain_state.elevation[next])>1: continue
+				seen[next]=1
+				queue[tail]=next;tail+=1
+		reachable_cells=seen
 		reachability_dirty = false
-	return reachable_home.has(point)
+	return inside(point) and reachable_cells[point.y*SIZE+point.x]==1
 
 
 func footprint(object: Dictionary) -> Array[Vector2i]:

@@ -2,6 +2,7 @@ class_name GenerationTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	NavigationTests.reachability(check)
 	var hashes: Dictionary = {}
 	for site in ColonyGeneration.SITES:
 		for seed_value in [0,1,42,104729,2147483647,4294967295]:
