@@ -115,3 +115,32 @@ that stalled early remain useful reproductions of repeated, expensive path
 searches toward an unreachable assigned bed; they are not successful full runs.
 Resume only after the user authorizes more work, using `--resume` with one of
 the reports above, its matching site/mode and an additional day count.
+
+
+## 13 October continuation and completed Meadow Reach Charter
+
+The new user instruction resumes implementation/polish to a 50% weekly-remaining
+cutoff. Prior quota stops are historical. The saved Meadow/Pine campaigns exposed
+a validator error on canceled raid-payment history after retry; the corrected
+validator restores the original exact report hashes without modifying state.
+The new shared-tile eating correction also lets waiting travelers eat while
+another resident rests at the cart.
+
+`reports/charter-verified-20261013-meadow.json` is a passing ordinary vegetarian
+Charter through tick 316,800. Its matching initial/final snapshots verify. All
+five stages were earned; the ceremony completed at tick 271,801 and Continue
+settlement was used. The colony continued for over six more days, retaining
+eight living residents, minimum health 100, zero starvation-grace exceedance,
+204 portions and 9 days 05:45 stored runway. All 1,050 invariant checkpoints
+passed; 859 public commands are retained. No meat/leather was consumed and
+Husbandry was not researched. The lineage includes 3,908 zero-fullness
+citizen-ticks within the grace period, so it does not certify zero hunger.
+Final canonical hash:
+`fc0c571da69ae1bd0694b6f529cab8227c9d91a71894c2f310b67c449728239b`.
+
+Other current runs use `charter-verified-20261013-{pine-standard,reed,pine-hearthside}`.
+The Reed source was copied with matching payload/report SHA-256 before its
+old process was stopped; `needs-checkpoint-preservation.json` records the exact
+source and frozen copy. These are still in-progress scenarios. The phone
+performance report triggered separate periodic-save and reachability fixes;
+none of this campaign evidence certifies physical-device smoothness or M7.

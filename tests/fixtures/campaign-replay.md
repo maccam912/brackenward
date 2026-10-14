@@ -42,3 +42,16 @@ The CI matrix runs the pinned native editor on macOS ARM64 and x86-64, Linux
 x86-64, and Windows x86-64. These source-project checks do not prove exported
 package startup, installation/upgrade behavior, physical Android execution, or
 the remaining Android portion of DESIGN SAVE10.
+
+
+13 October shared-tile eating correction: ordinary meals can share the cart with
+resting residents. Removing failed meal retries changes later runtime IDs. A
+separate ordinary-command recapture accepted all 64 actions and passed 234
+invariant checkpoints. Only command 60's raid target changes from 4000 to the
+actual announced budget-2 raid 3993; times, payment quantities and all accepted
+receipts remain fixed. The tick-72,000 golden is now
+`68b17b7d2877566ab5e3318216e5236d258c441cc0de3f3dc8f2d8806927c70f`.
+The tick-7,200 canonical state and original foreign snapshot bytes remain
+unchanged (`9d1636a4bc1b2764b49b85578c8aff224f44e6922205b2cad1f15dd7b234aa4a`).
+A separate non-recording replay verifies both checkpoints and continuation from
+that retained snapshot. Future receipt failures retain a diagnostic snapshot.

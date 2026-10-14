@@ -44,11 +44,14 @@ func run() -> void:
 			var command: Dictionary = input.commands[cursor]
 			var id: int = world.queue_command(command.kind,command.args)
 			if resumed!=null and resumed.queue_command(command.kind,command.args)!=id: _fail("Restored command sequence diverged");return
-			queued.append({"id":id,"expected":command.expected_receipt});cursor+=1
+			queued.append({"id":id,"kind":command.kind,"expected":command.expected_receipt});cursor+=1
 		world.step()
 		if resumed!=null: resumed.step()
 		for command in queued:
-			if world.receipts.get(command.id)!=command.expected or (resumed!=null and resumed.receipts.get(command.id)!=command.expected): _fail("Command %d receipt differs at tick%d" % [command.id,world.tick]);return
+			if world.receipts.get(command.id)!=command.expected or (resumed!=null and resumed.receipts.get(command.id)!=command.expected):
+				_write(report_path.get_basename()+"-failure.brackenward",ColonyCodec.encode(world))
+				_fail("Command %d (%s) receipt differs at tick%d: expected %s, actual %s; failure snapshot retained" % [command.id,command.kind,world.tick,command.expected,world.receipts.get(command.id)])
+				return
 		if world.tick%300==0:
 			invariants_checked+=1
 			var problems: Array = world.invariant_errors()
@@ -67,7 +70,14 @@ func run() -> void:
 			checkpoints.append({"tick":world.tick,"canonical_hash":hash_value,"snapshot_roundtrip":true})
 			if not _write(report_path.get_basename()+"-%d.brackenward" % world.tick,snapshot): return
 			if world.tick==input.checkpoints[0]:
-				if record_golden: recorded_snapshot=snapshot
+				if record_golden:
+					recorded_snapshot=snapshot
+					# A later gameplay correction need not replace an earlier foreign
+					# save whose canonical state is still exactly compatible.
+					if FileAccess.file_exists(SAVED):
+						var retained_bytes: PackedByteArray = FileAccess.get_file_as_bytes(SAVED)
+						var retained: Dictionary = ColonyCodec.decode(retained_bytes)
+						if retained.has("world") and retained.world.canonical_hash()==hash_value: recorded_snapshot=retained_bytes
 				var foreign_bytes: PackedByteArray = recorded_snapshot if record_golden else FileAccess.get_file_as_bytes(SAVED)
 				if not record_golden and _hash(foreign_bytes)!=golden.get("save_fixture_sha256"): _fail("Cross-host save fixture bytes changed");return
 				var foreign: Dictionary = ColonyCodec.decode(foreign_bytes)

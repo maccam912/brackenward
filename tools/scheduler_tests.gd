@@ -10,6 +10,7 @@ static func run(check: Callable) -> void:
 	automatic_cooking(check)
 	hungry_sleepers(check)
 	unreachable_bed(check)
+	shared_eating_tile(check)
 	personal_job_lifecycle(check)
 	var world: ColonyWorld = ColonyTests.world()
 	var person: Dictionary = world.citizens[0]
@@ -127,6 +128,29 @@ static func unreachable_bed(check: Callable) -> void:
 		if sleep_job.state=="Working": break
 	check.call("SCHED/reachable_assigned_bed_still_used",sleep_job.target==person.bed and sleep_job.state=="Working" and sleep_job.reason.is_empty())
 
+static func shared_eating_tile(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var cart: Dictionary = ColonyTrade.cart(world)
+	for person in world.citizens:
+		for category in person.preferences: person.preferences[category]=0
+	var sleeper: Dictionary = world.citizens[0]
+	sleeper.x=cart.x;sleeper.y=cart.y;sleeper.rest=100;sleeper.fullness=1000
+	var sleep_job: Dictionary = world._job("sleep","","",0,Vector2i(cart.x,cart.y),0)
+	sleep_job.worker=sleeper.id;sleep_job.state="Working";sleeper.job=sleep_job.id
+	for person in [world.citizens[1],world.citizens[2]]:
+		person.x=cart.x;person.y=cart.y;person.edge_x=cart.x;person.edge_y=cart.y;person.fullness=300;person.rest=700
+		world._assign(person)
+	check.call("SCHED/hunger_can_reserve_food_on_a_sleepers_tile",world.find(world.jobs,world.citizens[1].job).get("kind")=="eat" and sleeper.job==sleep_job.id)
+	check.call("SCHED/two_colocated_residents_can_eat_with_distinct_food",world.find(world.jobs,world.citizens[2].job).get("kind")=="eat" and world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="eat" and j.worker>0).size()==2 and world.stacks.reduce(func(n:int,s:Dictionary)->int:return n+world._reserved(s),0)==2)
+	for index in range(10): world.step()
+	var decoded: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/shared_eating_tile_roundtrip",decoded.has("world") and decoded.world.canonical_hash()==world.canonical_hash() and world.invariant_errors().is_empty(),str(decoded.get("error",world.invariant_errors())))
+	for index in range(590):
+		world.step()
+		if decoded.has("world"): decoded.world.step()
+	check.call("SCHED/shared_tile_eaters_finish_without_starving_or_duplication",world.citizens[1].fullness>350 and world.citizens[2].fullness>350 and world.ledger.consumed.get("meal",0)==2 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	check.call("SAVE/shared_tile_eating_continuation_is_exact",decoded.has("world") and decoded.world.canonical_hash()==world.canonical_hash())
+
 static func personal_job_lifecycle(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]
 	person.fullness=300;person.rest=1000
@@ -135,8 +159,8 @@ static func personal_job_lifecycle(check: Callable) -> void:
 	occupied.worker=world.citizens[1].id;occupied.state="Working";world.citizens[1].job=occupied.id
 	for attempt in range(3): world._assign(person);world.tick+=10
 	var attempts: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="eat")
-	check.call("SCHED/failed_meal_positions_leave_no_orphan_work",attempts.size()==3 and attempts.all(func(j:Dictionary)->bool:return j.state=="Canceled" and j.worker==0 and j.reason=="No free work position"))
-	check.call("SCHED/failed_meal_positions_hold_no_food",world.stacks.all(func(s:Dictionary)->bool:return s.reservations.is_empty()) and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	check.call("SCHED/shared_meal_position_does_not_create_retry_jobs",attempts.size()==1 and attempts[0].worker==person.id and attempts[0].state=="Fetching")
+	check.call("SCHED/shared_meal_position_reserves_one_portion",world.stacks.reduce(func(n:int,s:Dictionary)->int:return n+world._reserved(s),0)==1 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
 	world=ColonyTests.world();person=world.citizens[0]
 	var food: Dictionary = world._food(person)
 	var eating: Dictionary = world._job("eat","","",person.id,Vector2i(person.x,person.y),2000)

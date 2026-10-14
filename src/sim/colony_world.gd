@@ -840,7 +840,10 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 			continue
 		var occupied: bool = false
 		for other in jobs:
-			if other.worker > 0 and other.id != job.id and other.work_x == position.x and other.work_y == position.y:
+			# Personal eating must remain possible when travelers share the cart
+			# tile, including when someone is resting there. It owns food, not a
+			# productive work position.
+			if job.kind!="eat" and other.kind!="eat" and other.worker > 0 and other.id != job.id and other.work_x == position.x and other.work_y == position.y:
 				occupied = true
 		if not occupied:
 			work_position = position

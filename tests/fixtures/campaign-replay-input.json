@@ -1,7 +1,7 @@
 {
   "version": 1,
   "name": "Generated Meadow Reach ordinary first-week campaign",
-  "source_note": "Captured from tools/simulate.gd first_week policy after the ordinary-hunger sleeper fix, seed 104729, meadow_reach, Standard, 10 days; generated start tick 1800, source end tick 73800. The ordinary_play_only report passed scenario and invariant checks; final snapshot decoded with matching canonical hash and exact payload SHA256. All commands are accepted public actions in original ID order, submitted at before_tick = execution tick - 1. Arguments retain ColonyState.pack encoding. Verification runs only these fixed commands, without adaptive policy or world-state injections. The fixed campaign identity replaces the source test-session identity. Commands submitted at tick 72000 or later are excluded; checkpoints follow the step to their tick and precede commands at that tick. Source report SHA256 c7bbfc5df15a474330b72317e6b317bb75a4d61a57b1295e5f27d58928b35fb4. Captured with Godot 4.7.2-stable (official), content 3df04b1f57329c2c0fead8e593866ee925e33c62cce5a28f9a820a82b6ca9cca.",
+  "source_note": "Captured from tools/simulate.gd first_week policy after the ordinary-hunger sleeper fix, seed 104729, meadow_reach, Standard, 10 days; generated start tick 1800, source end tick 73800. The ordinary_play_only report passed scenario and invariant checks; final snapshot decoded with matching canonical hash and exact payload SHA256. All commands are accepted public actions in original ID order, submitted at before_tick = execution tick - 1. Arguments retain ColonyState.pack encoding. Verification runs only these fixed commands, without adaptive policy or world-state injections. The fixed campaign identity replaces the source test-session identity. Commands submitted at tick 72000 or later are excluded; checkpoints follow the step to their tick and precede commands at that tick. Source report SHA256 c7bbfc5df15a474330b72317e6b317bb75a4d61a57b1295e5f27d58928b35fb4. Captured with Godot 4.7.2-stable (official), content 3df04b1f57329c2c0fead8e593866ee925e33c62cce5a28f9a820a82b6ca9cca. On 13 October, the shared-tile eating correction removed failed meal retries and changed later runtime IDs. The same 64 public actions were recaptured without grants or state edits; all were accepted and 234 invariant checkpoints passed. Only command 60's target changes, from 4000 to the actual announced budget-2 raid 3993. All command times, payment amounts and expected accepted receipts are retained.",
   "campaign_id": "save10-replay-v1",
   "seed": 104729,
   "site": "meadow_reach",
@@ -71,7 +71,7 @@
     {"before_tick":33900,"kind":"research_select","args":{"definition":"trailcraft"},"expected_receipt":"accepted"},
     {"before_tick":41100,"kind":"research_select","args":{"definition":"commonlife"},"expected_receipt":"accepted"},
     {"before_tick":47400,"kind":"research_select","args":{"definition":"metalwork"},"expected_receipt":"accepted"},
-    {"before_tick":52200,"kind":"raid_offer","args":{"pay":{"wood":16},"target":"4000"},"expected_receipt":"accepted"},
+    {"before_tick":52200,"kind":"raid_offer","args":{"pay":{"wood":16},"target":"3993"},"expected_receipt":"accepted"},
     {"before_tick":59100,"kind":"gather","args":{"target":"101"},"expected_receipt":"accepted"},
     {"before_tick":59100,"kind":"gather","args":{"target":"117"},"expected_receipt":"accepted"},
     {"before_tick":60000,"kind":"research_select","args":{"definition":"signalcraft"},"expected_receipt":"accepted"},

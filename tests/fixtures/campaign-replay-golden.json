@@ -7,7 +7,7 @@
 			"tick": "7200"
 		},
 		{
-			"canonical_hash": "f134fd4e3f2489dbdfc7d7e3ec373e9cce4107a3ac0301cc66bbd13e38d7582f",
+			"canonical_hash": "68b17b7d2877566ab5e3318216e5236d258c441cc0de3f3dc8f2d8806927c70f",
 			"snapshot_roundtrip": true,
 			"tick": "72000"
 		}
@@ -15,7 +15,7 @@
 	"content_hash": "3df04b1f57329c2c0fead8e593866ee925e33c62cce5a28f9a820a82b6ca9cca",
 	"engine": "4.7.2-stable (official)",
 	"initial_hash": "a35089db80f7b7a131cb88cb16b319a4c25a74ee74be070992fab0361bf5a911",
-	"input_sha256": "87d1253c59487399fd713e42c23f6177e14923f77a692f3930e853e3e5aba8e6",
+	"input_sha256": "ffa7771f1c158036905e89cec09d31cb767085f541f3a53345690d7b3385fa7a",
 	"platform": "macOS",
 	"save_fixture_sha256": "9d1636a4bc1b2764b49b85578c8aff224f44e6922205b2cad1f15dd7b234aa4a",
 	"schema_revision": 20,

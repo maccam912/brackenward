@@ -7,6 +7,7 @@ static func raid(world: ColonyWorld, budget: int = 2) -> Dictionary:
 	return result
 
 static func run(check: Callable) -> void:
+	payment_history(check)
 	var world: ColonyWorld = ColonyTests.world()
 	check.call("RAID/budgets_have_exact_composition_and_cap",ColonyDefense.party(2)==["hungry_thief","hungry_thief"] and ColonyDefense.party(5)==["road_raider","hungry_thief","hungry_thief"] and ColonyDefense.party(10)==["road_raider","bow_raider","hungry_thief","hungry_thief","hungry_thief","hungry_thief"])
 	var visit: Dictionary = ColonyDefense.announce(world,2)
@@ -131,3 +132,24 @@ static func run(check: Callable) -> void:
 		ColonyCombat.resolve(world);ColonyCombat.resolve(reordered)
 		reordered.citizens.assign(ColonyCombat.ordered_actors(reordered.citizens));reordered.defense_state.enemies=ColonyCombat.ordered_actors(reordered.defense_state.enemies);reordered.wildlife_state.animals=ColonyCombat.ordered_actors(reordered.wildlife_state.animals)
 		check.call("COMBAT/storage_iteration_order_cannot_change_damage_causes_or_xp",world.canonical_hash()==reordered.canonical_hash())
+
+static func payment_history(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var visit: Dictionary = raid(world)
+	ColonyDefense.offer(world,{"target":visit.id,"pay":{"wood":16}})
+	var first: Dictionary = world.find(world.jobs,visit.pay_job)
+	world._release(first,true)
+	ColonyDefense.advance(world)
+	var retry: String = ColonyDefense.offer(world,{"target":visit.id,"pay":{"wood":16}})
+	var saved: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/retried_raid_payment_keeps_canceled_history",retry=="accepted" and first.state=="Canceled" and visit.pay_job!=first.id and saved.has("world") and saved.world.canonical_hash()==world.canonical_hash(),str(saved.get("error","")))
+	check.call("RAID/retry_reserves_only_new_payment",world.stacks.reduce(func(n:int,s:Dictionary)->int:return n+world._reserved(s),0)==16 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	world=ColonyTests.world();visit=raid(world)
+	var failed: String = ColonyDefense.offer(world,{"target":visit.id,"pay":{"iron":16}})
+	saved=ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/rejected_raid_payment_is_valid_canceled_history",failed.contains("not accessible") and visit.pay_job==0 and world.jobs[-1].kind=="raid_pay" and world.jobs[-1].state=="Canceled" and saved.has("world") and saved.world.canonical_hash()==world.canonical_hash(),str(saved.get("error","")))
+	var rejected: Dictionary = world.jobs[-1]
+	rejected.state="Ready"
+	check.call("SAVE/unlinked_active_raid_payment_is_rejected",ColonyCodec.decode(ColonyCodec.encode(world)).get("error","")=="Invalid raid supplies")
+	rejected.state="Canceled";rejected.target=world.next_id+100
+	check.call("SAVE/canceled_raid_payment_still_requires_real_raid",ColonyCodec.decode(ColonyCodec.encode(world)).get("error","")=="Invalid raid supplies")
