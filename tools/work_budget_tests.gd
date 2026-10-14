@@ -20,8 +20,11 @@ class FullReservationWorld extends ColonyWorld:
 		super(catalog)
 	func _reservation_jobs() -> Array:
 		return jobs
+	func _work_inventory() -> Array:
+		return stacks
 
 static func run(check: Callable) -> void:
+	historical_inventory(check)
 	runtime_deadlines(check)
 	scheduling_bounds(check)
 	precomputed_order(check)
@@ -56,6 +59,35 @@ static func run(check: Callable) -> void:
 	world.tick+=50
 	ColonyWorkBudget.reconcile_records(world.citizens,jobs,world.tick)
 	check.call("BUDGET/due_retry_reenters_with_original_blocked_state",blocked.state=="Blocked" and jobs.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,world.tick)).size()==512)
+
+static func historical_inventory(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]
+	var station: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition=="hearth")[0]
+	var job: Dictionary = world._job("cook","Cooking","Cooking",station.id,Vector2i(station.x,station.y),world.definitions.recipes.cook_meals.work_milli)
+	job.output={"meal":2}
+	var historical: Array = []
+	for index in range(8000):
+		var old: Dictionary = world._make_stack("wood",0,"carry",person.id,Vector2i(50,60),false)
+		old.job=job.id;historical.append(old)
+	world._make_stack("grain",8,"ground",0,Vector2i(50,60),true)
+	check.call("READ/history_fixture_reserves_real_inputs",world._reserve(job,person))
+	person.job=job.id
+	var full: FullReservationWorld = FullReservationWorld.new(world.definitions)
+	for field in world.payload():
+		if field in ["content","content_hash"]: continue
+		var value: Variant = world.get(field)
+		if value is Array: full.get(field).assign(value.duplicate(true))
+		elif value is Dictionary: full.set(field,value.duplicate(true))
+		else: full.set(field,value)
+	full.record_indexes.clear();full.reset_job_queries();full.reset_stack_queries()
+	full.navigation_dirty=true;full.reachability_dirty=true;full.rooms_dirty=true
+	var exact: bool = true
+	for index in range(1200):
+		world.step();full.step()
+		if index in [99,299,599,1199]: exact=exact and world.canonical_hash()==full.canonical_hash()
+	check.call("READ/live_inventory_reads_match_full_history_continuation",exact and job.state=="Complete" and world.invariant_errors().is_empty(),str([job.state,world.invariant_errors()]))
+	check.call("READ/zero_count_delivery_metadata_is_still_updated",historical.size()==8000 and historical.all(func(s:Dictionary)->bool:return s.count==0 and s.location=="escrow" and s.owner==job.id and s.x==job.work_x and s.y==job.work_y))
+	check.call("READ/direct_queries_keep_full_history_fallback",not world.in_tick and is_same(world._work_inventory(),world.stacks))
 
 static func scheduling_bounds(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()

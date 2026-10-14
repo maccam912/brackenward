@@ -640,6 +640,15 @@ func _refresh_stack_queries() -> void:
 func reset_stack_queries() -> void:
 	stack_query_tick=-1;stack_query_count=0;stack_query_source=[];stack_query_live=[];stack_query_perishable=[]
 
+func _work_inventory() -> Array:
+	# Borrowed read-only container, only in a trusted tick. The shared records
+	# expose same-tick depletion and newly appended transfers; zero-count rows
+	# can remain until next tick and contribute no cargo or reservation quantity.
+	# Never use this view for historical metadata writes, sorting or clearing.
+	if not in_tick: return stacks
+	_refresh_stack_queries()
+	return stack_query_live
+
 func _perimeter(tiles: Array[Vector2i]) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for tile in tiles:
@@ -1019,14 +1028,14 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 		job.work_y = work_position.y
 		for item in job.inputs:
 			var needed: int = job.inputs[item] - _escrow_count(job.id, item)
-			for held_stack in stacks:
+			for held_stack in _work_inventory():
 				if held_stack.item==item: needed-=held_stack.reservations.get(job.id,0)
 				if held_stack.location=="carry" and held_stack.job==job.id and held_stack.item==item: needed-=held_stack.count
 			if job.kind=="move_furniture":
-				for bundle in stacks:
+				for bundle in _work_inventory():
 					if bundle.location=="move_bundle" and bundle.owner==job.id and bundle.item==item: needed -= bundle.count
 			if needed<=0: continue
-			var sources: Array = nonempty_stacks().filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and (job.kind not in ["eat","feed"] or s.id==job.source) and ColonyFire.usable(self,s) and accessible(Vector2i(s.x,s.y)))
+			var sources: Array = (_work_inventory() if in_tick else nonempty_stacks()).filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and (job.kind not in ["eat","feed"] or s.id==job.source) and ColonyFire.usable(self,s) and accessible(Vector2i(s.x,s.y)))
 			for stack in ColonyProduction.first_inputs(self,sources,Vector2i(citizen.x,citizen.y),needed):
 				var count: int = mini(needed, stack.count - _reserved(stack))
 				if count > 0:
@@ -1040,7 +1049,7 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 	for request in requests:
 		find(stacks, request.stack).reservations[job.id] = find(stacks, request.stack).reservations.get(job.id,0)+request.count
 	job.worker = citizen.id
-	job.state = "Fetching" if not requests.is_empty() or stacks.any(func(s:Dictionary)->bool:return s.reservations.get(job.id,0)>0) or (job.kind=="move_furniture" and stacks.any(func(s:Dictionary)->bool:return s.location=="move_bundle" and s.owner==job.id and s.count>0)) else "Moving"
+	job.state = "Fetching" if not requests.is_empty() or _work_inventory().any(func(s:Dictionary)->bool:return s.reservations.get(job.id,0)>0) or (job.kind=="move_furniture" and _work_inventory().any(func(s:Dictionary)->bool:return s.location=="move_bundle" and s.owner==job.id and s.count>0)) else "Moving"
 	job.reason = ""
 	return true
 
@@ -1115,7 +1124,7 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 		"Fetching":
 			if job.kind=="move_furniture" and ColonyMaintenance.fetch_bundle(self,citizen,job): return
 			var source: Dictionary = {}
-			for stack in stacks:
+			for stack in _work_inventory():
 				if stack.reservations.get(job.id, 0) > 0:
 					source = stack
 					break
@@ -1124,7 +1133,7 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 				return
 			if _walk(citizen, Vector2i(source.x, source.y)):
 				var held: int = 0
-				for existing in stacks:
+				for existing in _work_inventory():
 					if existing.location == "carry" and existing.owner == citizen.id: held += existing.count
 				var quantity: int = mini(8-held, source.reservations[job.id])
 				var carried: Dictionary = _make_stack(source.item, quantity, "carry", citizen.id, Vector2i(citizen.x, citizen.y), false)
@@ -1136,7 +1145,7 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 				source.reservations[job.id] -= quantity
 				if source.reservations[job.id] == 0:
 					source.reservations.erase(job.id)
-				if held+quantity >= 8 or not stacks.any(func(s:Dictionary)->bool:return s.reservations.get(job.id,0)>0): job.state = "Delivering"
+				if held+quantity >= 8 or not _work_inventory().any(func(s:Dictionary)->bool:return s.reservations.get(job.id,0)>0): job.state = "Delivering"
 		"Delivering":
 			if _walk(citizen, Vector2i(job.work_x, job.work_y)):
 				for stack in stacks:
@@ -1520,7 +1529,7 @@ func total(item: String) -> int:
 
 func _escrow_count(job_id: int, item: String) -> int:
 	var result: int = 0
-	for stack in nonempty_stacks():
+	for stack in (_work_inventory() if in_tick else nonempty_stacks()):
 		if stack.item == item and stack.location == "escrow" and stack.owner == job_id:
 			result += stack.count
 	return result
@@ -1531,7 +1540,7 @@ func _food(citizen: Dictionary, releasing: Dictionary = {}) -> Dictionary:
 	var release_id: int = releasing.get("id",0)
 	var cancel: bool = releasing.get("kind","") in PERSONAL_JOBS
 	var frees_reservations: bool = release_id>0 and (cancel or releasing.kind not in RELEASE_KEEPS_RESERVATIONS)
-	for stack in nonempty_stacks():
+	for stack in (_work_inventory() if in_tick else nonempty_stacks()):
 		if definitions.items[stack.item].fullness<=0 or (stack.item=="travel_ration" and not use_rations): continue
 		var available_count: int = stack.count-_reserved(stack)
 		if frees_reservations: available_count+=stack.reservations.get(release_id,0)

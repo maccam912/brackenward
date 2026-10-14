@@ -386,3 +386,48 @@ and 133.558 ms. All preserve requested speed, sub-0.1-second backlog and clean
 invariants/storage. End loads match the preceding corresponding 1x/4x rows.
 The tick and frame requirements still fail. The food fix prevents a real shortage
 livelock; it does not by itself meet the crowded-colony performance budget.
+
+
+## 0.7.16 late-history inventory reads
+
+The scheduler borrows the existing live stack view during trusted ticks for
+quantity/reservation/food reads. History remains authoritative for metadata writes;
+no depleted records are removed from saves. A controlled 8,000-record cooking test
+matches a full-history reader for 1,200 ticks, including delivery metadata on every
+zero-count record. The frozen replay, snowy and crowded canonical continuations
+remain exact.
+
+The Day 86 partial from the corrected 977313e Pine run contains 10,183 stacks and
+13,228 jobs at tick 612,000. A v4-loaded daytime continuation reaches tick 614,400
+with eight residents, 104 structures, 124 crop tiles, 10,209 stack records (590
+positive) and 13,260 jobs. It is a derived profiling fixture, not a 96-day pass.
+Raw SHA-256: `a4306a225e39ab1701275a7815b6ad8ac57031679fd989e4ca1ac9bfe3cabd99`.
+The 1,200-tick result has the exact frozen eabef3b canonical hash
+`38c3c1ff65e2bfd52b6a79e5c0d3ff1b2416ffafd36720add35e71d100654506`.
+Observed baseline/current uninstrumented CPU time is 10.410/6.151 seconds;
+instrumented work is 4.326/0.650 seconds. One old campaign worker overlaps each
+short run; this is not an isolated or phone benchmark.
+
+The following thirty-second native source measurements use 960x600, Balanced,
+close view centered at 68,72, active saves and Dummy audio. The late rows use that
+snapshot; fresh rows use an ordinary generated four-resident colony with the lodge
+guide active. Scope fingerprint is
+`22c714886e42c33f095c1fc9acd7a110854e20208711fe64ceb4733a991fca72`
+(293 runtime/media/profiler files), unchanged for every row. Four background
+campaign workers are present at each endpoint; replay and export/profile work also
+overlap part of the late rows. These are explicitly contended development timings.
+
+| Case | Wall seconds | Ticks | Main p95 / max ms | Main >50 ms | Tick p50 / p95 / max ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Late / 1x | 30.007 | 299 | 19.611 / 188.775 | 10 | 2.496 / 27.475 / 187.852 |
+| Late / 4x | 30.008 | 1,199 | 42.292 / 148.219 | 28 | 2.499 / 30.472 / 147.557 |
+| Fresh lodge / 1x | 30.033 | 300 | 0.989 / 5.317 | 0 | 0.613 / 0.854 / 3.403 |
+| Fresh lodge / 4x | 30.032 | 1,201 | 1.393 / 5.451 | 0 | 0.600 / 0.817 / 3.309 |
+
+Requested speed, clean invariants/storage and backlog below 0.1 second hold in
+all rows. Late 1x ends with 588 positive stacks / one target; late 4x has 602 / zero.
+All other late actor/structure/crop counts remain as above. The fresh cases retain
+four residents, ten structures, seven positive stacks and sixteen wildlife, with
+no active target, crop, domestic animal, visitor or hostile. Fresh guidance is
+smooth on this host; late-game and crowded tick budgets still fail. Android,
+all-alert stress, thirty-minute soak and hardware memory/thermal gates remain open.
