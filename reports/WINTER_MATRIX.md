@@ -26,7 +26,7 @@ archived after source/current-load audits, with a recoverable Git snapshot.
 | audit.json | `f69fa76c5ade4b3e8563a664e56312a32956efeab3cc6ed64ec7b7ad7ae033de` |
 | Current-code loading audit | `c38d92efa00ba3a4da9e519eb083e5e7759b741018f730c350927eec505f05aa` |
 
-Zero-fullness ticks across all runs: 0. Physical Android, human, full v4 Charter
+Zero-fullness ticks across all runs: 0. Physical Android, human, fresh v5 campaign
 and final M7 performance/release gates remain separate.
 
 | Site | Seed | Final canonical hash | Final snapshot SHA-256 |
@@ -61,6 +61,16 @@ and final M7 performance/release gates remain separate.
 | reed_bend | 2147483647 | `8039c8b814b95251477e2d7150cab7ae288c26340fb011073ba80250cca5182a` | `8f4def843c87d2c082b978b4893b1210b9d2507ea04a3dd19502f5705bd8437a` |
 | reed_bend | 3000000001 | `f40372f51e58cd063427967bbbdbca1295123f7fdeafae777568c5d4bc47ad3d` | `db855908bd711d2aac023b8d88973ff0581f48cd076fcbcaaed7b7d194ac261c` |
 | reed_bend | 4294967295 | `0f966477f7e71d7ff3c55f8498708af496d6fba2e99f86e52715596e22b55115` | `b3b822d4509a00197173e8f64f03c1a172e21120be77ee36ae6f069fa8a5c9b5` |
+
+## Current v5 loading audit
+
+All thirty v4 final saves also load in 0.7.25 / content v5 without advancing time.
+Only declared content headers change; every acknowledged field, invariant, codec
+round trip and original file byte remains exact. The final audit using the common
+Winter/Charter loader is winter-v4-current25-final-audit.json, SHA-256
+`bdee12485c5706456d25a9a1bc5b9f19daccb6a56f43d460f81d7e6a9e98fe21`.
+This is compatibility with later feasible-sleep scheduling, not thirty fresh v5
+Winter runs. Full v4 Charters are now separately recorded in CAMPAIGN_EVIDENCE.md.
 
 ## Content v4 loading audit
 

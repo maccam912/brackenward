@@ -2,7 +2,9 @@
 
 The user has installed a phone build and reported placement/camera defects and
 periodic freezes even in a new colony. The fixes and local/native/CI evidence are
-tracked in STATUS.md; this physical regression battery is **Not run**. A model,
+tracked in STATUS.md. A user-supplied CPH2655/Adreno 830 report from 0.7.24 is
+retained in [ANDROID_DEVICE_EVIDENCE.md](ANDROID_DEVICE_EVIDENCE.md); the full
+physical regression battery is **Not run**. A model,
 OS/GPU, APK version/checksum and orientation are required to attach a result to a
 specific device/build. No desktop result certifies this battery.
 

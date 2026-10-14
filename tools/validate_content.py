@@ -251,3 +251,8 @@ current_catalog=json.loads((root / 'data/catalogs/colony_v4.json').read_text())
 assert current_catalog['version']=='colony-v4'
 assert {**current_catalog,'version':'colony-v3'}==budget_catalog, 'Food interruption correction must retain every released recipe, quantity, geometry and progression rule'
 print('Validated food-interruption content v4; definitions are identical to retained v3 except the declared version.')
+
+feasible_sleep_catalog=json.loads((root / 'data/catalogs/colony_v5.json').read_text())
+assert feasible_sleep_catalog['version']=='colony-v5'
+assert {**feasible_sleep_catalog,'version':'colony-v4'}==current_catalog, 'Feasible sleep correction must retain every released recipe, quantity, geometry and progression rule'
+print('Validated feasible-sleep content v5; definitions are identical to retained v4 except the declared version.')

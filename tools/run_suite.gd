@@ -72,6 +72,7 @@ func run() -> void:
 			PolicyTests.run(check)
 		"chronicle": ChronicleTests.run(check)
 		"scheduler":
+			SleepCycleTests.run(check)
 			ReservationReadTests.run(check)
 			CreationReadTests.run(check)
 			SchedulerTests.run(check)

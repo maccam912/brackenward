@@ -1,5 +1,40 @@
 # Ordinary campaign evidence — 12 October 2026
 
+## Frozen v4 96-day vegetarian Charter matrix
+
+All **four cases pass** at clean, unchanged cf344711ad8701f5d7fe822bf6c8623d1dacda56
+(0.7.20-m7, content v4/schema 23). The public-command policy runs seed 104729 from
+1,800 to 693,000, completing all five stages, ceremony and Continue, then at least
+one full further day. Every case retains eight living residents, no departure,
+valid final save/round trip and 2,304 invariant checks (9,216 total). All process
+exits, logs, snapshots and unchanged source are checked independently.
+
+| Site / mode | Ceremony end | Minimum health | Zero-fullness ticks | Beyond-grace ticks | Final canonical hash | Snapshot SHA-256 |
+| --- | ---: | ---: | ---: | ---: | --- | --- |
+| Meadow / Standard | 399301 | 4 | 71392 | 56992 | `03ce98cf58bb22437ea5cab6aa7bf64f73212259b10ca306c3dabfeecd069bbb` | `0c856dbbcecd2560dbf1535b464a9be8b77cb66c01fbdcd1310eaa2248cd7953` |
+| Pine / Standard | 373501 | 90 | 0 | 0 | `957e6026d8c9fd1fcd2ed3a1fbfe1aba3c565fcd9fd681770b6f08e231aed920` | `79d05439afe6e092e8e52dab3da77cd63af04191ca1c703840824758661ab480` |
+| Reed / Standard | 262801 | 100 | 0 | 0 | `708830f857dd0ff9f66838aac3bb0a3b5b91807dd1fafd23ee44455341e639b8` | `1f94159ca09ab2c69ec789806245391dc0a489126f3333ca4243157b8bb9b076` |
+| Pine / Hearthside | 291001 | 100 | 0 | 0 | `d86d0cef1ad350b05d42993d005d085799ddf0182f1e6852f4eec6927ab730db` | `668f3f666fb65b48c4c2878213a074f481ffb7f158b18cdab8d46959a5ea4bca` |
+
+Meadow reaches its Charter after serious shortages; this is a full Charter/continue
+pass, not a zero-starvation or final balance certificate. V5 separately corrects
+an observed low-rest/hunger work interruption cycle, so new v5 long campaigns are
+required rather than relabeling these v4 simulations.
+
+| Retained evidence | SHA-256 |
+| --- | --- |
+| source.json | `6197d08046aad367577fc7d1aea5d3fa6b64677c89c74e268542a6f9a811a142` |
+| completion.json | `4f6219b528a047e50d473f244d06c6698f7cb7fa7c36b3f7933433c154a9eb17` |
+| independent audit.json | `9a8b767d32be42fdce7ac08b4eea3b2adfb81a2217e6ebc47328bcc10837c69f` |
+| Current v5 loading audit | `c5b10a30cccd9867c9aafcdcb1fc7bb238e550a37b382c7dda48c041a9e43f3d` |
+
+Raw data stays in ignored charter-release-v4-cf34471/ and
+charter-v4-current25-audit.json. The v5 audit checks all four source snapshot byte
+hashes, every acknowledged field under its original content header, invariants
+and round trips without advancing time or rewriting files. It is migration
+validation, not another campaign run. Older results below retain their own scope.
+
+
 These local macOS runs use Godot 4.7.2, colony-v2 definitions, generator 1,
 seed 104729 and public simulation commands. Policies do not spawn resources,
 change weather, disable incidents, instant-build or assign nonexistent workers.

@@ -10,6 +10,7 @@ class GatedQueue extends ColonySaveQueue:
 static func run(tree: SceneTree, check: Callable) -> void:
 	var root: String = "user://async-save-tests-%d" % Time.get_ticks_usec()
 	content3_upgrade(root,check)
+	content4_upgrade(root,check)
 	var world: ColonyWorld = ColonyTests.world()
 	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("campaign")
 	check.call("SAVE/async_fixture_snapshot",store.save(world).is_empty())
@@ -154,9 +155,9 @@ static func content3_upgrade(root: String, check: Callable) -> void:
 	changed.content_hash="0".repeat(64);envelope.content_hash=changed.content_hash
 	envelope.payload=JSON.stringify(ColonyState.pack(changed),"",true);envelope.sha256=envelope.payload.sha256_text()
 	check.call("SAVE/v3_upgrade_requires_its_exact_released_catalog",ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","").begins_with("Unknown released v3 catalog"))
-	envelope.content="colony-v5"
+	envelope.content="colony-v6"
 	var newer: String = ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","")
-	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v5") and newer.contains("colony-v4"))
+	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v6") and newer.contains("colony-v5"))
 	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("content-v4-upgrade")
 	DirAccess.make_dir_recursive_absolute(store.directory)
 	var snapshot: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/content3-delta-base.brackenward")
@@ -216,3 +217,31 @@ static func ui(game: GameSession, check: Callable) -> void:
 	check.call("SAVE/UI_background_joins_writer_then_saves_latest_tick",not game.save_queue.busy() and game.runner.speed==0 and recovered.has("world") and recovered.world.canonical_hash()==final_hash)
 	game.resume_from_background();game.close_sheet()
 	check.call("SAVE/UI_background_return_remains_paused",game.runner.speed==0 and game.world.canonical_hash()==final_hash)
+
+static func content4_upgrade(root: String, check: Callable) -> void:
+	var audit: Dictionary=Content4Migration.audit()
+	for row in audit.rows: check.call("SAVE/v4_acknowledgement_"+row.file,row.passed,str(row.get("error","")))
+	check.call("SAVE/all_five_v4_acknowledgements_and_producer_are_exact",audit.passed and audit.rows.size()==5)
+	var envelope: Dictionary=JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/content4-low-rest-cook.brackenward"))
+	var changed: Dictionary=ColonyState.unpack(JSON.parse_string(envelope.payload));changed.content_hash="0".repeat(64);envelope.content_hash=changed.content_hash
+	envelope.payload=JSON.stringify(ColonyState.pack(changed),"",true);envelope.sha256=envelope.payload.sha256_text()
+	check.call("SAVE/v4_upgrade_requires_exact_released_catalog",ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","").begins_with("Unknown released v4 catalog"))
+	var manifest: Dictionary=JSON.parse_string(FileAccess.get_file_as_string(Content4Migration.MANIFEST))
+	var snapshot: PackedByteArray=FileAccess.get_file_as_bytes("res://tests/fixtures/content4-delta-base.brackenward")
+	var journal: PackedByteArray=FileAccess.get_file_as_bytes("res://tests/fixtures/content4-delta.frames")
+	var store: ColonyStore=ColonyStore.new();store.directory=root.path_join("content-v5-upgrade");DirAccess.make_dir_recursive_absolute(store.directory)
+	var snapshot_path: String=store.directory.path_join("snapshot-0000000001.brackenward");var journal_path: String=store.directory.path_join("journal-0000000001.frames")
+	var file: FileAccess=FileAccess.open(snapshot_path,FileAccess.WRITE);file.store_buffer(snapshot);file.close();file=FileAccess.open(journal_path,FileAccess.WRITE);file.store_buffer(journal);file.close()
+	var expected: Dictionary=ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content4-delta-final.brackenward"));var recovered: Dictionary=store.load_latest()
+	check.call("SAVE/v4_delta_folds_before_v5_header_upgrade",expected.has("world") and recovered.has("world") and recovered.world.tick==2400 and recovered.world.canonical_hash()==expected.world.canonical_hash(),str(recovered.get("error","")))
+	if not expected.has("world") or not recovered.has("world"): return
+	check.call("SAVE/v4_delta_migration_keeps_originals_and_backups",FileAccess.get_file_as_bytes(snapshot_path)==snapshot and FileAccess.get_file_as_bytes(journal_path)==journal and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-journal-0000000001.frames"))==journal)
+	var fresh: Dictionary=ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content4-low-rest-cook.brackenward"))
+	for index in range(600): fresh.world.step()
+	check.call("SAVE/v4_marker_is_not_resimulated_with_v5_sleep_rules",fresh.world.canonical_hash()!=recovered.world.canonical_hash() and fresh.world.ledger.produced.get("meal",0)>recovered.world.ledger.produced.get("meal",0))
+	var world: ColonyWorld=recovered.world;var meals: int=world.ledger.produced.get("meal",0)
+	for index in range(4800): world.step()
+	check.call("SAVE/imported_v4_low_rest_colony_returns_to_eating_in_later_v5_play",world.citizens[0].health>0 and world.citizens[0].fullness>350 and world.ledger.produced.get("meal",0)>meals and world.invariant_errors().is_empty(),str([world.citizens[0].health,world.citizens[0].fullness,world.citizens[0].rest,world.citizens[0].activity,world.invariant_errors()]))
+	var error: String=store.checkpoint(world);var loaded: Dictionary=load_saved(store)
+	check.call("SAVE/v5_future_checkpoint_recovers_exactly_after_v4_upgrade",error.is_empty() and loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash() and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-journal-0000000001.frames"))==journal,str(error))
+	check.call("SAVE/all_v4_source_fixture_bytes_stay_frozen",FileAccess.get_sha256("res://tests/fixtures/content4-delta-base.brackenward")==manifest.delta["content4-delta-base.brackenward"] and FileAccess.get_sha256("res://tests/fixtures/content4-delta.frames")==manifest.delta["content4-delta.frames"])

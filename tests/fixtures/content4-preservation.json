@@ -1,0 +1,49 @@
+{
+	"catalog_hash": "9050640ffbad94cff96a3ffd74251185e1b4c43e197c74a9dacf6d711166021e",
+	"content": "colony-v4",
+	"controlled_final_activity": "Heading to bed",
+	"controlled_final_rest": 100,
+	"controlled_final_tick": 2400,
+	"controlled_meals_produced": 0,
+	"delta": {
+		"content4-delta-base.brackenward": "c8cbaa60fc8ade329e2bf33d6e1cdbf81731cb66114ff9dac70f18782d687df1",
+		"content4-delta-final.brackenward": "1e4bbff754ba7ff7d38e9693f6f541d839cfdcfd9006a7f5beac2f42cba9004a",
+		"content4-delta.frames": "cff984534b3684409bd43535884236562ea28de40a8c334e64a8331d3f323462"
+	},
+	"producer_sha256": "222dfdb75ea303e1c1997df64e79ef14f09023ca20ca2ebf594e7870e8a5b293",
+	"schema": 23,
+	"scope": "Exact v4 acknowledgements; future feasible-sleep scheduling intentionally changes after this capture",
+	"snapshots": [
+		{
+			"canonical_hash": "2463a273b157ffa445ea25231ffd1d23641bf727f48501fb5650bfb2075ff42e",
+			"file": "content4-replay-initial.brackenward",
+			"role": "Reviewed replay checkpoint under v4 header, exact acknowledged gameplay fields",
+			"sha256": "866000126035e5e5a83cda008eb4ba78b63654cbe2996d6eafab5fe1d4fcef8b"
+		},
+		{
+			"canonical_hash": "6dd1f932024049d125986be770973e714a6dc8164cd159c138ebdbfe58ec23de",
+			"file": "content4-replay-7200.brackenward",
+			"role": "Reviewed replay checkpoint under v4 header, exact acknowledged gameplay fields",
+			"sha256": "c06fb85ae00cf4492d9f660e1a76241d6506b84feaf5e9391ee62c90032ebcd2"
+		},
+		{
+			"canonical_hash": "dcda1d2f1dcff062223fc37d54ff9f4563fb2b7103241bb418cc9d95d14d3784",
+			"file": "content4-replay-72000.brackenward",
+			"role": "Reviewed replay checkpoint under v4 header, exact acknowledged gameplay fields",
+			"sha256": "64a2ea61f80dd8aa5737891c6acec59c1d585e425dfd9542953070047bdcb8a4"
+		},
+		{
+			"canonical_hash": "fc9eee48dd9aecda8ac8df00b9ea7e64123d2679dce0873f90393fc52395def0",
+			"file": "content4-low-rest-cook.brackenward",
+			"role": "Controlled hungry cook at rest 200, inherited extra grain/consumed meals; not ordinary balance evidence",
+			"sha256": "217b71da6b5af67d897e9b85b7b0c9f21006dba596e97e1bd74f796c7e811b35"
+		},
+		{
+			"canonical_hash": "c1796c5586a7c0d6f7047712219fd7adebc81bdf2126fee50864cc244ad2f861",
+			"file": "content4-delta-final.brackenward",
+			"role": "600 acknowledged v4 ticks of controlled low-rest case; never resimulate during migration",
+			"sha256": "1e4bbff754ba7ff7d38e9693f6f541d839cfdcfd9006a7f5beac2f42cba9004a"
+		}
+	],
+	"source_commit": "fdadd7b1762843351a0dd02c0367049359f7cf1f"
+}

@@ -1,8 +1,8 @@
 extends SceneTree
 ## SAVE10: frozen player commands, canonical checkpoints and a foreign-host save.
 const INPUT: String = "res://tests/fixtures/campaign-replay-input.json"
-const GOLDEN: String = "res://tests/fixtures/campaign-replay-v4-golden.json"
-const SAVED: String = "res://tests/fixtures/campaign-replay-v4-7200.brackenward"
+const GOLDEN: String = "res://tests/fixtures/campaign-replay-v5-golden.json"
+const SAVED: String = "res://tests/fixtures/campaign-replay-v5-7200.brackenward"
 var report_path: String = "res://reports/replay.json"
 var record_golden: bool = false
 var failure: String = ""

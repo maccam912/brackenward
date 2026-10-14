@@ -71,6 +71,13 @@ def main():
         if not json.loads(migration.read_text()).get("passed"):
             raise RuntimeError("Frozen v3 acknowledgement migration audit failed")
         evidence["content3_acknowledgement_preservation"] = True
+        migration4 = report.with_name(report.stem + "-content4-migration.json")
+        migration4.unlink(missing_ok=True)
+        run_engine(binary, ["--script", "tools/check_content4_migration.gd", "--",
+                           "--audit", str(migration4)], 180, logs)
+        if not json.loads(migration4.read_text()).get("passed"):
+            raise RuntimeError("Frozen v4 acknowledgement migration audit failed")
+        evidence["content4_acknowledgement_preservation"] = True
         report.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         if isinstance(error, subprocess.TimeoutExpired) and error.stdout:

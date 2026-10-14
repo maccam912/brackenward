@@ -66,3 +66,8 @@ static func ui(game: GameSession, check: Callable) -> void:
 	game.close_sheet();game._shortcut("journal")
 	check.call("TEXT/UI_keyboard_route_uses_key_without_changing_id",game.sheet_name=="Journal" and game.sheet_title_key=="ui.sheet.journal" and game.sheet_full_heading.text=="Journal")
 	game.close_sheet()
+
+	var person: Dictionary=game.world.citizens[0];person.fullness=200;person.rest=200
+	var before_person: String=game.world.canonical_hash();game.show_person(person.id)
+	check.call("TEXT/UI_low_food_and_rest_explains_work_priority_without_state_changes",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("instead of restarting it") and n.text.contains("rest 100")) and game.world.canonical_hash()==before_person)
+	game.close_sheet()
