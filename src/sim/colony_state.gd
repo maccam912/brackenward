@@ -12,7 +12,8 @@ const IDS: Dictionary = {
 	"offered_at":true, "accepted_at":true, "deadline":true, "conflict_until":true, "conflict_cooldown":true,
 	"order":true, "station":true, "carried_by":true, "carrying_patient":true, "recovery_until":true,
 	"hearthside_until":true, "injury_id":true, "patient":true, "defense_incident":true, "story_memory_until":true,
-	"next_event_id":true, "participants":true, "causes":true, "chain":true, "fact_ids":true
+	"next_event_id":true, "participants":true, "causes":true, "chain":true, "fact_ids":true,
+	"base_tick":true, "tail_ids":true
 }
 
 static func pack(value: Variant, field: String = "") -> Variant:

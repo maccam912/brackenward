@@ -92,7 +92,7 @@ func plan(world: ColonyWorld) -> void:
 		return
 	for origin in lodge_origins:
 		var point: Vector2i = origin+Vector2i(1,3)
-		if world.roofed(point) and not world.structures.any(func(s:Dictionary)->bool:return s.definition=="hearth" and s.x==point.x and s.y==point.y) and not world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition=="hearth" and j.x==point.x and j.y==point.y and j.state not in ["Complete","Canceled"]):
+		if world.roofed(point) and not world.structures.any(func(s:Dictionary)->bool:return s.definition=="hearth" and s.x==point.x and s.y==point.y) and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition=="hearth" and j.x==point.x and j.y==point.y and j.state not in ["Complete","Canceled"]):
 			if world.placement_error("hearth",point,0).is_empty(): issue(world,"build",{"definition":"hearth","x":point.x,"y":point.y,"rotation":0})
 	if world.researched.has("masonry") and not _present(world,"cellar"):
 		_build(world,"cellar");return
@@ -102,7 +102,7 @@ func plan(world: ColonyWorld) -> void:
 	for person in residents:
 		if person.equipment.cloak.is_empty() and world.available("cloak")>0: issue(world,"equip",{"target":person.id,"slot":"cloak","item":"cloak"})
 	for resource in world.resources:
-		if resource.definition=="tree" and resource.remaining==0 and not ColonyNature.tree(world,resource.id).planted and ColonyNature.plantable(world,Vector2i(resource.x,resource.y)) and not world.jobs.any(func(j:Dictionary)->bool:return j.target==resource.id and j.kind=="plant_tree" and j.state not in ["Complete","Canceled"]):
+		if resource.definition=="tree" and resource.remaining==0 and not ColonyNature.tree(world,resource.id).planted and ColonyNature.plantable(world,Vector2i(resource.x,resource.y)) and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target==resource.id and j.kind=="plant_tree" and j.state not in ["Complete","Canceled"]):
 			issue(world,"replant_tree",{"target":resource.id});break
 	if scenario=="vegetarian_charter": _charter(world)
 
@@ -114,7 +114,7 @@ func _finished_research_staffing(world: ColonyWorld) -> void:
 	if researcher.preferences.Research!=2: issue(world,"preference",{"citizen":researcher.id,"category":"Research","value":2})
 
 func _present(world: ColonyWorld, definition: String) -> bool:
-	return world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition==definition) or world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition==definition and j.state not in ["Complete","Canceled"])
+	return world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition==definition) or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition==definition and j.state not in ["Complete","Canceled"])
 
 func _cart(world: ColonyWorld) -> Vector2i:
 	var cart: Dictionary = ColonyTrade.cart(world)
@@ -141,7 +141,7 @@ func _build(world: ColonyWorld, definition: String) -> bool:
 				if area.any(_reserved_plan) or area.any(func(p:Vector2i)->bool:return world.terrain_state.starter_field.has(p) or protected_seats.has(p)) or not world.placement_error(definition,point,0).is_empty(): continue
 				if definition=="table":
 					var seats: Array[Vector2i] = ColonySocial.seats_for(world,{"definition":definition,"x":x,"y":y,"rotation":0})
-					if seats.any(func(p:Vector2i)->bool:return not world.walkable(p) or not world.accessible(p) or _reserved_plan(p) or world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.state not in ["Complete","Canceled"] and world.footprint(j).has(p))): continue
+					if seats.any(func(p:Vector2i)->bool:return not world.walkable(p) or not world.accessible(p) or _reserved_plan(p) or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.state not in ["Complete","Canceled"] and world.footprint(j).has(p))): continue
 				issue(world,"build",{"definition":definition,"x":x,"y":y,"rotation":0});return true
 	return false
 
@@ -196,7 +196,7 @@ func _fields(world: ColonyWorld, crop: String, desired: int, roof: bool) -> void
 					if absi(x-cart.x)+absi(y-cart.y)==radius and not candidates.has(point): candidates.append(point)
 	for point in candidates:
 		if count+points.size()>=desired: break
-		if (not roof and _reserved_plan(point)) or not world.walkable(point) or world.roofed(point)!=roof or world.elevation(point)<2 or world.fields.any(func(f:Dictionary)->bool:return f.x==point.x and f.y==point.y) or world.structures.any(func(s:Dictionary)->bool:return world.footprint(s).has(point)) or world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.state not in ["Complete","Canceled"] and world.footprint(j).has(point)) or world.stores.any(func(s:Dictionary)->bool:return s.tiles.has(point)): continue
+		if (not roof and _reserved_plan(point)) or not world.walkable(point) or world.roofed(point)!=roof or world.elevation(point)<2 or world.fields.any(func(f:Dictionary)->bool:return f.x==point.x and f.y==point.y) or world.structures.any(func(s:Dictionary)->bool:return world.footprint(s).has(point)) or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.state not in ["Complete","Canceled"] and world.footprint(j).has(point)) or world.stores.any(func(s:Dictionary)->bool:return s.tiles.has(point)): continue
 		# Different crop designations queued together cannot overlap.
 		if world.pending_commands.any(func(c:Dictionary)->bool:return c.kind=="field" and c.args.tiles.has(point)): continue
 		points.append(point)
@@ -205,10 +205,10 @@ func _fields(world: ColonyWorld, crop: String, desired: int, roof: bool) -> void
 func _gather(world: ColonyWorld, definition: String, reserve: int, tasks: int, limit: int = 64) -> void:
 	var item: String = world.definitions.resources[definition].item
 	if world.available(item)>=reserve: return
-	var active: int = world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="gather" and j.state not in ["Complete","Canceled"] and world.find(world.resources,j.target).get("definition")==definition).size()
+	var active: int = world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.kind=="gather" and j.state not in ["Complete","Canceled"] and world.find(world.resources,j.target).get("definition")==definition).size()
 	if active>=tasks: return
 	var cart: Vector2i = _cart(world)
-	var candidates: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition==definition and r.remaining>0 and not world.jobs.any(func(j:Dictionary)->bool:return j.target==r.id and j.kind=="gather" and j.state not in ["Complete","Canceled"]))
+	var candidates: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition==definition and r.remaining>0 and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target==r.id and j.kind=="gather" and j.state not in ["Complete","Canceled"]))
 	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
 		var aa: int = absi(a.x-cart.x)+absi(a.y-cart.y);var bb: int = absi(b.x-cart.x)+absi(b.y-cart.y)
 		return aa<bb or (aa==bb and a.id<b.id))
@@ -255,8 +255,9 @@ func _defense(world: ColonyWorld, residents: Array) -> void:
 func _charter(world: ColonyWorld) -> void:
 	if world.charter_state.ending and not world.charter_state.continued:
 		issue(world,"continue_settlement")
+	if _unblock_storage(world): return
 	_expedition(world)
-	if ColonyCharter.seats(world).size()<8 and not world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition=="table" and j.state not in ["Complete","Canceled"]):
+	if ColonyCharter.seats(world).size()<8 and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition=="table" and j.state not in ["Complete","Canceled"]):
 		_build(world,"table")
 	# Higher dependencies stay visible when this conservative planner cannot supply them.
 	for definition in ["workbench","brick_kiln","charcoal_kiln","smelter","loom"]:
@@ -287,7 +288,7 @@ func _expedition(world: ColonyWorld) -> void:
 		var data: Dictionary = world.definitions.expeditions[destination]
 		if world.region_state.progress[destination].returned_at>0 or not data.get("seasons",[0,1,2,3]).has(ColonyAgriculture.season(world.tick)): continue
 		var skill: String = data.skill
-		var travelers: Array = world.citizens.filter(func(c:Dictionary)->bool:return c.id!=1 and not c.away and not c.downed and not c.death_recorded and not c.departed and c.health>=70 and c.rest>=500 and c.fullness>=500)
+		var travelers: Array = world.citizens.filter(func(c:Dictionary)->bool:return not c.away and not c.downed and not c.death_recorded and not c.departed and c.health>=70 and c.rest>=500 and c.fullness>=500)
 		travelers.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.skills[skill]>b.skills[skill] or (a.skills[skill]==b.skills[skill] and a.id<b.id))
 		for count in range(mini(4,travelers.size()),1,-1):
 			var args: Dictionary = {"definition":destination,"party":travelers.slice(0,count).map(func(c:Dictionary)->int:return c.id),"goats":[],"cargo":{},"feed":"grain","pen":0,"variant":0,"pickup":false}
@@ -295,3 +296,39 @@ func _expedition(world: ColonyWorld) -> void:
 			if quote.error.is_empty() and quote.shortfall==0 and quote.home_forecast.ticks>=21600:
 				issue(world,"expedition_prepare",args)
 				return
+
+func _unblock_storage(world: ColonyWorld) -> bool:
+	if not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.state=="Blocked" and j.reason.begins_with("No storage space")): return false
+	var designated: int = 0
+	var occupied: Dictionary = {}
+	for store in world.stores:
+		if world.find(world.structures,store.id).is_empty(): designated+=store.tiles.size()
+		for point in store.tiles: occupied[point]=true
+	if designated>=32: return false
+	for structure in world.structures:
+		for point in world.footprint(structure): occupied[point]=true
+		if structure.definition=="table":
+			for point in ColonySocial.seats_for(world,structure): occupied[point]=true
+	for resource in world.resources: occupied[Vector2i(resource.x,resource.y)]=true
+	for field in world.fields: occupied[Vector2i(field.x,field.y)]=true
+	for pen in world.domestic_state.pens:
+		for point in pen.tiles: occupied[point]=true
+	for job in world.unfinished_jobs():
+		if job.kind=="build":
+			for point in world.footprint(job): occupied[point]=true
+	for point in world.terrain_state.starter_field: occupied[point]=true
+	var cart: Vector2i = _cart(world)
+	for radius in range(6,31):
+		for y in range(maxi(1,cart.y-radius),mini(123,cart.y+radius+1)):
+			for x in range(maxi(1,cart.x-radius),mini(123,cart.x+radius+1)):
+				if absi(x+2-cart.x)+absi(y+2-cart.y)!=radius: continue
+				var tiles: Array[Vector2i] = []
+				for yy in range(y,y+4):
+					for xx in range(x,x+4):
+						var point: Vector2i = Vector2i(xx,yy)
+						if occupied.has(point) or _reserved_plan(point) or not world.walkable(point) or not world.accessible(point) or world.is_flooded(point) or not ColonyDanger.safe(world,point): break
+						tiles.append(point)
+					if tiles.size()!=(yy-y+1)*4: break
+				if tiles.size()==16:
+					issue(world,"stockpile",{"tiles":tiles});return true
+	return false

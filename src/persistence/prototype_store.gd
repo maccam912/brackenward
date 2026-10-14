@@ -40,13 +40,14 @@ func save(world: RefCounted) -> String:
 		# Immutable generations already decoded by this writer only need their
 		# bytes checked again. Changed files still undergo full validation.
 		if (not digest.is_empty() and verified_generations.get(path,"")==digest) or not decode(FileAccess.get_file_as_bytes(path)).has("error"):
-			valid.append(name)
 			verified_generations[path]=digest
+			if _generation_recoverable(path,digest): valid.append(name)
 		else:
 			verified_generations.erase(path)
 	while valid.size() > 3:
 		var path: String = directory.path_join(valid[0])
-		DirAccess.remove_absolute(path)
+		var digest: String = verified_generations.get(path,"")
+		if DirAccess.remove_absolute(path)==OK: _generation_pruned(path,digest)
 		verified_generations.erase(path)
 		valid.remove_at(0)
 	return ""
@@ -72,6 +73,12 @@ func _generations() -> PackedStringArray:
 
 func encode(world: RefCounted) -> PackedByteArray:
 	return PrototypeCodec.encode(world)
+
+func _generation_recoverable(_path: String, _digest: String) -> bool:
+	return true
+
+func _generation_pruned(_path: String, _digest: String) -> void:
+	pass
 
 func decode(bytes: PackedByteArray) -> Dictionary:
 	return PrototypeCodec.decode(bytes)

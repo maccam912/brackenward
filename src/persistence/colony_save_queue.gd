@@ -15,9 +15,11 @@ func start(store: ColonyStore, world: ColonyWorld, full_snapshot: bool = false) 
 	var captured: Dictionary = world.payload().duplicate(true)
 	var trace: Array[Dictionary] = world.command_trace.duplicate(true)
 	var writer: ColonyStore = ColonyStore.new()
-	for field in ["directory","root_directory","slot","sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_state_oversized"]:
+	for field in ["directory","root_directory","slot","sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick"]:
 		writer.set(field,store.get(field))
 	writer.verified_generations=store.verified_generations.duplicate()
+	writer.verified_journals=store.verified_journals.duplicate()
+	writer.rejected_journals=store.rejected_journals.duplicate()
 	source_store=store;source_world=world;captured_tick=world.tick;original_sequence=store.sequence
 	thread=Thread.new()
 	var error: Error = thread.start(_write.bind(writer,captured,trace,world.definitions,full_snapshot))
@@ -41,9 +43,11 @@ func poll(wait: bool = false) -> Dictionary:
 	var result: Dictionary = thread.wait_to_finish()
 	thread=null
 	var writer: ColonyStore = result.writer
-	for field in ["sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_state_oversized"]:
+	for field in ["sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick"]:
 		source_store.set(field,writer.get(field))
 	source_store.verified_generations=writer.verified_generations
+	source_store.verified_journals=writer.verified_journals
+	source_store.rejected_journals=writer.rejected_journals
 	if result.error.is_empty():
 		# Commands accepted after capture remain in the live trace for the next
 		# checkpoint; completing an older save cannot acknowledge newer progress.

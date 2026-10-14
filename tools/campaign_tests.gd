@@ -104,27 +104,32 @@ static func journal_bounds(check: Callable, root: String) -> void:
 	var encoded: PackedByteArray = ColonyCodec.encode(world)
 	var frame: PackedByteArray = ColonyJournal.frame({"sequence":"1","kind":"tick","tick":world.tick,"state":world.payload()})
 	check.call("SAVE/large_history_is_valid_snapshot_above_frame_limit",encoded.size()<ColonyCodec.MAX_BYTES and not ColonyCodec.decode(encoded).has("error") and frame.decode_u32(0)>ColonyJournal.MAX_RECORD)
-	check.call("SAVE/large_history_initial_snapshot",store.save(world).is_empty() and store.journal_state_oversized)
+	check.call("SAVE/large_history_initial_snapshot",store.save(world).is_empty())
 	var previous_path: String = store.directory.path_join("snapshot-%010d.brackenward" % store.sequence)
 	var previous_bytes: PackedByteArray = FileAccess.get_file_as_bytes(previous_path)
 	world.queue_command("food_policy",{"enabled":true})
 	world.step()
-	check.call("SAVE/oversized_checkpoint_rotates_without_invalid_journal",store.checkpoint(world).is_empty() and store.sequence==2 and store.journal_sequence==0 and store.journal_tick==world.tick and world.command_trace.is_empty() and not FileAccess.file_exists(store.directory.path_join("journal-0000000001.frames")) and FileAccess.get_file_as_bytes(previous_path)==previous_bytes)
+	check.call("SAVE/large_history_uses_bounded_exact_delta",store.checkpoint(world).is_empty() and store.sequence==1 and store.journal_sequence==2 and store.journal_tick==world.tick and world.command_trace.is_empty() and FileAccess.file_exists(store.directory.path_join("journal-0000000001.frames")) and FileAccess.get_file_as_bytes(previous_path)==previous_bytes)
 	var reader: ColonyStore = ColonyStore.new()
 	reader.directory=store.directory
 	var restored: Dictionary = reader.load_latest()
 	check.call("SAVE/oversized_checkpoint_recovers_exact_acknowledged_state",restored.has("world") and restored.world.canonical_hash()==world.canonical_hash(),str(restored.get("error","")))
 	# A real filesystem failure must not advance bookkeeping or discard commands.
-	var obstruction: String = store.directory.path_join("snapshot-0000000003.brackenward.tmp")
+	# A genuinely large change still exceeds a frame and must rotate, preserving
+	# both the earlier snapshot and its already acknowledged delta journal.
+	for index in range(300): world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"history_fixture","text":"New retained evidence %d: " % index+"y".repeat(8000)})
+	var old_journal: String = store.directory.path_join("journal-0000000001.frames")
+	var old_journal_hash: String = FileAccess.get_sha256(old_journal)
+	var obstruction: String = store.directory.path_join("snapshot-0000000002.brackenward.tmp")
 	DirAccess.make_dir_recursive_absolute(obstruction)
 	world.queue_command("food_policy",{"enabled":false})
 	world.step()
 	var trace: Array = world.command_trace.duplicate(true)
 	var committed_tick: int = store.journal_tick
 	var failure: String = store.checkpoint(world)
-	check.call("SAVE/failed_large_rotation_keeps_generation_and_pending_trace",not failure.is_empty() and store.sequence==2 and store.journal_sequence==0 and store.journal_tick==committed_tick and world.command_trace==trace and FileAccess.get_file_as_bytes(previous_path)==previous_bytes and not FileAccess.file_exists(store.directory.path_join("journal-0000000002.frames")),failure)
+	check.call("SAVE/failed_large_rotation_keeps_generation_and_pending_trace",not failure.is_empty() and store.sequence==1 and store.journal_sequence==2 and store.journal_tick==committed_tick and world.command_trace==trace and FileAccess.get_file_as_bytes(previous_path)==previous_bytes and FileAccess.get_sha256(old_journal)==old_journal_hash,failure)
 	DirAccess.remove_absolute(obstruction)
-	check.call("SAVE/large_rotation_retries_same_generation_safely",store.checkpoint(world).is_empty() and store.sequence==3 and store.journal_sequence==0 and world.command_trace.is_empty())
+	check.call("SAVE/large_rotation_retries_same_generation_safely",store.checkpoint(world).is_empty() and store.sequence==2 and store.journal_sequence==0 and world.command_trace.is_empty())
 	restored=reader.load_latest()
 	check.call("SAVE/retried_large_rotation_recovers_exact_state",restored.has("world") and restored.world.canonical_hash()==world.canonical_hash())
 	# Fill a real, correctly framed journal just below its aggregate bound. Every
@@ -145,6 +150,15 @@ static func journal_bounds(check: Callable, root: String) -> void:
 		handle.store_buffer(frame)
 		written+=frame.size()
 		count+=1
+	# Delta markers are much smaller than full states. Fill the remaining gap
+	# with one real rejected public command so another checkpoint cannot fit.
+	var remaining: int = ColonyJournal.MAX_JOURNAL-written
+	if remaining>1024:
+		world.queue_command("pin_moment",{"text":"x".repeat(remaining-512)})
+		world.step()
+		var entry: Dictionary = world.command_trace[-1]
+		frame=ColonyJournal.frame({"sequence":str(count+1),"kind":"command","tick":entry.tick,"command":entry.command})
+		handle.store_buffer(frame);written+=frame.size();count+=1
 	handle.flush()
 	handle.close()
 	store.journal_sequence=count

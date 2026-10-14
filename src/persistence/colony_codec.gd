@@ -2,7 +2,7 @@ class_name ColonyCodec
 extends RefCounted
 const FORMAT: String = "brackenward-development-colony"
 const MAX_BYTES: int = 64 * 1024 * 1024
-const VERSION: int = 4
+const VERSION: int = 5
 
 static func encode(world: ColonyWorld, snapshot_name: String = "", sequence: int = 0) -> PackedByteArray:
 	var payload: String = JSON.stringify(ColonyState.pack(world.payload()), "", true)
@@ -24,8 +24,8 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		if legacy.has("error"): return legacy
 		return restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
-	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version != VERSION and envelope.version != 3) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content != "colony-v1" and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
-		return {"error":"Unsupported save version/content: this build supports version 4 plus M1/M2/M3 migration"}
+	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content != "colony-v1" and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
+		return {"error":"Unsupported save version/content: this build supports version 5 plus earlier colony migration"}
 	if not envelope.generator_version is float or (envelope.generator_version != 0 and envelope.generator_version != 1) or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
 		return {"error":"Invalid snapshot metadata"}
 	if not envelope.payload is String or not envelope.sha256 is String or envelope.payload.sha256_text() != envelope.sha256:

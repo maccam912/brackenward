@@ -5,7 +5,14 @@ var journal_sequence: int = 0
 var journal_length: int = 0
 var journal_digest: String = ""
 var recovered: bool = false
-var journal_state_oversized: bool = false
+var journal_payload: Dictionary = {}
+var journal_parent_hash: String = ""
+var journal_size_bound: int = 0
+var snapshot_tick: int = 0
+var encoded_payload_hash: String = ""
+var encoded_snapshot_bytes: int = 0
+var verified_journals: Dictionary = {}
+var rejected_journals: Dictionary = {}
 var slot: int = 1
 const CAMPAIGN_ROOT: String = "user://campaigns"
 var root_directory: String = CAMPAIGN_ROOT
@@ -22,7 +29,8 @@ func select_slot(number: int) -> void:
 	journal_sequence = 0
 	journal_length=0;journal_digest=""
 	recovered = false
-	journal_state_oversized=false
+	journal_payload={};journal_parent_hash="";journal_size_bound=0;snapshot_tick=0
+	verified_journals={};rejected_journals={}
 
 static func occupied(number: int, root: String = CAMPAIGN_ROOT) -> bool:
 	var paths: Array[String] = [root.path_join("slot-%d" % number)]
@@ -38,10 +46,10 @@ static func occupied(number: int, root: String = CAMPAIGN_ROOT) -> bool:
 
 func encode(world: RefCounted) -> PackedByteArray:
 	var payload: String = JSON.stringify(ColonyState.pack(world.payload()),"",true)
-	# Codepoint count is a lower bound on UTF-8 bytes. A known oversized state
-	# can rotate directly next time without packing the same world twice.
-	journal_state_oversized=payload.length()+256>ColonyJournal.MAX_RECORD
-	return ColonyCodec.wrap_payload(world,payload,"",sequence)
+	encoded_payload_hash=payload.sha256_text()
+	var bytes: PackedByteArray = ColonyCodec.wrap_payload(world,payload,"",sequence)
+	encoded_snapshot_bytes=bytes.size()
+	return bytes
 
 func decode(bytes: PackedByteArray) -> Dictionary:
 	return ColonyCodec.decode(bytes)
@@ -55,22 +63,28 @@ func save(world: RefCounted) -> String:
 	journal_tick = world.tick
 	journal_sequence = 0
 	journal_length=0;journal_digest=""
+	journal_payload=world.payload().duplicate(true)
+	journal_parent_hash=encoded_payload_hash;journal_size_bound=encoded_snapshot_bytes;snapshot_tick=world.tick
 	world.command_trace.clear()
 	recovered = false
-	# Delete only journals whose verified snapshot is no longer retained.
-	var snapshots: PackedStringArray = _generations()
-	for name in DirAccess.get_files_at(directory):
-		if name.begins_with("journal-") and name.ends_with(".frames") and not snapshots.has(name.replace("journal-", "snapshot-").replace(".frames", ".brackenward")):
-			DirAccess.remove_absolute(directory.path_join(name))
 	return ""
 
 func checkpoint(world: ColonyWorld) -> String:
 	if sequence == 0 or recovered:
 		return save(world)
+	if not journal_payload.is_empty() and journal_payload.session_id!=world.session_id:
+		return "Journal belongs to a different campaign; select its own campaign slot"
+	if world.tick<journal_tick:
+		return "Journal progress is newer than this world; save it as a separate snapshot"
 	if world.tick == journal_tick:
 		return ""
-	if journal_state_oversized:
+	if journal_payload.is_empty() or world.tick-snapshot_tick>72000:
 		return save(world)
+	var snapshot_path: String = directory.path_join("snapshot-%010d.brackenward" % sequence)
+	var snapshot_digest: String = FileAccess.get_sha256(snapshot_path)
+	if snapshot_digest.is_empty() or snapshot_digest!=verified_generations.get(snapshot_path):
+		recovered=true
+		return "Snapshot changed since verification; current state and original evidence retained"
 	var records: PackedByteArray = PackedByteArray()
 	var next_sequence: int = journal_sequence
 	for entry in world.command_trace:
@@ -81,15 +95,19 @@ func checkpoint(world: ColonyWorld) -> String:
 				return save(world)
 			records.append_array(command_frame)
 	next_sequence += 1
-	var tick_frame: PackedByteArray = ColonyJournal.frame({"sequence": str(next_sequence), "kind": "tick", "tick": world.tick, "state":world.payload()})
+	var delta: Dictionary = {"version":1,"base_tick":journal_tick,"campaign_id":world.session_id,"parent":journal_parent_hash,"patch":ColonyDelta.make(journal_payload,world.payload())}
+	var tick_frame: PackedByteArray = ColonyJournal.frame({"sequence": str(next_sequence), "kind": "tick", "tick": world.tick, "delta":delta})
 	# Large valid campaigns still fit snapshots after outgrowing one journal frame.
 	# Rotate before opening an append handle, preserving the previous durable data
 	# and command trace if creation or verification of the new snapshot fails.
-	if tick_frame.decode_u32(0) > ColonyJournal.MAX_RECORD or records.size() + tick_frame.size() > ColonyJournal.MAX_JOURNAL:
+	if tick_frame.decode_u32(0) > ColonyJournal.MAX_RECORD or records.size() + tick_frame.size() > ColonyJournal.MAX_JOURNAL or journal_size_bound+2*(records.size()+tick_frame.size())>ColonyCodec.MAX_BYTES-4096:
 		return save(world)
 	records.append_array(tick_frame)
 	var path: String = directory.path_join("journal-%010d.frames" % sequence)
 	var prior_length: int = 0
+	if not FileAccess.file_exists(path) and journal_sequence>0:
+		recovered=true
+		return "Durable journal is missing; current state retained for a new verified snapshot"
 	if FileAccess.file_exists(path):
 		var existing: FileAccess = FileAccess.open(path, FileAccess.READ)
 		if existing == null:
@@ -108,6 +126,9 @@ func checkpoint(world: ColonyWorld) -> String:
 			if prior.has("error") or prior.get("torn_tail",false) or prior.records.size()!=journal_sequence:
 				recovered=true
 				return "Journal prefix verification failed; original evidence retained"
+			if prior_length>0:
+				recovered=true
+				return "Journal prefix has no verified state anchor; recover it before appending"
 	var file: FileAccess = FileAccess.open(path, FileAccess.READ_WRITE if FileAccess.file_exists(path) else FileAccess.WRITE_READ)
 	if file == null:
 		return "Could not open durable journal"
@@ -128,9 +149,21 @@ func checkpoint(world: ColonyWorld) -> String:
 	if appended!=records or complete_length!=prior_length+records.size() or verified.has("error") or verified.get("torn_tail", false):
 		recovered = true
 		return "Journal verification failed; current state retained in memory"
+	var markers: Array = verified.records.filter(func(record:Dictionary)->bool:return record.kind=="tick")
+	var rebuilt: Dictionary = ColonyDelta.restore(journal_payload,markers[0].delta.patch) if markers.size()==1 else {"error":"Missing complete delta marker"}
+	if rebuilt.has("error") or rebuilt.state!=world.payload():
+		recovered=true
+		return "Journal delta did not reproduce the captured state; current state retained in memory"
 	journal_tick = world.tick
 	journal_sequence = next_sequence
 	journal_length=complete_length;journal_digest=FileAccess.get_sha256(path)
+	verified_journals[path]=snapshot_digest+":"+journal_digest;rejected_journals.erase(path)
+	journal_payload=world.payload().duplicate(true)
+	journal_parent_hash=tick_frame.slice(tick_frame.size()-32).hex_encode()
+	# A replacement cannot grow the canonical envelope by more than twice its
+	# encoded patch size. This upper bound forces a full checked save before the
+	# recovery state could exceed the snapshot's 64 MiB limit.
+	journal_size_bound+=2*records.size()
 	world.command_trace.clear()
 	return ""
 
@@ -153,7 +186,7 @@ func load_latest() -> Dictionary:
 		var parser: JSON = JSON.new()
 		var header: Variant = parser.data if parser.parse(snapshot_bytes.get_string_from_utf8()) == OK else null
 		var legacy: bool = header is Dictionary and (header.get("version") == 1 or header.get("version") == 2)
-		var migrating: bool = legacy or (header is Dictionary and header.get("version") == 3)
+		var migrating: bool = legacy or (header is Dictionary and (header.get("version")==3 or header.get("version")==4))
 		if header is Dictionary and header.get("version") == ColonyCodec.VERSION and header.get("payload") is String:
 			var original_state: Variant = JSON.parse_string(header.payload)
 			migrating = original_state is Dictionary and (original_state.get("schema_revision",0) < ColonyWorld.SCHEMA_REVISION or original_state.get("content") != ColonyWorld.CONTENT_VERSION)
@@ -168,10 +201,11 @@ func load_latest() -> Dictionary:
 			if journal.has("error"):
 				earlier_errors.append(journal.error)
 				continue
-			decoded = ColonyJournal.replay(decoded.world, journal.records)
+			decoded = ColonyJournal.replay(decoded.world, journal.records,header.get("sha256",""),journal.digests)
 			if decoded.has("error"):
 				earlier_errors.append(decoded.error)
 				continue
+			if not journal.get("torn_tail",false): verified_journals[journal_path]=FileAccess.get_sha256(directory.path_join(name))+":"+FileAccess.get_sha256(journal_path)
 		if legacy:
 			decoded = ColonyCodec.decode(M1Codec.encode(decoded.world) if decoded.world is M1World else M2Codec.encode(decoded.world))
 			if decoded.has("error"):
@@ -190,6 +224,39 @@ func load_latest() -> Dictionary:
 		decoded["recovery"] = "Recovered through tick %d. Original files retained.%s" % [journal_tick, " Earlier damaged generation: " + str(earlier_errors) if not earlier_errors.is_empty() else ""]
 		return decoded
 	return {"error": "No valid colony generation/journal. Original files retained: " + str(earlier_errors)}
+
+func _generation_recoverable(path: String, snapshot_digest: String) -> bool:
+	var journal_path: String = path.get_base_dir().path_join(path.get_file().replace("snapshot-","journal-").replace(".brackenward",".frames"))
+	if not FileAccess.file_exists(journal_path): return true
+	var digest: String = FileAccess.get_sha256(journal_path)
+	var evidence: String = snapshot_digest+":"+digest
+	if not digest.is_empty() and verified_journals.get(journal_path)==evidence: return true
+	if not digest.is_empty() and rejected_journals.get(journal_path)==evidence: return false
+	var journal: Dictionary = ColonyJournal.read(FileAccess.get_file_as_bytes(journal_path))
+	var valid: bool = not journal.has("error") and not journal.get("torn_tail",false)
+	if valid:
+		var bytes: PackedByteArray = FileAccess.get_file_as_bytes(path)
+		var header: Variant = JSON.parse_string(bytes.get_string_from_utf8())
+		# Unchecked legacy simulators stay preserved until normal recovery verifies
+		# them. Pruning must retain both members of a damaged snapshot/journal pair.
+		valid=header is Dictionary and header.get("version")!=1 and header.get("version")!=2
+		if valid:
+			var decoded: Dictionary = decode(bytes)
+			valid=decoded.has("world")
+			if valid: valid=not ColonyJournal.replay(decoded.world,journal.records,header.get("sha256",""),journal.digests).has("error")
+	if valid:
+		verified_journals[journal_path]=evidence;rejected_journals.erase(journal_path)
+	else:
+		rejected_journals[journal_path]=evidence;verified_journals.erase(journal_path)
+	return valid
+
+func _generation_pruned(path: String, snapshot_digest: String) -> void:
+	var journal_path: String = path.get_base_dir().path_join(path.get_file().replace("snapshot-","journal-").replace(".brackenward",".frames"))
+	if not FileAccess.file_exists(journal_path): return
+	var evidence: String = snapshot_digest+":"+FileAccess.get_sha256(journal_path)
+	if verified_journals.get(journal_path)==evidence:
+		DirAccess.remove_absolute(journal_path)
+		verified_journals.erase(journal_path);rejected_journals.erase(journal_path)
 
 func _backup(source: String, destination: String) -> String:
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes(source)

@@ -152,3 +152,14 @@ normal physical needs tasks. It grants no supplies or need points. The three
 new continuations use `charter-prepared-20261013-*`, from exact frozen sources
 listed in `preparation-checkpoint-preservation.json`. Earlier `charter-verified-*`
 processes were stopped after copying a complete matching daily checkpoint.
+
+13 October Hearthside completion: `charter-planner-20261013-pine-hearthside`
+passes the ordinary vegetarian Charter through tick 619,200 (Day 87), with
+all five stages, ceremony ending at 581,101, Continue and more than five
+subsequent days. Eight residents remain alive; minimum health 100; no
+starvation-grace exceedance; 2,058 invariant checkpoints; exact saved-world
+round trip. The lineage includes earlier real preparation delays, canceled
+spoiled/season-closed packing and public stockpile expansion, not state grants.
+Canonical `e89ab3b4364dfc1011c4adc478847f8ebd0f11cf6f8ece347a7d66d295d165c1`.
+This mode/site certificate is separate from current-code seed sweeps and
+physical-device gates. Standard Pine/Reed continuations remain active.

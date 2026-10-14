@@ -24,16 +24,17 @@ static func read(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
 	if bytes.size() > MAX_JOURNAL:
 		return {"error": "Journal exceeds recovery bound"}
 	var records: Array[Dictionary] = []
+	var digests: Array[String] = []
 	var offset: int = 0
 	var sequence: int = first_sequence
 	while offset < bytes.size():
 		if bytes.size() - offset < 4:
-			return {"records": records, "torn_tail": true}
+			return {"records": records, "digests":digests, "torn_tail": true}
 		var length: int = bytes.decode_u32(offset)
 		if length == 0 or length > MAX_RECORD:
 			return {"error": "Invalid journal frame length"}
 		if offset + 4 + length + 32 > bytes.size():
-			return {"records": records, "torn_tail": true}
+			return {"records": records, "digests":digests, "torn_tail": true}
 		var payload: PackedByteArray = bytes.slice(offset + 4, offset + 4 + length)
 		var digest: PackedByteArray = bytes.slice(offset + 4 + length, offset + 4 + length + 32)
 		if _hash(payload) != digest:
@@ -46,18 +47,34 @@ static func read(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
 			return {"error": "Journal sequence/schema mismatch"}
 		if value.kind == "command" and (value.size() != 4 or not value.get("command") is Dictionary):
 			return {"error": "Invalid journal command"}
-		if value.kind == "tick" and (value.size() != (4 if value.has("state") else 3) or (value.has("state") and not value.state is Dictionary)):
-			return {"error": "Invalid complete-tick marker"}
+		if value.kind == "tick":
+			if value.has("delta"):
+				if not ColonyCodec._keys(value,["sequence","kind","tick","delta"]) or not _delta_header(value.delta,value.tick): return {"error":"Invalid delta checkpoint marker"}
+			elif value.size() != (4 if value.has("state") else 3) or (value.has("state") and not value.state is Dictionary):
+				return {"error": "Invalid complete-tick marker"}
 		records.append(value)
+		digests.append(digest.hex_encode())
 		sequence += 1
 		offset += 4 + length + 32
-	return {"records": records, "torn_tail": false}
+	return {"records": records, "digests":digests, "torn_tail": false}
 
-static func replay(world: RefCounted, records: Array[Dictionary]) -> Dictionary:
+static func _digest_valid(value: Variant) -> bool:
+	if not value is String or value.length()!=64: return false
+	for index in range(value.length()):
+		if not "0123456789abcdef".contains(value.substr(index,1)): return false
+	return true
+
+static func _delta_header(value: Variant, tick: int) -> bool:
+	return value is Dictionary and ColonyCodec._keys(value,["version","base_tick","campaign_id","parent","patch"]) and value.version==1 and value.version is int and value.base_tick is int and value.base_tick>=1800 and value.base_tick<=tick and value.campaign_id is String and not value.campaign_id.is_empty() and value.campaign_id.length()<=80 and _digest_valid(value.parent) and value.patch is Dictionary
+
+static func replay(world: RefCounted, records: Array[Dictionary], initial_hash: String = "", digests: Array = []) -> Dictionary:
+	if not digests.is_empty() and (digests.size()!=records.size() or not digests.all(_digest_valid)): return {"error":"Invalid journal digest evidence"}
 	var final_tick: int = world.tick
 	var previous_tick: int = world.tick
 	var commands: Dictionary = {}
 	var final_state: Dictionary = {}
+	var parent: String = initial_hash
+	var cursor: int = 0
 	for record in records:
 		if record.tick < previous_tick or record.tick < world.tick or record.tick - world.tick > 72000:
 			return {"error": "Journal tick order/range mismatch"}
@@ -71,7 +88,20 @@ static func replay(world: RefCounted, records: Array[Dictionary]) -> Dictionary:
 			if record.has("state"):
 				if record.state.get("tick") != final_tick or record.state.get("session_id") != world.session_id:
 					return {"error":"Journal checkpoint identity/tick mismatch"}
-				final_state = record.state
+				final_state = record.state.duplicate(true)
+			elif record.has("delta"):
+				if not world is ColonyWorld or not _delta_header(record.delta,record.tick): return {"error":"Unsupported delta recovery marker"}
+				if final_state.is_empty(): final_state=world.payload().duplicate(true)
+				if parent.is_empty(): parent=world.canonical_hash()
+				if record.delta.parent!=parent or record.delta.base_tick!=final_state.tick or record.delta.campaign_id!=world.session_id: return {"error":"Delta checkpoint parent, tick or campaign mismatch"}
+				# This state is owned by recovery; patching it cannot change the
+				# loaded snapshot, earlier parsed frames or the caller's world.
+				var rebuilt: Dictionary = ColonyDelta._apply(final_state,record.delta.patch,0)
+				if rebuilt.has("error") or not rebuilt.get("value") is Dictionary: return {"error":"Invalid delta checkpoint: "+str(rebuilt.get("error","root type"))}
+				final_state=rebuilt.value
+				if final_state.get("tick")!=final_tick or final_state.get("session_id")!=world.session_id: return {"error":"Delta checkpoint did not restore its declared identity/tick"}
+		if record.kind=="tick": parent=digests[cursor] if not digests.is_empty() else JSON.stringify(ColonyState.pack(record),"",true).sha256_text()
+		cursor+=1
 	if not final_state.is_empty():
 		if final_state.tick != final_tick:
 			return {"error":"A later complete-tick marker is missing its recovery state"}

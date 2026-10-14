@@ -767,7 +767,7 @@ func _layout() -> void:
 	var width: float = content.size.x
 	var height: float = content.size.y
 	for control in controls:
-		if is_instance_valid(control) and control.text in ["Pause","Close","Menu","Follow","Begin","Hide","Skip","Show me"]:
+		if is_instance_valid(control) and control.text in ["Pause","Close","Menu","Follow","Begin","Hide","Skip","Show me","Cancel","Confirm","Pan","Rotate"]:
 			var text_width: float = control.get_theme_font("font").get_string_size(control.text,HORIZONTAL_ALIGNMENT_LEFT,-1,control.get_theme_font_size("font_size")).x
 			control.custom_minimum_size.x=maxf(48,ceilf(text_width)+control.get_theme_stylebox("normal").get_minimum_size().x+4)
 	var wrap_navigation: bool = width < 600 and text_scale > 1.0

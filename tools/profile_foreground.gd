@@ -3,6 +3,7 @@ extends SceneTree
 class ProfileSession extends GameSession:
 	var frame_us: Array[int] = []
 	var capture_us: Array[int] = []
+	var finish_us: Array[int] = []
 	var slow_storage_pauses: int = 0
 	func _process(delta: float) -> void:
 		var before: int = runner.speed
@@ -14,6 +15,11 @@ class ProfileSession extends GameSession:
 		var started: int = Time.get_ticks_usec()
 		super(full_snapshot)
 		capture_us.append(Time.get_ticks_usec()-started)
+	func _finish_background_save(wait: bool = false, report_error: bool = true) -> String:
+		var started: int = Time.get_ticks_usec()
+		var result: String = super(wait,report_error)
+		finish_us.append(Time.get_ticks_usec()-started)
+		return result
 
 var seconds: int = 12
 var snapshot: String = ""
@@ -50,12 +56,12 @@ func run() -> void:
 	root.size=Vector2i(960,600);game.size=Vector2(root.size)
 	root.add_child(game);game.close_sheet();game._tutorial_dismiss()
 	if not game.save_local().is_empty(): quit(2);return
-	game.frame_us.clear();game.capture_us.clear()
+	game.frame_us.clear();game.capture_us.clear();game.finish_us.clear()
 	var initial_tick: int = world.tick
 	game.runner.set_speed(1)
 	await create_timer(seconds).timeout
 	game.runner.pause();game._finish_background_save(true)
-	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors()}
+	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"save_finish":stats(game.finish_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors()}
 	DirAccess.make_dir_recursive_absolute(report_path.get_base_dir())
 	var file: FileAccess = FileAccess.open(report_path,FileAccess.WRITE);file.store_string(JSON.stringify(result,"\t",true));file.close()
 	print(JSON.stringify(result))
