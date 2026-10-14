@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.0-m7` in progress (schema 22), content `colony-v2`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.1-m7` in progress (campaign schema 22, device settings schema 3), content `colony-v2`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ Checkpoint: `0.7.0-m7` in progress (schema 22), content `colony-v2`, development
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `88ee5e8`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38517543639) passed the full suite, all four desktop replay/startup targets, exports and publication. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
+| Remote CI | Pass at `e7623d7`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38517543639) passed the full suite, all four desktop replay/startup targets, exports and publication. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
@@ -24,9 +24,9 @@ Checkpoint: `0.7.0-m7` in progress (schema 22), content `colony-v2`, development
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
 | M3–M6 gameplay and progression | Pass, automated campaign/native subset | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. All three Standard-site and Pine Shelf Hearthside vegetarian Charters pass, including ceremony, Continue and later play. The separate Winter sweep, M7 and physical/human gates remain. |
 | M7 release quality | In progress | Original animated citizens, matching portraits and editable cosmetics are implemented. Animal/environment art, final audio, accessibility/rebinding, balance, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `88ee5e8` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-88ee5e83861b); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
+| Development APK publication | Pass at `e7623d7` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-e7623d78ffd0); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 1,643 checks, zero failures, including 376 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 1,697 checks, zero failures, including 411 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -448,3 +448,68 @@ targets and APK publication. The original mixed-revision 30-seed Winter sweep fi
 provenance, exact snapshots, logs and a separate fail-closed audit. Its evidence stays
 outside the frozen checkout. Current-source certification waits for that full matrix.
 Weekly remaining is still 91%; authorized release work continues.
+
+
+## M7 accessibility, controls and pause policy — 14 October 2026
+
+Version `0.7.1-m7`, Android build 40, implements saved reduced motion,
+high-contrast selection, pause-on-inspect (default off), graphics FPS selection,
+individual automatic-pause toggles and rebinding for all fourteen keyboard actions.
+Default primary keys and WASD/arrow aliases remain available; modifier shortcuts
+are supported. Capture waits through modifier presses, names conflicts, cancels
+with Escape or the visible Cancel control, and can restore all defaults. The pause
+binding works with Button focus, while text entry keeps its normal keys. Manual
+camera pan releases follow and stays blocked behind modal sheets. Every function
+continues to have a touch control.
+
+Reduced motion freezes nonessential character poses and tutorial pulses while
+retaining authoritative movement and static guidance. High-contrast selection adds
+light/dark outlines and crosses on invalid preview cells. Battery/Balanced cap at
+30 FPS; Smooth caps at 60 with unchanged simulation. The additional particle/water
+visual differences arrive with the remaining environment media. UI text colors are
+explicit across button states. Actual theme-color contrast checks meet 4.5:1 for
+body and normal/hover/pressed/disabled buttons; pressed violet is slightly darker
+than the roof color to retain that threshold. Long titles move into the scrollable
+body when they cannot fit next to Close/Pause, keeping the 48 dp top strip and full
+readable title. Benign repeated pause boilerplate no longer fills those panels;
+critical and error notices remain visible.
+
+All six automatic pauses default on: downing, hostile arrival, new fire, expedition
+decision, departure ultimatum and food runway below half a day. Food uses the existing
+one-second foreground forecast cadence. Disabling a pause retains the notice without
+forcing a modal sheet. Expedition decisions pause once per trip/state rather than
+blocking every resume. Departure notices name the resident even when disabled, and
+resident/inspector cards show the remaining game hours and morale-300 recovery
+threshold. Inspectors optionally pause while preserving previous speed. Game ending,
+Charter epilogue, storage protection and backgrounding keep their mandatory behavior.
+No saved gameplay fields, simulation RNG, recipes or population rules change.
+
+Device settings schema 3 adds only device-local presentation/control policies.
+Schema-1/2 upgrades preserve all cameras, handedness, text size, last slot and
+per-campaign lessons; malformed new settings retain safe defaults. Imported campaigns
+cannot replace those preferences. The simulator owns only pure pause defaults;
+keyboard/OS translation stays in presentation. The campaign remains schema 22 and
+its frozen hashes/foreign fixture bytes are unchanged.
+
+Local validation passes 1,697 checks across 28 suites: all 27 headless suites (1,286)
+and final native UI (411). Persistence (156), care (41) and region (107) also pass
+following the final notice-policy change. Native portrait/landscape 150% screenshots
+were inspected, including full titles, modifier capture, at-least-48-dp controls,
+disabled fire/food/departure pauses, exact departure recovery and GPU palettes.
+An independent 100.2-second replay retains all 62 accepted commands, both unchanged
+schema-22 hashes, 234 invariants and the original foreign-save continuation. Content
+validation and local Android export pass, with four Kotlin tests and verified
+`0.7.1-m7` / build 40 metadata. The fresh 65-second foreground callback run completes
+650 ticks and two snapshot preparations without storage pause/error or invariant
+failure. Maximum callback 20.06 ms, none over 50 ms; checkpoint capture 2.02 ms,
+preparation capture 0.86 ms, completion 0.95 ms. These are macOS CPU results, separate
+from physical Android/GPU/battery certification.
+
+The previous character checkpoint `e7623d7` passes all four native replay/startup
+jobs, builds and [APK publication](https://github.com/maccam912/brackenward/releases/tag/dev-e7623d78ffd0).
+The pinned M6 Winter matrix currently has twelve passes with no observed failure;
+it remains running. Remaining M7 work includes original animal/environment media,
+audio, optional haptics, final rendering/balance/stress, and physical/human release
+gates. Implementation continues under the user's weekly-usage stop rule.
+
+All three real tutorial flows also pass 22 checks each after the device-settings upgrade. Latest weekly remaining is 90%; the next batch is audio and further release media.

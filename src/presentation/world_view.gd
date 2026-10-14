@@ -36,6 +36,8 @@ var carried_overlay: Node2D
 var terrain: TileMapLayer
 var actors: Array[Sprite2D] = []
 var simulation_speed: int = 0
+var reduced_motion: bool = false
+var high_contrast: bool = false
 
 func setup(state: RefCounted) -> void:
 	world = state
@@ -69,7 +71,7 @@ func setup(state: RefCounted) -> void:
 	_update_transform()
 
 func _process(delta: float) -> void:
-	tutorial_animation=fmod(tutorial_animation+delta,1.4)
+	tutorial_animation=0.0 if reduced_motion else fmod(tutorial_animation+delta,1.4)
 	var action: Dictionary = gestures.elapse(delta)
 	if not action.is_empty():
 		_apply_intent(action)
@@ -92,7 +94,7 @@ func _process(delta: float) -> void:
 		actors[i].position = point * 16.0
 		if world is ColonyWorld:
 			actors[i].visible = not citizen.death_recorded and not citizen.departed and citizen.carried_by == 0 and ColonyRegion.visible(world,citizen)
-			if actors[i].visible: actors[i].animate(world,citizen,delta,simulation_speed,cargo.has(citizen.id))
+			if actors[i].visible: actors[i].animate(world,citizen,delta,simulation_speed,cargo.has(citizen.id),reduced_motion)
 		if citizen.id == follow_id:
 			if world is ColonyWorld and not ColonyRegion.visible(world,citizen): follow_id=0
 			else: camera_tile = point
@@ -243,6 +245,10 @@ func _draw() -> void:
 			var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size)
 			draw_rect(rectangle, color)
 			draw_rect(rectangle, Color("263C3B"), false, 2)
+			if high_contrast:
+				draw_rect(rectangle.grow(-2),Color.WHITE,false,2)
+				if rejected_build_tiles.has(tile):
+					draw_line(rectangle.position,rectangle.end,Color.BLACK,4);draw_line(rectangle.position+Vector2(rectangle.size.x,0),rectangle.position+Vector2(0,rectangle.size.y),Color.BLACK,4)
 	if preview_visible and preview_lodge and world is ColonyWorld:
 		for blueprint in ColonyConstruction.lodge(preview_start):
 			for tile in world.footprint(blueprint): draw_rect(Rect2(tile_to_screen(Vector2(tile))+Vector2.ONE*2,Vector2.ONE*(tile_size-4)),Color("F3E8CC"),false,2)
@@ -252,6 +258,7 @@ func _draw() -> void:
 	for citizen in world.citizens:
 		if citizen.id == selected_id:
 			var point: Vector2 = tile_to_screen(citizen_point(citizen))
+			if high_contrast: draw_arc(point,maxf(12.0,tile_size*0.55),0,TAU,24,Color.BLACK,7.0)
 			draw_arc(point, maxf(12.0, tile_size * 0.55), 0, TAU, 24, Color("F3E8CC"), 2.0)
 	if tutorial_highlight_visible and tutorial_target.size()==2:
 		var center: Vector2 = tile_to_screen(Vector2(tutorial_target[0]+0.5,tutorial_target[1]+0.5))

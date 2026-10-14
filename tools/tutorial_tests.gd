@@ -143,10 +143,12 @@ static func persistence(check: Callable) -> void:
 	var error: String = settings.save_local()
 	var restored: DeviceSettings = DeviceSettings.new();restored.path=settings.path;restored.load_local()
 	check.call("TUTORIAL/settings_roundtrip_preserves_lessons_and_accessibility",error.is_empty() and restored.values==settings.values,error)
-	var legacy: Dictionary = settings.values.duplicate(true);legacy.erase("tutorials");legacy.schema_version=1
+	var legacy: Dictionary = {}
+	for key in ["schema_version","text_scale","left_handed","last_slot","cameras"]: legacy[key]=settings.values[key]
+	legacy.schema_version=1
 	var handle: FileAccess = FileAccess.open(settings.path,FileAccess.WRITE);handle.store_string(JSON.stringify(legacy));handle.close()
 	restored=DeviceSettings.new();restored.path=settings.path;restored.load_local()
-	check.call("TUTORIAL/old_device_settings_upgrade_without_reset",restored.values.schema_version==2 and restored.values.text_scale==1.5 and restored.values.left_handed and restored.values.tutorials.is_empty())
+	check.call("TUTORIAL/old_device_settings_upgrade_without_reset",restored.values.schema_version==3 and restored.values.text_scale==1.5 and restored.values.left_handed and restored.values.tutorials.is_empty())
 	var invalid: Dictionary = ColonyTutorial.initial_state();invalid.completed=["invented"]
 	check.call("TUTORIAL/malformed_lessons_rejected",not ColonyTutorial.valid(invalid))
 	DirAccess.remove_absolute(settings.path)

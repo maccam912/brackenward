@@ -36,7 +36,7 @@ static func state_for(world: ColonyWorld, person: Dictionary, cargo: bool) -> St
 		"hunt", "guard", "defend": return "shoot" if person.equipment.weapon=="bow" else "melee"
 	return "work"
 
-func animate(world: ColonyWorld, person: Dictionary, delta: float, speed: int, cargo: bool) -> void:
+func animate(world: ColonyWorld, person: Dictionary, delta: float, speed: int, cargo: bool, reduced_motion: bool = false) -> void:
 	var appearance: Dictionary = person.appearance
 	if choices!=appearance:
 		choices=appearance.duplicate()
@@ -52,7 +52,7 @@ func animate(world: ColonyWorld, person: Dictionary, delta: float, speed: int, c
 		state="hurt";hurt_remaining=maxf(0.0,hurt_remaining-delta)
 	if state!=pose: pose=state;clock=0.0
 	var fps: float = 1.0 if pose in ["idle","sleep"] else (6.0 if pose in ["walk","carry"] else 4.0)
-	clock=fmod(clock+delta*minf(fps*speed,10.0),120.0)
+	clock=0.0 if reduced_motion else fmod(clock+delta*minf(fps*speed,10.0),120.0)
 	animation_frame=int(clock)%int(CitizenArt.animations()[pose].frames)
 	region_rect=CitizenArt.frame_rect(appearance,pose,facing,animation_frame)
 	var job: Dictionary = world.find(world.jobs,person.job)

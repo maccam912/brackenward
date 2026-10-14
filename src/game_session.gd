@@ -61,6 +61,9 @@ var controls: Array[Button] = []
 var nav_labels: Array[Label] = []
 var inspector_details: Label
 var inspector_portrait: TextureRect
+var listening_binding: String = ""
+var sheet_heading: Label
+var sheet_full_heading: Label
 var rotation_button: Button
 var placement_kind: String = "stockpile"
 var paint_build_definition: String = ""
@@ -112,6 +115,7 @@ func _ready() -> void:
 	view = WorldView.new()
 	content.add_child(view)
 	view.setup(world)
+	_apply_device_settings()
 	_restore_camera()
 	view.intent.connect(_map_intent)
 	_build_status()
@@ -135,13 +139,14 @@ func _build_theme() -> void:
 	ui_theme.default_font = load("res://assets/exported/fonts/kenney_mini.ttf")
 	ui_theme.default_font_size = int(16 * text_scale)
 	ui_theme.set_color("font_color", "Label", Color("F8F3E7"))
-	ui_theme.set_color("font_color", "Button", Color("F8F3E7"))
+	for state in ["font_color","font_hover_color","font_focus_color","font_pressed_color","font_hover_pressed_color"]:
+		ui_theme.set_color(state,"Button",Color("F8F3E7"))
 	ui_theme.set_color("font_disabled_color", "Button", Color("B8BCAD"))
 	for type_name in ["PanelContainer", "Button"]:
 		var box: StyleBoxFlat = _box(Color("263C3B"))
 		ui_theme.set_stylebox("panel" if type_name == "PanelContainer" else "normal", type_name, box)
 	ui_theme.set_stylebox("hover", "Button", _box(Color("375749")))
-	ui_theme.set_stylebox("pressed", "Button", _box(Color("716D88")))
+	ui_theme.set_stylebox("pressed", "Button", _box(Color("6F6B86")))
 	ui_theme.set_stylebox("focus", "Button", _box(Color(0, 0, 0, 0), Color("E9BA67")))
 	ui_theme.set_stylebox("disabled", "Button", _box(Color("334741")))
 	ui_theme.set_constant("separation", "VBoxContainer", 8)
@@ -333,6 +338,7 @@ func _process(delta: float) -> void:
 		runner.pause()
 		notice="Saving is slow; paused to protect recent progress. Resume after saving finishes."
 	runner.advance_frame(delta)
+	if not runner.notice.is_empty(): notice=runner.notice;runner.notice=""
 	view.simulation_speed=runner.speed
 	guidance_elapsed += delta
 	if world is ColonyWorld:
@@ -351,16 +357,24 @@ func _process(delta: float) -> void:
 				show_epilogue()
 		elif world.care_state.alert_serial > seen_care_alert:
 			seen_care_alert = world.care_state.alert_serial
-			if world.citizens.any(func(c:Dictionary)->bool:return c.downed or c.death_recorded): show_care()
+			if world.citizens.any(func(c:Dictionary)->bool:return c.downed or c.death_recorded):
+				if settings.values.auto_pauses.downed: show_care()
+				else: notice="A resident needs urgent care. Open People > Injuries and care."
 	if world is ColonyWorld and world.region_state.alert_serial>seen_region_alert:
 		seen_region_alert=world.region_state.alert_serial
-		if ColonyRegion.critical(world): show_expeditions()
+		if ColonyRegion.critical(world):
+			if settings.values.auto_pauses.expedition: show_expeditions()
+			else: notice="An expedition needs a decision. Open Valley > Expedition status."
 	if world is ColonyWorld and world.fire_state.alert_serial>seen_fire_alert:
 		seen_fire_alert=world.fire_state.alert_serial
-		if not ColonyFire.active(world).is_empty(): show_fires()
+		if not ColonyFire.active(world).is_empty():
+			if settings.values.auto_pauses.fire: show_fires()
+			else: notice="A building is on fire. Open People > Fires and water."
 	if world is ColonyWorld and world.defense_state.alert_serial>seen_defense_alert:
 		seen_defense_alert=world.defense_state.alert_serial
-		if not ColonyDefense.active(world).is_empty(): show_defense()
+		if not ColonyDefense.active(world).is_empty():
+			if settings.values.auto_pauses.hostile: show_defense()
+			else: notice="A hostile party has arrived. Open People > Defense and shelter."
 	if world is ColonyWorld:
 		for event in world.opportunity_state.offers:
 			if event.id<=seen_opportunity_id: continue
@@ -388,10 +402,12 @@ func _process(delta: float) -> void:
 			var warning: int = 3 if forecast.ticks < 3600 else (2 if forecast.ticks < 7200 else (1 if forecast.ticks < 14400 else 0))
 			if warning > food_warning_level:
 				notice = forecast.label + ". Gather food, plant turnips, and keep Cooking enabled. Ration policy is in Menu."
+				if warning==3 and settings.values.auto_pauses.low_food: runner.pause()
 			food_warning_level = warning
 	notice_label.text = ("Unsaved progress | " if saving_disabled else "") + notice
 	if is_instance_valid(sheet_feedback):
 		sheet_feedback.text = notice
+		sheet_feedback.visible=sheet_name not in ["Welcome","Style"] and not notice.is_empty() and not notice.begins_with("Paused. Choose")
 	preview_label.text = _preview_text()
 	journal_elapsed += delta
 	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony:
@@ -628,6 +644,7 @@ func _select_map_object(candidate: Dictionary) -> void:
 			label("%s: %.1f game hours until spoilage. Gathering workers butcher it; outputs need hauling." % [_catalog_name(object.definition),(object.expires-world.tick)/300.0],sheet_body)
 
 func select_citizen(id: int) -> void:
+	if settings.values.inspector_pause: runner.pause()
 	selected = id
 	view.selected_id = id
 	if inspector != null:
@@ -664,6 +681,7 @@ func close_inspector() -> void:
 	view.selected_id = 0
 
 func show_sheet(title: String) -> void:
+	listening_binding=""
 	if sheet==null: sheet_camera_center=view.camera_center()
 	runner.pause()
 	view.cancel_gesture()
@@ -678,6 +696,7 @@ func show_sheet(title: String) -> void:
 	var top: HBoxContainer = HBoxContainer.new()
 	rows.add_child(top)
 	var heading: Label = label(title, top)
+	sheet_heading=heading
 	heading.name="SheetHeading"
 	heading.autowrap_mode=TextServer.AUTOWRAP_OFF
 	heading.clip_text=true
@@ -696,8 +715,14 @@ func show_sheet(title: String) -> void:
 	sheet_body = VBoxContainer.new()
 	sheet_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(sheet_body)
+	sheet_full_heading=label(title,sheet_body)
+	sheet_full_heading.name="FullSheetHeading"
+	sheet_full_heading.add_theme_font_override("font",load("res://assets/exported/fonts/kenney_bold.ttf"))
+	sheet_full_heading.add_theme_font_size_override("font_size",int(16*text_scale))
+	top.resized.connect(_adapt_sheet_heading)
+	call_deferred("_adapt_sheet_heading")
 	sheet_feedback = label(notice, sheet_body)
-	sheet_feedback.visible = title != "Welcome"
+	sheet_feedback.visible=title!="Welcome" and not notice.is_empty() and not notice.begins_with("Paused. Choose")
 	match title:
 		"Welcome":
 			label("Four travelers. A ruined wayhouse. Make a place to stay.", sheet_body)
@@ -741,6 +766,7 @@ func show_sheet(title: String) -> void:
 				button("Pin a moment",show_pin_moment,sheet_body)
 				_tutorial_sheet()
 		"Menu":
+			button("Settings",show_accessibility,sheet_body)
 			label("Brackenward %s\nCampaigns preserve inventory, work and needs. Time stays paused after recovery." % ProjectSettings.get_setting("application/config/version"), sheet_body)
 			if world is ColonyWorld: button("Mode: "+world.care_state.mode,show_mode,sheet_body)
 			if world is ColonyWorld: button("Map and seed",show_map_details,sheet_body)
@@ -768,7 +794,19 @@ func show_sheet(title: String) -> void:
 	get_viewport().gui_release_focus()
 	call_deferred("_layout")
 
+func _adapt_sheet_heading() -> void:
+	if sheet==null or not is_instance_valid(sheet_heading) or not is_instance_valid(sheet_full_heading): return
+	var top: HBoxContainer = sheet_heading.get_parent()
+	var available: float = top.size.x-top.get_theme_constant("separation")*2
+	for child in top.get_children():
+		if child is Button: available-=child.get_combined_minimum_size().x
+	var width: float = sheet_heading.get_theme_font("font").get_string_size(sheet_name,HORIZONTAL_ALIGNMENT_LEFT,-1,sheet_heading.get_theme_font_size("font_size")).x
+	var fits: bool = width<=available
+	sheet_heading.text=sheet_name if fits else ""
+	sheet_full_heading.visible=not fits
+
 func close_sheet() -> void:
+	listening_binding=""
 	if sheet != null:
 		sheet.queue_free()
 		sheet = null
@@ -904,6 +942,7 @@ func _replace_world(state: RefCounted) -> void:
 	storage_error = ""
 	saving_disabled = false
 	runner = SimRunner.new(world)
+	_apply_device_settings()
 	view.world = world
 	for actor in view.actors:
 		if actor is CitizenSprite: actor.reset_pose()
@@ -1051,32 +1090,43 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		return
 	if not event is InputEventKey or not event.pressed or event.echo:
 		return
-	match event.keycode:
-		KEY_ESCAPE: back()
-		KEY_SPACE: set_speed(runner.previous_speed if runner.speed == 0 else 0)
-		KEY_1: set_speed(1)
-		KEY_2: set_speed(2)
-		KEY_3: set_speed(4)
-		KEY_B: show_sheet("Build")
-		KEY_J: show_sheet("Work")
-		KEY_P: show_sheet("People")
-		KEY_V: show_sheet("Valley")
-		KEY_L: show_sheet("Journal")
-		KEY_W, KEY_UP: view.camera_tile += Vector2.UP * 3
-		KEY_S, KEY_DOWN: view.camera_tile += Vector2.DOWN * 3
-		KEY_A, KEY_LEFT: view.camera_tile += Vector2.LEFT * 3
-		KEY_D, KEY_RIGHT: view.camera_tile += Vector2.RIGHT * 3
-		_: return
+	if not _shortcut(ControlBindings.action_for(settings.values.bindings,event.get_keycode_with_modifiers())): return
 	get_viewport().set_input_as_handled()
 
 func _input(event: InputEvent) -> void:
+	if not event is InputEventKey or not event.pressed or event.echo: return
+	if not listening_binding.is_empty():
+		if event.keycode in [KEY_SHIFT,KEY_CTRL,KEY_ALT,KEY_META]: get_viewport().set_input_as_handled();return
+		if event.keycode==KEY_ESCAPE: show_controls()
+		else:
+			var result: Dictionary = ControlBindings.rebind(settings.values.bindings,listening_binding,event.get_keycode_with_modifiers())
+			if result.has("error"): notice=result.error
+			else:
+				settings.values.bindings=result.bindings;_save_settings();show_controls()
+		get_viewport().set_input_as_handled();return
 	if get_viewport().gui_get_focus_owner() is LineEdit or get_viewport().gui_get_focus_owner() is TextEdit:
 		return
-	# Space is the global pause shortcut even when a Button owns GUI focus.
+	# The configured pause key works even when a Button owns GUI focus.
 	# Enter remains available to activate the focused button.
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_SPACE:
-		set_speed(runner.previous_speed if runner.speed == 0 else 0)
+	if ControlBindings.action_for(settings.values.bindings,event.get_keycode_with_modifiers())=="pause":
+		_shortcut("pause")
 		get_viewport().set_input_as_handled()
+
+func _shortcut(action: String) -> bool:
+	match action:
+		"back": back()
+		"pause": set_speed(runner.previous_speed if runner.speed==0 else 0)
+		"speed_1": set_speed(1)
+		"speed_2": set_speed(2)
+		"speed_4": set_speed(4)
+		"build","work","people","valley","journal": show_sheet(action.capitalize())
+		"pan_up","pan_down","pan_left","pan_right":
+			if sheet!=null: return false
+			view.follow_id=0
+			view.camera_tile+={"pan_up":Vector2.UP,"pan_down":Vector2.DOWN,"pan_left":Vector2.LEFT,"pan_right":Vector2.RIGHT}[action]*3
+			view._update_transform()
+		_: return false
+	return true
 
 func _cost_text(materials: Dictionary) -> String:
 	var parts: Array[String] = []
@@ -1149,6 +1199,7 @@ func _update_inspector() -> void:
 		var job: Dictionary = world.find(world.jobs, citizen.job)
 		inspector_details.text = "%s - %s\nFood %d/1000 | Rest %d/1000\nHealth %d | %s first\n%s" % [citizen.name, citizen.activity, citizen.fullness, citizen.rest, citizen.health, citizen.preferred,
 			("Work %d/%d WU" % [job.work / 1000, job.required / 1000]) if not job.is_empty() and job.required > 0 else ("Needs take priority over ordinary work." if not job.is_empty() else "Choose orders in Work or Build.")]
+		if citizen.departure_until>world.tick: inspector_details.text+="\n"+departure_description(citizen)
 	else:
 		inspector_details.text = "%s - looking around\nM0 touch fixture movement." % citizen.name
 
@@ -1541,6 +1592,63 @@ func _save_settings() -> void:
 	if not error.is_empty():
 		notice = error
 
+func _apply_device_settings() -> void:
+	runner.auto_pauses=settings.values.auto_pauses.duplicate()
+	Engine.max_fps=60 if settings.values.quality=="Smooth" else 30
+	if is_instance_valid(view):
+		view.reduced_motion=settings.values.reduced_motion
+		view.high_contrast=settings.values.high_contrast
+
+func show_accessibility() -> void:
+	show_sheet("Settings")
+	button("Text size: %d%%" % int(text_scale*100),func()->void:
+		text_scale=1.25 if text_scale==1.0 else (1.5 if text_scale==1.25 else 1.0)
+		_save_settings();_build_theme();show_accessibility(),sheet_body)
+	button("Hand: "+("Left" if left_handed else "Right"),func()->void:left_handed=not left_handed;_save_settings();show_accessibility(),sheet_body)
+	for key in ["reduced_motion","high_contrast","inspector_pause"]:
+		var title: String = {"reduced_motion":"Reduced motion","high_contrast":"High contrast selection","inspector_pause":"Pause on inspect"}[key]
+		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
+		label(title,row)
+		var toggle: Button = button("On" if settings.values[key] else "Off",func()->void:
+			settings.values[key]=not settings.values[key];_apply_device_settings();_save_settings();show_accessibility(),row,64)
+		toggle.size_flags_horizontal=Control.SIZE_SHRINK_END;toggle.name="Setting_"+key
+	var graphics: HBoxContainer = HBoxContainer.new();sheet_body.add_child(graphics);label("Graphics",graphics)
+	var quality: CycleChoiceButton = CycleChoiceButton.new()
+	for choice in ["Battery","Balanced","Smooth"]: quality.add_item(choice)
+	quality.selected=["Battery","Balanced","Smooth"].find(settings.values.quality);quality.custom_minimum_size=Vector2(120,48);graphics.add_child(quality)
+	quality.item_selected.connect(func(index:int)->void:settings.values.quality=["Battery","Balanced","Smooth"][index];_apply_device_settings();_save_settings())
+	label("Battery / Balanced: 30 fps. Smooth: 60 fps. Simulation rules stay the same.",sheet_body)
+	button("Automatic pauses",show_auto_pauses,sheet_body)
+	button("Keyboard controls",show_controls,sheet_body)
+
+func show_auto_pauses() -> void:
+	show_sheet("Auto pauses")
+	label("Each event pauses once. Turning a pause off keeps its notice. Resume stays explicit.",sheet_body)
+	for key in settings.values.auto_pauses:
+		var title: String = {"downed":"Downed resident","hostile":"Hostile arrival","fire":"New building fire","expedition":"Expedition decision","departure":"Departure ultimatum","low_food":"Food below half a day"}[key]
+		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row);label(title,row)
+		var toggle: Button = button("On" if settings.values.auto_pauses[key] else "Off",func()->void:
+			settings.values.auto_pauses[key]=not settings.values.auto_pauses[key];_apply_device_settings();_save_settings();show_auto_pauses(),row,64)
+		toggle.size_flags_horizontal=Control.SIZE_SHRINK_END;toggle.name="AutoPause_"+key
+	button("Back to settings",show_accessibility,sheet_body)
+
+func show_controls() -> void:
+	show_sheet("Keys")
+	label("Choose an action, then press a key or shortcut. Touch controls stay available.",sheet_body)
+	for action in ControlBindings.DEFAULTS:
+		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
+		label(ControlBindings.LABELS[action],row)
+		var assign: Button = button(ControlBindings.describe(settings.values.bindings[action]),func()->void:show_key_capture(action),row,96)
+		assign.size_flags_horizontal=Control.SIZE_SHRINK_END;assign.name="Bind_"+action
+	button("Restore default keys",func()->void:settings.values.bindings=ControlBindings.DEFAULTS.duplicate(true);_save_settings();show_controls(),sheet_body).name="RestoreKeys"
+	button("Back to settings",show_accessibility,sheet_body)
+
+func show_key_capture(action: String) -> void:
+	show_sheet("Choose key")
+	label(ControlBindings.LABELS[action]+"\nCurrent: "+ControlBindings.describe(settings.values.bindings[action])+"\nPress a key or shortcut. Escape cancels this choice.",sheet_body)
+	button("Cancel",show_controls,sheet_body)
+	listening_binding=action
+
 func show_weather() -> void:
 	_tutorial_action("weather")
 	show_sheet("Weather forecast")
@@ -1639,6 +1747,9 @@ func show_appearance(id: int, draft: Dictionary = {}) -> void:
 	button("Save appearance",func()->void:_submit("citizen_appearance",{"target":id,"appearance":choices});close_sheet(),sheet_body).name="SaveAppearance"
 	button("Cancel",func()->void:show_person(id),sheet_body).name="CancelAppearance"
 
+func departure_description(person: Dictionary) -> String:
+	return "Departure ultimatum: %.1f game hours remaining. Reach morale 300 before the deadline. Improve bed, food, warmth or workload; inspect the active morale causes." % [maxi(0,person.departure_until-world.tick)/300.0]
+
 func show_person(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_sheet(citizen.name)
@@ -1648,6 +1759,7 @@ func show_person(id: int) -> void:
 	button("Remembered moments",func()->void:show_person_history(id),sheet_body)
 	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
 	label(ColonyBeds.description(world,citizen),sheet_body)
+	if citizen.departure_until>world.tick: label(departure_description(citizen),sheet_body)
 	for trait_name in citizen.traits:
 		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
 		var icon: TextureRect = TextureRect.new();icon.texture=load("res://assets/exported/ui/traits/%s.svg" % trait_name.to_lower());icon.custom_minimum_size=Vector2(48,48);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;row.add_child(icon)

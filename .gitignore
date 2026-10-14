@@ -14,6 +14,7 @@ reports/prepared-validation/
 reports/stack-query-validation/
 reports/geometry-validation/
 reports/appearance-validation/
+reports/accessibility-validation/
 platform/android_save/.gradle/
 platform/android_save/build/
 platform/android_save/plugin/build/
