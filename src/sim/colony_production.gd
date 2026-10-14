@@ -196,11 +196,15 @@ static func replace_food(world: ColonyWorld, job: Dictionary) -> void:
 	if job.kind == "craft": filters = world.find(world.production_state.orders,job.order).get("filters",[])
 	var food: Dictionary = {}
 	var needed: int = recipe.food_count
+	var escrow: Dictionary = {}
+	var choices: Array = []
+	for stack in (world._work_inventory() if world.in_tick else world.nonempty_stacks()):
+		if stack.location=="escrow" and stack.owner==job.id and stack.count>0: escrow[stack.item]=escrow.get(stack.item,0)+stack.count
+		if filters.has(stack.item) and stack.count-world._reserved(stack)>0 and stack.location in ["ground","store","output"] and world.accessible(Vector2i(stack.x,stack.y)): choices.append(stack)
 	for item in recipe.alternatives:
-		var held: int = world._escrow_count(job.id,item)
+		var held: int = escrow.get(item,0)
 		if held > 0: food[item] = held; needed -= held
 	var station: Dictionary = world.find(world.structures,job.target)
-	var choices: Array = world.nonempty_stacks().filter(func(s:Dictionary)->bool:return filters.has(s.item) and s.count-world._reserved(s) > 0 and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
 	for stack in first_inputs(world,choices,Vector2i(station.x,station.y),needed):
 		var count: int = mini(needed,stack.count-world._reserved(stack))
 		if count > 0: food[stack.item] = food.get(stack.item,0)+count; needed -= count

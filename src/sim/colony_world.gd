@@ -1069,16 +1069,23 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 	else:
 		job.work_x = work_position.x
 		job.work_y = work_position.y
+		# No stock changes until the atomic commit below. Collect all held input
+		# quantities once, including reservations, escrow, cargo and move bundles.
+		var held_inputs: Dictionary = {}
+		var input_sources: Dictionary = {}
+		if not job.inputs.is_empty():
+			for stack in _work_inventory():
+				var held: int = stack.reservations.get(job.id,0)
+				var location: String = stack.location
+				if (location=="escrow" and stack.owner==job.id) or (location=="carry" and stack.job==job.id) or (job.kind=="move_furniture" and location=="move_bundle" and stack.owner==job.id): held+=stack.count
+				if held!=0: held_inputs[stack.item]=held_inputs.get(stack.item,0)+held
+				if in_tick and job.inputs.has(stack.item) and stack.count>0 and location in ["ground","store","output"]:
+					if not input_sources.has(stack.item): input_sources[stack.item]=[]
+					input_sources[stack.item].append(stack)
 		for item in job.inputs:
-			var needed: int = job.inputs[item] - _escrow_count(job.id, item)
-			for held_stack in _work_inventory():
-				if held_stack.item==item: needed-=held_stack.reservations.get(job.id,0)
-				if held_stack.location=="carry" and held_stack.job==job.id and held_stack.item==item: needed-=held_stack.count
-			if job.kind=="move_furniture":
-				for bundle in _work_inventory():
-					if bundle.location=="move_bundle" and bundle.owner==job.id and bundle.item==item: needed -= bundle.count
+			var needed: int = job.inputs[item] - held_inputs.get(item,0)
 			if needed<=0: continue
-			var sources: Array = (_work_inventory() if in_tick else nonempty_stacks()).filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and (job.kind not in ["eat","feed"] or s.id==job.source) and ColonyFire.usable(self,s) and accessible(Vector2i(s.x,s.y)))
+			var sources: Array = (input_sources.get(item,[]) if in_tick else nonempty_stacks()).filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and (job.kind not in ["eat","feed"] or s.id==job.source) and ColonyFire.usable(self,s) and accessible(Vector2i(s.x,s.y)))
 			for stack in ColonyProduction.first_inputs(self,sources,Vector2i(citizen.x,citizen.y),needed):
 				var count: int = mini(needed, stack.count - _reserved(stack))
 				if count > 0:

@@ -675,3 +675,32 @@ A current-code 120-tick continuation is exact against its instrumented twin:
 2.477394 uninstrumented / 2.544576 instrumented CPU seconds. Assignment totals
 1.410467 seconds in 240 calls, making it the next concrete profiling target.
 The failure is retained rather than rerun unchanged or counted as thirty minutes.
+
+## 0.7.24 per-reservation input views
+
+Held-input aggregation and per-item source grouping are confined to one atomic
+reservation attempt, with original count/state predicates and direct-call source
+behavior. Food replacement combines its escrow/candidate read pass. Independent
+2e4d4c1 full reservation/food paths match eleven accepted/conserved tests, actual
+carry/escrow/completion phases, partial release and retained zero-row metadata.
+No content or numeric rule changes occur in this checkpoint.
+
+The assignment profiler and ordinary twin match the 120-tick failed-soak
+continuation exactly. Cooking reservations fall from 655.066 to 456.342 ms across
+144 calls in separate observations. Four alternating full-tick pairs are exact:
+median old/current 2.784311/2.590877 seconds (about 7% less) for that 120-tick input.
+At 1,200 ticks, all four pairs per input also match: fresh
+0.478119/0.478933, cold 2.394684/2.399340, late 4.640473/4.658494 and initial
+crowded 8.507721/8.572756 seconds. The small regressions are retained and near
+neutral; these are contended CPU observations, not device or release budgets.
+
+A separate counter-only probe of the same failed input confirms 144 noncanceling
+owned-cook releases and 144 successful cook reacquisitions over 120 ticks, with no
+meals produced and exact ordinary-twin hash
+79e27f51bd8c69c2ed41147f5be3de2d17c67bbdbdc286ecb53c64122389a910.
+Probe SHA 5cb5505b87074ad91be151cf3fd458988e48b9cb42aed710d225257cbd75b706;
+input SHA 61964911706fb6c9efecd189da87825a51073928de2ac5a5bb9fdf9632476326.
+The low-rest interruption predicate and subsequent hungry-sleep eligibility
+contradict each other. Correcting that gameplay behavior is next work, requiring
+an explicit regression and preserved acknowledgements; this checkpoint only
+bounds the unchanged reservation reads.
