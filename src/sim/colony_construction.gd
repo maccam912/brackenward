@@ -128,12 +128,13 @@ static func step_aside(world: ColonyWorld, citizen: Dictionary) -> bool:
 	var current: Dictionary = world.find(world.jobs,citizen.job)
 	if current.get("kind") in ["step_aside","eat","rescue"] or citizen.carrying_patient>0: return false
 	if not current.is_empty() and current.get("kind") not in ["leisure","sleep","recover"] and current.state!="Working": return false
-	var blocking: bool = world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.work>0 and j.state not in ["Complete","Canceled"] and world.definitions.buildings[j.definition].solid and world.footprint(j).has(point))
+	var open_jobs: Array=world._work_jobs() if world.in_tick else world.unfinished_jobs()
+	var blocking: bool = open_jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.work>0 and j.state not in ["Complete","Canceled"] and world.definitions.buildings[j.definition].solid and world.footprint(j).has(point))
 	if not blocking: return false
 	for delta in ColonyNavigation.NEIGHBORS:
 		var next: Vector2i = point+delta
 		if not world.walkable(next) or not world.can_step(point,next) or not ColonyDanger.safe(world,next): continue
-		if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.state not in ["Complete","Canceled"] and world.definitions.buildings[j.definition].solid and world.footprint(j).has(next)): continue
+		if open_jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.state not in ["Complete","Canceled"] and world.definitions.buildings[j.definition].solid and world.footprint(j).has(next)): continue
 		world._release(current,false)
 		var job: Dictionary = world._job("step_aside","","",citizen.id,next,0)
 		job.worker=citizen.id;job.state="Moving";citizen.job=job.id

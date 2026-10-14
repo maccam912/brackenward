@@ -1,5 +1,38 @@
 # Ordinary campaign evidence — 12 October 2026
 
+## Frozen v6 96-day vegetarian Charter matrix
+
+All **four cases pass** at clean, unchanged
+`ffdce480994ad43c46dee84c5b1ba34d3f17e330` (0.7.28-m7, content v6/schema 23),
+including the independent completion audit. Seed 104729 runs from tick 1,800 to
+693,000 using ordinary public commands, completes all five stages and the
+ceremony, and retains Continue for at least another full day. Every case keeps
+eight living residents and passes 2,304 invariant checks (9,216 total), a valid
+final save and exact round trip. All four record zero zero-fullness and
+starvation-grace-exceeded ticks. Minimum health is reported separately; this
+is not a zero-damage claim or physical/human certification.
+
+| Site / mode | Ceremony end | Minimum health | Final canonical hash | Snapshot SHA-256 |
+| --- | ---: | ---: | --- | --- |
+| meadow_reach / Standard | 270,901 | 82 | `475d85b56fbf4e33d2168212254e665459ac46ab339848de07fe6a9a669d32aa` | `1c193032732a345c39542c899535ad867b701ce0067892380c352a13a7feab8e` |
+| pine_shelf / Standard | 391,801 | 87 | `be20dd62ee25061a500ec8e3507ca18d2b47ccb4c77c01e21aa17aa1843ee749` | `17533c1b1affee596bb57efebb83b7e7abb3bba687a171cc6432fa9f2016eae3` |
+| reed_bend / Standard | 319,801 | 100 | `df34756479c8b1a0e5954580bf1b0875b0e264392515ae0cef0f2c81fb08a5b0` | `d53a7a36263b235879e5cfa5fb51f3e603d771b83f63d8e5eb43331965cf6ff3` |
+| pine_shelf / Hearthside | 312,601 | 100 | `dcf8f8598a5fc7f270c05772ea8550c8ea476423798e67322554a68a99d9cc16` | `7680d7ee975485ce279f7e672a023886961615e4692e607c84332f7cd5153b5e` |
+
+The current 0.7.32 loading audit preserves all four complete payloads, source
+bytes, invariants and round trips without advancing time. It is a loading audit,
+not a claim that a new 96-day campaign ran on 0.7.32. Frozen raw evidence remains
+in `reports/charter-release-v6-ffdce48/`; every exit/log/snapshot and unchanged
+source is checked. The current content-v6 Winter matrix is still running.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| source.json | `4d755562a872851158d7695b55aa9743fa8f74d5096f420f0d83b646101d45f1` |
+| completion.json | `120d167d9d81d1011eee18cc536ef0ba62856ad4da08e6d4722b9adf5880ffcf` |
+| audit.json | `1c1a7a6951249e840fed1369953d4e4d9d5abb732882c6bf35229447a5b570f6` |
+| Current 0.7.32 loading audit | `a8301fabb2e6f2b6ffaf5d7f4bf4d81cddcbb69f259583fa6808595eaa183ac5` |
+
+
 ## Frozen v4 96-day vegetarian Charter matrix
 
 All **four cases pass** at clean, unchanged cf344711ad8701f5d7fe822bf6c8623d1dacda56

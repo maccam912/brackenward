@@ -12,7 +12,7 @@ class OriginalWorld extends ColonyWorld:
 			citizen.activity = "Hearthside recovery" if citizen.hearthside_until > tick else ("Downed: bleeding, needs care" if not citizen.stabilized else "Downed: recovering")
 			return
 		if ColonyDanger.escape(self,citizen): return
-		if ColonyConstruction.step_aside(self,citizen): return
+		if AssignmentReadTests.full_step_aside(self,citizen): return
 		if ColonyCharter.assign(self,citizen): return
 		# Query lists preserve job order and share the live dictionaries, so releases
 		# and failed reservations below remain visible to subsequent queries.
@@ -135,8 +135,8 @@ class OriginalWorld extends ColonyWorld:
 		if citizen.fullness > 350:
 			citizen.activity = "Idle: designate resources or place a blueprint"
 
-static func clone(source: ColonyWorld, original: bool) -> ColonyWorld:
-	var result: ColonyWorld=OriginalWorld.new(source.definitions) if original else ColonyWorld.new(source.definitions)
+static func clone(source: ColonyWorld, original: bool, target: ColonyWorld = null) -> ColonyWorld:
+	var result: ColonyWorld=target if target!=null else (OriginalWorld.new(source.definitions) if original else ColonyWorld.new(source.definitions))
 	for field in source.payload():
 		if field in ["content","content_hash"]: continue
 		var value: Variant=source.get(field)
@@ -175,6 +175,8 @@ static func run(check: Callable) -> void:
 	check.call("ASSIGN/crowded_fixture_is_a_valid_start",stress.has("world"),str(stress.get("error","")))
 	if stress.has("world"): paired(stress.world,30,"crowded_danger_and_reservations",check)
 	direct_membership(check)
+	step_aside_membership(check)
+	urgent_haul_contexts(check)
 
 static func direct_membership(check: Callable) -> void:
 	var source: ColonyWorld=ColonyTests.world();var resource: Dictionary=source.resources[0]
@@ -190,3 +192,84 @@ static func direct_membership(check: Callable) -> void:
 		for category in world.citizens[0].preferences: world.citizens[0].preferences[category]=3 if category=="Gathering" else 0
 		world._assign(world.citizens[0])
 	check.call("ASSIGN/direct_search_preserves_original_cached_membership_and_skips_queued",fast.canonical_hash()==original.canonical_hash() and fast.citizens[0].job==live.id and fast.find(fast.jobs,queued.id).worker==0)
+
+## Unchanged d6b3dab construction predicate, kept independent of borrowed views.
+static func full_step_aside(world: ColonyWorld, citizen: Dictionary) -> bool:
+	if citizen.progress>0: return false
+	var point: Vector2i = Vector2i(citizen.x,citizen.y)
+	var current: Dictionary = world.find(world.jobs,citizen.job)
+	if current.get("kind") in ["step_aside","eat","rescue"] or citizen.carrying_patient>0: return false
+	if not current.is_empty() and current.get("kind") not in ["leisure","sleep","recover"] and current.state!="Working": return false
+	var blocking: bool = world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.work>0 and j.state not in ["Complete","Canceled"] and world.definitions.buildings[j.definition].solid and world.footprint(j).has(point))
+	if not blocking: return false
+	for delta in ColonyNavigation.NEIGHBORS:
+		var next: Vector2i = point+delta
+		if not world.walkable(next) or not world.can_step(point,next) or not ColonyDanger.safe(world,next): continue
+		if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.state not in ["Complete","Canceled"] and world.definitions.buildings[j.definition].solid and world.footprint(j).has(next)): continue
+		world._release(current,false)
+		var job: Dictionary = world._job("step_aside","","",citizen.id,next,0)
+		job.worker=citizen.id;job.state="Moving";citizen.job=job.id
+		citizen.activity="Stepping clear of construction"
+		return true
+	return false
+
+static func step_aside_membership(check: Callable) -> void:
+	for state in ["Ready","Queued"]:
+		for terminal in ["Complete","Canceled"]:
+			var source: ColonyWorld=ColonyTests.world();source.citizens[0].x=80;source.citizens[0].y=80
+			var parent: Dictionary=source._job("build","Building","Build",0,Vector2i(80,80),16000)
+			parent.definition="wood_wall";parent.work=1;parent.state=state;parent.queue_state="Ready" if state=="Queued" else ""
+			var north: Dictionary=source._job("build","Building","Build",0,Vector2i(80,79),16000)
+			north.definition="wood_wall";north.state="Queued";north.queue_state="Ready"
+			var right: Dictionary=source._job("build","Building","Build",0,Vector2i(81,80),16000);right.definition="wood_wall"
+			var fast: ColonyWorld=clone(source,false);var original: ColonyWorld=clone(source,true)
+			for world in [fast,original]:
+				world.in_tick=true;world._work_jobs();world.find(world.jobs,right.id).state=terminal
+			var actual: bool=ColonyConstruction.step_aside(fast,fast.citizens[0])
+			var expected: bool=full_step_aside(original,original.citizens[0])
+			var selected: Dictionary=fast.find(fast.jobs,fast.citizens[0].job)
+			check.call("ASSIGN/step_aside_keeps_queued_and_same_tick_%s_%s" % [state,terminal],actual and expected and fast.canonical_hash()==original.canonical_hash() and selected.x==81 and selected.y==80)
+	var source: ColonyWorld=ColonyTests.world();source.citizens[0].x=80;source.citizens[0].y=80
+	for point in [Vector2i(80,80),Vector2i(80,79),Vector2i(81,80),Vector2i(80,81),Vector2i(79,80)]:
+		var job: Dictionary=source._job("build","Building","Build",0,point,16000);job.definition="wood_wall";job.work=1
+	var fast: ColonyWorld=clone(source,false);var original: ColonyWorld=clone(source,true)
+	fast.in_tick=true;original.in_tick=true
+	check.call("ASSIGN/step_aside_keeps_all_blocked_neighbor_behavior",not ColonyConstruction.step_aside(fast,fast.citizens[0]) and not full_step_aside(original,original.citizens[0]) and fast.canonical_hash()==original.canonical_hash())
+	fast.citizens[0].progress=1;original.citizens[0].progress=1
+	var before: String=fast.canonical_hash()
+	check.call("ASSIGN/step_aside_never_retargets_an_in_progress_movement_edge",not ColonyConstruction.step_aside(fast,fast.citizens[0]) and not full_step_aside(original,original.citizens[0]) and fast.canonical_hash()==original.canonical_hash() and fast.canonical_hash()==before)
+
+class StorageProbe extends ColonyWorld:
+	var context_calls: int=0
+	func _storage_context() -> Dictionary:
+		context_calls+=1;return super()
+
+class OriginalStorageProbe extends OriginalWorld:
+	var context_calls: int=0
+	func _storage_context() -> Dictionary:
+		context_calls+=1;return super()
+
+static func urgent_haul_contexts(check: Callable) -> void:
+	for emergency in [false,true]:
+		var source: ColonyWorld=ColonyTests.world();source.tick=1800 if emergency else 5400
+		for person in source.citizens:
+			person.fullness=1000;person.rest=1000
+			for category in person.preferences: person.preferences[category]=3 if category=="Hauling" else 0
+			person.x=80;person.y=80;person.edge_x=80;person.edge_y=80
+		for store in source.stores: store.filters=[]
+		var first: Dictionary=source._make_stack("fiber",1,"ground",0,Vector2i(80,80),true)
+		var second: Dictionary=source._make_stack("fiber",1,"ground",0,Vector2i(82,80),true)
+		var haul_a: Dictionary=source._job("haul","Hauling","",first.id,Vector2i(80,80),0);haul_a.source=first.id;haul_a.priority=3;haul_a.emergency=emergency
+		var haul_b: Dictionary=source._job("haul","Hauling","",second.id,Vector2i(82,80),0);haul_b.source=second.id;haul_b.priority=3;haul_b.emergency=emergency
+		var fast: StorageProbe=clone(source,false,StorageProbe.new(source.definitions))
+		var original: OriginalStorageProbe=clone(source,true,OriginalStorageProbe.new(source.definitions))
+		for world in [fast,original]: world.in_tick=true;world._assign(world.citizens[0])
+		var name: String="emergency" if emergency else "before_leisure"
+		check.call("ASSIGN/"+name+"_failed_hauls_share_one_exact_storage_context",fast.context_calls==1 and original.context_calls==2 and fast.canonical_hash()==original.canonical_hash(),str([fast.context_calls,original.context_calls]))
+		check.call("ASSIGN/"+name+"_failed_probes_keep_atomic_inputs_and_conservation",fast.stacks.all(func(s:Dictionary)->bool:return s.reservations.is_empty()) and fast.invariant_errors().is_empty(),str(fast.invariant_errors()))
+		for world in [fast,original]:
+			world.stores[0].filters=["fiber"]
+			for job in world.jobs:
+				if job.kind=="haul": job.state="Ready";job.retry=0
+			world._assign(world.citizens[1])
+		check.call("ASSIGN/"+name+"_next_resident_rebuilds_context_after_new_capacity",fast.context_calls==2 and original.context_calls==3 and fast.canonical_hash()==original.canonical_hash() and fast.citizens[1].job==haul_a.id and fast.find(fast.stacks,first.id).reservations.get(haul_a.id)==1 and fast.invariant_errors().is_empty(),str([fast.context_calls,original.context_calls,fast.invariant_errors()]))

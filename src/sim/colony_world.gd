@@ -844,9 +844,12 @@ func _assign_search(citizen: Dictionary) -> void:
 	if citizen.health > 20 and citizen.fullness > 0 and citizen.rest > 100 and citizen.break_until <= tick:
 		var emergencies: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
 		_sort_jobs(emergencies,citizen)
+		var emergency_storage: Dictionary={}
 		for emergency in emergencies:
 			hunger_food_checked=false
-			if _reserve(emergency,citizen): citizen.job = emergency.id; return
+			if emergency.kind!="haul": emergency_storage.clear()
+			elif emergency_storage.is_empty(): emergency_storage=_storage_context()
+			if _reserve(emergency,citizen,emergency_storage): citizen.job = emergency.id; return
 	if draft_ready and ColonyDefense.assign(self,citizen): return
 	if citizen.fullness <= food_threshold:
 		var food: Dictionary = hunger_food if hunger_food_checked else _food(citizen)
@@ -893,8 +896,11 @@ func _assign_search(citizen: Dictionary) -> void:
 		if not taking_break:
 			var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _score(j,citizen)[0]==3)
 			_sort_jobs(urgent,citizen)
+			var urgent_storage: Dictionary={}
 			for job in urgent:
-				if _reserve(job,citizen): citizen.job=job.id;return
+				if job.kind!="haul": urgent_storage.clear()
+				elif urgent_storage.is_empty(): urgent_storage=_storage_context()
+				if _reserve(job,citizen,urgent_storage): citizen.job=job.id;return
 		var leisure: Dictionary = _job("leisure", "", "", citizen.id, ColonySocial.leisure_seat(self,citizen), 0)
 		leisure.state = "Moving"
 		leisure.worker = citizen.id

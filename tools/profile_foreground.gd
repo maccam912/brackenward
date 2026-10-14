@@ -64,8 +64,10 @@ class ProfileSession extends GameSession:
 	var slow_storage_pauses: int = 0
 	var trace_spikes: bool = false
 	var slow_frames: Array[Dictionary] = []
+	var worst_frames: Array[Dictionary] = []
 	var ui_phases: Dictionary = {}
 	var phase_peaks: Dictionary = {}
+	var phase_peak_ticks: Dictionary = {}
 	var guidance_us: Array[int] = []
 	var preview_us: Array[int] = []
 	func _preview_text() -> String:
@@ -86,8 +88,15 @@ class ProfileSession extends GameSession:
 		var duration: int = Time.get_ticks_usec()-started
 		frame_us.append(duration)
 		if trace_spikes:
-			for phase in world.phases: phase_peaks[phase]=maxi(phase_peaks.get(phase,0),world.phases[phase])
-		if trace_spikes and duration>50000 and slow_frames.size()<64: slow_frames.append({"tick":world.tick,"duration_us":duration,"delta":delta,"phases_inclusive":world.phases.duplicate(),"ui_phases_inclusive":ui_phases.duplicate(),"writer":save_queue.busy(),"preparing":save_queue.preparing()})
+			for phase in world.phases:
+				if world.phases[phase]>phase_peaks.get(phase,0):
+					phase_peaks[phase]=world.phases[phase];phase_peak_ticks[phase]=world.tick
+		if trace_spikes and duration>50000:
+			var entry: Dictionary={"tick":world.tick,"duration_us":duration,"delta":delta,"phases_inclusive":world.phases.duplicate(),"ui_phases_inclusive":ui_phases.duplicate(),"writer":save_queue.busy(),"preparing":save_queue.preparing()}
+			if slow_frames.size()<64: slow_frames.append(entry)
+			worst_frames.append(entry)
+			worst_frames.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.duration_us>b.duration_us)
+			if worst_frames.size()>8: worst_frames.pop_back()
 		if before>0 and runner.speed==0 and notice.begins_with("Saving is slow"): slow_storage_pauses+=1
 	func _start_background_save(full_snapshot: bool) -> void:
 		var started: int = Time.get_ticks_usec()
@@ -201,7 +210,7 @@ func run() -> void:
 	while Time.get_ticks_usec()<warmup_end: await process_frame
 	game.frame_us.clear();game.capture_us.clear();game.finish_us.clear();game.preparation_us.clear()
 	game.guidance_us.clear();game.preview_us.clear()
-	game.phase_peaks.clear();game.slow_frames.clear()
+	game.phase_peaks.clear();game.phase_peak_ticks.clear();game.slow_frames.clear();game.worst_frames.clear()
 	if trace_spikes: world.tick_us.clear();world.slow_jobs.clear();world.phases.clear()
 	game.view.update_us.clear();game.view.draw_us.clear();game.view.draw_command_us=0;game.soundscape.update_us.clear()
 	game.diagnostics.reset()
@@ -221,6 +230,8 @@ func run() -> void:
 	var drain_us: int = Time.get_ticks_usec()-drain_started
 	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"save_finish":stats(measured_finish),"post_measurement_save_drain_us":drain_us,"snapshot_preparation_capture":stats(game.preparation_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors(),"trace_spikes":trace_spikes,"slow_frames":game.slow_frames,"phase_peaks_us":game.phase_peaks,"slow_jobs":world.slow_jobs if trace_spikes else []}
 	result["audio_update_frames"]=stats(game.soundscape.update_us)
+	result["worst_frames"]=game.worst_frames
+	result["phase_peak_frame_end_ticks"]=game.phase_peak_ticks
 	result["requested_speed"]=speed;result["camera"]=camera;result["quality"]=quality
 	result["automatic_sleep_acceleration"]=quiet_sleep
 	result["quiet_sleep_frames"]=game.quiet_sleep_frames;result["quiet_sleep_ticks"]=game.quiet_sleep_ticks;result["quiet_sleep_first_stop"]=game.quiet_sleep_first_stop

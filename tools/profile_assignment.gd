@@ -83,9 +83,13 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 		if citizen.health > 20 and citizen.fullness > 0 and citizen.rest > 100 and citizen.break_until <= tick:
 			var emergencies: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
 			_sort_jobs(emergencies,citizen)
+			var emergency_storage: Dictionary={}
 			for emergency in emergencies:
 				hunger_food_checked=false
-				if _reserve(emergency,citizen): citizen.job = emergency.id; return
+				if emergency.kind!="haul": emergency_storage.clear()
+				elif emergency_storage.is_empty():
+					var began: int=Time.get_ticks_usec();emergency_storage=_storage_context();note("storage_after/emergency",began)
+				if _reserve(emergency,citizen,emergency_storage): citizen.job = emergency.id; return
 		if draft_ready and ColonyDefense.assign(self,citizen): return
 		if citizen.fullness <= food_threshold:
 			var food: Dictionary = hunger_food if hunger_food_checked else _food(citizen)
@@ -132,8 +136,12 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 			if not taking_break:
 				var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _score(j,citizen)[0]==3)
 				_sort_jobs(urgent,citizen)
+				var urgent_storage: Dictionary={}
 				for job in urgent:
-					if _reserve(job,citizen): citizen.job=job.id;return
+					if job.kind!="haul": urgent_storage.clear()
+					elif urgent_storage.is_empty():
+						var began: int=Time.get_ticks_usec();urgent_storage=_storage_context();note("storage_after/urgent",began)
+					if _reserve(job,citizen,urgent_storage): citizen.job=job.id;return
 			var leisure: Dictionary = _job("leisure", "", "", citizen.id, ColonySocial.leisure_seat(self,citizen), 0)
 			leisure.state = "Moving"
 			leisure.worker = citizen.id
@@ -153,12 +161,14 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 			candidates.append(job)
 		var queue: ColonyJobQueue = ColonyJobQueue.new(candidates,self,citizen)
 		var storage_context: Dictionary = {}
+		var storage_cause: String = "new_search"
 		while not queue.heap.is_empty():
 			var job: Dictionary = queue.pop()
 			# Failed hauling probes commit no reservation. Share this search's exact
 			# occupancy snapshot until a task succeeds; every resident starts fresh.
-			if job.kind!="haul": storage_context.clear()
-			elif storage_context.is_empty(): storage_context=_storage_context()
+			if job.kind!="haul": storage_context.clear();storage_cause=job.kind
+			elif storage_context.is_empty():
+				var started: int=Time.get_ticks_usec();storage_context=_storage_context();note("storage_after/"+storage_cause,started)
 			if _reserve(job, citizen, storage_context):
 				citizen.job = job.id
 				return
