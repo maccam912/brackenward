@@ -9,10 +9,7 @@ func save(world: RefCounted) -> String:
 	var error: Error = DirAccess.make_dir_recursive_absolute(directory)
 	if error != OK:
 		return "Could not create save directory: %s" % error_string(error)
-	var generations: PackedStringArray = _generations()
-	if not generations.is_empty():
-		sequence = maxi(sequence, int(generations[-1].get_basename().trim_prefix("snapshot-")))
-	sequence += 1
+	sequence = _next_sequence()
 	var final_path: String = directory.path_join("snapshot-%010d.brackenward" % sequence)
 	var temporary: String = final_path + ".tmp"
 	var file: FileAccess = FileAccess.open(temporary, FileAccess.WRITE)
@@ -31,7 +28,15 @@ func save(world: RefCounted) -> String:
 	if error != OK:
 		return "Could not finalize save: %s" % error_string(error)
 	verified_generations[final_path]=FileAccess.get_sha256(final_path)
-	generations = _generations()
+	_prune_generations()
+	return ""
+
+func _next_sequence() -> int:
+	var generations: PackedStringArray = _generations()
+	return maxi(sequence,int(generations[-1].get_basename().trim_prefix("snapshot-")) if not generations.is_empty() else 0)+1
+
+func _prune_generations() -> void:
+	var generations: PackedStringArray = _generations()
 	# Prune only valid old generations after a verified replacement exists.
 	var valid: PackedStringArray = []
 	for name in generations:
@@ -50,7 +55,6 @@ func save(world: RefCounted) -> String:
 		if DirAccess.remove_absolute(path)==OK: _generation_pruned(path,digest)
 		verified_generations.erase(path)
 		valid.remove_at(0)
-	return ""
 
 func load_latest() -> Dictionary:
 	var generations: PackedStringArray = _generations()

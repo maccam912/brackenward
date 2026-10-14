@@ -167,6 +167,81 @@ func checkpoint(world: ColonyWorld) -> String:
 	world.command_trace.clear()
 	return ""
 
+func _next_sequence() -> int:
+	var next: int = super._next_sequence()
+	if not DirAccess.dir_exists_absolute(directory): return next
+	# An interrupted prepared rotation can leave a journal without a published
+	# snapshot. Reserve its sequence, including retained staging evidence.
+	for name in DirAccess.get_files_at(directory):
+		if not (name.begins_with("snapshot-") and (name.ends_with(".brackenward") or name.ends_with(".brackenward.tmp"))) and not (name.begins_with("journal-") and (name.ends_with(".frames") or name.ends_with(".frames.tmp"))): continue
+		var digits: String = name.substr(name.find("-")+1,10)
+		if digits.length()==10 and digits.is_valid_int(): next=maxi(next,int(digits)+1)
+	return next
+
+func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> String:
+	if prepared==null or not prepared.matches(world): return "Prepared snapshot no longer matches this campaign"
+	# First make the newest capture durable on the existing chain. The slower
+	# encoding/validation has already happened without occupying this writer.
+	var error: String = checkpoint(world)
+	if not error.is_empty(): return error
+	if snapshot_tick>prepared.payload.tick: return "" # Oversized delta already made a newer full snapshot.
+	if world.tick==prepared.payload.tick and world.payload()!=prepared.payload: return save(world)
+	var next: int = _next_sequence()
+	var snapshot_path: String = directory.path_join("snapshot-%010d.brackenward" % next)
+	var journal_path: String = directory.path_join("journal-%010d.frames" % next)
+	var bytes: PackedByteArray = ColonyCodec.wrap_payload(world,prepared.text,"",next)
+	if bytes.size()>ColonyCodec.MAX_BYTES: return "Prepared snapshot exceeds the recovery size limit"
+	var frames: PackedByteArray = PackedByteArray()
+	var count: int = 0
+	var parent: String = prepared.digest
+	if world.tick>prepared.payload.tick:
+		var old_path: String = directory.path_join("journal-%010d.frames" % sequence)
+		var original: PackedByteArray = FileAccess.get_file_as_bytes(old_path)
+		if original.size()!=journal_length or original.is_empty() or FileAccess.get_sha256(old_path)!=journal_digest: return "Snapshot catch-up journal changed; original durable state retained"
+		var parsed: Dictionary = ColonyJournal.read(original)
+		if parsed.has("error") or parsed.get("torn_tail",false) or parsed.records.size()!=journal_sequence: return "Snapshot catch-up journal failed verification"
+		for record in parsed.records:
+			if record.kind!="command" or record.tick<=prepared.payload.tick: continue
+			count+=1
+			frames.append_array(ColonyJournal.frame({"sequence":str(count),"kind":"command","tick":record.tick,"command":record.command}))
+		count+=1
+		var marker: PackedByteArray = ColonyJournal.frame({"sequence":str(count),"kind":"tick","tick":world.tick,"delta":{"version":1,"base_tick":prepared.payload.tick,"campaign_id":world.session_id,"parent":parent,"patch":ColonyDelta.make(prepared.payload,world.payload())}})
+		if marker.decode_u32(0)>ColonyJournal.MAX_RECORD or frames.size()+marker.size()>ColonyJournal.MAX_JOURNAL or bytes.size()+2*(frames.size()+marker.size())>ColonyCodec.MAX_BYTES-4096: return save(world)
+		frames.append_array(marker)
+		var verified: Dictionary = ColonyJournal.read(frames)
+		if verified.has("error") or verified.get("torn_tail",false) or verified.records.size()!=count: return "Prepared catch-up marker failed verification"
+		var rebuilt: Dictionary = ColonyDelta.restore(prepared.payload,verified.records[-1].delta.patch)
+		if not rebuilt.has("state") or rebuilt.state!=world.payload(): return "Prepared catch-up marker differs from the current capture"
+		parent=marker.slice(marker.size()-32).hex_encode()
+	error=_write_prepared_bytes(snapshot_path+".tmp",bytes)
+	if not error.is_empty(): return error
+	if not frames.is_empty():
+		error=_write_prepared_bytes(journal_path+".tmp",frames)
+		if not error.is_empty(): return error
+		var journal_error: Error = DirAccess.rename_absolute(journal_path+".tmp",journal_path)
+		if journal_error!=OK: return "Could not publish prepared catch-up journal: "+error_string(journal_error)
+	# Publish the snapshot last: recovery cannot select an old preparation tick
+	# without its already verified catch-up state after a crash.
+	var snapshot_error: Error = DirAccess.rename_absolute(snapshot_path+".tmp",snapshot_path)
+	if snapshot_error!=OK: return "Could not publish prepared snapshot: "+error_string(snapshot_error)
+	sequence=next;snapshot_tick=prepared.payload.tick
+	journal_sequence=count;journal_length=frames.size();journal_digest=FileAccess.get_sha256(journal_path) if count>0 else ""
+	journal_tick=world.tick;journal_payload=world.payload().duplicate(true);journal_parent_hash=parent
+	journal_size_bound=bytes.size()+2*frames.size();recovered=false
+	verified_generations[snapshot_path]=FileAccess.get_sha256(snapshot_path)
+	if count>0: verified_journals[journal_path]=verified_generations[snapshot_path]+":"+journal_digest
+	world.command_trace.clear()
+	_prune_generations()
+	return ""
+
+func _write_prepared_bytes(path: String, bytes: PackedByteArray) -> String:
+	var file: FileAccess = FileAccess.open(path,FileAccess.WRITE)
+	if file==null: return "Could not stage prepared snapshot: "+error_string(FileAccess.get_open_error())
+	file.store_buffer(bytes);file.flush()
+	var error: Error = file.get_error();file.close()
+	if error!=OK or FileAccess.get_file_as_bytes(path)!=bytes: return "Prepared snapshot write/read-back failed; previous durable state retained"
+	return ""
+
 func load_latest() -> Dictionary:
 	var generations: PackedStringArray = _generations()
 	if generations.is_empty() and directory == CAMPAIGN_ROOT.path_join("slot-1") and root_directory == CAMPAIGN_ROOT and DirAccess.dir_exists_absolute("user://m1"):

@@ -31,6 +31,8 @@ func run() -> void:
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
 		"persistence":
+			PreparedSnapshotTests.run(check)
+			await PreparedSnapshotTests.asynchronous(self,check)
 			CaptureTests.run(check)
 			DeltaTests.run(check)
 			CampaignTests.run(check)
@@ -911,6 +913,7 @@ func ui() -> void:
 	colony_game.set_speed(1);colony_game.runner.advance_frame(0.1);colony_game.runner.pause()
 	check("CHARTER/UI_continue_keeps_colony",colony_game.world.charter_state.continued and colony_game.world.citizens.size()==8)
 	await AsyncSaveTests.ui(colony_game,check)
+	await PreparedSnapshotTests.ui(colony_game,check)
 	await PlacementUITests.run(colony_game,check)
 	TutorialUITests.run(colony_game,check)
 	colony_game._tutorial_state().forecast_pinned=false

@@ -325,6 +325,8 @@ func _process(delta: float) -> void:
 		return
 	save_clock+=delta
 	_finish_background_save()
+	var preparation: Dictionary = save_queue.poll_preparation()
+	if not preparation.get("error","").is_empty(): _storage_failed(preparation.error)
 	if store is ColonyStore and world.tick==store.journal_tick: durable_at=save_clock
 	if _storage_wait_required() and runner.speed>0:
 		runner.pause()
@@ -396,7 +398,8 @@ func _process(delta: float) -> void:
 	autosave_elapsed += delta
 	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony:
 		if store is ColonyStore:
-			if not save_queue.busy():
+			if not save_queue.preparing() and not save_queue.ready(world): _start_snapshot_preparation()
+			if save_queue.ready(world) and not save_queue.busy():
 				_start_background_save(true)
 				autosave_elapsed = 0.0
 		else:
@@ -408,7 +411,12 @@ func _start_background_save(full_snapshot: bool) -> void:
 	var error: String = save_queue.start(store,world,full_snapshot)
 	if not error.is_empty(): _storage_failed(error)
 
+func _start_snapshot_preparation() -> void:
+	var error: String = save_queue.start_preparation(world)
+	if not error.is_empty(): _storage_failed(error)
+
 func _finish_background_save(wait: bool = false, report_error: bool = true) -> String:
+	if wait: save_queue.discard_preparation()
 	var result: Dictionary = save_queue.poll(wait)
 	if result.is_empty(): return ""
 	if result.world!=world or result.store!=store: return result.error
