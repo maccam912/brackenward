@@ -167,6 +167,59 @@ static func _feed_dawn(world: ColonyWorld) -> void:
 					world.emit_fact({"tick":world.tick,"actor":animal.id,"job":0,"kind":"animal_hungry","text":animal.name+" lost 10 health after more than two unfed days. Stock barn feed and enable Animals work."})
 
 static func create_jobs(world: ColonyWorld) -> void:
+	if not world.in_tick:
+		_create_jobs_direct(world);return
+	if world.domestic_state.pens.is_empty() and world.domestic_state.animals.is_empty(): return
+	var pending: Dictionary={}
+	var feed_by_barn: Dictionary={};var feed_indexed: bool=false
+	var inventory: Array=[];var candidates: Array=[];var food_checked: bool=false
+	for pen in world.domestic_state.pens:
+		var info: Dictionary = status(world,pen)
+		for animal in occupants(world,pen.id):
+			if info.barns.has(animal.barn): continue
+			for barn in info.barns:
+				if world.domestic_state.animals.filter(func(a:Dictionary)->bool:return a.health>0 and a.barn==barn).size()<6: animal.barn=barn;break
+		if not info.error.is_empty(): pen.reason=info.error
+		for barn_id in info.barns:
+			var residents: Array = occupants(world,pen.id).filter(func(a:Dictionary)->bool:return a.barn==barn_id and not a.away)
+			var daily: int = 0
+			for animal in residents: daily += demand(world,animal,world.tick/7200+1)
+			if daily==0: continue
+			if not feed_indexed:
+				inventory=world._work_inventory();feed_indexed=true
+				for stack in inventory:
+					if stack.count>0 and stack.location=="animal_feed": feed_by_barn[stack.owner]=feed_by_barn.get(stack.owner,0)+stack.count
+			var shortage: int=mini(24,daily*2)-feed_by_barn.get(barn_id,0)
+			if shortage<=0: continue
+			if pending.is_empty(): pending=_pending_creation(world)
+			if pending.feeds.has(barn_id): continue
+			# Proposals reserve no food. Every barn sees the same live inventory,
+			# age/ID order and quantity until this creation call ends.
+			if not food_checked:
+				candidates=inventory.filter(func(s:Dictionary)->bool:return feed_item(world,s.item) and s.count>world._reserved(s) and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
+				candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.age>b.age if a.age!=b.age else a.id<b.id)
+				food_checked=true
+			if candidates.is_empty(): pen.reason="No grain or vegetables available for barn feed";continue
+			var source: Dictionary=candidates[0];var barn: Dictionary=world.find(world.structures,barn_id)
+			var job: Dictionary=world._job("stock_feed","Animals","Field",barn_id,Vector2i(barn.x,barn.y),0)
+			job.inputs={source.item:mini(8,mini(shortage,source.count-world._reserved(source)))}
+			pending.feeds[barn_id]=true
+	for animal in world.domestic_state.animals:
+		if animal.health<=0 or animal.away or animal.pending==0: continue
+		if pending.is_empty(): pending=_pending_creation(world)
+		if pending.animals.has(animal.id): continue
+		var job: Dictionary=world._job("collect_animal","Animals","Field",animal.id,Vector2i(animal.x,animal.y),4000)
+		job.definition=animal.definition;pending.animals[animal.id]=true
+
+static func _pending_creation(world: ColonyWorld) -> Dictionary:
+	var result: Dictionary={"feeds":{},"animals":{}}
+	for job in world._work_jobs():
+		if job.state in ["Complete","Canceled"]: continue
+		if job.kind=="stock_feed": result.feeds[job.target]=true
+		elif job.kind in ["collect_animal","slaughter","lead_animal"]: result.animals[job.target]=true
+	return result
+
+static func _create_jobs_direct(world: ColonyWorld) -> void:
 	for pen in world.domestic_state.pens:
 		var info: Dictionary = status(world,pen)
 		for animal in occupants(world,pen.id):

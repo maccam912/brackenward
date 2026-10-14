@@ -59,7 +59,9 @@ func run() -> void:
 		"generation": GenerationTests.run(check)
 		"nature": NatureTests.run(check)
 		"wildlife": WildlifeTests.run(check)
-		"domestic": DomesticTests.run(check)
+		"domestic":
+			DomesticReadTests.run(check)
+			DomesticTests.run(check)
 		"construction": ConstructionTests.run(check)
 		"equipment": EquipmentTests.run(check)
 		"maintenance": MaintenanceTests.run(check)

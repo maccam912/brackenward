@@ -704,3 +704,39 @@ The low-rest interruption predicate and subsequent hungry-sleep eligibility
 contradict each other. Correcting that gameplay behavior is next work, requiring
 an explicit regression and preserved acknowledgements; this checkpoint only
 bounds the unchanged reservation reads.
+
+
+## 0.7.33 frozen native soak: failed, population lost
+
+A clean unchanged 445f183 checkout attempted the standard 1,800-second/2x native
+probe with 60 seconds of warmup. It stopped after 1,214.875 measured seconds
+at tick 27,299, when settlement end paused the simulator and no residents remained.
+It cannot certify the duration or sustained population load. Peak sampled engine
+heap growth was 53,836,730 bytes, final growth 12,517,070; the heap proxy fails.
+The lowest sampled one-second FPS was 26.127, with no sub-24 streak, but load
+was declining. Exact input/source checks, invariants, codec round trip and audio
+drain passed. Final stocks included 2,488 travel rations, 6,152 grain and no meals,
+vegetables, mushrooms or meat. Travel-ration use remains off in this synthetic
+fixture; those stocks do not imply available ordinary meals. A future longevity
+fixture needs explicit sustainable food access as well as the stated object load,
+without replenishing supplies or people during measurement. This failed result
+and its original input must remain retained.
+
+Raw evidence is native-soak-v6-445f183, including failed audit/completion. Source
+commit 445f183ecfd8c3e1f7416ff8a07d55c1e659f7be; input snapshot SHA
+3a65112145f5bf35ee179d02075d48a2accc037dd611630021c43d4460128e32;
+final snapshot 9447071783359673e28eb3ee78618374c9beaad6fda2e2a1934cb1bf3d1e8d54;
+audit 1ecfe5dcccc69ae4cc739a1d11c2fe640338b9df7d830f3025ff3dceec712c5c.
+This is synthetic/native diagnostic evidence, separate from ordinary survival
+balance, physical Android PSS, battery and thermals.
+
+## 0.7.34 domestic read reuse: short native observation
+
+The same retained prior stress endpoint ran 18.027 seconds at 4x, tick 19,368 to
+20,089, with twenty residents, clean invariants, unchanged source and all five
+counters zero. Maximum session/simulation-batch/frame gap was
+81.769/79.893/94.198 ms. Session and frame-gap p95 bounds remain 100 ms, so the
+performance budget is still missed. The independent four-pair full-body CPU
+comparison and exact-state checks are recorded in STATUS.md. These observations
+were made on Apple M5 Pro/macOS 26.6.2/Balanced30 alongside headless validation;
+they are neither uncontended benchmarks nor Android improvement certification.

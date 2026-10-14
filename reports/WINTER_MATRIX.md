@@ -1,5 +1,32 @@
 # Frozen first-Winter matrix
 
+## Content v6 diagnostic run — unresolved failure
+
+The 30-case first-Winter sweep at ffdce480994ad43c46dee84c5b1ba34d3f17e330
+(0.7.28-m7) completes **29/30**. Pine Shelf seed 73 retains eight living residents
+but reaches minimum health 53, 20,874 zero-fullness resident ticks and 13,674
+resident ticks beyond starvation grace. Its final food forecast remains stocked;
+recorded daily observations show four newcomers hungry simultaneously despite
+stored meals and raw food. This requires a specific causal diagnosis before
+claiming the remaining case exposes an avoidable player decision. Do not infer
+that stocks alone prove reachable food.
+
+A temporary untracked diagnostic file was also created in the frozen checkout
+near completion. No tracked source changed; nevertheless completion correctly
+records `source_unchanged:false`. The aggregate audit exits 1, and this run is
+**diagnostic evidence, not a clean release certificate**. Exact timing and retained
+logs are documented in [WINTER_V6_AUDIT_DEVIATIONS.md](WINTER_V6_AUDIT_DEVIATIONS.md).
+Pine seed 73 had failed before that mistake. All reports/snapshots remain intact
+in `reports/winter-release-v6-ffdce48/`.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| source.json | `8ff8d8a78e14735dd28fb7d74d839c38bee123e46c750de766fcca47593da218` |
+| completion.json | `983b19b3318108bfe24548ad0863f92fecd49f6e314512cfef55b136b1e43a30` |
+| audit.json | `fdfccf3f55c4613b4101ab53998ce1bf21e5e3e0a198adb9075fae622d2e6c00` |
+| Pine 73 report | `4e7c573fbac04ea73718db989c27a5c08ad38e858f93c68d6c0932cde24402dc` |
+| Pine 73 final snapshot | `25edf7a2519f88918fbfff8724667fbcd13b4cabb1c6dd554fd4968a6fe5198b` |
+
 ## Frozen content v4 / schema 23
 
 All **30/30 fresh first-Winter runs** pass at clean, unchanged source

@@ -364,7 +364,7 @@ func step() -> void:
 		ColonyFire.create_jobs(self)
 		ColonyCare.create_jobs(self)
 		ColonyNature.create_jobs(self)
-		ColonyDomestic.create_jobs(self)
+		_create_domestic_jobs()
 		ColonyConstruction.create_helpers(self)
 		ColonyEquipment.create_jobs(self)
 		work_budget.mark_dirty();work_budget.reconcile_runtime(self)
@@ -689,6 +689,9 @@ func _perimeter(tiles: Array[Vector2i]) -> Array[Vector2i]:
 				result.append(point)
 	result.sort_custom(func(a: Vector2i, b: Vector2i) -> bool: return a.y * SIZE + a.x < b.y * SIZE + b.x)
 	return result
+
+func _create_domestic_jobs() -> void:
+	ColonyDomestic.create_jobs(self)
 
 func _create_work() -> void:
 	if not personal_jobs_reconciled:
