@@ -15,7 +15,7 @@ func start(store: ColonyStore, world: ColonyWorld, full_snapshot: bool = false) 
 	var captured: Dictionary = world.payload().duplicate(true)
 	var trace: Array[Dictionary] = world.command_trace.duplicate(true)
 	var writer: ColonyStore = ColonyStore.new()
-	for field in ["directory","root_directory","slot","sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered"]:
+	for field in ["directory","root_directory","slot","sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_state_oversized"]:
 		writer.set(field,store.get(field))
 	writer.verified_generations=store.verified_generations.duplicate()
 	source_store=store;source_world=world;captured_tick=world.tick;original_sequence=store.sequence
@@ -41,7 +41,7 @@ func poll(wait: bool = false) -> Dictionary:
 	var result: Dictionary = thread.wait_to_finish()
 	thread=null
 	var writer: ColonyStore = result.writer
-	for field in ["sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered"]:
+	for field in ["sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_state_oversized"]:
 		source_store.set(field,writer.get(field))
 	source_store.verified_generations=writer.verified_generations
 	if result.error.is_empty():

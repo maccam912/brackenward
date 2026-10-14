@@ -5,6 +5,7 @@ var journal_sequence: int = 0
 var journal_length: int = 0
 var journal_digest: String = ""
 var recovered: bool = false
+var journal_state_oversized: bool = false
 var slot: int = 1
 const CAMPAIGN_ROOT: String = "user://campaigns"
 var root_directory: String = CAMPAIGN_ROOT
@@ -21,6 +22,7 @@ func select_slot(number: int) -> void:
 	journal_sequence = 0
 	journal_length=0;journal_digest=""
 	recovered = false
+	journal_state_oversized=false
 
 static func occupied(number: int, root: String = CAMPAIGN_ROOT) -> bool:
 	var paths: Array[String] = [root.path_join("slot-%d" % number)]
@@ -35,7 +37,11 @@ static func occupied(number: int, root: String = CAMPAIGN_ROOT) -> bool:
 	return false
 
 func encode(world: RefCounted) -> PackedByteArray:
-	return ColonyCodec.encode(world,"",sequence)
+	var payload: String = JSON.stringify(ColonyState.pack(world.payload()),"",true)
+	# Codepoint count is a lower bound on UTF-8 bytes. A known oversized state
+	# can rotate directly next time without packing the same world twice.
+	journal_state_oversized=payload.length()+256>ColonyJournal.MAX_RECORD
+	return ColonyCodec.wrap_payload(world,payload,"",sequence)
 
 func decode(bytes: PackedByteArray) -> Dictionary:
 	return ColonyCodec.decode(bytes)
@@ -63,6 +69,8 @@ func checkpoint(world: ColonyWorld) -> String:
 		return save(world)
 	if world.tick == journal_tick:
 		return ""
+	if journal_state_oversized:
+		return save(world)
 	var records: PackedByteArray = PackedByteArray()
 	var next_sequence: int = journal_sequence
 	for entry in world.command_trace:

@@ -46,6 +46,14 @@ static func run(tree: SceneTree, check: Callable) -> void:
 	check.call("SAVE/async_failed_write_retries_latest_state",result.error.is_empty() and recovered.has("world") and recovered.world.canonical_hash()==world.canonical_hash() and world.command_trace.is_empty())
 	prefix_integrity(root,check)
 	verified_generation_integrity(root,check)
+	# A conservative size hint crosses the worker boundary, then refreshes from
+	# the smaller snapshot without trapping future saves in full-snapshot mode.
+	var hinted: ColonyStore = ColonyStore.new();hinted.directory=root.path_join("oversized-hint")
+	world=ColonyTests.world();hinted.save(world);hinted.journal_state_oversized=true;world.step()
+	queue.start(hinted,world);queue.gate.post();result=queue.poll(true);recovered=load_saved(hinted)
+	check.call("SAVE/async_oversize_hint_rotates_and_refreshes_from_actual_payload",result.error.is_empty() and result.snapshot and hinted.sequence==2 and not hinted.journal_state_oversized and recovered.has("world") and recovered.world.canonical_hash()==world.canonical_hash())
+	world.step();queue.start(hinted,world);queue.gate.post();result=queue.poll(true);recovered=load_saved(hinted)
+	check.call("SAVE/async_smaller_world_returns_to_journaling",result.error.is_empty() and not result.snapshot and hinted.sequence==2 and hinted.journal_sequence==1 and recovered.has("world") and recovered.world.canonical_hash()==world.canonical_hash())
 	CampaignTests.remove_tree(root)
 
 static func prefix_integrity(root: String, check: Callable) -> void:

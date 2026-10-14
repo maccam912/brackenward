@@ -9,6 +9,7 @@ static func remove_tree(path: String) -> void:
 	DirAccess.remove_absolute(path)
 
 static func run(check: Callable) -> void:
+	check.call("SAVE/schema_field_order_is_irrelevant_but_names_are_exact",ColonyCodec._keys({"job":2,"id":1},["id","job"]) and not ColonyCodec._keys({"id":1,"wrong":2},["id","job"]) and not ColonyCodec._keys({0:1},["0"]))
 	var root: String = "user://campaign-tests-%d" % Time.get_ticks_usec()
 	var store: ColonyStore = ColonyStore.new()
 	store.root_directory = root
@@ -103,7 +104,7 @@ static func journal_bounds(check: Callable, root: String) -> void:
 	var encoded: PackedByteArray = ColonyCodec.encode(world)
 	var frame: PackedByteArray = ColonyJournal.frame({"sequence":"1","kind":"tick","tick":world.tick,"state":world.payload()})
 	check.call("SAVE/large_history_is_valid_snapshot_above_frame_limit",encoded.size()<ColonyCodec.MAX_BYTES and not ColonyCodec.decode(encoded).has("error") and frame.decode_u32(0)>ColonyJournal.MAX_RECORD)
-	check.call("SAVE/large_history_initial_snapshot",store.save(world).is_empty())
+	check.call("SAVE/large_history_initial_snapshot",store.save(world).is_empty() and store.journal_state_oversized)
 	var previous_path: String = store.directory.path_join("snapshot-%010d.brackenward" % store.sequence)
 	var previous_bytes: PackedByteArray = FileAccess.get_file_as_bytes(previous_path)
 	world.queue_command("food_policy",{"enabled":true})

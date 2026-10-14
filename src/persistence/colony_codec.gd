@@ -6,6 +6,9 @@ const VERSION: int = 4
 
 static func encode(world: ColonyWorld, snapshot_name: String = "", sequence: int = 0) -> PackedByteArray:
 	var payload: String = JSON.stringify(ColonyState.pack(world.payload()), "", true)
+	return wrap_payload(world,payload,snapshot_name,sequence)
+
+static func wrap_payload(world: ColonyWorld, payload: String, snapshot_name: String = "", sequence: int = 0) -> PackedByteArray:
 	return JSON.stringify({"format": FORMAT, "version": VERSION, "content": ColonyWorld.CONTENT_VERSION,
 		"content_hash":world.definitions.content_hash, "snapshot_name":snapshot_name, "engine": "4.7.2.ed1daf0bf", "generator_version":world.generator_version, "campaign_id":world.session_id, "sequence":str(sequence), "timestamp":Time.get_datetime_string_from_system(true), "payload": payload, "sha256": payload.sha256_text()}, "", true).to_utf8_buffer()
 
@@ -78,11 +81,10 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 	return {"world":world,"snapshot_name":snapshot_name}
 
 static func _keys(record: Dictionary, keys: Array) -> bool:
-	var actual: Array = record.keys().map(func(key: Variant) -> String: return str(key))
-	actual.sort()
-	var expected: Array = keys.map(func(key: Variant) -> String: return str(key))
-	expected.sort()
-	return actual == expected
+	# Schema lists contain unique field names. Native membership avoids sorting
+	# and stringifying both sides for every retained historical record, while
+	# rejecting extra, missing and incorrectly typed field keys.
+	return record.size()==keys.size() and record.has_all(keys)
 
 static func _record(value: Variant, template: Dictionary) -> bool:
 	if not value is Dictionary or not _keys(value, template.keys()):
