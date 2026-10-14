@@ -8,6 +8,7 @@ reports/*.log
 reports/*.brackenward
 reports/fixtures/
 reports/winter-release-*/
+reports/capture-validation/
 platform/android_save/.gradle/
 platform/android_save/build/
 platform/android_save/plugin/build/

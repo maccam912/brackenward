@@ -24,6 +24,7 @@ var sheet_feedback: Label
 var inspector: PanelContainer
 var selected: int = 0
 var sheet_name: String = ""
+var sheet_camera_center: Vector2 = Vector2.ZERO
 var text_scale: float = 1.0
 var left_handed: bool = false
 var logical_scale: float = 1.0
@@ -126,6 +127,7 @@ func _ready() -> void:
 	elif store is ColonyStore and store.root_directory == ColonyStore.CAMPAIGN_ROOT and not ColonyStore.occupied(store.slot):
 		awaiting_first_colony = true
 		show_new_colony(store.slot)
+	if world is ColonyWorld and not awaiting_first_colony: save_queue.prime(world)
 
 func _build_theme() -> void:
 	var ui_theme: Theme = Theme.new()
@@ -452,6 +454,8 @@ func begin_placement() -> void:
 	if awaiting_first_colony:
 		show_new_colony(store.slot)
 		return
+	var center: Vector2 = sheet_camera_center if sheet!=null and view.follow_id>0 else view.camera_center()
+	view.follow_id=0
 	close_sheet()
 	runner.pause()
 	confirm_button.disabled = submitted_command>0
@@ -462,14 +466,15 @@ func begin_placement() -> void:
 	view.preview_line=false;view.preview_lodge=false;view.rejected_build_tiles.clear()
 	moving_target=0;paint_build_definition="";placement_cache_key="";placement_cache.clear()
 	view.preview_resource = ""
-	view.preview_start = view.screen_to_tile(view.size * 0.5)
-	view.preview_end = view.preview_start
 	placement_kind = "stockpile"
 	rotation_button.visible = false
 	view.gestures.mode = "paint"
 	placement.visible = true
 	notice = "Tap for one tile or drag an area, then Confirm. Dragging never submits an order."
 	_layout()
+	view.center_camera(center)
+	view.preview_start = view.screen_to_tile(view.size * 0.5)
+	view.preview_end = view.preview_start
 
 func cancel_placement() -> void:
 	view.cancel_gesture()
@@ -646,6 +651,7 @@ func close_inspector() -> void:
 	view.selected_id = 0
 
 func show_sheet(title: String) -> void:
+	if sheet==null: sheet_camera_center=view.camera_center()
 	runner.pause()
 	view.cancel_gesture()
 	if sheet != null:
@@ -890,6 +896,7 @@ func _replace_world(state: RefCounted) -> void:
 	submitted_command = 0
 	confirm_button.disabled = false
 	last_saved_tick = world.tick
+	if world is ColonyWorld: save_queue.prime(world)
 
 func choose_document(export: bool) -> void:
 	if document_pending:
@@ -1499,16 +1506,16 @@ func _restore_camera() -> void:
 	if view == null or not store is ColonyStore:
 		return
 	var camera: Array = settings.values.cameras[store.slot-1]
-	view.camera_tile = Vector2(camera[0],camera[1])
 	view.tile_size = camera[2]
-	view._update_transform()
+	view.center_camera(Vector2(camera[0],camera[1]))
 
 func _save_settings() -> void:
 	settings.values.text_scale = text_scale
 	settings.values.left_handed = left_handed
 	if store is ColonyStore:
 		settings.values.last_slot = store.slot
-		settings.values.cameras[store.slot-1] = [view.camera_tile.x,view.camera_tile.y,view.tile_size]
+		var center: Vector2 = view.camera_center().clamp(Vector2.ZERO,Vector2.ONE*128)
+		settings.values.cameras[store.slot-1] = [center.x,center.y,view.tile_size]
 	var error: String = settings.save_local()
 	if not error.is_empty():
 		notice = error

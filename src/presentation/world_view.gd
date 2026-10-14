@@ -10,7 +10,13 @@ var world: RefCounted
 var gestures: GestureState = GestureState.new()
 var camera_tile: Vector2 = Vector2(68, 63)
 var tile_size: float = 32.0
-var focus_offset: Vector2 = Vector2.ZERO
+var focus_offset: Vector2 = Vector2.ZERO:
+	set(value):
+		if value==focus_offset: return
+		var center: Vector2 = camera_center()
+		focus_offset=value
+		if follow_id==0: camera_tile=center+focus_offset/tile_size
+		_update_transform()
 var preview_start: Vector2i = Vector2i(74, 54)
 var preview_end: Vector2i = Vector2i(77, 55)
 var forecast_mask: Array[Vector2i] = []
@@ -166,6 +172,13 @@ func screen_to_tile(point: Vector2) -> Vector2i:
 func tile_to_screen(tile: Vector2) -> Vector2:
 	return (tile - camera_tile) * tile_size + size * 0.5 + focus_offset
 
+func camera_center() -> Vector2:
+	return camera_tile-focus_offset/tile_size
+
+func center_camera(point: Vector2) -> void:
+	camera_tile=point+focus_offset/tile_size
+	_update_transform()
+
 func zoom_at(ratio: float, point: Vector2) -> void:
 	var anchor: Vector2 = (point - size * 0.5 - focus_offset) / tile_size + camera_tile
 	tile_size = clampf(tile_size * ratio, 16.0, 64.0)
@@ -190,8 +203,8 @@ func preview_tiles() -> Array[Vector2i]:
 func _update_transform() -> void:
 	if ground == null:
 		return
-	camera_tile.x = clampf(camera_tile.x, 0.0, 128.0)
-	camera_tile.y = clampf(camera_tile.y, 0.0, 128.0)
+	var center: Vector2 = camera_center().clamp(Vector2.ZERO,Vector2.ONE*128)
+	camera_tile=center+focus_offset/tile_size
 	ground.scale = Vector2.ONE * tile_size / 16.0
 	ground.position = size * 0.5 + focus_offset - camera_tile * tile_size
 	actor_layer.scale = ground.scale

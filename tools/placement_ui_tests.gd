@@ -65,4 +65,40 @@ static func run(game: GameSession, check: Callable) -> void:
 			check.call("UI03/one_cell_confirm_%s_%d" % [definition,viewport_size.x],game.world.pending_commands.size()==1 and game.world.pending_commands[0].kind=="build_area" and game.world.pending_commands[0].args.tiles==[mouse_tile])
 			game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()
 			game.view.camera_tile=Vector2(90.25,80.75)
+	await overlay_camera(game,check)
 	tree.root.size=original_size;game.size=Vector2(original_size);game.text_scale=original_scale;game._build_theme();game._layout()
+
+static func overlay_camera(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree = game.get_tree()
+	for viewport_size in [Vector2i(390,844),Vector2i(640,360)]:
+		tree.root.size=viewport_size;game.size=Vector2(viewport_size);game._layout()
+		for center in [Vector2.ZERO,Vector2(90.25,80.75),Vector2(128,128)]:
+			game._replace_world(ColonyWorld.new(ColonyCatalog.load_data(),"overlay-camera-%d-%d" % [viewport_size.x,int(center.x)]))
+			game.close_sheet();game.close_inspector();game._tutorial_begin();game._refresh_guidance()
+			await tree.process_frame
+			game.view.follow_id=0;game.view.center_camera(center)
+			var marker: Vector2 = center+Vector2(0.5,0.5)
+			var before: Vector2 = game.view.tile_to_screen(marker)
+			var suffix: String = "%d_%d" % [viewport_size.x,int(center.x)]
+			check.call("UI03/active_guidance_camera_fixture_"+suffix,game.guidance_panel.visible and game.view.focus_offset!=Vector2.ZERO)
+			game.show_sheet("Build");game.begin_build("door")
+			await tree.process_frame
+			check.call("UI03/guidance_to_placement_preserves_visible_map_"+suffix,game.view.camera_center().is_equal_approx(center) and game.view.tile_to_screen(marker).is_equal_approx(before) and game.view.preview_start==game.view.screen_to_tile(game.view.size*0.5))
+			game.cancel_placement()
+			await tree.process_frame
+			check.call("UI03/closing_placement_keeps_visible_map_"+suffix,game.view.camera_center().is_equal_approx(center) and game.view.tile_to_screen(marker).is_equal_approx(before))
+			game.select_citizen(1)
+			game._layout();game.close_inspector();game._layout()
+			check.call("UI03/inspector_layout_does_not_shift_free_camera_"+suffix,game.view.camera_center().is_equal_approx(center) and game.view.tile_to_screen(marker).is_equal_approx(before))
+			game._save_settings();game.view.center_camera(Vector2(40,40));game._restore_camera()
+			check.call("UI03/preferences_restore_actual_visible_center_"+suffix,game.view.camera_center().is_equal_approx(center) and game.view.tile_to_screen(marker).is_equal_approx(before))
+		game.view.follow_id=1;game.select_citizen(1);game._layout();game.view._process(0.0)
+		var person: Dictionary = game.world.citizens[0]
+		var point: Vector2 = Vector2(person.x+0.5,person.y+0.5)
+		var followed: Vector2 = game.view.tile_to_screen(point)
+		var desired: Vector2 = game.view.camera_center()
+		game.show_sheet("Build");await tree.process_frame
+		game.begin_build("door");await tree.process_frame
+		check.call("UI03/placement_stops_follow_without_losing_original_view_%d" % viewport_size.x,game.view.follow_id==0 and game.view.camera_center().is_equal_approx(desired) and game.view.tile_to_screen(point).is_equal_approx(followed))
+		game.cancel_placement()
+	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()

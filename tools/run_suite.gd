@@ -31,6 +31,7 @@ func run() -> void:
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
 		"persistence":
+			CaptureTests.run(check)
 			DeltaTests.run(check)
 			CampaignTests.run(check)
 			await AsyncSaveTests.run(self,check)
