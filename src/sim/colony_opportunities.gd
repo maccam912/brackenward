@@ -120,7 +120,7 @@ static func command(world: ColonyWorld, args: Dictionary) -> String:
 	var payment: Dictionary = ColonyTrade.reservation_plan(world,data.payment,point)
 	if not payment.error.is_empty(): return "Payment not accessible or already reserved: "+payment.error
 	var count: int = 2 if event.definition=="shared_observation" else 1
-	if world.jobs.filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"]).size()+count>512: return "Job limit: finish or cancel existing work first"
+	if world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"]).size()+count>512: return "Job limit: finish or cancel existing work first"
 	event.station=station.get("id",0)
 	if event.definition=="shared_observation":
 		event.people=friend_pair(world)

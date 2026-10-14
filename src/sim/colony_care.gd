@@ -126,7 +126,7 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 	return "accepted"
 
 static func _exists(world: ColonyWorld, kind: String, patient: int) -> bool:
-	return world.jobs.any(func(j:Dictionary)->bool:return j.kind == kind and j.target == patient and j.state not in ["Complete","Canceled"])
+	return world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind == kind and j.target == patient and j.state not in ["Complete","Canceled"])
 
 static func _treatment(world: ColonyWorld, patient: Dictionary) -> Dictionary:
 	for existing in world.jobs:

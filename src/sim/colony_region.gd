@@ -319,11 +319,11 @@ static func advance(world: ColonyWorld) -> void:
 		trip.note="Unloading physically in eight-unit loads; returning residents are available for home work"
 		for stack in world.stacks:
 			if stack.location!="expedition_cargo" or stack.owner!=trip.id or stack.count<=0: continue
-			if not world.jobs.any(func(j:Dictionary)->bool:return j.kind=="haul" and j.source==stack.id and j.state not in ["Complete","Canceled"]):
+			if not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="haul" and j.source==stack.id and j.state not in ["Complete","Canceled"]):
 				var job: Dictionary = world._job("haul","Hauling","",stack.id,Vector2i(stack.x,stack.y),0);job.source=stack.id;job.order=trip.id
-		var blocked: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="haul" and j.order==trip.id and j.state=="Blocked")
+		var blocked: Array = world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.kind=="haul" and j.order==trip.id and j.state=="Blocked")
 		if not blocked.is_empty(): trip.note="Unloading waits: "+blocked[0].reason
-		if cargo(world,trip).is_empty() and not world.jobs.any(func(j:Dictionary)->bool:return j.kind=="haul" and j.order==trip.id and j.state not in ["Complete","Canceled"]):
+		if cargo(world,trip).is_empty() and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="haul" and j.order==trip.id and j.state not in ["Complete","Canceled"]):
 			trip.state="Done";var progress: Dictionary = world.region_state.progress[trip.args.definition]
 			if trip.reward_committed:
 				progress.returned_at=world.tick

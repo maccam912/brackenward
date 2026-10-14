@@ -273,7 +273,10 @@ func _expedition(world: ColonyWorld) -> void:
 	var trip: Dictionary = ColonyRegion.active(world)
 	if not trip.is_empty():
 		var data: Dictionary = ColonyRegion.definition_data(world,trip.args.definition,trip.args.pickup)
-		if trip.state in ["Preparing","Ready"] and not data.get("seasons",[0,1,2,3]).has(ColonyAgriculture.season(world.tick)):
+		var packed: Dictionary = world.find(world.jobs,trip.pack_job)
+		var goods: Dictionary = ColonyRegion.cargo(world,trip)
+		var expired: bool = packed.get("state")=="Complete" and trip.quote.inputs.keys().any(func(item:Variant)->bool:return goods.get(item,0)<trip.quote.inputs[item])
+		if trip.state in ["Preparing","Ready"] and (expired or not data.get("seasons",[0,1,2,3]).has(ColonyAgriculture.season(world.tick))):
 			issue(world,"expedition_cancel",{"target":trip.id})
 		elif trip.state in ["Preparing","Ready"] and ColonyRegion.ready(world,trip).is_empty(): issue(world,"expedition_depart",{"target":trip.id,"unprepared":false})
 		elif trip.state=="Decision": issue(world,"expedition_choice",{"target":trip.id,"definition":"continue"})

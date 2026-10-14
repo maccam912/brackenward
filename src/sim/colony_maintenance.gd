@@ -15,7 +15,7 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 		if structure.health>0: return "Structure still exists: repair it instead"
 		return world._command({"kind":"build","args":{"definition":structure.definition,"x":structure.x,"y":structure.y,"rotation":structure.rotation}})
 	if structure.health<=0: return "Structure is gone: rebuild it"
-	if world.jobs.any(func(j:Dictionary)->bool:return j.target==structure.id and j.kind in ["repair","demolish","move_furniture"] and j.state not in ["Complete","Canceled"]): return "Maintenance already marked"
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target==structure.id and j.kind in ["repair","demolish","move_furniture"] and j.state not in ["Complete","Canceled"]): return "Maintenance already marked"
 	var missing: int = definition.health-structure.health
 	if kind=="repair" and missing<=0: return "Already at full health"
 	var job: Dictionary = world._job(kind,"Building","Build",structure.id,Vector2i(structure.x,structure.y),missing*100 if kind=="repair" else ((definition.work_milli+1999)/2000)*1000)
@@ -75,7 +75,7 @@ static func move_command(world: ColonyWorld, args: Dictionary) -> String:
 	var structure: Dictionary = world.find(world.structures,args.target)
 	if structure.is_empty() or structure.health<=0 or structure.definition not in MOVABLE: return "This structure requires demolition and rebuilding; only listed furniture can move"
 	if structure.x==args.x and structure.y==args.y and structure.rotation==args.rotation: return "Choose another position or rotation"
-	if world.jobs.any(func(j:Dictionary)->bool:return j.target==structure.id and j.kind in ["repair","demolish","move_furniture"] and j.state not in ["Complete","Canceled"]): return "Maintenance already marked"
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target==structure.id and j.kind in ["repair","demolish","move_furniture"] and j.state not in ["Complete","Canceled"]): return "Maintenance already marked"
 	var error: String = world.placement_error(structure.definition,Vector2i(args.x,args.y),args.rotation,0,structure.id)
 	if not error.is_empty(): return error
 	var store: Dictionary = world.find(world.stores,structure.id)
@@ -169,7 +169,7 @@ static func cart_edge(world: ColonyWorld, from: Vector2i, to: Vector2i) -> bool:
 static func cart_command(world: ColonyWorld, args: Dictionary) -> String:
 	var cart: Dictionary = world.find(world.structures,args.target)
 	if cart.is_empty() or cart.definition!="supply_cart": return "Choose the supply cart"
-	if world.jobs.any(func(j:Dictionary)->bool:return j.kind=="cart_move" and j.state not in ["Complete","Canceled"]): return "Cart move already marked"
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="cart_move" and j.state not in ["Complete","Canceled"]): return "Cart move already marked"
 	var goal: Vector2i = Vector2i(args.x,args.y)
 	var error: String = cart_position_error(world,cart,goal)
 	if not error.is_empty(): return error

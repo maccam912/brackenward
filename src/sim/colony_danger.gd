@@ -6,7 +6,7 @@ static func sources(world: ColonyWorld) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for animal in world.wildlife_state.animals:
 		if animal.health<=0 or animal.definition!="boar": continue
-		if animal.attacker>0 or world.jobs.any(func(j:Dictionary)->bool:return j.kind=="hunt" and j.target==animal.id and j.state not in ["Complete","Canceled"]): result.append(Vector2i(animal.x,animal.y))
+		if animal.attacker>0 or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="hunt" and j.target==animal.id and j.state not in ["Complete","Canceled"]): result.append(Vector2i(animal.x,animal.y))
 	for enemy in world.defense_state.enemies:
 		if ColonyDefense.enemy_active(enemy) and world.find(world.defense_state.raids,enemy.raid).get("state")=="Active": result.append(Vector2i(enemy.x,enemy.y))
 	for fire in ColonyFire.active(world):

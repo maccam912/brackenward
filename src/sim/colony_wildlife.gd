@@ -137,7 +137,7 @@ static func replenish(world: ColonyWorld) -> void:
 static func command(world: ColonyWorld, args: Dictionary) -> String:
 	var animal: Dictionary = world.find(world.wildlife_state.animals,args.target)
 	if animal.is_empty() or animal.health<=0: return "Choose a living wild animal"
-	if world.jobs.any(func(j:Dictionary)->bool:return j.kind == "hunt" and j.target == animal.id and j.state not in ["Complete","Canceled"]): return "Animal already marked for hunting"
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind == "hunt" and j.target == animal.id and j.state not in ["Complete","Canceled"]): return "Animal already marked for hunting"
 	var designated: Dictionary = world.find(world.citizens,args.citizen)
 	if args.citizen>0 and (designated.is_empty() or designated.downed or designated.death_recorded or designated.departed or designated.equipment.weapon.is_empty() or designated.preferences.Gathering==0): return "Chosen hunter needs a weapon and Gathering enabled"
 	var job: Dictionary = world._job("hunt","Gathering","Guard",animal.id,Vector2i(animal.x,animal.y),0)
@@ -162,7 +162,7 @@ static func reserve(world: ColonyWorld, job: Dictionary, citizen: Dictionary) ->
 		var hunt: Dictionary = world.find(world.jobs,job.order)
 		if hunt.is_empty() or hunt.state in ["Complete","Canceled"]: return world._block(job,"Hunt ended")
 	else:
-		var escorts: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind == "escort_hunt" and j.order == job.id and j.state not in ["Complete","Canceled"])
+		var escorts: Array = world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.kind == "escort_hunt" and j.order == job.id and j.state not in ["Complete","Canceled"])
 		if not escorts.is_empty() and escorts[0].worker == 0: return world._block(job,"Boar hunt needs a second armed Guard worker; enable Guard or choose Solo hunt explicitly")
 	return true
 
@@ -173,7 +173,7 @@ static func hunt_work(world: ColonyWorld, citizen: Dictionary, job: Dictionary) 
 	if citizen.health<=40:
 		world._release(job,false); world._block(job,"Hunter retreated at health 40 or less; needs care"); return
 	if job.kind == "hunt":
-		var escorts: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind == "escort_hunt" and j.order == job.id and j.state not in ["Complete","Canceled"])
+		var escorts: Array = world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.kind == "escort_hunt" and j.order == job.id and j.state not in ["Complete","Canceled"])
 		if not escorts.is_empty() and (escorts[0].worker == 0 or distance(world.find(world.citizens,escorts[0].worker),animal)>6):
 			citizen.activity = "Waiting for armed escort"; return
 	if job.kind == "escort_hunt":

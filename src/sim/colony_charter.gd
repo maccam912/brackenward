@@ -161,7 +161,7 @@ static func ceremony_error(world: ColonyWorld) -> String:
 static func _can_attend(world: ColonyWorld, citizen: Dictionary) -> bool:
 	if citizen.away or citizen.death_recorded or citizen.departed or citizen.downed or citizen.fullness==0 or citizen.rest<=100 or citizen.break_until>world.tick or citizen.get("drafted",false): return false
 	if not ColonyDanger.safe(world,Vector2i(citizen.x,citizen.y)): return false
-	if world.jobs.any(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"] and ((j.emergency and j.worker in [0,citizen.id]) or (j.kind=="treat" and j.target==citizen.id))): return false
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"] and ((j.emergency and j.worker in [0,citizen.id]) or (j.kind=="treat" and j.target==citizen.id))): return false
 	return true
 
 static func assign(world: ColonyWorld, citizen: Dictionary) -> bool:

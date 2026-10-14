@@ -79,6 +79,10 @@ var in_tick: bool = false
 var committing_work: bool = false
 var work_commits: Array[Dictionary] = []
 var personal_jobs_reconciled: bool = false
+var job_query_tick: int = -1
+var job_query_count: int = 0
+var job_query_source: Array = []
+var job_query_live: Array = []
 
 func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 	definitions = catalog.duplicate(true)
@@ -485,7 +489,7 @@ func _command(command: Dictionary) -> String:
 			if field.is_empty() or not field.planted: return "No planted crop on this tile"
 			var definition: Dictionary = definitions.crops[field.crop]
 			if field.growth * 2 < definition.growth: return "Early harvest requires at least 50% growth"
-			if jobs.any(func(job:Dictionary)->bool:return job.kind == "harvest" and job.target == field.id and job.state not in ["Complete","Canceled"]): return "Already ordered"
+			if unfinished_jobs().any(func(job:Dictionary)->bool:return job.kind == "harvest" and job.target == field.id and job.state not in ["Complete","Canceled"]): return "Already ordered"
 			var job: Dictionary = _job("harvest","Growing","Field",field.id,Vector2i(field.x,field.y),definition.harvest_milli)
 			job.definition = "early_harvest"
 			job.priority = 3
@@ -548,6 +552,26 @@ func _job(kind: String, category: String, skill: String, target: int, point: Vec
 	jobs.append(job)
 	return job
 
+func unfinished_jobs() -> Array:
+	# Derived only: jobs retain their full saved history and original order.
+	# Runtime jobs are append-only and never reopen a terminal task. Only new
+	# records need scanning; prune ended work each tick and after every query.
+	if not is_same(job_query_source,jobs) or job_query_count>jobs.size():
+		reset_job_queries()
+		job_query_source=jobs
+	if job_query_tick!=tick:
+		job_query_live=job_query_live.filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"])
+		job_query_tick=tick
+	for index in range(job_query_count,jobs.size()):
+		var job: Dictionary = jobs[index]
+		if job.state not in ["Complete","Canceled"]: job_query_live.append(job)
+	job_query_count=jobs.size()
+	# Return a fresh list so callers may filter/sort without changing the cache.
+	return job_query_live.filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"])
+
+func reset_job_queries() -> void:
+	job_query_tick=-1;job_query_count=0;job_query_source=[];job_query_live=[]
+
 func _perimeter(tiles: Array[Vector2i]) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for tile in tiles:
@@ -569,7 +593,7 @@ func _create_work() -> void:
 	for hearth in structures:
 		if hearth.health<=0 or hearth.definition != "hearth":
 			continue
-		if hearth.fuel < 4 and ColonyLiving.temperature(self) < 8 and available("wood") >= 8 - hearth.fuel and not jobs.any(func(job: Dictionary) -> bool: return job.kind == "fuel" and job.target == hearth.id and job.state not in ["Complete", "Canceled"]):
+		if hearth.fuel < 4 and ColonyLiving.temperature(self) < 8 and available("wood") >= 8 - hearth.fuel and not unfinished_jobs().any(func(job: Dictionary) -> bool: return job.kind == "fuel" and job.target == hearth.id and job.state not in ["Complete", "Canceled"]):
 			var fuel_job: Dictionary = _job("fuel", "Hauling", "", hearth.id, Vector2i(hearth.x,hearth.y), 0)
 			fuel_job.inputs = {"wood": 8 - hearth.fuel}
 		if not hearth.cooking:
@@ -672,7 +696,11 @@ func _assign(citizen: Dictionary) -> void:
 	if ColonyDanger.escape(self,citizen): return
 	if ColonyConstruction.step_aside(self,citizen): return
 	if ColonyCharter.assign(self,citizen): return
-	var arrival: Dictionary = jobs.filter(func(j:Dictionary)->bool:return j.kind=="arrival" and j.target==citizen.id and j.state not in ["Complete","Canceled"]).front() if jobs.any(func(j:Dictionary)->bool:return j.kind=="arrival" and j.target==citizen.id and j.state not in ["Complete","Canceled"]) else {}
+	# Query lists preserve job order and share the live dictionaries, so releases
+	# and failed reservations below remain visible to subsequent queries.
+	var open_jobs: Array = unfinished_jobs()
+	var arrivals: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.kind=="arrival" and j.target==citizen.id)
+	var arrival: Dictionary = {} if arrivals.is_empty() else arrivals[0]
 	var preparing: bool = ColonyRegion.preparing(self,citizen)
 	var food_threshold: int = 500 if preparing else 350
 	var rest_threshold: int = 500 if preparing else 300
@@ -681,13 +709,13 @@ func _assign(citizen: Dictionary) -> void:
 	var current: Dictionary = find(jobs, citizen.job)
 	var taking_break: bool = citizen.break_until > tick
 	var draft_ready: bool = citizen.drafted and not taking_break and citizen.fullness > 0 and citizen.rest > 100 and (citizen.health > 40 or citizen.stand_fast)
-	var treatment_wait: bool = not draft_ready and citizen.fullness > 0 and citizen.rest > 100 and jobs.any(func(j:Dictionary)->bool:return j.kind == "treat" and j.target == citizen.id and j.state not in ["Complete","Canceled"])
+	var treatment_wait: bool = not draft_ready and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.kind == "treat" and j.target == citizen.id and j.state not in ["Complete","Canceled"])
 	if treatment_wait and current.get("kind") not in ["eat","sleep"]:
 		_release(current,false)
 		citizen.activity = "Resting for treatment"
 		return
 	if not current.is_empty():
-		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
+		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
 		var urgent_self_care: bool = (citizen.fullness == 0 and current.kind != "eat") or (citizen.rest <= 100 and current.kind not in ["eat","sleep"])
 		var change_to_defense: bool = draft_ready and not current.emergency and current.kind != "defend"
 		# Hunger still drains during sleep. Wake for ordinary food before reaching
@@ -700,7 +728,7 @@ func _assign(citizen: Dictionary) -> void:
 		else:
 			return
 	if citizen.health > 20 and citizen.fullness > 0 and citizen.rest > 100 and citizen.break_until <= tick:
-		var emergencies: Array = jobs.filter(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
+		var emergencies: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
 		emergencies.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return _higher_score(a,b,citizen))
 		for emergency in emergencies:
 			if _reserve(emergency,citizen): citizen.job = emergency.id; return
@@ -746,7 +774,7 @@ func _assign(citizen: Dictionary) -> void:
 		return
 	if citizen.break_until > tick or (hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
 		if not taking_break:
-			var urgent: Array = jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _score(j,citizen)[0]==3)
+			var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _score(j,citizen)[0]==3)
 			urgent.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return _higher_score(a,b,citizen))
 			for job in urgent:
 				if _reserve(job,citizen): citizen.job=job.id;return
@@ -763,7 +791,7 @@ func _assign(citizen: Dictionary) -> void:
 		citizen.pinned_job = 0
 		citizen.activity = "Pinned task unavailable: check its inputs and route"
 	var candidates: Array[Dictionary] = []
-	for job in jobs:
+	for job in open_jobs:
 		if job.worker != 0 or job.state in ["Complete", "Canceled"] or tick < job.retry or citizen.preferences.get(job.category, 0) == 0:
 			continue
 		candidates.append(job)

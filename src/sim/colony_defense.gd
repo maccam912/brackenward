@@ -281,7 +281,7 @@ static func pay_complete(world: ColonyWorld, job: Dictionary) -> void:
 static func treat(world: ColonyWorld, args: Dictionary) -> String:
 	var enemy: Dictionary = world.find(world.defense_state.enemies,args.target)
 	if enemy.is_empty() or enemy.state!="Downed": return "Choose a neutral downed visitor"
-	if world.jobs.any(func(j:Dictionary)->bool:return j.kind=="enemy_treat" and j.target==enemy.id and j.state not in ["Complete","Canceled"]): return "Treatment already assigned"
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="enemy_treat" and j.target==enemy.id and j.state not in ["Complete","Canceled"]): return "Treatment already assigned"
 	var item: String = "medicine" if world.available("medicine")>0 else ("herb" if world.available("herb")>0 else "")
 	var job: Dictionary = world._job("enemy_treat","Care","Care",enemy.id,Vector2i(enemy.x,enemy.y),10000 if item=="medicine" else (16000 if item=="herb" else 24000))
 	job.definition=item;job.inputs={} if item.is_empty() else {item:1}

@@ -38,7 +38,7 @@ static func designate(world: ColonyWorld, args: Dictionary) -> String:
 
 static func planned_tiles(world: ColonyWorld) -> Dictionary:
 	var result: Dictionary = {}
-	for job in world.jobs:
+	for job in world.unfinished_jobs():
 		if job.state in ["Complete","Canceled"]: continue
 		var tiles: Array = world.footprint(job) if job.kind=="build" else (ColonyMaintenance.move_footprint(world,job) if job.kind in ["move_furniture","cart_move"] else [])
 		for tile in tiles: result[tile]=true
@@ -94,16 +94,19 @@ static func advance(world: ColonyWorld) -> void:
 			field.reason = "Ripe: harvest before losses after 2 days"
 
 static func create_jobs(world: ColonyWorld) -> void:
+	# Historical jobs remain saved evidence. Index unfinished field operations
+	# once rather than scanning that full history again for every crop tile.
+	var pending: Dictionary = {}
+	for job in world.unfinished_jobs():
+		if job.kind in ["prepare", "sow", "harvest"] and job.state not in ["Complete", "Canceled"]:
+			pending[job.target]=true
 	for field in world.fields:
 		var operation: String = "prepare" if not field.prepared else ("sow" if not field.planted else ("harvest" if field.ripe_tick > 0 else ""))
 		if operation.is_empty() or (operation == "sow" and (not field.replant or not world.definitions.crops[field.crop].seasons.has(season(world.tick)))):
 			continue
-		var exists: bool = false
-		for job in world.jobs:
-			if job.target == field.id and job.kind in ["prepare", "sow", "harvest"] and job.state not in ["Complete", "Canceled"]:
-				exists = true
-		if not exists:
+		if not pending.has(field.id):
 			world._job(operation, "Growing", "Field", field.id, Vector2i(field.x, field.y), world.definitions.crops[field.crop][operation + "_milli"])
+			pending[field.id]=true
 
 static func complete(world: ColonyWorld, _citizen: Dictionary, job: Dictionary) -> void:
 	if job.kind == "replant":

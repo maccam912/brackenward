@@ -145,7 +145,7 @@ static func water(world: ColonyWorld, from: Vector2i) -> Dictionary:
 
 static func create_jobs(world: ColonyWorld) -> void:
 	for fire in active(world):
-		if world.jobs.any(func(j:Dictionary)->bool:return j.kind=="extinguish" and j.target==fire.id and j.state not in ["Complete","Canceled"]): continue
+		if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="extinguish" and j.target==fire.id and j.state not in ["Complete","Canceled"]): continue
 		var p: Vector2i = footprint(world,fire)[0]
 		var job: Dictionary = world._job("extinguish","Care","Care",fire.id,p,8000);job.emergency=true;job.priority=3;job.work=fire.work
 		job.memo={"phase":"water","water_work":0,"water_x":0,"water_y":0}

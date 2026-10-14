@@ -28,7 +28,7 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 		return "accepted"
 	var resource: Dictionary = world.find(world.resources,args.target)
 	if resource.is_empty() or resource.definition != "tree" or resource.remaining > 0: return "Choose a stump or sapling"
-	if world.jobs.any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind in ["plant_tree","clear_sapling"] and j.state not in ["Complete","Canceled"]): return "Tree work already marked"
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind in ["plant_tree","clear_sapling"] and j.state not in ["Complete","Canceled"]): return "Tree work already marked"
 	var state: Dictionary = tree(world,resource.id)
 	if kind == "replant_tree" and state.planted: return "Tree is already growing"
 	if kind == "clear_sapling" and not state.planted: return "No sapling to clear"
@@ -88,7 +88,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 		var queued: int = mature.filter(func(r:Dictionary)->bool:return ordered.has(r.id)).size()
 		for resource in trees:
 			var p: Vector2i = Vector2i(resource.x,resource.y)
-			if resource.remaining == 0 and not tree(world,resource.id).planted and plantable(world,p) and not world.jobs.any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind == "plant_tree" and j.state not in ["Complete","Canceled"]):
+			if resource.remaining == 0 and not tree(world,resource.id).planted and plantable(world,p) and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind == "plant_tree" and j.state not in ["Complete","Canceled"]):
 				var replant: Dictionary = world._job("plant_tree","Growing","Field",resource.id,p,4000)
 				replant.order = zone.id
 		for resource in mature:
@@ -98,7 +98,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 			cut.definition = "tree"; cut.order = zone.id
 			queued += 1
 	var fish: Dictionary = world.nature_state.fishing
-	var pending: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind == "fish" and j.state not in ["Complete","Canceled"])
+	var pending: Array = world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.kind == "fish" and j.state not in ["Complete","Canceled"])
 	var committed: int = fish.river+pending.size()*2
 	for pier in world.structures:
 		if pier.health<=0: continue

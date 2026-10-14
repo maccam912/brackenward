@@ -93,7 +93,7 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 		return "accepted"
 	var animal: Dictionary = world.find(world.domestic_state.animals,args.target)
 	if animal.is_empty() or animal.health<=0 or animal.away: return "Choose a living animal at home"
-	if world.jobs.any(func(j:Dictionary)->bool:return j.kind=="slaughter" and j.target==animal.id and j.state not in ["Complete","Canceled"]): return "Slaughter already marked"
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="slaughter" and j.target==animal.id and j.state not in ["Complete","Canceled"]): return "Slaughter already marked"
 	var job: Dictionary = world._job("slaughter","Animals","Field",animal.id,Vector2i(animal.x,animal.y),10000)
 	job.definition=animal.definition
 	return "accepted"
@@ -179,7 +179,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 			var daily: int = 0
 			for animal in residents: daily += demand(world,animal,world.tick/7200+1)
 			var shortage: int = mini(24,daily*2)-feed_count(world,barn_id)
-			if shortage<=0 or world.jobs.any(func(j:Dictionary)->bool:return j.kind=="stock_feed" and j.target==barn_id and j.state not in ["Complete","Canceled"]): continue
+			if shortage<=0 or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="stock_feed" and j.target==barn_id and j.state not in ["Complete","Canceled"]): continue
 			var candidates: Array = world.stacks.filter(func(s:Dictionary)->bool:return feed_item(world,s.item) and s.count>world._reserved(s) and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
 			candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.age>b.age if a.age!=b.age else a.id<b.id)
 			if candidates.is_empty(): pen.reason="No grain or vegetables available for barn feed";continue
@@ -188,7 +188,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 			var job: Dictionary = world._job("stock_feed","Animals","Field",barn_id,Vector2i(barn.x,barn.y),0)
 			job.inputs={source.item:mini(8,mini(shortage,source.count-world._reserved(source)))}
 	for animal in world.domestic_state.animals:
-		if animal.health<=0 or animal.away or animal.pending==0 or world.jobs.any(func(j:Dictionary)->bool:return j.kind in ["collect_animal","slaughter","lead_animal"] and j.target==animal.id and j.state not in ["Complete","Canceled"]): continue
+		if animal.health<=0 or animal.away or animal.pending==0 or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind in ["collect_animal","slaughter","lead_animal"] and j.target==animal.id and j.state not in ["Complete","Canceled"]): continue
 		var job: Dictionary = world._job("collect_animal","Animals","Field",animal.id,Vector2i(animal.x,animal.y),4000)
 		job.definition=animal.definition
 

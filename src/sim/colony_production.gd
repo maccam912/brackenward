@@ -46,7 +46,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 	var occupied_stations: Dictionary = {}
 	var research_desks: Dictionary = {}
 	var pending_outputs: Dictionary = {}
-	for job in world.jobs:
+	for job in world.unfinished_jobs():
 		if job.state in ["Complete","Canceled"]: continue
 		if job.kind in ["cook","craft"]:
 			occupied_stations[job.target]=true

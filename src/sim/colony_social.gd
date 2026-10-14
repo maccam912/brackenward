@@ -234,7 +234,7 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 	if kind == "mediate":
 		var pair: Dictionary = world.social_state.pairs.get(args.definition,{})
 		if pair.is_empty() or pair.conflict_until <= world.tick: return "No active disagreement"
-		if world.jobs.any(func(j:Dictionary)->bool:return j.kind == "mediate" and j.definition == args.definition and j.state not in ["Complete","Canceled"]): return "Already ordered"
+		if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind == "mediate" and j.definition == args.definition and j.state not in ["Complete","Canceled"]): return "Already ordered"
 		var person: Dictionary = world.find(world.citizens,pair.a)
 		var job: Dictionary = world._job("mediate","Care","Care",person.id,Vector2i(person.x,person.y),12000)
 		job.definition = args.definition

@@ -23,3 +23,16 @@ static func run(check: Callable) -> void:
 	policy._expedition(world)
 	check.call("POLICY/chooses_available_causeway_during_winter",world.pending_commands.size()==1 and world.pending_commands[0].kind=="expedition_prepare" and world.pending_commands[0].args.definition=="broken_causeway",str(world.pending_commands))
 	check.call("POLICY/planning_only_queues_public_commands",world.ledger==ledger and world.next_id==next_id and world.tick==24*7200)
+	world=ColonyTests.world();policy=ColonyPolicy.new("vegetarian_charter")
+	accepted=ColonyRegion.prepare(world,RegionTests.args());trip=ColonyRegion.active(world)
+	policy._expedition(world)
+	check.call("POLICY/unfinished_packing_is_allowed_to_progress",accepted=="accepted" and world.pending_commands.is_empty())
+	for index in range(1800):
+		world.step()
+		if trip.state=="Ready": break
+	check.call("POLICY/spoilage_fixture_physically_packs_cargo_first",trip.state=="Ready" and world.find(world.jobs,trip.pack_job).state=="Complete" and ColonyRegion.cargo(world,trip).get("travel_ration",0)==8)
+	for stack in world.stacks:
+		if stack.location=="expedition_cargo" and stack.owner==trip.id and stack.item=="travel_ration": stack.age=world.definitions.items.travel_ration.shelf_ticks-1
+	ColonyLiving.advance(world)
+	policy._expedition(world)
+	check.call("POLICY/spoiled_completed_packing_uses_public_cancel",world.pending_commands.size()==1 and world.pending_commands[0].kind=="expedition_cancel" and ColonyRegion.cargo(world,trip).get("travel_ration",0)==0 and world.ledger.spoiled.get("travel_ration",0)==8 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
