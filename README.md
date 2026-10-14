@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M6 in progress: whole-campaign progression and guided onboarding**, version `0.6.3-m6`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M6 in progress: whole-campaign progression and guided onboarding**, version `0.6.4-m6`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -13,7 +13,7 @@ tools/godot.sh
 
 Bootstrap supports macOS universal, Linux x86-64 and Windows x86-64. Set `BRACKENWARD_GODOT` to its printed executable when the shell launcher cannot locate it. `python tools/bootstrap.py --editor-only` installs only the verified native editor for replay checks. Repeated installs preserve an already verified executable.
 
-Begin opens a paused map. Tap a traveler, use Follow, drag to pan, or use the camera buttons. Work offers resource gathering orders. Build offers stockpiles, turnip fields and initial structures; tap a tree or plant for a gathering card. Build -> Paint stockpile opens a preview. Drag/tap/nudge it, then Confirm. The order stays pending until the next simulation tick. Workers carry at most eight units and fetch inputs before work; canceling unfinished orders returns unconsumed supplies. Pause / 1x / 2x / 4x control time. Menu offers verified local save/load and document import/export. Closing a panel leaves time paused. Backgrounding freezes time and cancels touches; returning stays paused.
+Begin opens a paused map. Tap a traveler, use Follow, drag to pan, or use the camera buttons. Work offers resource gathering orders. Build offers stockpiles, turnip fields and initial structures; tap a tree or plant for a gathering card. Placement keeps your current camera position and zoom. Build -> Paint stockpile opens a one-tile preview at the visible center. Tap to start a fresh single tile (including doors and walls), or drag a line/rectangle; nudge it, then Confirm. The order stays pending until the next simulation tick. Workers carry at most eight units and fetch inputs before work; canceling unfinished orders returns unconsumed supplies. Pause / 1x / 2x / 4x control time. Menu offers verified local save/load and document import/export. Closing a panel leaves time paused. Backgrounding freezes time and cancels touches; returning stays paused.
 
 Desktop shortcuts: WASD/arrows pan; Space toggles pause; 1/2/3 select speeds; B/J/P/V/L open Build/Work/People/Valley/Journal; Escape closes the top interaction, then opens Menu. Zoom uses the wheel or buttons. Rebinding and the remaining accessibility/audio settings are later work.
 

@@ -182,13 +182,15 @@ PORTRAIT                               LANDSCAPE
 
 | Input | Normal world | Designation mode |
 | --- | --- | --- |
-| Tap, movement ≤8 dp and duration <350 ms | Select highest visible eligible object | Select start tile or adjust the current endpoint |
+| Tap, movement ≤8 dp and duration <350 ms | Select highest visible eligible object | Start a fresh one-tile preview, or place the current building footprint |
 | One-finger drag after 8 dp | Pan camera | Draw rectangle or line; does not pan |
 | Two-finger drag | Pan camera | Pan without changing the selection |
 | Pinch | Zoom around midpoint | Same; suspend brush until both fingers lift |
 | Long press ≥450 ms | Open a 48 dp row of objects under the finger | Show magnifier, then adjust endpoint; does not confirm |
 | Confirm button | Applicable card action | Submit highlighted valid tiles as one transaction |
 | Android Back or Escape | Close highest modal, then inspector, then open pause menu | Cancel unconfirmed designation first |
+
+Choosing any placement or designation action preserves the current camera position and zoom and stops following a resident. Its preview begins at the visible map center. A tap starts a fresh one-cell stroke, so a door or a one-tile wall needs only a tap and Confirm; it never joins the previous preview's endpoint. Dragging creates a new line or rectangle from that gesture's starting tile. Nudge buttons adjust the preview without requiring a precise drag.
 
 Choosing Gather wood (or another resource) enters rectangle designation mode. The preview counts matching, nonempty, unmarked resources, rather than all enclosed tiles. Confirm creates one job per matching resource; each resource retains a visible mark until completion or cancellation. Eligible Gathering workers take the next marked job automatically. A marked mineral deposit produces successive per-unit jobs until depleted. Repeating a rectangle never duplicates existing jobs. Irrelevant tiles inside the rectangle are ignored.
 

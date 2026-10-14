@@ -228,6 +228,8 @@ func ui() -> void:
 	await process_frame
 	await process_frame
 	if DisplayServer.get_name() != "headless":
+		game.view.preview_start=Vector2i(74,54);game.view.preview_end=Vector2i(77,55)
+		game.view.camera_tile=Vector2(75,55)
 		var sample: Vector2 = game.view.get_global_transform() * game.view.tile_to_screen(Vector2(75.5, 54.5))
 		game.view.preview_visible = false
 		game.view.queue_redraw()
@@ -301,6 +303,7 @@ func ui() -> void:
 	root.add_child(colony_game)
 	await process_frame
 	colony_game.close_sheet()
+	colony_game.view.camera_tile=Vector2(54,56)
 	colony_game.show_sheet("Work")
 	var gather_button: Button
 	for child in colony_game.sheet_body.get_children():
@@ -344,6 +347,7 @@ func ui() -> void:
 	check("M1/UI_gather_creates_real_job", colony_game.world.jobs.filter(func(job: Dictionary) -> bool: return job.kind == "gather").size() == 6)
 	colony_game._process(0.0)
 	colony_game.begin_build("bed")
+	colony_game.view.preview_start=Vector2i(74,63);colony_game.view.fit_build_preview()
 	colony_game.confirm_placement()
 	colony_game.confirm_placement()
 	check("M1/UI_blueprint_single_submit", colony_game.world.pending_commands.size() == 1)
@@ -366,6 +370,7 @@ func ui() -> void:
 			colony_game.cancel_placement()
 	colony_game._process(0.0)
 	colony_game.begin_field()
+	colony_game.view.preview_start=Vector2i(74,54);colony_game.view.preview_end=Vector2i(77,57)
 	colony_game.confirm_placement()
 	colony_game.confirm_placement()
 	check("M2/UI_field_single_submit",colony_game.world.pending_commands.size() == 1)
@@ -625,7 +630,7 @@ func ui() -> void:
 		if colony_game.creation_thread == null: break
 	check("GEN/UI_new_site_seed_mode_and_independent_slot",colony_game.creation_thread == null and colony_game.store.slot == 3 and colony_game.world.seed == 1 and colony_game.world.site_id == "pine_shelf" and colony_game.world.care_state.mode == "Hearthside" and colony_game.world.generator_version == 1 and ColonyStore.occupied(2,ui_colony_directory))
 	colony_game.begin_field()
-	check("GEN/UI_field_preview_uses_transformed_starter_patch",colony_game.view.preview_tiles().all(func(p:Vector2i)->bool:return colony_game.world.terrain_state.starter_field.has(p)))
+	check("GEN/UI_field_preview_starts_at_current_camera",colony_game.view.preview_tiles()==[colony_game.view.screen_to_tile(colony_game.view.size*0.5)])
 	colony_game.cancel_placement()
 	colony_game.world.care_state.mode = "Standard"
 	colony_game.begin_forest()
@@ -729,6 +734,7 @@ func ui() -> void:
 	colony_game.show_maintenance(move_table)
 	check("MOVE/UI_retained_materials_and_cancel_consequence",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("physically carried") and n.text.contains("Canceling after dismantling")))
 	colony_game.begin_furniture_move(move_table)
+	colony_game.view.preview_start=Vector2i(77,54);colony_game.view.fit_build_preview()
 	check("MOVE/UI_destination_preview_quotes_full_wu",colony_game._preview_text().contains("Move Table") and colony_game._preview_text().contains("20 WU") and colony_game._preview_text().contains("retained"))
 	colony_game.confirm_placement();colony_game.confirm_placement()
 	check("MOVE/UI_destination_confirm_submits_once",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="move_furniture" and colony_game.world.pending_commands[0].args.target==move_table.id)
@@ -896,6 +902,7 @@ func ui() -> void:
 		if child is Button and child.text=="Continue settlement": child.pressed.emit();break
 	colony_game.set_speed(1);colony_game.runner.advance_frame(0.1);colony_game.runner.pause()
 	check("CHARTER/UI_continue_keeps_colony",colony_game.world.charter_state.continued and colony_game.world.citizens.size()==8)
+	await PlacementUITests.run(colony_game,check)
 	TutorialUITests.run(colony_game,check)
 	colony_game._tutorial_state().forecast_pinned=false
 	ColonyTutorial.replay(colony_game._tutorial_state(),"follow")

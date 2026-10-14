@@ -425,15 +425,13 @@ func begin_placement() -> void:
 	view.preview_line=false;view.preview_lodge=false;view.rejected_build_tiles.clear()
 	moving_target=0;paint_build_definition="";placement_cache_key="";placement_cache.clear()
 	view.preview_resource = ""
-	if world is ColonyWorld:
-		view.preview_start = _home_tile(Vector2i(74,54))
-		view.preview_end = _home_tile(Vector2i(77,55))
+	view.preview_start = view.screen_to_tile(view.size * 0.5)
+	view.preview_end = view.preview_start
 	placement_kind = "stockpile"
 	rotation_button.visible = false
 	view.gestures.mode = "paint"
 	placement.visible = true
-	view.camera_tile = Vector2(_home_tile(Vector2i(77,55)))
-	notice = "Paint an area, then Confirm. Dragging never submits an order."
+	notice = "Tap for one tile or drag an area, then Confirm. Dragging never submits an order."
 	_layout()
 
 func cancel_placement() -> void:
@@ -1020,16 +1018,13 @@ func begin_build(kind: String) -> void:
 	if kind in ColonyConstruction.PAINTABLE:
 		begin_placement();placement_kind="build_area";paint_build_definition=kind
 		view.preview_line=kind not in ColonyConstruction.OVERLAYS
-		view.preview_start=_home_tile(Vector2i(74,63));view.preview_end=view.preview_start+Vector2i(3,0)
-		view.camera_tile=Vector2(view.preview_start);rotation_button.visible=false
-		notice="Paint %s, then Confirm. The preview shows valid cells, total cost and omitted obstructions." % _catalog_name(kind)
+		rotation_button.visible=false
+		notice="Tap for one %s or drag to paint, then Confirm. The preview shows valid cells, total cost and omitted obstructions." % _catalog_name(kind)
 		_layout();return
 	begin_placement()
 	view.preview_definition = kind
 	view.preview_rotation = 0
-	view.preview_start = _home_tile(Vector2i(74,63))
 	view.fit_build_preview()
-	view.camera_tile = Vector2(view.preview_start)
 	rotation_button.visible = true
 	notice = "Place %s. Tap a tile or use the arrows; Confirm spends nothing until built." % kind.capitalize()
 	_layout()
@@ -1038,12 +1033,6 @@ func begin_gather(kind: String) -> void:
 	begin_placement()
 	placement_kind = "gather"
 	view.preview_resource = kind
-	for resource in world.resources:
-		if resource.definition == kind and resource.remaining > 0:
-			view.preview_start = Vector2i(resource.x,resource.y)
-			view.preview_end = view.preview_start
-			view.camera_tile = Vector2(resource.x,resource.y)
-			break
 	notice = "Drag a rectangle around the resources, then Confirm. Gathering workers finish every marked job."
 	_layout()
 
@@ -1265,9 +1254,6 @@ func _tutorial_harvest_text() -> String:
 func begin_field() -> void:
 	begin_placement()
 	placement_kind = "field"
-	view.preview_start = _home_tile(Vector2i(74,54))
-	view.preview_end = _home_tile(Vector2i(77,57))
-	view.camera_tile = Vector2(view.preview_start+view.preview_end)*0.5
 	view._update_transform()
 	notice = "Turnips: prepare 4 WU, sow 1 WU, harvest 2 WU per tile. Two days of growth gives four vegetables."
 
@@ -1842,8 +1828,6 @@ func show_map_details() -> void:
 func begin_forest() -> void:
 	begin_placement()
 	placement_kind = "forest"
-	view.preview_start = _home_tile(Vector2i(48,54)); view.preview_end = _home_tile(Vector2i(55,69))
-	view.camera_tile = Vector2(view.preview_start+view.preview_end)*0.5
 	view._update_transform()
 	notice = "Drag around trees. The forest keeps 75% mature and replants cut cells; individual cuts can go below that reserve."
 
@@ -1937,7 +1921,7 @@ func show_domestic_animal(animal: Dictionary) -> void:
 
 func begin_lodge() -> void:
 	begin_placement();placement_kind="lodge";view.preview_lodge=true
-	view.preview_start=_home_tile(Vector2i(74,54));view.fit_build_preview();view.camera_tile=Vector2(view.preview_start+Vector2i(4,3));rotation_button.visible=false
+	view.fit_build_preview();rotation_button.visible=false
 	notice="Four beds, 23 walls and a south door. W73 F8; 206 WU. Clear an 8×6 footprint; the preset uses normal blueprints and can be edited individually."
 
 func show_equipment(id: int) -> void:
@@ -1984,12 +1968,12 @@ func show_maintenance(station: Dictionary) -> void:
 func begin_furniture_move(station: Dictionary) -> void:
 	begin_placement();placement_kind="move_furniture";moving_target=station.id
 	view.preview_definition=station.definition;view.preview_rotation=station.rotation
-	view.preview_start=Vector2i(station.x+3,station.y);view.fit_build_preview();view.camera_tile=Vector2(view.preview_start);rotation_button.visible=true
+	view.fit_build_preview();rotation_button.visible=true
 	notice="Choose the destination before dismantling. Full original WU; retained materials move in real eight-unit loads. Stored goods/fuel stay at the old location."
 
 func begin_cart_move(cart: Dictionary) -> void:
 	begin_placement();placement_kind="cart_move";moving_target=cart.id
-	view.preview_definition="supply_cart";view.preview_rotation=0;view.preview_start=Vector2i(cart.x+3,cart.y);view.fit_build_preview();view.camera_tile=Vector2(view.preview_start);rotation_button.visible=false
+	view.preview_definition="supply_cart";view.preview_rotation=0;view.fit_build_preview();rotation_button.visible=false
 	notice="Move the supply cart for 20 WU, then push it along a clear two-by-two route. Stored goods keep their age and remain aboard. Canceling a push stops at the current position."
 
 func show_newcomers() -> void:
@@ -2262,8 +2246,7 @@ func show_squad(initial: Array) -> void:
 
 func begin_defend_rally(people: Array, stand_fast: bool) -> void:
 	begin_placement();placement_kind="rally";defend_citizens=people.duplicate();defend_stand_fast=stand_fast
-	var wagon: Dictionary = ColonyTrade.cart(world);view.preview_start=Vector2i(wagon.x,wagon.y);view.preview_end=view.preview_start
-	view.camera_tile=Vector2(view.preview_start);view._update_transform()
+	view._update_transform()
 	notice="Choose a rally point and Confirm. The squad holds within two tiles."
 
 func show_enemy(enemy: Dictionary) -> void:

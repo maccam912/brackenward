@@ -145,9 +145,10 @@ func _apply_intent(action: Dictionary) -> void:
 				preview_start = preview_end
 				fit_build_preview()
 		"paint_tap":
-			preview_end = screen_to_tile(action.point)
+			# A new tap starts a new brush stroke, including a one-cell line.
+			preview_start = screen_to_tile(action.point)
+			preview_end = preview_start
 			if not preview_definition.is_empty() or preview_lodge:
-				preview_start = preview_end
 				fit_build_preview()
 		"select", "chooser":
 			action["tile"] = screen_to_tile(action.point)
