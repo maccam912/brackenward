@@ -56,13 +56,15 @@ static func advance(world: ColonyWorld) -> void:
 		var job: Dictionary = world.find(world.jobs, citizen.job)
 		if not job.is_empty() and job.kind == "sleep" and job.state == "Working":
 			var bed: Dictionary = world.find(world.structures, citizen.bed)
-			if not bed.is_empty() and bed.definition == "bed":
+			if not bed.is_empty() and bed.health>0 and bed.definition == "bed" and job.target==bed.id and world.footprint(bed).has(Vector2i(citizen.x,citizen.y)):
 				citizen.bed_sleep_ticks += 1
 				if citizen.bed_sleep_ticks >= 1200:
 					citizen.bed_memory_until = world.tick + 7200
 					if citizen.bed_sleep_ticks == 1200:
 						var rested: int = world.emit_fact({"tick":world.tick,"actor":citizen.id,"job":job.id,"kind":"rested_in_bed","text":citizen.name+" completed four hours of sleep in an assigned bed."},{"participants":[citizen.id,bed.id],"location":[citizen.x,citizen.y]})
 						ColonyChronicle.remember(world,"sleep:"+str(citizen.id),rested)
+			else:
+				citizen.bed_sleep_ticks = 0
 		else:
 			citizen.bed_sleep_ticks = 0
 		if citizen.leisure_ticks >= (450 if citizen.traits.has("Sociable") else 300):

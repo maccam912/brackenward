@@ -9,6 +9,7 @@ static func run(check: Callable) -> void:
 	check.call("SCHED/citizen_storage_order_does_not_change_tick_results",ordered.canonical_hash()==reversed.canonical_hash())
 	automatic_cooking(check)
 	hungry_sleepers(check)
+	unreachable_bed(check)
 	personal_job_lifecycle(check)
 	var world: ColonyWorld = ColonyTests.world()
 	var person: Dictionary = world.citizens[0]
@@ -96,6 +97,35 @@ static func hungry_sleepers(check: Callable) -> void:
 		resumed_sleep=resumed_sleep or (ate and world.find(world.jobs,person.job).get("kind")=="sleep")
 	check.call("SCHED/night_meal_finishes_and_sleep_resumes_without_starvation",ate and resumed_sleep and minimum_fullness>0 and person.health==100,"minimum fullness=%d, ate=%s, slept=%s" % [minimum_fullness,ate,resumed_sleep])
 	check.call("SCHED/night_meal_preserves_material_accounting",world.invariant_errors().is_empty(),str(world.invariant_errors()))
+
+static func unreachable_bed(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var person: Dictionary = world.citizens[0]
+	var bed: Dictionary = world.find(world.structures,person.bed)
+	person.x=72;person.y=54;person.edge_x=72;person.edge_y=54
+	person.rest=299;person.fullness=1000
+	for delta in ColonyNavigation.NEIGHBORS:
+		world._structure("wood_wall",Vector2i(bed.x,bed.y)+delta,0)
+	world._assign(person)
+	var sleep_job: Dictionary = world.find(world.jobs,person.job)
+	world._work(person,sleep_job)
+	check.call("SCHED/unreachable_bed_falls_back_to_safe_ground",sleep_job.state=="Working" and sleep_job.target==0 and sleep_job.worker==person.id and person.bed==bed.id and sleep_job.reason.contains("Assigned bed unreachable"))
+	var job_count: int = world.jobs.size()
+	for index in range(300):
+		world._needs(person)
+		world._assign(person)
+		world._work(person,sleep_job)
+		ColonyLiving.advance(world)
+	check.call("SCHED/ground_fallback_restores_exact_rate_without_retry_jobs",person.rest==379 and world.jobs.size()==job_count and person.activity.contains("clear access or reassign bed"),str([person.rest,world.jobs.size(),job_count,person.activity]))
+	check.call("SCHED/ground_sleep_never_earns_assigned_bed_memory",person.bed_sleep_ticks==0 and person.bed_memory_until==0 and not world.facts.any(func(f:Dictionary)->bool:return f.kind=="rested_in_bed"))
+	var restored: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/unreachable_bed_fallback_roundtrip",restored.has("world") and restored.world.canonical_hash()==world.canonical_hash() and world.invariant_errors().is_empty(),str(restored.get("error",world.invariant_errors())))
+	world=ColonyTests.world();person=world.citizens[0];person.rest=299;person.fullness=1000
+	world._assign(person);sleep_job=world.find(world.jobs,person.job)
+	for index in range(600):
+		world._work(person,sleep_job)
+		if sleep_job.state=="Working": break
+	check.call("SCHED/reachable_assigned_bed_still_used",sleep_job.target==person.bed and sleep_job.state=="Working" and sleep_job.reason.is_empty())
 
 static func personal_job_lifecycle(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]

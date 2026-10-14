@@ -603,6 +603,7 @@ func _needs(citizen: Dictionary) -> void:
 	var rate: int = 50
 	if sleeping:
 		var bed: Dictionary = find(structures, citizen.bed if citizen.downed else job.target)
+		if not bed.is_empty() and (bed.health<=0 or not footprint(bed).has(Vector2i(citizen.x,citizen.y))): bed={}
 		if citizen.downed:
 			bed = {}
 			for structure in structures:
@@ -916,7 +917,7 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 		"Fetching":"Fetching supplies", "Delivering":"Carrying supplies", "Moving":"Walking to the task", "Working":"Working"}
 	citizen.activity = activity.get(job.state,job.reason)
 	if job.kind == "sleep":
-		citizen.activity = "Sleeping" if job.state == "Working" else "Heading to bed"
+		citizen.activity = ("Sleeping on ground: assigned bed unreachable; clear access or reassign bed" if job.target==0 and not job.reason.is_empty() else "Sleeping") if job.state == "Working" else "Heading to bed"
 	elif job.kind == "eat":
 		citizen.activity = "Eating" if job.state == "Working" else "Getting food"
 	elif job.kind == "leisure":
@@ -1014,6 +1015,14 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 			citizen.route_goal = [goal.x, goal.y]
 		if citizen.route.is_empty():
 			var job: Dictionary = find(jobs, citizen.job)
+			if job.get("kind")=="sleep" and job.target>0 and walkable(Vector2i(citizen.x,citizen.y)) and ColonyDanger.safe(self,Vector2i(citizen.x,citizen.y)):
+				# Keep the assigned bed, but finish this sleep on safe ground rather
+				# than recreating an impossible personal route every scheduler pass.
+				job.target=0;job.x=citizen.x;job.y=citizen.y
+				job.work_x=citizen.x;job.work_y=citizen.y
+				job.reason="Assigned bed unreachable: clear access or reassign bed"
+				citizen.route_goal.clear()
+				return true
 			_release(job, false)
 			_block(job, "No route: remove a blocking wall or choose another worksite")
 			return false

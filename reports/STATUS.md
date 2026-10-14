@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.6.4-m6` in progress (schema 20), content `colony-v2`, development colony envelope version 4 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.6.5-m6` in progress (schema 20), content `colony-v2`, development colony envelope version 4 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -218,3 +218,14 @@ Version `0.6.4-m6`, Android code 24, unchanged schema 20. A tap starts a fresh o
 Native UI validation passes 303 checks, including 44 new portrait/landscape camera, touch, mouse and single-cell confirmation regressions. The rendered single-door preview was inspected. Unit/content checks and the Meadow Reach real tutorial flow (22 checks) pass. Older construction fixtures now explicitly select their intended coordinates. Physical Android feedback validation remains pending.
 
 On resume, the previous `a0a9fe1` workflow was observed passing on all four desktop targets, including Intel Mac, and publishing its development APK. The preserved unreachable-bed reproduction still takes approximately 3.0 seconds for one tick locally. That hotspot and the remaining full Charter campaign evidence are the next work.
+
+
+## M6 unreachable-bed recovery and route performance — 13 October 2026
+
+Version `0.6.5-m6`, Android code 25, unchanged schema 20. A binary heap replaces repeated full frontier sorts in A*, retaining f/h/row-major ordering. Forty frozen obstacle/directed-edge maps reproduce their exact old routes. The preserved Reed Bend slow tick falls from 3.016 seconds to 0.558 seconds with identical canonical state.
+
+When an assigned bed has no route and the resident occupies safe walkable ground, the resident now rests there for this sleep period instead of repeatedly generating failed sleep jobs. The assignment remains, the visible activity explains clearing access or reassigning, and ground rest uses exactly 80 points/hour with no assigned-bed memory. Actual bed position/health is checked for rest credit. This deliberate rule clarification is recorded in DESIGN.md §5.2. Five new scheduler/save regressions cover fallback, exact rest, stable job count, truthful memories, recovery and ordinary reachable-bed sleep. The old pure-rate fixtures now place their sleepers at their actual beds.
+
+All 28 GDScript suites pass 1,310 checks, including 303 native UI checks. Frozen replay retains all 64 commands, tick-7,200/tick-72,000 goldens, 234 invariants and foreign-host saved-world continuation (166 seconds locally). No golden or committed foreign save was replaced. Ordinary Charter continuations are running from the four retained quota-stop reports.
+
+The user also reported periodic gameplay freezes. Local profiling identifies synchronous persistence as a separate material hotspot: a new colony checkpoints in 3–6 ms, but the preserved day-35 campaign takes 2.26–3.39 seconds per checkpoint and about 21 ms to copy its state. Periodic saving still runs on the drawing thread at this checkpoint; moving that work off-thread with verified recovery and lifecycle coordination is the immediate next fix.

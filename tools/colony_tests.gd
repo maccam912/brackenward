@@ -37,6 +37,7 @@ static func run(check: Callable) -> void:
 		var resident: Dictionary = w.citizens[0]
 		resident.rest = 100
 		var bed: Dictionary = w.find(w.structures, resident.bed)
+		if kind != "ground": resident.x=bed.x;resident.y=bed.y
 		if kind != "ground":
 			bed.definition = kind
 		var sleep_job: Dictionary = w._job("sleep", "", "", bed.id if kind != "ground" else 0, Vector2i(resident.x, resident.y), 0)

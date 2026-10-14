@@ -68,6 +68,7 @@ func run() -> void:
 	quit(0 if failures.is_empty() and not cases.is_empty() else 1)
 
 func unit() -> void:
+	NavigationTests.run(check)
 	var rng: ParkMiller = ParkMiller.new(1)
 	check("SIM02/park_miller_golden", [rng.next(), rng.next(), rng.next()] == [48271, 182605794, 1291394886])
 	check("SIM02/stream_isolation", ParkMiller.derive(0, 1, "meadow_reach", "terrain") != ParkMiller.derive(0, 1, "meadow_reach", "weather"))
