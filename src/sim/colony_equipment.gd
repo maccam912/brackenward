@@ -45,12 +45,12 @@ static func _create(world: ColonyWorld, person: Dictionary, slot: String, item: 
 static func create_jobs(world: ColonyWorld) -> void:
 	# These views live for this call only; job creation does not reserve stock.
 	var pending: Dictionary = {}
-	for job in world.jobs:
+	for job in world._work_jobs():
 		if job.kind!="equip" or job.state in ["Complete","Canceled"]: continue
 		if not pending.has(job.target): pending[job.target]={}
 		pending[job.target][job.definition]=true
 	var stocked: Dictionary = {}
-	for stack in world.stacks:
+	for stack in world._work_inventory():
 		if stack.count>0 and stack.location in ["ground","store","output"] and stack.count>world._reserved(stack): stocked[stack.item]=true
 	for person in world.citizens:
 		if person.death_recorded or person.departed or person.downed or person.away: continue

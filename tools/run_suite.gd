@@ -67,7 +67,9 @@ func run() -> void:
 			CharterTests.run(check)
 			PolicyTests.run(check)
 		"chronicle": ChronicleTests.run(check)
-		"scheduler": SchedulerTests.run(check)
+		"scheduler":
+			CreationReadTests.run(check)
+			SchedulerTests.run(check)
 		"tutorial": TutorialTests.run(check)
 	DirAccess.make_dir_recursive_absolute("res://reports")
 	var report: String = '<testsuite name="%s" tests="%d" failures="%d">\n' % [suite, cases.size(), failures.size()]

@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.19-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content version. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.20-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content version. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -90,3 +90,19 @@ allowed food is available, so a hungry cook can finish making a meal. Starving
 residents temporarily yield defense while retaining their draft order. Content v4
 keeps the existing campaign schema and preserves old acknowledged state and raw
 migration backups; it changes scheduling during subsequent play.
+
+
+Native longevity checks use a clean frozen checkout and a new empty output directory:
+`python3 tools/run_soak.py --source CLEAN_CHECKOUT --snapshot INPUT.brackenward --report-dir NEW_DIRECTORY`.
+Defaults are thirty measured minutes at 2x after sixty warmup seconds. The probe
+uses the real session, saving and lifecycle policy, bounded diagnostics and minute
+samples of engine heap/RSS. It preserves partial failures and verifies the final
+snapshot, unchanged source/input and logical time. Use `--audit` with the same
+source/directory to recheck artifacts. A short `--seconds 3 --warmup 1
+--sample-seconds 1` run is a harness smoke test; it cannot become a thirty-minute
+certificate. These source proxies do not replace physical Android PSS, thermal,
+battery, all-alert or human checks.
+
+`tools/profile_creation.gd` compares repeated creation reads with retained full
+scans at one fixed tick. It is a microbenchmark, separate from actual campaign
+continuation and foreground-frame measurements.

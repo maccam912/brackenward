@@ -22,6 +22,8 @@ class FullReservationWorld extends ColonyWorld:
 		return jobs
 	func _work_inventory() -> Array:
 		return stacks
+	func _work_jobs() -> Array:
+		return jobs
 	func _find_history(records: Array, id: int, _table: String) -> Dictionary:
 		for record in records:
 			if record.id==id: return record

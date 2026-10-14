@@ -612,9 +612,22 @@ func _job(kind: String, category: String, skill: String, target: int, point: Vec
 	return job
 
 func unfinished_jobs() -> Array:
+	_refresh_job_queries()
+	# Public callers own this list and may sort it. Ended rows vanish immediately.
+	return job_query_live.filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"])
+
+func _work_jobs() -> Array:
+	# Borrowed read-only view for creation predicates that explicitly test state.
+	# Same-tick ended rows may remain; never sort/clear this container.
+	if not in_tick: return jobs
+	_refresh_job_queries()
+	return job_query_live
+
+func _refresh_job_queries() -> void:
 	# Derived only: jobs retain their full saved history and original order.
 	# Runtime jobs are append-only and never reopen a terminal task. Only new
-	# records need scanning; prune ended work each tick and after every query.
+	# records need scanning; prune each tick. Public queries also filter rows
+	# that ended in the current tick; borrowed creation predicates check state.
 	if not is_same(job_query_source,jobs) or job_query_count>jobs.size():
 		reset_job_queries()
 		job_query_source=jobs
@@ -625,8 +638,6 @@ func unfinished_jobs() -> Array:
 		var job: Dictionary = jobs[index]
 		if job.state not in ["Complete","Canceled"]: job_query_live.append(job)
 	job_query_count=jobs.size()
-	# Return a fresh list so callers may filter/sort without changing the cache.
-	return job_query_live.filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled"])
 
 func reset_job_queries() -> void:
 	work_budget.reset()

@@ -52,3 +52,6 @@ reports/winter-release-v4-eabef3b/
 reports/live-inventory-native/
 reports/localization-native/
 reports/owned-preview-native/
+reports/soak-run-smoke/
+reports/creation-read-native/
+reports/native-soak-v4-*/

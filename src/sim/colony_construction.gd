@@ -75,7 +75,7 @@ static func ready(world: ColonyWorld, job: Dictionary) -> bool:
 	return true
 
 static func create_helpers(world: ColonyWorld) -> void:
-	var parents: Array = world.jobs.filter(func(j:Dictionary)->bool:return j.kind=="build" and j.state=="Working")
+	var parents: Array = world._work_jobs().filter(func(j:Dictionary)->bool:return j.kind=="build" and j.state=="Working")
 	for parent in parents:
 		if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build_helper" and j.order==parent.id and j.state not in ["Complete","Canceled"]): continue
 		var helper: Dictionary = world._job("build_helper","Building","Build",parent.id,Vector2i(parent.x,parent.y),0)

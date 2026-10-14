@@ -542,3 +542,52 @@ The broad crowded/late/Android, all-alert and thirty-minute-soak gates remain op
 The earlier 0.7.16 and 0.7.18 camera-center descriptions above were corrected to
 68,63 from their actual recorded camera_center fields; their measured values and
 scope fingerprints are unchanged.
+
+
+## 0.7.20 creation-read bounds
+
+Equipment pending/stock reads and construction-helper parent discovery use private
+borrowed views during ticks. Predicates still test actual state/count, direct
+calls retain full history, and public query lists remain caller-owned. Independent
+04500fb creation functions compare against real shared-material work with 8,000
+terminal jobs/8,000 depleted rows, same-tick stock changes and queued proposals.
+The first malformed fixture was rejected; final accepted fixtures pass all seven
+new checks. The scheduler has 293 passing checks and canonical continuations remain
+unchanged.
+
+Four alternating microbenchmark pairs make 200 creation calls at one unchanged
+tick, including first derived-view setup, without intervening simulation work.
+These are creation-operation timings, not tick/frame or survival evidence.
+Median original/current milliseconds are fresh 2.761/3.071, snowy
+461.737/48.018, late 2,049.268/85.531 and crowded 123.690/123.255. Every
+final hash/invariant matches; background Winter/test work overlaps these runs.
+The actual 1,200-tick late continuation separately matches the frozen result and
+its instrumented twin in 4.844 uninstrumented / 4.757 instrumented CPU seconds.
+
+Two thirty-second late-save native profiles use Balanced, 960x600, close center
+68,63 and Dummy audio. Scoped fingerprint
+`7b512c1765e4fa0202fe745e28f7b534e06d675f4b4e1231d9157afe067278de`
+(296 files) is unchanged. One Winter worker is recorded at each start/end; these
+remain contended source CPU observations.
+
+| Speed | Wall seconds | Ticks | Main p95 / max ms | Tick p50 / p95 / max ms | Main / tick calls >50 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1x | 30.032 | 300 | 13.644 / 55.881 | 2.243 / 15.662 / 55.075 | 1 / 1 |
+| 4x | 30.033 | 1,201 | 26.612 / 56.390 | 2.462 / 12.914 / 52.978 | 1 / 1 |
+
+Both keep requested speed, clean storage/invariants and backlogs
+0.041293/0.063946 seconds. Input/end counts remain eight residents, 104
+structures, 124 crop tiles, sixteen wildlife, 2,065 Chronicle entries and fog;
+positive stacks change 590 -> 588/602 and targets one -> one/zero. The late
+simulation p95 still exceeds the 4 ms gate. Physical Android, GPU, memory/thermal,
+all-alert and thirty-minute release gates remain open.
+
+A bounded native longevity probe is now available via `tools/run_soak.py`. It
+uses the real session/lifecycle/saving and bounded diagnostics, periodic invariant,
+engine-heap/RSS samples and drawn-frame windows. The independent audit verifies
+source provenance, process/log completion, logical time, resident population,
+source/input stability and final snapshot/report checksums. A three-second canary
+validates harness plumbing and exact round trip at twenty residents; it does not
+satisfy the thirty-minute case. Desktop RSS and sampled engine heap are explicitly
+separate from Android PSS, battery/thermal and full stress certification. The long
+run is being prepared from a clean frozen checkout.

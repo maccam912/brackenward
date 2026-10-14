@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.19-m7` in progress (campaign schema 23, device settings schema 4), content `colony-v4`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.20-m7` in progress (campaign schema 23, device settings schema 4), content `colony-v4`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -16,7 +16,7 @@ Checkpoint: `0.7.19-m7` in progress (campaign schema 23, device settings schema 
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `2f1a8fb`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38609601889) passed the full suite, all four desktop replay/startup targets, exports and publication, including actual exported Linux startup from an empty directory. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
+| Remote CI | Pass at `04500fb`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38612766031) passed the full suite, all four desktop replay/startup targets, exports and publication, including actual exported Linux startup from an empty directory. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
@@ -24,9 +24,9 @@ Checkpoint: `0.7.19-m7` in progress (campaign schema 23, device settings schema 
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
 | M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Full v2 Standard-site and Pine Hearthside vegetarian Charters and pinned v2/v3 Winter matrices pass. The later v3 Charter sweep has one settlement loss and three timeouts; corrected Pine reaches healthy Charter/Continue in partial evidence. Fresh v4 long-campaign validation, M7 and physical/human gates remain. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `2f1a8fb` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-2f1a8fb88dae); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
+| Development APK publication | Pass at `04500fb` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-04500fbe61d0); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,182 checks, zero failures, including 527 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,189 checks, zero failures, including 527 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -1514,3 +1514,61 @@ job and published their checked APKs. This revision's remote status follows its
 own push. The v4 Winter matrix has twelve passes recorded and is still running.
 Localization, broader performance/balance and physical/human release gates remain
 open. Live weekly remaining is 76%; work continues.
+
+
+## 0.7.20 bounded creation reads and native soak preparation
+
+Equipment proposals and construction-helper parent searches borrow private live
+job/inventory containers in trusted ticks. Their original state/count predicates
+still exclude same-tick ended/depleted rows, queued equipment still prevents
+duplicate proposals, and direct calls keep full-history behavior for incomplete
+or reopened fixtures. Public unfinished-job results remain fresh, immediately
+filtered caller-owned lists. Cancellation/completion metadata scans stay intact.
+The full-history scheduler oracle also overrides the new borrowed job view.
+
+Seven new creation checks use real shared-material table work plus 8,000 terminal
+job and 8,000 zero-stock records. The accepted/conserved fixture compares retained
+04500fb creation code with current proposals, repeated calls, queued equipment,
+same-tick depletion/new stock and direct fixture reopening. Scheduler 293,
+equipment 17, construction 21, production 37, persistence 267 and native UI 527
+pass. Prior full baseline plus these final targeted checks totals 2,189. Content,
+five UI-message checks, seven lexer checks and six new soak-audit checks pass.
+The final frozen replay passes 62 commands/234 invariant checks in 85.911 seconds,
+including both migration-preservation audits. Cold/crowded continuations retain
+the preceding hashes and their instrumented twins match. The 1,200-tick late
+continuation is 4.844 seconds, exact canonical result
+`38c3c1ff65e2bfd52b6a79e5c0d3ff1b2416ffafd36720add35e71d100654506`.
+
+A separate creation microbenchmark alternates four old/current pairs with 200
+creation calls at one fixed tick, including initial derived-view setup. Median
+milliseconds per 200 calls are fresh 2.761/3.071, cold 461.737/48.018,
+late 2,049.268/85.531 and crowded 123.690/123.255. All final hashes/invariants
+match. These operation timings are not whole-tick/frame or ordinary-play claims.
+
+Two thirty-second native late-save runs at Balanced, 960x600 and center 68,63
+retain fingerprint `7b512c1765e4fa0202fe745e28f7b534e06d675f4b4e1231d9157afe067278de`
+(296 files), unchanged. At 1x/4x, tick p95 is 15.662/12.914 ms and maxima
+55.075/52.978 ms; main CPU p95 is 13.644/26.612 ms. Each has one main/tick
+callback above 50 ms. One frozen Winter worker is present at every endpoint.
+Requested speeds, clean invariants/storage and sub-one-tick backlogs hold; actor/
+object counts and full rows are in STRESS_EVIDENCE.md. The 4 ms simulation gate
+still fails; this does not certify physical-phone behavior.
+
+The new native soak uses the actual GameSession, bounded product diagnostics,
+minute invariant/engine-heap/RSS samples and one-second drawn-frame counters. It
+requires logical time, resident population, source/input hashes, private saving,
+audio drain and an exact final snapshot round trip; pauses/failures remain retained.
+The Python launcher freezes provenance, bounds/kills its process tree on timeout,
+refuses old output directories and independently audits report/log/snapshot pairs.
+Audit checks reject incomplete/dropped time, zero-exit engine errors, changed files,
+missing snapshots, population loss and memory/storage/invariant failures. Engine
+heap/RSS and the drawn-frame floor are local proxies, not Android PSS/thermal or
+complete release gates. A three-second native canary at 2x/one-second warmup passes
+with twenty residents, valid round trip and unchanged source; the thirty-minute
+case remains pending and cannot be inferred from it.
+
+Android export/four Kotlin checks and native sixty-frame/audio-drained startup
+pass; aapt reports 0.7.20-m7 / 59. Remote 04500fb passed every job and published
+its APK. This revision's CI follows its own push. The frozen v4 Winter sweep has
+29 passes and one case still running. Remaining M7 scope and physical/human gates
+stay open. Weekly remaining is 76%; work continues.
