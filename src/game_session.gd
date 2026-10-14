@@ -8,6 +8,9 @@ var view: WorldView
 var content: Control
 var status: PanelContainer
 var clock_label: Label
+var clock_world_id: int = 0
+var clock_tick: int = -1
+var clock_speed: int = -1
 var notice_label: Label
 var nav: GridContainer
 var speeds: HBoxContainer
@@ -442,11 +445,6 @@ func _advance_frame(delta: float) -> void:
 		notice = "Order accepted. Resume to watch the work." if receipt == "accepted" else "Order rejected: " + receipt
 		submitted_command = 0
 		confirm_button.disabled = false
-	var day: int = (world.tick / 7200) % 8 + 1
-	var season_name: String = ["Spring","Summer","Autumn","Winter"][ColonyAgriculture.season(world.tick)]
-	var hour: int = (world.tick % 7200) / 300
-	var minute: int = (world.tick % 300) / 5
-	clock_label.text = "%s %d Y%d  %02d:%02d\n%s | %s" % [season_name,day,world.tick/230400+1,hour,minute,("Meals %d  Wood %d" % [world.available("meal"),world.available("wood")]) if world is ColonyWorld else "4 travelers","Paused" if runner.speed == 0 else "%dx" % runner.speed]
 	_update_inspector()
 	if world is ColonyWorld:
 		forecast_elapsed += delta
@@ -459,6 +457,7 @@ func _advance_frame(delta: float) -> void:
 				if is_instance_valid(soundscape): soundscape.cue("cue_warning",2,"",0.9)
 				if warning==3 and settings.values.auto_pauses.low_food: runner.pause()
 			food_warning_level = warning
+	_refresh_clock()
 	notice_label.text = ColonyFonts.display(("Unsaved progress | " if saving_disabled else "") + notice)
 	if is_instance_valid(sheet_feedback):
 		var feedback: String = text_entry_error if not text_entry_error.is_empty() else notice
@@ -481,6 +480,17 @@ func _advance_frame(delta: float) -> void:
 		else:
 			save_local()
 			autosave_elapsed = 0.0
+
+func _refresh_clock() -> void:
+	# Stock changes only at complete simulation ticks. A new world can share the
+	# old tick, and pause/speed changes must still appear immediately.
+	var identity: int = world.get_instance_id()
+	if clock_world_id==identity and clock_tick==world.tick and clock_speed==runner.speed: return
+	clock_world_id=identity;clock_tick=world.tick;clock_speed=runner.speed
+	var season_name: String = ColonyText.text(["ui.clock.spring","ui.clock.summer","ui.clock.autumn","ui.clock.winter"][ColonyAgriculture.season(world.tick)])
+	var stock: String = ColonyText.text("ui.clock.stock",{"meals":world.available("meal"),"wood":world.available("wood")}) if world is ColonyWorld else ColonyText.plural("ui.clock.travelers",world.citizens.size())
+	var speed_name: String = ColonyText.text("ui.clock.paused") if runner.speed==0 else ColonyText.text("ui.clock.speed",{"speed":runner.speed})
+	clock_label.text=ColonyText.text("ui.clock.status",{"season":season_name,"day":(world.tick/7200)%8+1,"year":world.tick/230400+1,"hour":"%02d" % ((world.tick%7200)/300),"minute":"%02d" % ((world.tick%300)/5),"stock":stock,"speed":speed_name})
 
 func _start_background_save(full_snapshot: bool) -> void:
 	var started: int = Time.get_ticks_usec()

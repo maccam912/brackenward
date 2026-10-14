@@ -29,7 +29,9 @@ func run() -> void:
 		"integration": integration()
 		"ui": await ui()
 		"colony": ColonyTests.run(check)
-		"survival": SurvivalTests.run(check)
+		"survival":
+			AgingReadTests.run(check)
+			SurvivalTests.run(check)
 		"persistence":
 			TextTests.run(check)
 			StressTests.run(check)
@@ -927,6 +929,7 @@ func ui() -> void:
 	await PreparedSnapshotTests.ui(colony_game,check)
 	await PlacementUITests.run(colony_game,check)
 	PlacementUITests.inactive_preview(colony_game,check)
+	ClockUITests.run(colony_game,check)
 	TextTests.ui(colony_game,check)
 	await AppearanceUITests.run(colony_game,check)
 	await FontUITests.run(colony_game,check)

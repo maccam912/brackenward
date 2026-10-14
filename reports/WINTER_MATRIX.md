@@ -1,5 +1,67 @@
 # Frozen first-Winter matrix
 
+## Frozen content v4 / schema 23
+
+All **30/30 fresh first-Winter runs** pass at clean, unchanged source
+`eabef3bb93e5e70a3e3e3704bbb988eed5fb37ad` (0.7.15-m7), using the actual v4
+food-recovery rules. Ten unsigned seeds run on each of Meadow Reach, Pine Shelf
+and Reed Bend in Standard mode, from tick 1,800 through 239,400. All thirty retain
+eight living residents, minimum health 100 and no starvation beyond grace.
+The cases pass 23,760 invariant checks in total (7,920 per site), with exact final
+snapshots and codec round trips. A separate fail-closed audit confirms all unique
+cases, process exits, clean logs, checksums and frozen source. This is v4 simulation
+evidence, distinct from the earlier migration-only audit and full Charter cases.
+
+A current-code audit at 0.7.20 loads all thirty final saves without advancing time,
+retains their exact full v4 payloads, passes invariants and round-trips. It leaves
+all input bytes unchanged; it does not repeat those thirty Winters at the later
+code revision. Raw data is retained in ignored `reports/winter-release-v4-eabef3b/`
+and `reports/winter-v4-current20-audit.json`. The finished frozen checkout is
+archived after source/current-load audits, with a recoverable Git snapshot.
+
+| Evidence | SHA-256 |
+| --- | --- |
+| source.json | `3b4cc3dd7e5e765a3ddc7f295d365402f5d5b86aa107ad1b897725b3671dea4a` |
+| completion.json | `fa66ad6a10354f10db870a8dc4333fb8b0fa98137d5682ced4f42261eb77ea21` |
+| audit.json | `f69fa76c5ade4b3e8563a664e56312a32956efeab3cc6ed64ec7b7ad7ae033de` |
+| Current-code loading audit | `c38d92efa00ba3a4da9e519eb083e5e7759b741018f730c350927eec505f05aa` |
+
+Zero-fullness ticks across all runs: 0. Physical Android, human, full v4 Charter
+and final M7 performance/release gates remain separate.
+
+| Site | Seed | Final canonical hash | Final snapshot SHA-256 |
+| --- | ---: | --- | --- |
+| meadow_reach | 0 | `227f240ac629deaf0e228dfc2e71040eac8ed8f5e67e706848585334369c6850` | `723414d0a7c7cc4bdf823382469a20ec4e893fe591b1c50056f90a1f5f809d28` |
+| meadow_reach | 1 | `4dfb184e6057606f36f9bcd4fafb89933e78a59fed189c7202d7537ee1190699` | `03b7a636395a10a06cb13e2065debcc062779ac96338b55be426b164e7ebacce` |
+| meadow_reach | 42 | `b92a969f30acdb1699efd7e947d4f8cfc327a2661e150eb43830e239535871ed` | `39c63119bc01081d4a637648163d8b6266dde9836da8a17899fe0cc70ebf7b88` |
+| meadow_reach | 73 | `a88fb7902b69b4cf422036b63bdebdf10fbebd6f97e44bae95ebc183dbf84294` | `4be6fa7b64b2000a2c1c8ba3c84a80ab038937cf56fe02bb56256ce1bf34c18b` |
+| meadow_reach | 4567 | `cad664b6af8e017b436f0ab748571b2c69611a811c40c705cf5af45187e1359a` | `a0d6216ce9235637809c71975d388b0afa50713a2dfc1270e05eacb34a6c3cd1` |
+| meadow_reach | 104729 | `d01bf7aac168ba289664533b1256150e8334b887916d0c352cac3217788ff7d3` | `1470653fcee59787c41d78f6fae60be4def768eee11876c667c9fc706235d337` |
+| meadow_reach | 1357911 | `206dd98b5567d6e167acc218ff884b3fa668416023a2116562209b7c9ed29b82` | `0f50130761d2a5fd81bce90f7cbaa242acf5005790a5a4561dcd1bc48b7ed405` |
+| meadow_reach | 2147483647 | `b26702a0bab94e57b903005d133fe80da476af39228d11f795ab691802cb8545` | `289d3c38d738c54236e6538d24fc9a9ef86d5e984f1812b90893b36336b67685` |
+| meadow_reach | 3000000001 | `5d544d988062a04f895f25c456fb70b81f9922487bfd48ac58fcbd0a875476cc` | `b68ee24f11eccc5c7770bb0641bbe5521bcc64752f0d708d45cb0b38bdae372c` |
+| meadow_reach | 4294967295 | `302768c9f51412221ede8790a1fde72b65c2aedb53fa0ecbf779bc4b79722054` | `66ebd9073d4fed6b467813f852d58b92f5a6c23e15f25e8d47e50ca4eae32058` |
+| pine_shelf | 0 | `a4991e6ca394712500c36b1e747b34384f172766d87a16fa5c88efb0aa1060db` | `c4d4c86a72c1728768ec81ddd1a4f94ebd1aa62bc8919468417078e9c319dd10` |
+| pine_shelf | 1 | `32869349d481113616dc78cdf7b1195e8166487a2a68de7af1c43b8eff9105e0` | `93ba72ba44601e7477295289431bee0b8e9370c60121b765b3cea2dee42bd3df` |
+| pine_shelf | 42 | `99b24394566f87dd33ab201ace4c6c9d2efdd2aaa2daee191dacb932d16aaaa8` | `484718ad5a0bb39b11d507a9fb3423226e157c5f0b1c9a98a9556d9859f25480` |
+| pine_shelf | 73 | `50c258058295a96c768afc63644583a556e4403e12ebcfed7bb176001c637b15` | `46515ca822d67a43e9658a5a9f6d01358cc279e2a43e7ff818b495391afa315b` |
+| pine_shelf | 4567 | `b36992d19384a5811427aa3905850c08291bc8ae0e9e68890219dd4cd77759c6` | `c536e0a636e148ce4be1f938f7ddaed1f35b3524e75c8abce0593bb7f16994b3` |
+| pine_shelf | 104729 | `47e0b25624322a169b7dcb31f8a2759400d92cdbf46216b1e41326e55319c275` | `37b600f0bfabc61da8a0c65afa4eb1a1dba7fc85649db55ea51e5a3c0bbbafbd` |
+| pine_shelf | 1357911 | `66a714741813f6328d5a647af734d45d241ed2c2b8ae68a767e216e292847b5f` | `65d416c810962b6d4d95ae557cf1e8c6baf2c7bef422e8d93d7650372b446c78` |
+| pine_shelf | 2147483647 | `7f0707032bc1616dfd676ecb09e51ef879020404f2aae5da529473f3e50fda87` | `0b8281eb9d859021e70d9d49fbf9abd23ae1905bc33cc00bca40be6cae46f803` |
+| pine_shelf | 3000000001 | `27eee9049383b10c31dae88d763bdba1aed5998084e19853dff9a33c3e7d5690` | `fccf0af63f1f7326c925ee59d51be0d8ea5509aeabc622776135587eb9817062` |
+| pine_shelf | 4294967295 | `07aa49e87a575e6ef908ed3bd96b62856b95d897dd5d568ad6837822d726b5fe` | `dbf90da0c425b9279e514af78e02e79c2b9bd55c535da35973ed8e7800b85458` |
+| reed_bend | 0 | `7a4896fa1e5e5c2bdb9887ce76eb109a3ba1c85e835439e72cbdc85acddb0216` | `07b9457c5557fae3d4fbde6ddc3402bbd23adecca946cb22952fabf5d346bc6e` |
+| reed_bend | 1 | `f82680d6db6c171f5d21d4c75852ed8a1373939b0157ce9ec621cef7164ccc99` | `76415d6c14b24c5379da7b50b39634634911b143652fbc5951b0805174ca1d5e` |
+| reed_bend | 42 | `f2fbb8c0c8243d0a6dfb2550bfcd78b37c0692576d18c2f7af06d6ff70e6a92b` | `d160bc8a13c7dcf349994c6fd820439a32a3f244a98a0e8e2d43c0befa1fbe55` |
+| reed_bend | 73 | `7c1bd78052537f18e593238bfdf8580c231fa56ee872e52e4351cf1d361c6a75` | `e20b74a25ad9a75353ce877464101fddfc3c56a8ac6965fff3d6c842ef94e532` |
+| reed_bend | 4567 | `df57d21dfc35660df7661de21e53df6aa66ac6e7952f893602b28345a5f245cf` | `f51d3ba0d49d2faff50b3aa1d6e1fed5d0574f4c472a77492571d2ddf572523b` |
+| reed_bend | 104729 | `ceb256f8784d41f34d6e5ca9455f469860f91802d9dea111ce130e44ae7afef9` | `52228922a0dc02e58a23b62660915f0ac2ffba3a101e6c42d22641a35f16caba` |
+| reed_bend | 1357911 | `65a47a5590ad656c2f09df9b50d4825b7aef63e030d04e2cc1dcc95b989a8fd0` | `5d182c05ee58ee4733f02d10252caa29fc602977d695119a9fc8d43a873f4a04` |
+| reed_bend | 2147483647 | `8039c8b814b95251477e2d7150cab7ae288c26340fb011073ba80250cca5182a` | `8f4def843c87d2c082b978b4893b1210b9d2507ea04a3dd19502f5705bd8437a` |
+| reed_bend | 3000000001 | `f40372f51e58cd063427967bbbdbca1295123f7fdeafae777568c5d4bc47ad3d` | `db855908bd711d2aac023b8d88973ff0581f48cd076fcbcaaed7b7d194ac261c` |
+| reed_bend | 4294967295 | `0f966477f7e71d7ff3c55f8498708af496d6fba2e99f86e52715596e22b55115` | `b3b822d4509a00197173e8f64f03c1a172e21120be77ee36ae6f069fa8a5c9b5` |
+
 ## Content v4 loading audit
 
 All thirty frozen v3 final saves load under 0.7.15-m7 / content v4, preserve every
@@ -8,11 +70,11 @@ pass invariants and round-trip under the current header. No time advances and
 source files remain byte-identical. The raw audit is
 `reports/winter-v3-v4-migration-audit.json`, SHA-256 `e054d6e5094e09d556c1c80e1233e7816536d242655bb1afe9d7e327b877898f`.
 This verifies migration; the completed simulation matrix below remains v3 evidence.
-A new v4 survival matrix is still required for that content revision.
+The fresh v4 survival matrix is now recorded above.
 
 ## Frozen content v3 / schema 23
 
-The current-content matrix passes **30/30** at clean, unchanged source
+The retained v3 matrix passes **30/30** at clean, unchanged source
 `fe118288c17efc56a252318d042c4bc1af1c2ac6` (0.7.7-m7). The same ten unsigned
 seeds run on all three sites, from tick 1,800 through 239,400 in Standard mode.
 All thirty retain eight residents, minimum health 100, zero zero-fullness and

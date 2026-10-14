@@ -81,13 +81,21 @@ func run() -> void:
 	game.close_sheet();game._tutorial_dismiss()
 	for key in game.settings.values.auto_pauses: game.settings.values.auto_pauses[key]=false
 	game.settings.values.quality="Balanced";game._apply_device_settings();game.view.center_camera(Vector2(68,72))
+	# Let native startup focus/window notifications settle while time is paused.
+	# Any later focus loss still stops the probe through the real product code.
+	var bootstrap_started: int=Time.get_ticks_usec()
+	while Time.get_ticks_usec()-bootstrap_started<1000000: await process_frame
+	var bootstrap: Dictionary={"tick":world.tick,"backgrounded":game.backgrounded,"sheet":game.sheet_name,"notice":game.notice}
+	if game.backgrounded: printerr("Native window did not enter the foreground");quit(2);return
+	game.close_sheet()
 	var stop_reason: String=game.save_local()
 	if not stop_reason.is_empty(): printerr(stop_reason);quit(2);return
 	game.runner.set_speed(speed)
 	var warmup_started: int=Time.get_ticks_usec()
 	while Time.get_ticks_usec()-warmup_started<warmup_seconds*1000000:
 		await process_frame
-		if game.runner.speed!=speed or game.saving_disabled or not game.storage_error.is_empty(): stop_reason="Warmup paused or storage failed";break
+		if game.runner.speed!=speed or game.saving_disabled or not game.storage_error.is_empty(): stop_reason="Warmup paused or storage failed: speed=%d backgrounded=%s sheet=%s notice=%s runner=%s" % [game.runner.speed,str(game.backgrounded),game.sheet_name,game.notice,game.runner.notice];break
+	var warmup_diagnostics: Dictionary=game._performance_report() if not stop_reason.is_empty() else {}
 	game.diagnostics.reset()
 	var started: int=Time.get_ticks_usec()
 	var initial_tick: int=world.tick
@@ -149,7 +157,7 @@ func run() -> void:
 	var nominal_ticks: int=floori(elapsed*speed*10)
 	var logical_time_kept_up: bool=logical_ticks>=nominal_ticks-2
 	var passed: bool=completed and fps_floor_proxy_pass and population_kept and logical_time_kept_up and final_speed==speed and last.invariants.is_empty() and game.storage_error.is_empty() and not game.saving_disabled and roundtrip and snapshot_written and drained and source_unchanged and memory_proxy_pass
-	var result: Dictionary={"format":"brackenward-native-soak","version":1,"scope":"Native source longevity and sampled engine-heap/RSS proxies; no Android PSS, GPU, battery, thermal, all-alert or physical release certification","probe_pass":passed,"completed":completed,"release_gate_pass":false,"standard_30min_2x_case":seconds==1800 and speed==2 and warmup_seconds>=60,"requested_seconds":seconds,"measured_wall_seconds":elapsed,"warmup_seconds":warmup_seconds,"sample_seconds":sample_seconds,"requested_speed":speed,"final_speed":final_speed,"logical_ticks":logical_ticks,"nominal_ticks":nominal_ticks,"logical_time_kept_up":logical_time_kept_up,"initial_tick":initial_tick,"final_tick":world.tick,"remaining_logical_backlog_seconds":backlog,"snapshot":snapshot,"snapshot_sha256":input_sha,"input_canonical_hash":input_canonical,"input_counts":input_counts,"final_canonical_hash":final_hash,"final_snapshot":save_path,"final_snapshot_sha256":FileAccess.get_sha256(save_path) if snapshot_written else null,"roundtrip_verified":roundtrip,"samples":samples,"engine_heap_growth_bytes":heap_growth,"peak_sampled_engine_heap_growth_bytes":peak_growth,"engine_heap_proxy_within_20_mib":memory_proxy_pass,"population_kept":population_kept,"drawn_frames":drawn_frames,"fps_windows":fps_windows,"lowest_window_fps":lowest_window_fps,"max_consecutive_low_fps_window_seconds":max_low_fps_streak,"fps_floor_proxy_pass":fps_floor_proxy_pass,"sampler_max_us":sampler_max_us,"diagnostics":diagnostics,"source_evidence":source_before,"harness_sha256":harness_sha,"source_unchanged":source_unchanged,"audio_drained":drained,"stop_reason":stop_reason,"scratch_retained":null if passed else ProjectSettings.globalize_path(scratch)}
+	var result: Dictionary={"format":"brackenward-native-soak","version":1,"scope":"Native source longevity and sampled engine-heap/RSS proxies; no Android PSS, GPU, battery, thermal, all-alert or physical release certification","probe_pass":passed,"completed":completed,"release_gate_pass":false,"standard_30min_2x_case":seconds==1800 and speed==2 and warmup_seconds>=60,"requested_seconds":seconds,"measured_wall_seconds":elapsed,"warmup_seconds":warmup_seconds,"bootstrap":bootstrap,"warmup_failure_diagnostics":warmup_diagnostics,"sample_seconds":sample_seconds,"requested_speed":speed,"final_speed":final_speed,"logical_ticks":logical_ticks,"nominal_ticks":nominal_ticks,"logical_time_kept_up":logical_time_kept_up,"initial_tick":initial_tick,"final_tick":world.tick,"remaining_logical_backlog_seconds":backlog,"snapshot":snapshot,"snapshot_sha256":input_sha,"input_canonical_hash":input_canonical,"input_counts":input_counts,"final_canonical_hash":final_hash,"final_snapshot":save_path,"final_snapshot_sha256":FileAccess.get_sha256(save_path) if snapshot_written else null,"roundtrip_verified":roundtrip,"samples":samples,"engine_heap_growth_bytes":heap_growth,"peak_sampled_engine_heap_growth_bytes":peak_growth,"engine_heap_proxy_within_20_mib":memory_proxy_pass,"population_kept":population_kept,"drawn_frames":drawn_frames,"fps_windows":fps_windows,"lowest_window_fps":lowest_window_fps,"max_consecutive_low_fps_window_seconds":max_low_fps_streak,"fps_floor_proxy_pass":fps_floor_proxy_pass,"sampler_max_us":sampler_max_us,"diagnostics":diagnostics,"source_evidence":source_before,"harness_sha256":harness_sha,"source_unchanged":source_unchanged,"audio_drained":drained,"stop_reason":stop_reason,"scratch_retained":null if passed else ProjectSettings.globalize_path(scratch)}
 	if not write_json(report_path,result): passed=false
 	print(JSON.stringify({"probe_pass":passed,"completed":completed,"report":report_path,"elapsed":elapsed,"heap_growth":heap_growth,"peak_heap_growth":peak_growth,"logical_time_kept_up":logical_time_kept_up,"stop_reason":stop_reason}))
 	game.queue_free();await process_frame

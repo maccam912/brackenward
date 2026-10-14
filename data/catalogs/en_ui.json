@@ -172,6 +172,18 @@
   "ui.action.weather_forecast": "Weather forecast",
   "ui.action.wildlife": "Wildlife",
   "ui.action.work_preferences": "Work preferences",
+  "ui.clock.autumn": "Autumn",
+  "ui.clock.paused": "Paused",
+  "ui.clock.speed": "{speed}x",
+  "ui.clock.spring": "Spring",
+  "ui.clock.status": "{season} {day} Y{year}  {hour}:{minute}\n{stock} | {speed}",
+  "ui.clock.stock": "Meals {meals}  Wood {wood}",
+  "ui.clock.summer": "Summer",
+  "ui.clock.travelers": {
+    "one": "{count} traveler",
+    "other": "{count} travelers"
+  },
+  "ui.clock.winter": "Winter",
   "ui.help.accessibility.battery_balanced_30_fps_smooth_60_fps": "Battery / Balanced: 30 fps. Smooth: 60 fps. Simulation rules stay the same.",
   "ui.help.accessibility.graphics": "Graphics",
   "ui.help.audio_settings.vibration_is_available_on_android": "Vibration is available on Android.",

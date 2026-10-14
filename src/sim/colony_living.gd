@@ -2,6 +2,9 @@ class_name ColonyLiving
 extends RefCounted
 
 static func advance(world: ColonyWorld) -> void:
+	# Rates are constant for this call. Several food stacks can share a painted
+	# store with no matching structure; do not repeat that missing-ID scan.
+	var storage_rates: Dictionary = {}
 	for stack in world.perishable_stacks():
 		if stack.count == 0:
 			continue
@@ -10,9 +13,10 @@ static func advance(world: ColonyWorld) -> void:
 			continue
 		var denominator: int = 1
 		if stack.location == "store":
-			var store: Dictionary = world.find(world.structures,stack.owner)
-			if not store.is_empty() and store.definition in ["granary","cellar"]:
-				denominator = world.definitions.buildings[store.definition].age_denominator
+			if not storage_rates.has(stack.owner):
+				var store: Dictionary = world.find(world.structures,stack.owner)
+				storage_rates[stack.owner]=world.definitions.buildings[store.definition].age_denominator if not store.is_empty() and store.definition in ["granary","cellar"] else 1
+			denominator=storage_rates[stack.owner]
 		stack.age_rem += 4 / denominator
 		stack.age += stack.age_rem / 4
 		stack.age_rem %= 4

@@ -591,3 +591,29 @@ validates harness plumbing and exact round trip at twenty residents; it does not
 satisfy the thirty-minute case. Desktop RSS and sampled engine heap are explicitly
 separate from Android PSS, battery/thermal and full stress certification. The long
 run is being prepared from a clean frozen checkout.
+
+## 0.7.21 storage-rate reuse and clock updates
+
+Food aging retains the full cf34471 reference path in seven new survival checks.
+Per-call storage-rate reuse reduces a 200-stack/four-store fixture from at least
+800 structure reads across four advances to sixteen, retaining full payloads,
+age remainders, transfer/destruction behavior and reserved-input spoilage.
+The HUD skips accessible-stock scans on unchanged display frames while refreshing
+on logical ticks, world adoption and speed changes. All caches remain derived.
+
+The actual 1,200-tick late, cold and crowded continuations retain canonical hashes
+38c3c1ff65e2bfd52b6a79e5c0d3ff1b2416ffafd36720add35e71d100654506,
+3169d6dd685eaa1fe7d8271849d88bec8292709ca366ae613de637adeb02c598 and
+46cc90218fa6bbf435dfed45acec80cfb6a80e2357600dd392b06e9284e5f919.
+Their instrumented twins match. Uninstrumented CPU seconds are 4.064, 2.225 and
+9.049, with concurrent headless/native/Charter work. These are state-preservation
+checks and single contended timings, not paired speed claims or phone budgets.
+
+The cf34471 thirty-minute attempt failed during warmup at tick 1802/speed zero;
+its failed independent audit and exact save are retained. No measured thirty-
+minute interval occurred. The original harness did not retain pause-origin
+context, so startup focus is only a hypothesis. Startup settling and bootstrap/
+failure context are now explicit; later focus, speed or storage interruptions
+still stop the real session. A revised sixty-second-warmup/three-second canary
+passes with twenty residents, 61 ticks and exact round trip. It is plumbing
+validation, not a long soak. The full case needs a new clean frozen revision.
