@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.7-m7` in progress (campaign schema 23, device settings schema 4), content `colony-v3`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.8-m7` in progress (campaign schema 23, device settings schema 4), content `colony-v3`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.7-m7` in progress (campaign schema 23, device settings schema 4
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `0a47124` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-0a4712485e7b); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 1,929 checks, zero failures, including 497 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation baseline plus current targeted reruns: 28 GDScript suites, 1,940 checks, zero failures, including 498 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -878,3 +878,45 @@ camera center and fixture hashes are in STRESS_EVIDENCE.md. The separate warm
 tick p95 0.805 ms and no frame gap over 50 ms. These runs dismiss the tutorial;
 active guidance and physical Android remain to be measured. Weekly remaining is
 82%; implementation and performance work continue.
+
+## M7 active lodge guidance cost — 14 October 2026
+
+Version `0.7.8-m7`, local Android build 47, removes a repeated outward lodge search
+from active tutorial refreshes. The earlier fresh-colony baseline dismissed the
+tutorial. Two isolated twenty-second native profiles with active lessons measured
+lodge guidance p50 23.357 / p95 and max 24.578 ms over nineteen refreshes; the field
+lesson measured p50 0.271 / max 0.279 ms. Both keep the actual new colony, saving,
+renderer and audio paths. This identifies a recurring CPU cost, not a proven cause
+of the reported phone freeze.
+
+GameSession now owns a transient suggestion cache, cleared on world adoption and
+also checked against the actual world instance. Every refresh and Show me fully
+revalidates the selected lodge's placement, access, starter-field separation and
+danger. Invalid targets trigger the original ordered search. A still-valid target
+stays stable when nearer space opens. No simulation field, ID, RNG stream or save
+schema changes. Initial searches and the no-valid-footprint case remain synchronous
+and require further worst-case measurement.
+
+A twenty-second follow-up, while three frozen Winter simulations ran concurrently,
+measured nineteen refreshes at p50 2.536 / p95 and max 2.657 ms. Main callback max
+5.116 ms, no callbacks over 50 ms, clean invariants/storage and unchanged measured
+source fingerprint. This is provisional timing under competing work, not an
+isolated comparison or physical-device certification. The profiler now exposes
+`--tutorial LESSON`, final active lesson and a separate guidance timing series.
+
+Tutorial tests pass 46 checks, including actual 28-blueprint revalidation, exact
+canonical-state preservation, fields, structures, resources, queued construction,
+furniture moves, resident occupancy, fire, stable valid targets and world changes.
+Native UI passes 498 checks; Show me uses the current revalidated target. Each of
+the three real tutorial flows passes 22 checks (3.380/3.802/3.504 seconds). Together
+with the unchanged 0.7.7 suite baseline this gives 1,940 checks. Guarded Android
+build and four Kotlin tests pass; `aapt` confirms 0.7.8-m7 / 47, SDK 29/36 and sole
+VIBRATE permission. Native source startup passes sixty-frame/audio-drained exit.
+Remote publication is recorded separately after observation.
+
+The full v3 Winter rerun is active on frozen `fe118288c17efc56a252318d042c4bc1af1c2ac6`.
+The first setup attempts are retained as failures: the first imported the wrong
+checkout and the next found Git LFS pointer text instead of decoded media. Restoring
+the existing LFS objects, restoring only this newly created worktree's generated
+import metadata, and repeating the guarded import produced a clean frozen source
+before the new matrix began. Failed setup directories are never counted as passes.

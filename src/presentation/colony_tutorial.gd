@@ -95,7 +95,19 @@ static func _nearest(world: ColonyWorld, records: Array, allowed: Callable) -> D
 		return da<db if da!=db else a.y*128+a.x<b.y*128+b.x)
 	return {} if choices.is_empty() else choices[0]
 
-static func lodge_target(world: ColonyWorld) -> Array:
+static func lodge_target_valid(world: ColonyWorld, point: Vector2i) -> bool:
+	if point.x<0 or point.x>120 or point.y<0 or point.y>122: return false
+	if not world.accessible(point) or not ColonyDanger.safe(world,point): return false
+	for y in range(point.y,point.y+6):
+		for x in range(point.x,point.x+8):
+			var tile: Vector2i = Vector2i(x,y)
+			if world.terrain_state.get("starter_field",[]).has(tile) or world.fields.any(func(f:Dictionary)->bool:return f.x==x and f.y==y): return false
+	return ColonyConstruction.lodge_error(world,point).is_empty()
+
+static func lodge_target(world: ColonyWorld, previous: Array = []) -> Array:
+	# Keep a valid suggestion stable as nearby terrain changes. Revalidate its
+	# actual footprint, route and danger; this cache never bypasses placement.
+	if previous.size()==2 and lodge_target_valid(world,Vector2i(previous[0],previous[1])): return previous.duplicate()
 	# Scan in distance/tile order and stop at the first fully valid footprint.
 	var home: Vector2i = _home(world)
 	for distance in range(255):
@@ -103,19 +115,13 @@ static func lodge_target(world: ColonyWorld) -> Array:
 			var dx: int = distance-absi(y-home.y)
 			for x in ([home.x] if dx==0 else [home.x-dx,home.x+dx]):
 				if x<0 or x>120: continue
-				var point: Vector2i = Vector2i(x,y)
-				if not world.accessible(point) or not ColonyDanger.safe(world,point): continue
-				var field_overlap: bool = false
-				for yy in range(y,y+6):
-					for xx in range(x,x+8):
-						var tile: Vector2i = Vector2i(xx,yy)
-						if world.terrain_state.get("starter_field",[]).has(tile) or world.fields.any(func(f:Dictionary)->bool:return f.x==xx and f.y==yy): field_overlap=true;break
-					if field_overlap: break
-				if not field_overlap and ColonyConstruction.lodge_error(world,point).is_empty(): return [x,y]
+				if lodge_target_valid(world,Vector2i(x,y)): return [x,y]
 	return []
 
-static func card(world: ColonyWorld, state: Dictionary) -> Dictionary:
+static func card(world: ColonyWorld, state: Dictionary, suggestions: Dictionary = {}) -> Dictionary:
 	if not state.enabled or state.active.is_empty(): return {}
+	if suggestions.get("world",0)!=world.get_instance_id():
+		suggestions.clear();suggestions["world"]=world.get_instance_id()
 	var id: String = state.active
 	var result: Dictionary = {"id":id,"title":TITLES[id],"text":"","target":[],"entity":0,"action":id,"prerequisite":"","gesture":"Tap"}
 	var target: Dictionary = {}
@@ -132,7 +138,8 @@ static func card(world: ColonyWorld, state: Dictionary) -> Dictionary:
 			if target.is_empty(): result.prerequisite="No safe ripe berry bush is available; clear a route or wait for berries to regrow outside Winter."
 		"lodge":
 			result.text="Place the suggested sleeping lodge: four beds and a door finish before the last wall, for W73 F8.";result.gesture="Place, then Confirm"
-			result.target=lodge_target(world)
+			result.target=lodge_target(world,suggestions.get("lodge",[]))
+			suggestions["lodge"]=result.target.duplicate()
 			if result.target.is_empty(): result.prerequisite="Clear a safe, empty 8 by 6 footprint outside the starter field."
 		"cook":
 			result.text="Inspect the hearth, then resume at 1x until a cook turns four raw food and one wood into two meals."

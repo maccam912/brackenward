@@ -1,6 +1,12 @@
 class_name TutorialTests
 extends RefCounted
 ## Isolated lesson/persistence contracts; gameplay evidence uses real work transactions.
+class PlacementProbe extends ColonyWorld:
+	var placement_checks: int = 0
+	func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0, excluded_structure: int = 0) -> String:
+		placement_checks+=1
+		return super.placement_error(kind,anchor,rotation,excluded_job,excluded_structure)
+
 static func run(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()
 	var state: Dictionary = ColonyTutorial.initial_state()
@@ -80,9 +86,43 @@ static func run(check: Callable) -> void:
 	var gone: Dictionary = ColonyTutorial.card(world,state)
 	check.call("UI09/departed_priority_target_is_not_highlighted",gone.entity==0 and gone.target.is_empty() and gone.prerequisite.contains("no longer"))
 	generated_suggestions(check)
+	cached_lodge(check)
 	planned_field_conflicts(check)
 	explicit_meal_batch(check)
 	persistence(check)
+
+static func cached_lodge(check: Callable) -> void:
+	var world: PlacementProbe = PlacementProbe.new(ColonyCatalog.load_data())
+	ColonyGeneration.configure(world,104729,"meadow_reach")
+	var state: Dictionary = ColonyTutorial.initial_state();ColonyTutorial.replay(state,"lodge")
+	var cache: Dictionary = {};var original: String = world.canonical_hash()
+	var first: Dictionary = ColonyTutorial.card(world,state,cache)
+	var first_checks: int = world.placement_checks;world.placement_checks=0
+	var repeated: Dictionary = ColonyTutorial.card(world,state,cache)
+	check.call("TUTORIAL/cached_lodge_revalidates_one_footprint_without_repeating_search",not first.target.is_empty() and repeated==first and world.placement_checks==28 and first_checks>world.placement_checks and world.canonical_hash()==original,str([first_checks,world.placement_checks]))
+	for obstruction in ["field","structure","blueprint","resource","move","resident","fire"]:
+		world=PlacementProbe.new(ColonyCatalog.load_data());cache={}
+		first=ColonyTutorial.card(world,state,cache)
+		var point: Vector2i = Vector2i(first.target[0],first.target[1])
+		match obstruction:
+			"field": ColonyAgriculture.designate(world,{"crop":"turnip","tiles":[point+Vector2i(2,3)]})
+			"structure": world._structure("wood_wall",point,0)
+			"blueprint":
+				var job: Dictionary = world._job("build","Building","Build",0,point,16000);job.definition="wood_wall"
+			"resource":
+				world.resources.append({"id":world._id(),"definition":"tree","x":point.x,"y":point.y,"remaining":8,"regrow_at":0});world.navigation_dirty=true
+			"move": ColonyMaintenance.move_command(world,{"target":world.citizens[0].bed,"x":point.x,"y":point.y,"rotation":0})
+			"resident": world.citizens[0].x=point.x;world.citizens[0].y=point.y
+			"fire":
+				var fuel: Dictionary = world._make_stack("wood",1,"ground",0,point,true);ColonyFire.ignite(world,"stack",fuel.id)
+		repeated=ColonyTutorial.card(world,state,cache)
+		check.call("TUTORIAL/cached_lodge_rechecks_"+obstruction,not ColonyTutorial.lodge_target_valid(world,point) and repeated.target!=first.target and (repeated.target.is_empty() or ColonyTutorial.lodge_target_valid(world,Vector2i(repeated.target[0],repeated.target[1]))),str([first.target,repeated.target]))
+	world=PlacementProbe.new(ColonyCatalog.load_data());cache={"world":world.get_instance_id(),"lodge":[90,90]}
+	first=ColonyTutorial.card(world,state,cache)
+	check.call("TUTORIAL/valid_lodge_suggestion_stays_stable_when_nearer_space_exists",first.target==[90,90] and ColonyTutorial.lodge_target(world)!=first.target)
+	var other: ColonyWorld = ColonyTests.world();original=other.canonical_hash()
+	repeated=ColonyTutorial.card(other,state,cache)
+	check.call("TUTORIAL/new_world_discards_previous_lodge_suggestion",repeated.target==ColonyTutorial.lodge_target(other) and cache.world==other.get_instance_id() and other.canonical_hash()==original)
 
 static func explicit_meal_batch(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()

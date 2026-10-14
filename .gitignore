@@ -8,6 +8,7 @@ reports/*.log
 reports/*.brackenward
 reports/fixtures/
 reports/winter-release-*/
+reports/winter-v3-*/
 reports/capture-validation/
 reports/beds-validation/
 reports/prepared-validation/

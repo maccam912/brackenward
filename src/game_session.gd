@@ -93,6 +93,7 @@ var guidance_forecast_button: Button
 var guidance_card: Dictionary = {}
 var guidance_elapsed: float = 1.0
 var guidance_signature: String = ""
+var tutorial_suggestions: Dictionary = {}
 var forecast: Dictionary = {"portions":24,"ticks":21600,"label":"24 portions | 3 days stored runway"}
 
 func _ready() -> void:
@@ -998,6 +999,7 @@ func _replace_world(state: RefCounted) -> void:
 	durable_at=save_clock
 	journal_elapsed=0.0
 	world = state
+	tutorial_suggestions.clear()
 	diagnostics.tick=world.tick;diagnostics.speed=0
 	# Every caller supplies a loaded, imported or newly adopted campaign. The
 	# first-launch placeholder must no longer block play or persistence.
@@ -1419,7 +1421,7 @@ func tutorial_tick() -> Dictionary:
 	var added: Array = ColonyTutorial.evaluate(world,state)
 	if JSON.stringify(state)!=previous: _save_settings()
 	if not added.is_empty(): notice="New lesson: "+ColonyTutorial.TITLES[added[0]]+". Open ? to see the action."
-	return ColonyTutorial.card(world,state)
+	return ColonyTutorial.card(world,state,tutorial_suggestions)
 
 func _tutorial_action(kind: String, args: Dictionary = {}) -> void:
 	if not world is ColonyWorld: return
@@ -1444,7 +1446,7 @@ func show_tutorials() -> void:
 
 func _tutorial_show_me() -> void:
 	runner.pause()
-	var card: Dictionary = ColonyTutorial.card(world,_tutorial_state())
+	var card: Dictionary = ColonyTutorial.card(world,_tutorial_state(),tutorial_suggestions)
 	if card.is_empty(): show_tutorials();return
 	if not card.prerequisite.is_empty():
 		show_sheet(card.title);label(card.prerequisite,sheet_body)
