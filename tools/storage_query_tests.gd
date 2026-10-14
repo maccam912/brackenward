@@ -97,3 +97,28 @@ static func input_prefix(check: Callable) -> void:
 			if remaining<=0: break
 			actual_ids.append(stack.id);remaining-=stack.count-world._reserved(stack)
 		check.call("INPUT/partial_selection_matches_full_order_%d" % needed,actual_ids==expected_ids and world.canonical_hash()==before)
+	# Compare complete return contracts as well as their consumed prefixes,
+	# including food in slow-aging stores, reservations and equal-time ties.
+	var granary: Dictionary = world._structure("granary",Vector2i(80,80),0)
+	var cellar: Dictionary = world._structure("cellar",Vector2i(84,80),0)
+	choices.clear()
+	for index in range(120):
+		var item: String = ["grain","berry","meal","wood","vegetable","stone"][index%6]
+		var store: Dictionary = granary if index%3==0 else cellar
+		var stack: Dictionary = world._make_stack(item,2+index%7,"store" if index%4==0 else "ground",store.id if index%4==0 else 0,Vector2i(40+index%30,50+index%8),true)
+		stack.age=index%9*100;stack.age_rem=index%4
+		if index%5==0: stack.reservations[99]=1
+		choices.append(stack)
+	choices.reverse();before=world.canonical_hash()
+	for point in [Vector2i(0,0),Vector2i(66,63),Vector2i(127,127)]:
+		sorted=choices.duplicate();sorted.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(world,a,b,point))
+		for needed in [1,4,16,17,9999]:
+			var expected: Array = sorted.duplicate()
+			if needed<=16:
+				expected.clear();var remaining: int = needed
+				for stack in sorted:
+					if remaining<=0: break
+					expected.append(stack);remaining-=maxi(0,stack.count-world._reserved(stack))
+			var input: Array = choices.duplicate()
+			var actual: Array = ColonyProduction.first_inputs(world,input,point,needed)
+			check.call("INPUT/packed_keys_keep_full_contract_%s_%d" % [str(point),needed],actual==expected and input==(choices if needed<=16 else sorted) and world.canonical_hash()==before)

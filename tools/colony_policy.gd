@@ -275,7 +275,12 @@ func _orders(world: ColonyWorld, residents: int) -> void:
 
 func _defense(world: ColonyWorld, residents: Array) -> void:
 	var raid: Dictionary = ColonyDefense.active(world)
-	if raid.is_empty(): return
+	if raid.is_empty():
+		# Retirement can finish between the planner's 300-tick observations.
+		# Release the planner's defense order even if it missed Retreating.
+		if residents.any(func(c:Dictionary)->bool:return c.drafted) and not world.pending_commands.any(func(c:Dictionary)->bool:return c.kind=="stand_down"):
+			issue(world,"stand_down")
+		return
 	if raid.state=="Announced":
 		var needed: int = raid.budget*8
 		var payment: Dictionary = {}

@@ -226,14 +226,19 @@ static func first_inputs(world: ColonyWorld, candidates: Array, origin: Vector2i
 	# Select only the required prefix of the exact former expiry/distance/item/ID
 	# order. Large requests retain full sorting to avoid quadratic selection.
 	if needed<=0: return []
+	var items: Array = world.definitions.items.keys();items.sort()
+	var item_order: Dictionary = {};var keys: Dictionary = {}
+	for index in range(items.size()): item_order[items[index]]=index
+	for stack: Dictionary in candidates:
+		keys[stack.id]=Vector4i(FoodForecast.expiry_ticks(world,stack),absi(stack.x-origin.x)+absi(stack.y-origin.y),item_order[stack.item],stack.id)
 	if needed>16:
-		candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return input_before(world,a,b,origin))
+		candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return keys[a.id]<keys[b.id])
 		return candidates
 	var result: Array = [];var remaining: Array = candidates.duplicate()
 	while needed>0 and not remaining.is_empty():
 		var best: int = 0
 		for index in range(1,remaining.size()):
-			if input_before(world,remaining[index],remaining[best],origin): best=index
+			if keys[remaining[index].id]<keys[remaining[best].id]: best=index
 		var stack: Dictionary = remaining[best];remaining.remove_at(best);result.append(stack)
 		needed-=maxi(0,stack.count-world._reserved(stack))
 	return result

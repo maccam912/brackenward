@@ -305,3 +305,43 @@ median 2.403 / max 2.810 ms and maximum frame gap 35.325 ms, with no >50 ms
 callbacks/gaps. Invariants/storage are clean and source fingerprint is unchanged.
 This checks the reported early-colony path on the host; phone behavior remains
 unmeasured.
+
+
+## 0.7.14 precomputed ingredient keys
+
+`tools/profile_inputs.gd` compares the former explicit expiry/distance/item/ID
+selector with precomputed native keys on the same 1,000 positive stacks. It
+alternates execution order, discards five warmups and times eighty calls per
+selector/request size. Exact selections and all canonical fields match.
+
+| Requested units | Former total ms | Current total ms |
+| ---: | ---: | ---: |
+| 1 | 158.727 | 63.888 |
+| 4 | 155.574 | 62.954 |
+| 16 | 316.156 | 76.040 |
+| 40 | 1,117.561 | 223.139 |
+
+This is a paired selector CPU diagnosis, not a full-game speedup or phone result.
+The fixed 1,200-tick stress continuation also retains the full previous canonical
+hash and matches its instrumented counterpart. Its 7.986/8.048-second totals
+overlap campaign and validation processes and are not isolated comparisons.
+
+Four final native thirty-second runs retain runtime/media/profiler fingerprint
+`76c5e9f60cbd2c49f9cb3ecf8cd1eb62f903995f3edb5bbaf3f19fd66b0bf59e`.
+The v3 fixture, 960x600, Balanced/30 FPS and center 68,72 remain unchanged.
+Two frozen Charter workers are observed at every start/end; concurrency is not
+sampled continuously. The preceding unopposed rows are not matched comparisons.
+
+| View / speed | Wall seconds | Logical ticks | Main p95 / max ms | Main callbacks >50 ms | Tick p50 / p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Close / 1x | 30.038 | 300 | 11.119 / 133.109 | 12 | 2.899 / 38.578 |
+| Close / 4x | 30.041 | 1,201 | 40.296 / 132.268 | 20 | 2.730 / 35.603 |
+| Far / 1x | 30.031 | 300 | 10.664 / 140.105 | 11 | 2.968 / 44.282 |
+| Far / 4x | 30.018 | 1,200 | 42.212 / 142.268 | 23 | 2.798 / 35.036 |
+
+Maximum frame gaps are 141.813, 144.666, 153.259 and 151.315 ms, with 14, 47,
+16 and 50 over 50 ms respectively. Tick maxima are 132.175, 131.355, 139.110 and
+141.292 ms. All retain requested speed, less than 0.04 seconds backlog, clean
+invariants/storage and the corresponding prior 1x/4x end loads. The tick and frame
+gates still fail. Further work must address scheduling peaks; this checkpoint
+does not claim the isolated selector gain fixes whole-game stalls.

@@ -3,6 +3,7 @@ extends RefCounted
 ## Scenario planner fixtures; these are not ordinary-play campaign certificates.
 
 static func run(check: Callable) -> void:
+	finished_defense(check)
 	beds_and_doors(check)
 	var world: ColonyWorld = ColonyTests.world()
 	var accepted: String = ColonyRegion.prepare(world,RegionTests.args())
@@ -62,6 +63,21 @@ static func storage(check: Callable) -> void:
 	check.call("POLICY/storage_designation_accepts_through_normal_command_path",planned and world.receipts.get(command)=="accepted" and world.ledger==ledger and world.stores[-1].tiles.size()==16)
 	policy._unblock_storage(world);world.step()
 	check.call("POLICY/storage_expansion_stops_after_two_designations",not policy._unblock_storage(world) and world.stores.filter(func(s:Dictionary)->bool:return world.find(world.structures,s.id).is_empty()).size()==2)
+
+static func finished_defense(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world();var policy: ColonyPolicy = ColonyPolicy.new("vegetarian_charter")
+	policy._defense(world,world.citizens)
+	check.call("POLICY/quiet_colony_does_not_issue_defense_commands",world.pending_commands.is_empty())
+	var raid: Dictionary = ColonyDefense.announce(world,2);raid.state="Resolved"
+	world.citizens[0].drafted=true
+	var ledger: Dictionary = world.ledger.duplicate(true);var next_id: int = world.next_id
+	policy._defense(world,world.citizens)
+	check.call("POLICY/missed_retreat_window_queues_public_stand_down",world.pending_commands.size()==1 and world.pending_commands[0].kind=="stand_down" and world.citizens[0].drafted and world.ledger==ledger and world.next_id==next_id)
+	policy._defense(world,world.citizens)
+	check.call("POLICY/stand_down_is_not_duplicated_while_pending",world.pending_commands.size()==1)
+	var command: int = world.pending_commands[0].id
+	world.step()
+	check.call("POLICY/completed_raid_stand_down_applies_through_normal_command",world.receipts.get(command)=="accepted" and world.citizens.all(func(c:Dictionary)->bool:return not c.drafted) and world.ledger==ledger)
 
 static func beds_and_doors(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()
