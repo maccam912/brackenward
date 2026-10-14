@@ -299,3 +299,11 @@ These runs use colony-v3. They neither certify the later food-recovery v4 gamepl
 nor replace the older v2 certificates above. The fresh v4 Winter matrix remains a
 separate running validation. Physical-device, human and performance release gates
 remain open.
+
+
+Current 0.7.28/content v6 pure-loading audit passes all four pinned v4 Charter
+endpoints, including every acknowledged field, original byte and round trip.
+No simulation advances during migration. Report charter-v4-current28-audit.json
+SHA-256 0143f08a723251fffc8933b5720fd0aa5f6e52cd9e9b31e45af32a7f80608f3a.
+The observed v4 health/starvation figures above remain v4 results. Fresh v6
+Charter/ceremony/Continue runs remain pending.

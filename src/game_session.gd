@@ -2097,6 +2097,7 @@ func show_person(id: int) -> void:
 	button(ColonyText.text("ui.action.remembered_moments"),func()->void:show_person_history(id),sheet_body)
 	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
 	label(ColonyBeds.description(world,citizen),sheet_body)
+	label(ColonyText.text("ui.help.person.rest_policy",{"tired":ColonyRest.TIRED,"preferred":ColonyRest.PREFERRED_TIRED,"rested":ColonyRest.RESTED,"bed":ColonyRest.BED,"bedroll":ColonyRest.BEDROLL,"ground":ColonyRest.GROUND}),sheet_body)
 	if not citizen.death_recorded and not citizen.departed and not citizen.downed and not citizen.away and citizen.fullness<=350 and citizen.rest<=300:
 		label(ColonyText.text("ui.help.person.food_and_rest_priority"),sheet_body)
 	if citizen.departure_until>world.tick: label(departure_description(citizen),sheet_body)

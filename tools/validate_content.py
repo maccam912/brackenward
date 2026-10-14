@@ -256,3 +256,8 @@ feasible_sleep_catalog=json.loads((root / 'data/catalogs/colony_v5.json').read_t
 assert feasible_sleep_catalog['version']=='colony-v5'
 assert {**feasible_sleep_catalog,'version':'colony-v4'}==current_catalog, 'Feasible sleep correction must retain every released recipe, quantity, geometry and progression rule'
 print('Validated feasible-sleep content v5; definitions are identical to retained v4 except the declared version.')
+
+rest_catalog=json.loads((root / 'data/catalogs/colony_v6.json').read_text())
+assert rest_catalog['version']=='colony-v6'
+assert {k:v for k,v in rest_catalog.items() if k!='version'}=={k:v for k,v in feasible_sleep_catalog.items() if k!='version'}
+print('Validated independent-rest content v6; definitions are identical to retained v5 except the declared version.')

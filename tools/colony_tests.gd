@@ -45,7 +45,7 @@ static func run(check: Callable) -> void:
 		resident.job = sleep_job.id
 		for i in range(1200):
 			w._needs(resident)
-		check.call("SIM06/four_hour_%s" % kind, resident.rest == {"bed": 700, "bedroll": 580, "ground": 420}[kind])
+		check.call("SIM06/four_hour_%s" % kind, resident.rest == {"bed": 400, "bedroll": 340, "ground": 280}[kind])
 	for phase in ["Fetching", "Delivering", "Working"]:
 		w = world()
 		w.queue_command("build", {"definition": "bed", "x": 74, "y": 63, "rotation": 0})
@@ -159,13 +159,14 @@ static func run(check: Callable) -> void:
 	w.queue_designation([Vector2i(58, 64), Vector2i(58, 65)])
 	var errors: Array[String] = []
 	var saw_sleep: bool = false
-	for i in range(7200):
+	# Include the first full, slower bedroll night rather than ending at sunrise.
+	for i in range(9000):
 		w.step()
 		if i % 10 == 0:
 			errors.append_array(w.invariant_errors())
 			saw_sleep = saw_sleep or w.jobs.any(func(job: Dictionary) -> bool: return job.kind == "sleep" and job.state == "Working")
 	var kinds: Array = w.facts.map(func(f: Dictionary) -> String: return f.kind)
-	check.call("M1/visible_gather_haul_cook_build_eat_sleep", ["gather", "haul", "cook", "build", "eat"].all(func(kind: String) -> bool: return kinds.has(kind)) and w.ledger.produced.get("meal", 0) > 24 and w.structures.any(func(s: Dictionary) -> bool: return s.definition == "bed") and saw_sleep and w.citizens.any(func(c: Dictionary) -> bool: return c.rest > 700), str(kinds))
+	check.call("M1/visible_gather_haul_cook_build_eat_sleep", ["gather", "haul", "cook", "build", "eat"].all(func(kind: String) -> bool: return kinds.has(kind)) and w.ledger.produced.get("meal", 0) > 24 and w.structures.any(func(s: Dictionary) -> bool: return s.definition == "bed") and saw_sleep and w.citizens.any(func(c: Dictionary) -> bool: return c.rest > 700), str({"facts":kinds,"produced_meals":w.ledger.produced.get("meal",0),"saw_sleep":saw_sleep,"rest":w.citizens.map(func(c:Dictionary)->int:return c.rest)}))
 	check.call("M1/end_to_end_conservation", errors.is_empty(), str(errors.slice(0, 8)))
 	# Mid-edge plus held input and completed work all survive exact continuation.
 	var restored: Dictionary = ColonyCodec.decode(ColonyCodec.encode(w))

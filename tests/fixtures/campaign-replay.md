@@ -87,3 +87,26 @@ at 7,200 and
 `a3acab0583d26caf61996e8f2680245f30bfda976808c17be8fda31b9867441f`
 at 72,000. `beds-metadata-rebaseline.json` records the comparison; the ordinary
 non-recording replay must still pass both checkpoints and foreign continuation.
+
+
+14 October content v6 rest pacing: current replay uses separate
+`campaign-replay-v6-input.json`, `campaign-replay-v6-golden.json` and
+`campaign-replay-v6-7200.brackenward`. All older inputs, goldens and saves remain
+immutable. The same 62 public actions/times now queue nine subsequent research
+projects instead of replacing unfinished work; the budget-2 raid target is the
+actually observed 3976, with the same 16 wood. Expected receipts remain accepted.
+The idle-queue bug found during recording is fixed through real scheduling.
+Recording plus separate verification pass 234 invariant checks and current-rule
+continuation. The new save is locally produced; matching native CI imports on
+other hosts remain a separate gate. The earlier original foreign save keeps SHA
+ed04e21b0da3c5076fc66da1e27246257f6dbdf77fd9bbfaf00bc8b9bec318f9.
+
+Current v6 canonical hashes: initial
+c40f4e6b8f2fffc3b1806cef288ec9ed21c0147745adf419f1a453ce9a65a7b7;
+7,200 50bb80a8c127473adf03f8882bef3f0ac6b09844c42c14bc0cce3816cf7b920e;
+72,000 b996c5f4e4d953d234b3d967fc931582dbd426fc527e410e6dc92af5bee707d6.
+The new save SHA is dbc248d219c6f2ee783ed802ea7e7a6a786db09f916064229b39095fd2401621.
+Content-v3/v4/v5 acknowledgements and old schema-22-compatible endpoints retain
+every acknowledged field after header normalization; the old future trace is
+not claimed equal after intentional rest-rule changes. Separate v6 replay
+goldens constrain the new simulation instead.

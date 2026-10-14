@@ -354,11 +354,11 @@ static func needs(world: ColonyWorld, person: Dictionary) -> void:
 		person.hunger_rem+=1000;person.fullness=maxi(0,person.fullness-person.hunger_rem/7200);person.hunger_rem%=7200
 	if not protected_wait and person.fullness<=350 and cargo(world,trip).get("travel_ration",0)>0:
 		consume(world,trip,"travel_ration",1);trip.eaten+=1;person.fullness=mini(1000,person.fullness+500);person.starving_ticks=0
-	var hour: int = ((world.tick%7200)/300+(12 if person.shift=="Night shift" else 0))%24
-	if not person.camp_sleeping and (person.rest<=300 or ((hour>=22 or hour<6) and person.rest<900)): person.camp_sleeping=true
-	elif person.camp_sleeping and (((hour>=6 and hour<22) and person.rest>=900) or (hour==6 and person.rest>=500)): person.camp_sleeping=false
-	person.rest_rem+=120 if person.camp_sleeping else 50
+	if not person.camp_sleeping and ColonyRest.wants_sleep(person,world.tick) and (person.fullness>350 or person.rest<=100): person.camp_sleeping=true
+	elif person.camp_sleeping and (person.rest>=ColonyRest.RESTED or (person.fullness<=350 and person.rest>=ColonyRest.TIRED)): person.camp_sleeping=false
+	person.rest_rem+=ColonyRest.BEDROLL if person.camp_sleeping else ColonyRest.awake_rate(world.tick)
 	var change: int = person.rest_rem/300;person.rest_rem%=300;person.rest=clampi(person.rest+(change if person.camp_sleeping else -change),0,1000)
+	if person.camp_sleeping and (person.rest>=ColonyRest.RESTED or (person.fullness<=350 and person.rest>=ColonyRest.TIRED)): person.camp_sleeping=false
 	if not protected_wait and person.fullness==0:
 		person.starving_ticks+=1
 		if person.starving_ticks>1800 and (person.starving_ticks-1800)%300==0: ColonyCare.hurt(world,person,5)

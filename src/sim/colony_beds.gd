@@ -41,5 +41,5 @@ static func command(world: ColonyWorld, args: Dictionary) -> String:
 
 static func description(world: ColonyWorld, person: Dictionary) -> String:
 	var bed: Dictionary = world.find(world.structures,person.bed)
-	if bed.is_empty() or bed.health<=0: return "No assigned bed | ground rest 80/hour"
-	return "%s at %d,%d | %s | rest %d/hour" % [ColonyChronicle.display_name(world,bed.id),bed.x,bed.y,"Roofed" if world.roofed(Vector2i(bed.x,bed.y)) else "Outdoors",150 if bed.definition=="bed" else 120]
+	if bed.is_empty() or bed.health<=0: return "No assigned bed | ground rest %d/hour" % ColonyRest.GROUND
+	return "%s at %d,%d | %s | rest %d/hour" % [ColonyChronicle.display_name(world,bed.id),bed.x,bed.y,"Roofed" if world.roofed(Vector2i(bed.x,bed.y)) else "Outdoors",ColonyRest.recovery_rate(bed.definition)]

@@ -15,6 +15,7 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 			if world.production_state.queue.size() >= 3: return "Research queue is limited to three projects"
 			if world.production_state.queue.has(args.definition) or world.production_state.project == args.definition: return "Already selected or queued"
 			world.production_state.queue.append(args.definition)
+			if select_queued_project(world): apply_insight(world)
 			return "accepted"
 		for prerequisite in world.definitions.research[args.definition].prerequisites:
 			if not world.researched.has(prerequisite): return "Requires "+prerequisite.capitalize()
@@ -40,7 +41,15 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 	world.production_state.orders.append({"id":world._id(),"station":station.id,"recipe":recipe.id,"mode":args.mode,"quantity":args.value,"priority":args.priority,"filters":args.filters.duplicate(),"enabled":true})
 	return "accepted"
 
+static func select_queued_project(world: ColonyWorld) -> bool:
+	if not world.production_state.project.is_empty() or world.production_state.queue.is_empty(): return false
+	var next: String=world.production_state.queue[0]
+	if not world.definitions.research[next].prerequisites.all(func(id:Variant)->bool:return world.researched.has(id)): return false
+	world.production_state.project=world.production_state.queue.pop_front()
+	return true
+
 static func create_jobs(world: ColonyWorld) -> void:
+	if select_queued_project(world): apply_insight(world)
 	# This pass only queues work; it does not reserve or move stock. Index the
 	# current work once, then include each newly queued batch in the same maps.
 	var occupied_stations: Dictionary = {}
@@ -163,10 +172,7 @@ static func finish_project(world: ColonyWorld, project: String, actor_id: int = 
 	for person in world.citizens:
 		if person.traits.has("Curious"): world.production_state.discoveries[person.id] = world.tick+14400
 	world.production_state.project = ""
-	if not world.production_state.queue.is_empty():
-		var next: String = world.production_state.queue[0]
-		if world.definitions.research[next].prerequisites.all(func(id:Variant)->bool:return world.researched.has(id)):
-			world.production_state.project = world.production_state.queue.pop_front()
+	select_queued_project(world)
 	if actor_id>0 and not participants.has(actor_id): participants.append(actor_id)
 	participants.sort()
 	var discovered: int = world.emit_fact({"tick":world.tick,"actor":actor_id,"job":0,"kind":"research_complete","text":project.capitalize()+" research completed; its catalog unlocks are available."},{"participants":participants,"causes":causes})

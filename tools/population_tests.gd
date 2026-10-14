@@ -106,7 +106,7 @@ static func beds(check: Callable) -> void:
 	check.call("SAVE/bed_reassignment_mid_edge_roundtrips_exactly",loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash(),str(loaded.get("error","")))
 	for tick in range(160): world.step()
 	check.call("BED/reassigned_sleeper_walks_to_new_bed_and_rests_there",sleep.state=="Working" and Vector2i(person.x,person.y)==Vector2i(bed.x,bed.y) and person.rest>200 and person.bed_sleep_ticks>0)
-	check.call("BED/unassign_uses_ground_sleep_and_releases_bed",ColonyBeds.command(world,{"citizen":1,"target":0})=="accepted" and person.bed==0 and bed.user==0 and sleep.target==0 and person.bed_sleep_ticks==0 and ColonyBeds.description(world,person).contains("80/hour"))
+	check.call("BED/unassign_uses_ground_sleep_and_releases_bed",ColonyBeds.command(world,{"citizen":1,"target":0})=="accepted" and person.bed==0 and bed.user==0 and sleep.target==0 and person.bed_sleep_ticks==0 and ColonyBeds.description(world,person).contains("45/hour"))
 	world.step();loaded=ColonyCodec.decode(ColonyCodec.encode(world))
 	check.call("SAVE/unassigned_sleep_roundtrip_and_conservation",loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash() and world.invariant_errors().is_empty(),str(loaded.get("error",world.invariant_errors())))
 	person.rest=50

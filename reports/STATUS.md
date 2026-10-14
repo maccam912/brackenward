@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.27-m7` (campaign schema 23, device settings schema 5), content `colony-v5`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.28-m7` (campaign schema 23, device settings schema 5), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -16,17 +16,17 @@ Checkpoint: `0.7.27-m7` (campaign schema 23, device settings schema 5), content 
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `fdadd7b`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38628985102) passed the full suite, all four desktop replay/startup targets, exports and publication, including actual exported Linux startup from an empty directory. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
+| Remote CI | Pass at `245f935`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38638854703) passed the full suite, all four desktop replay/startup targets, exports and publication, including actual exported Linux startup from an empty directory. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
-| M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Full v4 Standard-site and Pine Hearthside vegetarian Charters now pass all four 96-day cases; all retain eight residents and Continue, although Meadow suffers serious shortages. The fresh v4 Winter matrix is 30/30 with minimum health 100. Current v5 imports preserve every acknowledged field in all 34 endpoints. Fresh v5 long-campaign runs, M7 and physical/human gates remain; older v2/v3 results retain their pinned scopes. |
+| M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Full v4 Standard-site and Pine Hearthside vegetarian Charters now pass all four 96-day cases; all retain eight residents and Continue, although Meadow suffers serious shortages. The fresh v4 Winter matrix is 30/30 with minimum health 100. Current v6 loading audits preserve all 34 endpoints without advancing time. Fresh v6 long-campaign runs, M7 and physical/human gates remain; older v2/v3 results retain their pinned scopes. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `00013c2` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-00013c23d0c1); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
+| Development APK publication | Pass at `245f935` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-245f9359d822); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,336 checks, zero failures, including 592 native UI checks. The v5 full baseline is retained; changed UI/settings/persistence suites were freshly rerun for this checkpoint. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,367 checks, zero failures, including 593 native UI checks. Every suite was freshly run for content v6; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -1943,3 +1943,93 @@ the original producer hash exactly, with zero CRLFs. No frozen bytes or expected
 hashes changed and the strict gate remains; individual delta/producer evidence
 is now included in audit reports so a failure is directly diagnosable. Remote
 verification/publication of this fix remains pending.
+
+
+## 0.7.28 independent sleep pacing and idle research queues / content v6
+
+Residents wake at rest 900 at any clock time. Sunrise alone no longer wakes a
+still tired sleeper, and the preferred sleep window only starts sleep below
+rest 600. Ordinary tiredness remains 300, preparation 500 and critical rest 100.
+Beds recover 75/hour, bedrolls 60 and ground 45. Waking drain is exactly 37.5/hour
+through alternating integer numerators, preserving the existing /300 saved
+remainder unit. A normal bed balances sixteen waking hours with eight hours of
+recovery from 300 to 900. Night shift offsets the preferred window, and energetic
+residents do not all go to bed just because it is night. Camp sleep shares these
+rules and rates. Resident and bed cards expose the actual policy.
+
+A real low-rest migration regression caught a hungry cook staying asleep too
+long under slower recovery. Hungry sleepers now recover to rest 300, then may
+rise to obtain or prepare food even if no portion is yet feasible. Below that
+minimum they retain sleep; the existing feasible-food and critical-rest rules
+stay in force. Productive hungry cooks still avoid release/reacquisition churn.
+The retained old low-rest colony again returns to real eating within its existing
+4,800-tick check; no healing, food, rest or completed work is injected in play.
+
+The new replay also exposed idle research queues: queuing after a completed
+project could leave the queue waiting forever. A shared selection rule now
+starts a ready head on idle Queue, the next real creation pass, or completion,
+with actual prerequisites, order and banked insight preserved. Tests cover idle
+selection, insight, a blocked head, eligible saved queues and three queued plus
+one active project. A former insight test now selects its intended first project
+before queueing; it keeps its exact discoveries, insight and XP expectations.
+
+This is a declared future-rule change, content v6 hash
+eb5fd60496e154184057859aad76683ffdd91acd839cf9335fa48293e3f6a9b5.
+The v5 catalog remains unchanged; every definition except the version is identical.
+Schema 23/envelope 5/settings 5/generation 1 remain. Six v5 acknowledgements and
+a 600-tick v5 sleep journal were captured from clean 245f935 before changing rules.
+Its fully rested residents remain asleep through 01:00 in the original state,
+proving the reported clock gate. The immutable producer hash is
+17e95a3e914fdd5771f314391ed1ff9371c10402eb1141a57adedec54f49d4b7, with
+explicit LF checkout. Imports fold old deltas before header-only migration and
+preserve all fields, needs/remainders/jobs, source bytes and backups; only future
+play wakes those old sleepers. Six older v3 and five v4 acknowledgements still pass.
+
+All 28 suites are freshly run: 2,367 checks, including scheduler 331, persistence
+319 and native UI 593. New rest regressions cover independent tiredness/night
+shift, exact physical 8/10/13h20m recovery, fully rested waking, needed sleep past
+sunrise, exact sixteen-hour drain/reload and hungry cooking. Older numeric rate
+expectations now assert the declared new values. The real first-day loop now
+observes thirty hours rather than ending before a slower bedroll night can finish;
+it retains the same real gather/haul/cook/build/eat/sleep, rest, food and conservation
+requirements. Original failures remain retained, with final reruns of each affected
+suite; no expected receipt or checksum was relaxed.
+
+A separate v6 input retains all 62 ordinary commands and their times, using nine
+Queue actions to preserve unfinished research rather than switching it away,
+and the actual announced budget-2 raid 3976 instead of the earlier trace's 3979.
+Its 16-wood price, strict accepted receipts, seed and other actions remain.
+Original input/goldens/foreign bytes are untouched. Four failed recording attempts
+retain prerequisite/full-queue/stale-ID evidence; the corrected recording and
+independent verification pass 234 invariant checkpoints in 79.003/70.067 seconds.
+The new v6 tick-7,200 save is newly captured on this host and is the next native
+CI matrix's shared import, not a claim that its cross-host test has already run.
+
+New initial hash c40f4e6b8f2fffc3b1806cef288ec9ed21c0147745adf419f1a453ce9a65a7b7;
+tick 7,200 50bb80a8c127473adf03f8882bef3f0ac6b09844c42c14bc0cce3816cf7b920e;
+tick 72,000 b996c5f4e4d953d234b3d967fc931582dbd426fc527e410e6dc92af5bee707d6.
+The new foreign-save input SHA is
+dbc248d219c6f2ee783ed802ea7e7a6a786db09f916064229b39095fd2401621.
+Schema-22 preservation now explicitly audits frozen acknowledged endpoints; its
+old future trace is not asserted equal to intentionally changed v6 sleep rules.
+Fresh v6 replay independently checks the new future behavior.
+
+Local APK export passes 0.7.28-m7 / code 67. The native sixty-frame/audio-drain
+startup passes, and all three current tutorial flows pass 22 checks each. Catalog
+validation covers 430 referenced UI keys. Separate 30-second Balanced native
+profiles from the unchanged failed-soak input advance 290 ticks at 1x and 1,156
+at 4x, retaining requested speed with no background/storage alert/pause/reduction,
+clean invariants and unchanged source. Maximum simulation batches remain
+1,155.267/1,156.637 ms; session p95 bounds are 8/100 ms and frame-gap bounds
+50/100 ms. The largest first 1x assignment callback is 1,097.616 ms. These
+short heavy-save CPU observations are neither a soak pass nor a phone certificate;
+the assignment spike remains a performance target. Quiet-sleep acceleration above 4x remains
+next work. Fresh v6 long-campaign/balance evidence and physical Android retesting
+remain open. Weekly remaining last observed 70%; authorized work continues.
+
+Current 0.7.28 header-only loading audits pass all thirty frozen v4 Winter
+endpoints and all four v4 Charter endpoints, preserving every acknowledged field,
+raw input byte and codec round trip without advancing time. Winter audit SHA
+46e5ee5464c5902edfaa67070117e6352a85c16058f7af40e2c334d3ec2deb17;
+Charter audit SHA 0143f08a723251fffc8933b5720fd0aa5f6e52cd9e9b31e45af32a7f80608f3a.
+These are migration audits, not new v6 campaign/balance passes.

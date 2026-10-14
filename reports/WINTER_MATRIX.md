@@ -223,3 +223,11 @@ comprehension, release signing and the M7 stress/art gates are separate.
 | reed_bend | 2147483647 | `645e988f5de7f19252dc99e911398759d09122ec1056a7fb75a18ea241c6b90f` | `dbccecc0abd691bf5becfebf929913747bd50c04a51671d1e8f4f9abeb6a4716` |
 | reed_bend | 3000000001 | `94fe53235d6ede686ce54337efda37dfa345138a0c5c86bf27fbe891998f7f52` | `6c4a113d7bc6ccfa0b7ca08126ddf2a6d1876507c98ecdf96736aa6d8144f559` |
 | reed_bend | 4294967295 | `a059876be69b87e95faf1f14ff39f9fef32c682911d076206d8fdf30a7642e7e` | `b105c30207e47ccdd447498358dd4def49965bc6815e622880289e9de306ad3f` |
+
+
+Current 0.7.28/content v6 loading audit passes 30/30 original v4 endpoints,
+without advancing time. Every acknowledged field survives header-only migration,
+original bytes remain unchanged and current codec round trips are exact.
+Report: winter-v4-current28-audit.json, SHA-256
+46e5ee5464c5902edfaa67070117e6352a85c16058f7af40e2c334d3ec2deb17.
+This is save compatibility; fresh v6 Winter balance remains pending.

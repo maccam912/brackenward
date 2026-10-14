@@ -1,0 +1,64 @@
+{
+	"catalog_hash": "5ec5ef41a343f0fae9fe4b016b0b462182f7ed9ec28d5d23fa55b07691a46576",
+	"content": "colony-v5",
+	"controlled_final_activities": [
+		"Sleeping",
+		"Sleeping",
+		"Sleeping",
+		"Sleeping"
+	],
+	"controlled_final_rest": [
+		1000,
+		1000,
+		1000,
+		1000
+	],
+	"controlled_final_tick": 7500,
+	"delta": {
+		"content5-delta-base.brackenward": "bc805aba0a2458e7c0b67b04433006074f06174eb0e2f5efb56294f3371cc17b",
+		"content5-delta-final.brackenward": "47fdd6d1383df95f1ef5310e162368727d6232c1c3c1f8734e25909d6d7473cd",
+		"content5-delta.frames": "9cecad9201623985f57bf03e99e653d98542d8633c66b2831167a5c59a4474c3"
+	},
+	"producer_sha256": "17e95a3e914fdd5771f314391ed1ff9371c10402eb1141a57adedec54f49d4b7",
+	"schema": 23,
+	"scope": "Exact v5 acknowledgements; future independent sleep/rest pacing changes after capture",
+	"snapshots": [
+		{
+			"canonical_hash": "6aa7855780cba1bc14a389f7f0e8a92697120238fd7460817d835f57cab993a7",
+			"file": "content5-replay-initial.brackenward",
+			"role": "Reviewed acknowledgement under v5 header; exact fields, not a fresh campaign run",
+			"sha256": "835a146fee0a1e051c2b09c28ecdada8a31e204911c4f8e87de89a6a4489d03d"
+		},
+		{
+			"canonical_hash": "09f767be351ebd13046add506fd4e159c3edf37c03acc575c61f7a6631243f48",
+			"file": "content5-replay-7200.brackenward",
+			"role": "Reviewed acknowledgement under v5 header; exact fields, not a fresh campaign run",
+			"sha256": "3a474356f5e7919b95db8b2794f1d94a825e24f5fc75ab91d3b1b32d781c552c"
+		},
+		{
+			"canonical_hash": "82c84fd7703f16634a4683eda11fe8a5add36bcf071c5102852319dc7b09aff1",
+			"file": "content5-replay-72000.brackenward",
+			"role": "Reviewed acknowledgement under v5 header; exact fields, not a fresh campaign run",
+			"sha256": "34c09c07514756a8c1ea4ffa0aec2c4cd1b2b1a53b8f1c919f03be866c188203"
+		},
+		{
+			"canonical_hash": "f8014893e883982f5b099f75f0fdebe48cfb687940edc47decbaff62e94bf55b",
+			"file": "content5-rested-sleepers.brackenward",
+			"role": "Controlled fully rested sleepers at 23:00 in assigned bedrolls; not balance evidence",
+			"sha256": "1227c76ead76ae6f887312dcd9533b326b63f4b3f8227de8bf71974856931435"
+		},
+		{
+			"canonical_hash": "f96c8a54942a598cfc319d1b385d0243a1b430ca7edd811016b2066295cfa316",
+			"file": "content5-mixed-tiredness.brackenward",
+			"role": "Controlled varying rest at 23:00, no assigned jobs; not balance evidence",
+			"sha256": "d3013dfe28e2392d3984b54632b3b1c066bd1466733c5ff59e860809000ea8e7"
+		},
+		{
+			"canonical_hash": "57e0af7760429915d499b9127515db18d2bc87eaed3a05493b315d0ede214c0a",
+			"file": "content5-delta-final.brackenward",
+			"role": "600 acknowledged v5 ticks of fully rested night sleepers; retain exact original state",
+			"sha256": "47fdd6d1383df95f1ef5310e162368727d6232c1c3c1f8734e25909d6d7473cd"
+		}
+	],
+	"source_commit": "245f9359d8220ed17a94f544b7a79f85052c7d86"
+}

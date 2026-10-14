@@ -42,9 +42,8 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 		var arrival: Dictionary = {} if arrivals.is_empty() else arrivals[0]
 		var preparing: bool = ColonyRegion.preparing(self,citizen)
 		var food_threshold: int = 500 if preparing else 350
-		var rest_threshold: int = 500 if preparing else 300
+		var needs_sleep: bool = ColonyRest.wants_sleep(citizen,tick,preparing)
 		var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
-		var needs_sleep: bool = citizen.rest <= rest_threshold or ((hour >= 22 or hour < 6) and citizen.rest < 900)
 		# Release for sleep only when the same search can actually start sleeping.
 		var sleep_eligible: bool = needs_sleep and (citizen.fullness > 350 or citizen.rest <= 100)
 		var current: Dictionary = find(jobs, citizen.job)
@@ -68,7 +67,8 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 			# Hunger still drains during sleep. Wake for ordinary food before reaching
 			# zero, while protecting life-critical rest until it exceeds 100.
 			var needs_food: bool = ordinary_food and not hunger_food.is_empty()
-			var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or (sleep_eligible and current.kind not in ["eat","sleep"]))
+			var hungry_sleeper: bool = current.kind=="sleep" and citizen.fullness<=350 and citizen.rest>=ColonyRest.TIRED
+			var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 			var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
 			if urgent_self_care or break_interrupt or (emergency and not current.emergency) or change_to_defense or ordinary_needs:
 				_release(current, false)

@@ -74,6 +74,7 @@ func run() -> void:
 		"chronicle": ChronicleTests.run(check)
 		"scheduler":
 			SleepCycleTests.run(check)
+			SleepCycleTests.pacing(check)
 			ReservationReadTests.run(check)
 			CreationReadTests.run(check)
 			SchedulerTests.run(check)

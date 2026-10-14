@@ -73,9 +73,9 @@ static func run(check: Callable) -> void:
 	w = ColonyTests.world()
 	ColonyProduction.add_insight(w,1200)
 	check.call("RESEARCH/insight_bank_capped_without_project",w.production_state.insight == 1000)
+	ColonyProduction.command(w,"research_select",{"definition":"storecraft"})
 	ColonyProduction.command(w,"research_queue",{"definition":"farming"})
 	ColonyProduction.command(w,"research_queue",{"definition":"weaving"})
-	ColonyProduction.command(w,"research_select",{"definition":"storecraft"})
 	check.call("RESEARCH/insight_carries_through_prerequisite_queue",w.researched == ["storecraft","farming","weaving"] and w.production_state.insight == 100 and w.production_state.project == "" and w.citizens[3].xp.Study == 2400000)
 	check.call("RESEARCH/curious_discovery_memory",w.production_state.discoveries.get(4) == w.tick+14400)
 	w = ColonyTests.world()
@@ -90,9 +90,17 @@ static func run(check: Callable) -> void:
 	ColonyProduction.command(w,"research_select",{"definition":"storecraft"})
 	ColonyProduction.add_insight(w,240)
 	check.call("RESEARCH/inactive_contributor_xp_awarded_once",retained.state == "Complete" and w.citizens[3].xp.Study == 2400000+original_progress and w.researched.count("storecraft") == 1)
+	ColonyProduction.command(w,"research_select",{"definition":"masonry"})
 	var queued: Array[String] = ["farming","herbalism","woodcraft"]
 	for id in queued: ColonyProduction.command(w,"research_queue",{"definition":id})
 	check.call("RESEARCH/queue_limit_and_duplicates",ColonyProduction.command(w,"research_queue",{"definition":"trailcraft"}).contains("three") and w.production_state.queue == queued)
+	w=ColonyTests.world();w.production_state.insight=100
+	check.call("RESEARCH/queue_on_idle_desk_selects_ready_project_and_spends_banked_insight",ColonyProduction.command(w,"research_queue",{"definition":"storecraft"})=="accepted" and w.production_state.project=="storecraft" and w.production_state.queue.is_empty() and w.production_state.progress.storecraft==100000 and w.production_state.insight==0)
+	w=ColonyTests.world()
+	ColonyProduction.command(w,"research_queue",{"definition":"weaving"})
+	check.call("RESEARCH/idle_queue_waits_for_its_real_prerequisites",w.production_state.project.is_empty() and w.production_state.queue==["weaving"])
+	w.researched.append_array(["storecraft","farming"]);ColonyProduction.create_jobs(w)
+	check.call("RESEARCH/ready_saved_idle_queue_starts_on_next_real_creation_pass",w.production_state.project=="weaving" and w.production_state.queue.is_empty())
 	w = ColonyTests.world()
 	var hearth: Dictionary = w.structures.filter(func(s:Dictionary)->bool:return s.definition == "hearth")[0]
 	var cooking: Dictionary = w._job("cook","Cooking","Cooking",hearth.id,Vector2i(hearth.x,hearth.y),8000)

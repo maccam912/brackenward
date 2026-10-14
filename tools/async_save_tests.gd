@@ -11,6 +11,7 @@ static func run(tree: SceneTree, check: Callable) -> void:
 	var root: String = "user://async-save-tests-%d" % Time.get_ticks_usec()
 	content3_upgrade(root,check)
 	content4_upgrade(root,check)
+	content5_upgrade(root,check)
 	var world: ColonyWorld = ColonyTests.world()
 	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("campaign")
 	check.call("SAVE/async_fixture_snapshot",store.save(world).is_empty())
@@ -155,9 +156,9 @@ static func content3_upgrade(root: String, check: Callable) -> void:
 	changed.content_hash="0".repeat(64);envelope.content_hash=changed.content_hash
 	envelope.payload=JSON.stringify(ColonyState.pack(changed),"",true);envelope.sha256=envelope.payload.sha256_text()
 	check.call("SAVE/v3_upgrade_requires_its_exact_released_catalog",ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","").begins_with("Unknown released v3 catalog"))
-	envelope.content="colony-v6"
+	envelope.content="colony-v7"
 	var newer: String = ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","")
-	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v6") and newer.contains("colony-v5"))
+	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v7") and newer.contains("colony-v6"))
 	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("content-v4-upgrade")
 	DirAccess.make_dir_recursive_absolute(store.directory)
 	var snapshot: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/content3-delta-base.brackenward")
@@ -255,3 +256,22 @@ static func content4_upgrade(root: String, check: Callable) -> void:
 	var error: String=store.checkpoint(world);var loaded: Dictionary=load_saved(store)
 	check.call("SAVE/v5_future_checkpoint_recovers_exactly_after_v4_upgrade",error.is_empty() and loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash() and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-journal-0000000001.frames"))==journal,str(error))
 	check.call("SAVE/all_v4_source_fixture_bytes_stay_frozen",FileAccess.get_sha256("res://tests/fixtures/content4-delta-base.brackenward")==manifest.delta["content4-delta-base.brackenward"] and FileAccess.get_sha256("res://tests/fixtures/content4-delta.frames")==manifest.delta["content4-delta.frames"])
+
+static func content5_upgrade(root: String, check: Callable) -> void:
+	var audit: Dictionary=Content5Migration.audit()
+	for row in audit.rows: check.call("SAVE/v5_acknowledgement_"+row.file,row.passed,str(row.get("error","")))
+	check.call("SAVE/all_six_v5_acknowledgements_and_frozen_producer_are_exact",audit.passed and audit.rows.size()==6)
+	var snapshot: PackedByteArray=FileAccess.get_file_as_bytes("res://tests/fixtures/content5-delta-base.brackenward")
+	var journal: PackedByteArray=FileAccess.get_file_as_bytes("res://tests/fixtures/content5-delta.frames")
+	var store: ColonyStore=ColonyStore.new();store.directory=root.path_join("content-v6-upgrade");DirAccess.make_dir_recursive_absolute(store.directory)
+	var snapshot_path: String=store.directory.path_join("snapshot-0000000001.brackenward");var journal_path: String=store.directory.path_join("journal-0000000001.frames")
+	var file: FileAccess=FileAccess.open(snapshot_path,FileAccess.WRITE);file.store_buffer(snapshot);file.close();file=FileAccess.open(journal_path,FileAccess.WRITE);file.store_buffer(journal);file.close()
+	var expected: Dictionary=ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content5-delta-final.brackenward"));var recovered: Dictionary=store.load_latest()
+	check.call("SAVE/v5_sleep_journal_folds_exactly_before_v6_rules",expected.has("world") and recovered.has("world") and recovered.world.tick==7500 and recovered.world.canonical_hash()==expected.world.canonical_hash(),str(recovered.get("error","")))
+	if not expected.has("world") or not recovered.has("world"): return
+	check.call("SAVE/v5_sleep_migration_keeps_originals_and_backups",FileAccess.get_file_as_bytes(snapshot_path)==snapshot and FileAccess.get_file_as_bytes(journal_path)==journal and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-journal-0000000001.frames"))==journal)
+	var world: ColonyWorld=recovered.world;world.step()
+	check.call("SAVE/old_fully_rested_sleepers_wake_only_in_future_v6_play",world.tick==7501 and world.citizens.all(func(p:Dictionary)->bool:return p.job==0 and p.rest==1000) and world.invariant_errors().is_empty())
+	for index in range(120): world.step()
+	var error: String=store.checkpoint(world);var loaded: Dictionary=load_saved(store)
+	check.call("SAVE/v6_post_upgrade_sleep_continues_exactly",error.is_empty() and loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash(),error)

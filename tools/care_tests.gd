@@ -176,7 +176,7 @@ static func run(check: Callable) -> void:
 	patient = w.citizens[1]; patient.rest = 500
 	ColonyCare.hurt(w,patient,90,true)
 	for i in range(300): w._needs(patient)
-	check.call("CARE/downed_ground_rest_uses_actual_location",patient.rest == 580)
+	check.call("CARE/downed_ground_rest_uses_actual_location",patient.rest == 545)
 	w = ColonyTests.world()
 	ColonyCare.hurt(w,w.citizens[1],100,false)
 	w.queue_command("build",{"definition":"bed","x":74,"y":63,"rotation":0})

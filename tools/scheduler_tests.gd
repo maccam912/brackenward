@@ -197,7 +197,7 @@ static func unreachable_bed(check: Callable) -> void:
 		world._assign(person)
 		world._work(person,sleep_job)
 		ColonyLiving.advance(world)
-	check.call("SCHED/ground_fallback_restores_exact_rate_without_retry_jobs",person.rest==379 and world.jobs.size()==job_count and person.activity.contains("clear access or reassign bed"),str([person.rest,world.jobs.size(),job_count,person.activity]))
+	check.call("SCHED/ground_fallback_restores_exact_rate_without_retry_jobs",person.rest==344 and world.jobs.size()==job_count and person.activity.contains("clear access or reassign bed"),str([person.rest,world.jobs.size(),job_count,person.activity]))
 	check.call("SCHED/ground_sleep_never_earns_assigned_bed_memory",person.bed_sleep_ticks==0 and person.bed_memory_until==0 and not world.facts.any(func(f:Dictionary)->bool:return f.kind=="rested_in_bed"))
 	var restored: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
 	check.call("SAVE/unreachable_bed_fallback_roundtrip",restored.has("world") and restored.world.canonical_hash()==world.canonical_hash() and world.invariant_errors().is_empty(),str(restored.get("error",world.invariant_errors())))

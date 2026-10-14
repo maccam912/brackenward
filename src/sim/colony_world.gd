@@ -2,7 +2,7 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v5"
+const CONTENT_VERSION: String = "colony-v6"
 const SCHEMA_REVISION: int = 23
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
@@ -763,7 +763,7 @@ func _needs(citizen: Dictionary) -> void:
 	citizen.hunger_rem %= 7200
 	var job: Dictionary = find(jobs, citizen.job)
 	var sleeping: bool = citizen.downed or (not job.is_empty() and job.kind in ["sleep","recover"] and job.state == "Working")
-	var rate: int = 50
+	var rate: int = ColonyRest.awake_rate(tick)
 	if sleeping:
 		var bed: Dictionary = find(structures, citizen.bed if citizen.downed else job.target)
 		if not bed.is_empty() and (bed.health<=0 or not footprint(bed).has(Vector2i(citizen.x,citizen.y))): bed={}
@@ -773,7 +773,7 @@ func _needs(citizen: Dictionary) -> void:
 				if structure.health>0 and structure.definition in ["bed","bedroll"] and footprint(structure).has(Vector2i(citizen.x,citizen.y)):
 					bed = structure
 					break
-		rate = 80 if bed.is_empty() else (150 if bed.definition == "bed" else 120)
+		rate = ColonyRest.recovery_rate(bed.get("definition",""))
 	citizen.rest_rem += rate
 	var change: int = citizen.rest_rem / 300
 	citizen.rest_rem %= 300
@@ -811,9 +811,8 @@ func _assign_search(citizen: Dictionary) -> void:
 	var arrival: Dictionary = {} if arrivals.is_empty() else arrivals[0]
 	var preparing: bool = ColonyRegion.preparing(self,citizen)
 	var food_threshold: int = 500 if preparing else 350
-	var rest_threshold: int = 500 if preparing else 300
+	var needs_sleep: bool = ColonyRest.wants_sleep(citizen,tick,preparing)
 	var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
-	var needs_sleep: bool = citizen.rest <= rest_threshold or ((hour >= 22 or hour < 6) and citizen.rest < 900)
 	# Release for sleep only when the same search can actually start sleeping.
 	var sleep_eligible: bool = needs_sleep and (citizen.fullness > 350 or citizen.rest <= 100)
 	var current: Dictionary = find(jobs, citizen.job)
@@ -837,7 +836,8 @@ func _assign_search(citizen: Dictionary) -> void:
 		# Hunger still drains during sleep. Wake for ordinary food before reaching
 		# zero, while protecting life-critical rest until it exceeds 100.
 		var needs_food: bool = ordinary_food and not hunger_food.is_empty()
-		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or (sleep_eligible and current.kind not in ["eat","sleep"]))
+		var hungry_sleeper: bool = current.kind=="sleep" and citizen.fullness<=350 and citizen.rest>=ColonyRest.TIRED
+		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
 		if urgent_self_care or break_interrupt or (emergency and not current.emergency) or change_to_defense or ordinary_needs:
 			_release(current, false)
@@ -1234,8 +1234,7 @@ func _work(citizen: Dictionary, job: Dictionary) -> void:
 				if citizen.health >= 50: _complete(citizen,job)
 				return
 			if job.kind == "sleep":
-				var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
-				if (hour >= 6 and hour < 22 and citizen.rest >= 900) or (hour == 6 and citizen.rest >= 500):
+				if citizen.rest >= ColonyRest.RESTED:
 					_complete(citizen, job)
 				return
 			if job.kind == "research":
