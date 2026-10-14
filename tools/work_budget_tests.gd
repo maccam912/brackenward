@@ -15,6 +15,12 @@ class CountingBudget extends ColonyWorkBudget:
 	func reconcile(world: ColonyWorld) -> void:
 		inspections+=1;super.reconcile(world)
 
+class FullReservationWorld extends ColonyWorld:
+	func _init(catalog: Dictionary) -> void:
+		super(catalog)
+	func _reservation_jobs() -> Array:
+		return jobs
+
 static func run(check: Callable) -> void:
 	runtime_deadlines(check)
 	scheduling_bounds(check)
@@ -139,6 +145,14 @@ static func stress_tick_order(check: Callable) -> void:
 	var first: Dictionary = ColonyCodec.decode(ColonyCodec.encode(fixture.world))
 	var second: Dictionary = ColonyCodec.decode(ColonyCodec.encode(fixture.world))
 	if not first.has("world") or not second.has("world"): check.call("BUDGET/stress_reference_fixture_restores",false);return
+	var full_scan: FullReservationWorld = FullReservationWorld.new(second.world.definitions)
+	for field in second.world.payload():
+		if field in ["content","content_hash"]: continue
+		var value: Variant = second.world.get(field)
+		if value is Array: full_scan.get(field).assign(value.duplicate(true))
+		elif value is Dictionary: full_scan.set(field,value.duplicate(true))
+		else: full_scan.set(field,value)
+	second.world=full_scan
 	second.world.work_budget=UncachedBudget.new()
 	var exact: bool = true;var mismatch: int = 0
 	for index in range(120):

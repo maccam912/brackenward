@@ -81,6 +81,9 @@ var path_requests: int = 0
 var command_trace: Array[Dictionary] = []
 var in_tick: bool = false
 var committing_work: bool = false
+var assigning_work: bool = false
+var reservation_query_ready: bool = false
+var reservation_query_jobs: Array = []
 var work_commits: Array[Dictionary] = []
 var personal_jobs_reconciled: bool = false
 var job_query_tick: int = -1
@@ -744,6 +747,11 @@ func _needs(citizen: Dictionary) -> void:
 		citizen.starving_ticks = 0
 
 func _assign(citizen: Dictionary) -> void:
+	assigning_work=true;reservation_query_ready=false
+	_assign_search(citizen)
+	assigning_work=false;reservation_query_ready=false;reservation_query_jobs.clear()
+
+func _assign_search(citizen: Dictionary) -> void:
 	work_budget.mark_dirty()
 	if citizen.away: return
 	if citizen.death_recorded or citizen.departed:
@@ -891,6 +899,17 @@ func _job_rank(job: Dictionary, citizen: Dictionary) -> int:
 	rank=rank*6+citizen.skills.get(job.skill,0)
 	return rank*255+254-absi(citizen.x-job.x)-absi(citizen.y-job.y)
 
+func _reservation_jobs() -> Array:
+	# One resident's search can release owned work, but gaining ownership ends
+	# that search. Shared dictionaries expose releases immediately; rebuilding
+	# for the next resident retains original history order and conflict reasons.
+	# Direct reservation/storage calls keep the full-history reference behavior.
+	if not assigning_work: return jobs
+	if not reservation_query_ready:
+		reservation_query_jobs=jobs.filter(func(job:Dictionary)->bool:return job.worker>0)
+		reservation_query_ready=true
+	return reservation_query_jobs
+
 func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary = {}) -> bool:
 	if job.state=="Queued": return false
 	work_budget.mark_dirty()
@@ -919,7 +938,7 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 		if order.is_empty() or not order.enabled: return _block(job,"Production order paused")
 	if job.kind in ["cook","craft","research","fish"]:
 		if find(structures,job.target).get("health",0)<=0 or not find(structures,job.target).get("cooking",true): return _block(job,"Station suspended: enable it in the workstation card")
-		for other in jobs:
+		for other in _reservation_jobs():
 			if other.id != job.id and other.worker>0 and other.kind=="minor_study" and other.memo.get("station")==job.target: return _block(job,"Research desk in use by a shared observation")
 			if other.id != job.id and other.target == job.target and other.worker > 0 and other.kind in ["cook","craft","research"]: return _block(job,"Workstation in use by another resident")
 	for resident in citizens:
@@ -962,7 +981,7 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 			# ownership. Their existing search-local context is valid until success.
 			occupied=storage_context.work_positions.has(position)
 		else:
-			for other in jobs:
+			for other in _reservation_jobs():
 				# Personal eating owns food rather than a productive work position.
 				if job.kind!="eat" and other.kind!="eat" and other.worker > 0 and other.id != job.id and other.work_x == position.x and other.work_y == position.y:
 					occupied = true
@@ -1528,7 +1547,7 @@ func _storage_context() -> Dictionary:
 			result.tiles[key].append(stack)
 		for job_id in stack.reservations: reserved[job_id]=reserved.get(job_id,0)+stack.reservations[job_id]
 		if stack.location=="carry": carried[stack.job]=carried.get(stack.job,0)+stack.count
-	for job in jobs:
+	for job in _reservation_jobs():
 		if job.worker>0 and job.kind!="eat": result.work_positions[Vector2i(job.work_x,job.work_y)]=true
 		if job.kind!="haul" or job.worker<=0: continue
 		result.occupied[job.destination]=result.occupied.get(job.destination,0)+reserved.get(job.id,0)+carried.get(job.id,0)

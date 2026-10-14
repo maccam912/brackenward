@@ -1,7 +1,46 @@
 class_name WildlifeTests
 extends RefCounted
 
+static func old_danger_sources(world: ColonyWorld) -> Array[Vector2i]:
+	var result: Array[Vector2i] = []
+	for animal in world.wildlife_state.animals:
+		if animal.health<=0 or animal.definition!="boar": continue
+		if animal.attacker>0 or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="hunt" and j.target==animal.id and j.state not in ["Complete","Canceled"]): result.append(Vector2i(animal.x,animal.y))
+	for enemy in world.defense_state.enemies:
+		if ColonyDefense.enemy_active(enemy) and world.find(world.defense_state.raids,enemy.raid).get("state")=="Active": result.append(Vector2i(enemy.x,enemy.y))
+	for fire in ColonyFire.active(world):
+		for tile in ColonyFire.footprint(world,fire):
+			if not result.has(tile): result.append(tile)
+	return result
+
+static func danger_sources(check: Callable) -> void:
+	for site in ["meadow_reach","pine_shelf","reed_bend"]:
+		var world: ColonyWorld = ColonyTests.world();ColonyGeneration.configure(world,104729,site)
+		var boars: Array = world.wildlife_state.animals.filter(func(a:Dictionary)->bool:return a.definition=="boar")
+		for state in ["Ready","Blocked","Queued","Complete","Canceled"]:
+			var job: Dictionary = world._job("hunt","Gathering","Guard",boars[0].id,Vector2i(boars[0].x,boars[0].y),0)
+			job.state=state;job.queue_state="Ready" if state=="Queued" else ""
+			var duplicate: Dictionary = world._job("hunt","Gathering","Guard",boars[0].id,Vector2i(boars[0].x,boars[0].y),0)
+			duplicate.state=state;duplicate.queue_state=job.queue_state
+			boars[1].attacker=world.citizens[0].id
+			world.danger_cache_tick=-1
+			var before: String = world.canonical_hash()
+			var expected: Array[Vector2i] = old_danger_sources(world)
+			var actual: Array[Vector2i] = ColonyDanger.sources(world)
+			check.call("DANGER/hunt_set_matches_original_%s_%s" % [site,state],actual==expected and world.canonical_hash()==before)
+			job.state="Complete";duplicate.state="Complete"
+		boars[0].health=0;boars[1].attacker=0;world.danger_cache_tick=-1
+		check.call("DANGER/dead_and_unhunted_boars_keep_original_sources_%s" % site,ColonyDanger.sources(world)==old_danger_sources(world))
+	var legacy: ColonyWorld = ColonyTests.world()
+	check.call("DANGER/legacy_world_without_boars_matches_reference",ColonyDanger.sources(legacy)==old_danger_sources(legacy))
+	var crowded: ColonyWorld = StressFixture.make().world
+	var wall: Dictionary = crowded._structure("wood_wall",Vector2i(86,86),0)
+	var fire: Dictionary = ColonyFire.ignite(crowded,"structure",wall.id)
+	var before: String = crowded.canonical_hash()
+	check.call("DANGER/boars_hostiles_and_fire_keep_source_order",not fire.is_empty() and ColonyDanger.sources(crowded)==old_danger_sources(crowded) and crowded.canonical_hash()==before)
+
 static func run(check: Callable) -> void:
+	danger_sources(check)
 	occupancy_cache(check)
 	var world: ColonyWorld = ColonyTests.world()
 	ColonyGeneration.configure(world,104729,"meadow_reach")

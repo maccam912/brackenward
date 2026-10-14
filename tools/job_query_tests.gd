@@ -1,7 +1,16 @@
 class_name JobQueryTests
 extends RefCounted
 
+class ReservationProbe extends ColonyWorld:
+	var target: int = 0
+	func _init(catalog: Dictionary) -> void:
+		super(catalog)
+	func _assign_search(citizen: Dictionary) -> void:
+		var job: Dictionary = find(jobs,target)
+		if _reserve(job,citizen): citizen.job=job.id
+
 static func run(check: Callable) -> void:
+	reservation_search(check)
 	var world: ColonyWorld = ColonyTests.world()
 	var point: Vector2i = Vector2i(80,80)
 	for index in range(5000):
@@ -34,6 +43,31 @@ static func run(check: Callable) -> void:
 	world.jobs.clear()
 	check.call("JOBS/cleared_array_does_not_keep_phantom_work",world.unfinished_jobs().is_empty())
 	field_jobs(check)
+
+static func reservation_search(check: Callable) -> void:
+	var world: ReservationProbe = ReservationProbe.new(ColonyTests.world().definitions)
+	var station: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition=="hearth")[0]
+	var point: Vector2i = Vector2i(station.x,station.y)
+	for index in range(2000):
+		var old: Dictionary = world._job("leisure","","",0,point,0);old.state="Complete"
+	var ordinary: Dictionary = world._job("cook","Cooking","Cook",station.id,point,4000)
+	ordinary.worker=world.citizens[1].id
+	var shared: Dictionary = world._job("minor_study","Research","Study",0,point,4000)
+	shared.worker=world.citizens[2].id;shared.memo={"station":station.id}
+	var candidate: Dictionary = world._job("cook","Cooking","Cook",station.id,point,4000)
+	candidate.state="Ready";world.target=candidate.id
+	# Deliberately use a history order different from immutable ID order.
+	world.jobs.reverse()
+	world._assign(world.citizens[0])
+	check.call("JOBS/reservation_conflict_keeps_original_history_reason",candidate.reason=="Research desk in use by a shared observation")
+	check.call("JOBS/reservation_scope_clears_after_early_assignment_return",not world.assigning_work and not world.reservation_query_ready and world.reservation_query_jobs.is_empty())
+	world._release(shared,false);candidate.state="Ready"
+	world._assign(world.citizens[0])
+	check.call("JOBS/next_resident_search_refreshes_released_ownership",candidate.reason=="Workstation in use by another resident")
+	# Direct reservation calls must also observe records without citizen links.
+	ordinary.worker=0;shared.worker=world.citizens[2].id;candidate.state="Ready"
+	world._reserve(candidate,world.citizens[0])
+	check.call("JOBS/direct_reservation_retains_full_history_fallback",candidate.reason=="Research desk in use by a shared observation" and is_same(world._reservation_jobs(),world.jobs))
 
 static func field_jobs(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()

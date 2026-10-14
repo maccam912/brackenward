@@ -266,3 +266,42 @@ assignment 1.540 ms and work creation 0.915 ms. The remaining Winter workers
 completed around this interval; differences from older benchmarks cannot be
 attributed solely to the optimization. The exact replay/oracle and cold-save
 continuation comparisons establish behavior preservation, not phone performance.
+
+
+## 0.7.13 owned-job reservation view and single hunt lookup
+
+Four native thirty-second rows use the same v3 fixture, 960x600, Balanced/30 FPS,
+camera center 68,72. Runtime/media/profiler fingerprint
+`899bb9826fd05b3c2c1d924611be9d0d347ca6b3ebb288ac309aadc26883997d`
+stays unchanged. No other Godot process was observed before or after any row;
+the Winter sweep had finished. Other host activity is not controlled. Older rows
+with competing Winter workers are not matched timing comparisons.
+
+| View / speed | Wall seconds | Logical ticks | Main p95 / max ms | Main callbacks >50 ms | Tick p50 / p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Close / 1x | 30.022 | 300 | 11.679 / 120.329 | 11 | 2.693 / 36.357 |
+| Close / 4x | 30.016 | 1,200 | 42.384 / 132.219 | 20 | 2.584 / 37.499 |
+| Far / 1x | 30.017 | 300 | 9.257 / 119.570 | 9 | 2.657 / 35.103 |
+| Far / 4x | 30.035 | 1,200 | 38.600 / 111.550 | 14 | 2.454 / 32.140 |
+
+Frame-gap maxima are 131.792, 140.161, 127.833 and 124.448 ms, with 13, 48,
+11 and 31 gaps over 50 ms respectively. Tick maxima are 119.047, 131.455, 118.694
+and 110.822 ms. Requested speeds are retained, backlog stays below 0.05 seconds,
+and all storage/invariant checks are clean. End loads match the prior corresponding
+1x/4x rows. Typical ticks are cheaper, but the p95 4 ms and frame requirements
+still fail. The close-1x trace records an inclusive assignment peak of 79.011 ms
+and cooking reservation peak of 39.923 ms.
+
+A separate unopposed fixed 1,200-tick run finishes in 7.091 seconds; its instrumented
+twin takes 7.163 seconds and retains the same full canonical hash as earlier runs.
+Inclusive assignment is 1.257 ms/tick, work creation 0.903 ms, admission 0.786 ms
+and work 0.749 ms. These are host CPU diagnostics, separate from Android/GPU,
+memory, thermal and thirty-minute soak certification.
+
+
+The same final source's twenty-second fresh-colony lodge-lesson run has 200
+logical ticks: median 0.587 / p95 0.818 ms, session max 4.480 ms, guidance
+median 2.403 / max 2.810 ms and maximum frame gap 35.325 ms, with no >50 ms
+callbacks/gaps. Invariants/storage are clean and source fingerprint is unchanged.
+This checks the reported early-colony path on the host; phone behavior remains
+unmeasured.

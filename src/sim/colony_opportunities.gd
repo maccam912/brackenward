@@ -179,10 +179,10 @@ static func reserve(world: ColonyWorld, job: Dictionary, person: Dictionary) -> 
 	if not ready_complete(world,job): return false
 	if job.kind=="minor_study":
 		var event: Dictionary = world.find(world.opportunity_state.offers,job.target)
-		for other in world.jobs:
+		for other in world._reservation_jobs():
 			if other.id!=job.id and other.worker>0 and ((other.kind=="minor_study" and other.memo.get("station")==event.station) or (other.kind=="research" and other.target==event.station)): return world._block(job,"Research desk in use: waiting for the other scholar")
 		var positions: Array = _positions(world,world.find(world.structures,event.station),Vector2i(person.x,person.y))
-		positions=positions.filter(func(p:Vector2i)->bool:return not world.jobs.any(func(j:Dictionary)->bool:return j.id!=job.id and j.worker>0 and j.work_x==p.x and j.work_y==p.y))
+		positions=positions.filter(func(p:Vector2i)->bool:return not world._reservation_jobs().any(func(j:Dictionary)->bool:return j.id!=job.id and j.worker>0 and j.work_x==p.x and j.work_y==p.y))
 		if positions.is_empty(): return world._block(job,"No free work position at the research desk")
 		job.x=positions[0].x;job.y=positions[0].y
 	return true

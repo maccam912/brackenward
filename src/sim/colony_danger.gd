@@ -4,9 +4,14 @@ extends RefCounted
 static func sources(world: ColonyWorld) -> Array[Vector2i]:
 	if world.danger_cache_tick == world.tick: return world.danger_cache
 	var result: Array[Vector2i] = []
+	var hunted: Dictionary = {};var inspected_hunts: bool = false
 	for animal in world.wildlife_state.animals:
 		if animal.health<=0 or animal.definition!="boar": continue
-		if animal.attacker>0 or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="hunt" and j.target==animal.id and j.state not in ["Complete","Canceled"]): result.append(Vector2i(animal.x,animal.y))
+		if animal.attacker<=0 and not inspected_hunts:
+			for job in world.unfinished_jobs():
+				if job.kind=="hunt": hunted[job.target]=true
+			inspected_hunts=true
+		if animal.attacker>0 or hunted.has(animal.id): result.append(Vector2i(animal.x,animal.y))
 	for enemy in world.defense_state.enemies:
 		if ColonyDefense.enemy_active(enemy) and world.find(world.defense_state.raids,enemy.raid).get("state")=="Active": result.append(Vector2i(enemy.x,enemy.y))
 	for fire in ColonyFire.active(world):
