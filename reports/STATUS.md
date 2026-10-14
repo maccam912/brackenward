@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.17-m7` in progress (campaign schema 23, device settings schema 4), content `colony-v4`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.18-m7` in progress (campaign schema 23, device settings schema 4), content `colony-v4`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.17-m7` in progress (campaign schema 23, device settings schema 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `44fffb9` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-44fffb9c4b9d); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,161 checks, zero failures, including 517 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,173 checks, zero failures, including 523 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -1341,7 +1341,7 @@ The scheduler suite passes 272 checks. A new reference comparison runs 1,200 tic
 with 8,000 historical zero-count carry records alongside a real cooking job; the
 full-history and optimized worlds match at four checkpoints. All historical rows
 still receive delivery location/owner metadata. All 27 headless suites plus native
-UI pass 2,161 checks. The native frozen replay passes 62 commands and 234 invariant
+UI pass 2,152 checks. The native frozen replay passes 62 commands and 234 invariant
 checks in 105.482 seconds, including both old-schema gameplay and six-save v3
 acknowledgement preservation. Snowy and crowded 1,200-tick continuations retain
 the preceding v4 hashes and match their independently instrumented twins.
@@ -1424,3 +1424,43 @@ startup pass; aapt reports 0.7.17-m7 / 56. Prior 44fffb9 remote CI passed every
 job and published its checked APK; this revision's CI follows its own push.
 M7 localization, further performance/balance and physical/human gates remain open.
 Live weekly remaining is 76%; work continues.
+
+
+## 0.7.18 English message keys and placement plurals
+
+The English presentation catalog has 292 referenced keys: 265 keys replace 290
+static control/help call sites, and 27 keys cover placement messages and named
+parameters. All converted static calls retain their exact English text and order.
+The formatter substitutes original template tokens once, keeps braces in inserted
+player text literal, selects singular only at count one and never mutates supplied
+arguments. It does not change saved names, facts, command identifiers or simulation
+state. English remains the release language; there is no new language selector.
+
+Placement now says one tile/tree/resource and one blocked cell stays unsubmitted;
+zero/many use their plural forms. Six formatter checks and six real UI checks
+cover those branches and prove preview rendering leaves the canonical world and
+pending commands untouched. Persistence passes 267 checks and native UI 523;
+the existing baseline plus targeted reruns is 2,173 GDScript checks. All three
+real tutorial flows pass 22 checks each. Five new Python catalog-contract checks
+and seven string-lexer checks pass; CI runs both. Content validation rejects
+duplicate/missing/unused UI keys, malformed placeholders and inconsistent plural
+branches, and checks all catalog characters against the licensed fonts.
+
+Final Android export/four Kotlin checks pass, with aapt reporting 0.7.18-m7 / 57.
+The APK contains the compiled formatter and the exact catalog bytes. Two native
+thirty-second fresh-lodge profiles at 960x600 / Balanced retain unchanged scoped
+fingerprint `d69d0a461d4a586d3bf6a47b8e001581c453b6621215880256ab7671ee9fc3b4`
+(296 files). At 1x/4x, main p95 is 0.990/1.350 ms, main max 4.476/5.244 ms,
+and tick p95 0.856/0.805 ms. No callback exceeds 50 ms; speed, sub-0.1-second
+backlog and clean storage/invariants hold. Background Winter/validation work
+overlaps these source measurements; they do not certify phone performance.
+
+This is the shared-controls/static-help and placement portion of localization.
+Dynamic reports, sheet titles, remaining UI templates and presentation of canonical
+activity/fact text still require the wider M7 audit. The v4 Winter matrix has six
+passes recorded and remains running. Prior 36ca85d CI is still pending at this
+checkpoint; each later revision retains its own remote status. Further performance,
+localization and the physical/human release gates remain open.
+
+The final sixty-frame native main-scene startup passes with audio drained. Live
+weekly remaining is 76%; implementation and polish continue.

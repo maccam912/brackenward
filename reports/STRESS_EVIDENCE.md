@@ -468,3 +468,26 @@ hashes remain `3169d6dd685eaa1fe7d8271849d88bec8292709ca366ae613de637adeb02c598`
 (late) and `46cc90218fa6bbf435dfed45acec80cfb6a80e2357600dd392b06e9284e5f919`
 (crowded). Runtime-canonical and conservation checks pass; the crowded-colony,
 Android, all-alert and long-soak gates remain open.
+
+
+## 0.7.18 localization cost check
+
+Two thirty-second native fresh Meadow Reach/104729 profiles keep the lodge guide
+active, real foreground saves, close camera at 68,72, 960x600, Balanced and Dummy
+audio. Runtime/media/profiler fingerprint
+`d69d0a461d4a586d3bf6a47b8e001581c453b6621215880256ab7671ee9fc3b4`
+(296 files) is unchanged. Background Winter workers overlap both; tutorial/export
+validation also overlaps part of the measurements. These are contended CPU source
+measurements and establish no phone, GPU, PSS or thermal result.
+
+| Speed | Wall seconds | Ticks | Main p95 / max ms | Tick p95 / max ms | Guide refresh p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| 1x | 30.033 | 300 | 0.990 / 4.476 | 0.856 / 3.334 | 2.689 |
+| 4x | 30.000 | 1,200 | 1.350 / 5.244 | 0.805 / 3.135 | 2.527 |
+
+No measured main/tick callback exceeds 50 ms. Requested speed is maintained,
+backlogs are 0.033369/0.004765 seconds and storage/invariants remain clean. Both
+retain four residents, ten structures, seven positive stacks and sixteen wildlife;
+no active targets, crops, domestic animals, hostiles, visitors or Chronicle entries
+are present. The formatter/catalog have no observed fresh-guide timing regression
+on this host. Crowded, late-campaign and physical Android gates remain open.

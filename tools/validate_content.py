@@ -6,6 +6,7 @@ import json
 import re
 import struct
 from gdscript_strings import extract_strings
+from ui_messages import load_catalog
 
 root = Path(__file__).resolve().parents[1]
 fixture = json.loads((root / "data/prototype.json").read_text())
@@ -69,6 +70,12 @@ for path in (root / "data/catalogs").glob("en*.json"):
                 yield from strings(child)
     for value in strings(json.loads(path.read_text())):
         required_text.update(ch for ch in value.replace("\u2013", "-") if ord(ch) >= 32)
+
+ui_messages = load_catalog(root / "data/catalogs/en_ui.json")
+ui_references = {value for script in (root / "src").rglob("*.gd")
+                 for value in extract_strings(script.read_text()) if value.startswith("ui.")}
+assert ui_references == set(ui_messages), f"UI message coverage: missing {ui_references-set(ui_messages)}, unused {set(ui_messages)-ui_references}"
+print(f"Validated {len(ui_messages)} referenced English UI keys, named parameters and complete plural forms.")
 
 # TrueType cmap format 4; Mini is the sole explicit fallback for Bold.
 for name in ("kenney_mini.ttf", "kenney_bold.ttf"):
