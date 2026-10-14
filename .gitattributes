@@ -13,3 +13,5 @@
 tests/fixtures/campaign-replay-input.json text eol=lf
 tests/fixtures/campaign-replay-golden.json text eol=lf
 tests/fixtures/campaign-replay-7200.brackenward -text
+tests/fixtures/schema21-delta.brackenward -text
+tests/fixtures/schema21-delta.frames -text

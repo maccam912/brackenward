@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "frame_size": [
+    16,
+    24
+  ],
+  "columns": 11,
+  "rows": 9,
+  "frames_per_body": 99,
+  "bodies": 8,
+  "hair_shapes": 8,
+  "states": {
+    "idle": {
+      "first": 0,
+      "frames": 2,
+      "directions": 4
+    },
+    "walk": {
+      "first": 8,
+      "frames": 4,
+      "directions": 4
+    },
+    "carry": {
+      "first": 24,
+      "frames": 4,
+      "directions": 4
+    },
+    "work": {
+      "first": 40,
+      "frames": 3,
+      "directions": 4
+    },
+    "plant": {
+      "first": 52,
+      "frames": 3,
+      "directions": 4
+    },
+    "eat": {
+      "first": 64,
+      "frames": 2,
+      "directions": 1
+    },
+    "talk": {
+      "first": 66,
+      "frames": 2,
+      "directions": 1
+    },
+    "sleep": {
+      "first": 68,
+      "frames": 2,
+      "directions": 1
+    },
+    "melee": {
+      "first": 70,
+      "frames": 3,
+      "directions": 4
+    },
+    "shoot": {
+      "first": 82,
+      "frames": 3,
+      "directions": 4
+    },
+    "hurt": {
+      "first": 94,
+      "frames": 1,
+      "directions": 1
+    },
+    "downed": {
+      "first": 95,
+      "frames": 1,
+      "directions": 1
+    },
+    "cheer": {
+      "first": 96,
+      "frames": 3,
+      "directions": 1
+    }
+  }
+}

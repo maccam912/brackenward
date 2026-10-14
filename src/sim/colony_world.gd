@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 21
+const SCHEMA_REVISION: int = 22
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -402,6 +402,7 @@ func gather_targets(definition: String, tiles: Array) -> Array[Dictionary]:
 func _command(command: Dictionary) -> String:
 	var args: Dictionary = command.args
 	match command.kind:
+		"citizen_appearance": return ColonyAppearance.command(self,args)
 		"assign_bed": return ColonyBeds.command(self,args)
 		"pin_moment", "rename": return ColonyChronicle.command(self,command.kind,args)
 		"start_supper", "cancel_supper", "start_ceremony", "cancel_ceremony", "continue_settlement", "charter_appearance": return ColonyCharter.command(self,command.kind,args)
@@ -1610,6 +1611,7 @@ func can_step(from: Vector2i, to: Vector2i) -> bool:
 
 static func citizen_record(id: int, name: String, point: Vector2i, skills: Dictionary, xp: Dictionary, traits: Array, preferred: String, preferences: Dictionary, food: String, weapon: String) -> Dictionary:
 	var result: Dictionary = {"story_memory_until":0,"away":false,"expedition":0,"camp_sleeping":false,"id": id, "name": name, "x": point.x, "y": point.y,
+		"appearance":ColonyAppearance.defaults(id),
 		"progress": 0, "direction": 0, "edge_x": point.x, "edge_y": point.y, "route": [], "route_goal": [], "move_base_rem": 0, "move_rem": 0, "injury_rem": 0, "travel_credit": 0,
 		"skills": skills, "xp": xp, "traits": traits, "preferred": preferred, "preferences": preferences,
 		"shift": "Normal", "pending_shift": "", "pinned_job": 0, "yesterday_leisure": 0, "leisure_memory_until": 0, "warm_until": 0, "leisure_ticks": 0, "leisure_day": 0, "bed_sleep_ticks": 0, "bed_memory_until": 0, "raw_memory_until": 0, "preferred_work": 0, "preferred_memory_until": 0, "mood_terms": {}, "food_tags": [], "food_tags_day": 0, "break_clock": 0, "break_until": 0, "break_cooldown": 0, "departure_clock": 0, "departure_until": 0, "departed": false,

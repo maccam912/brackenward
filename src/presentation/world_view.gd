@@ -35,6 +35,7 @@ var actor_layer: Node2D
 var carried_overlay: Node2D
 var terrain: TileMapLayer
 var actors: Array[Sprite2D] = []
+var simulation_speed: int = 0
 
 func setup(state: RefCounted) -> void:
 	world = state
@@ -63,12 +64,7 @@ func setup(state: RefCounted) -> void:
 	add_child(carried_overlay)
 	carried_overlay.draw.connect(_draw_carried_items)
 	refresh_terrain()
-	for name in ["mira", "oren", "tavi", "sela"]:
-		var actor: Sprite2D = Sprite2D.new()
-		actor.texture = load("res://assets/exported/citizens/%s.svg" % name)
-		actor.offset = Vector2(0, -8)
-		actor_layer.add_child(actor)
-		actors.append(actor)
+	for index in range(4): _add_actor(index)
 	resized.connect(_update_transform)
 	_update_transform()
 
@@ -80,7 +76,11 @@ func _process(delta: float) -> void:
 	if world == null:
 		return
 	while actors.size()<world.citizens.size():
-		var actor: Sprite2D = Sprite2D.new();actor.texture=load("res://assets/exported/citizens/%s.svg" % ["mira","oren","tavi","sela"][actors.size()%4]);actor.offset=Vector2(0,-8);actor_layer.add_child(actor);actors.append(actor)
+		_add_actor(actors.size())
+	var cargo: Dictionary = {}
+	if world is ColonyWorld:
+		for stack in world.nonempty_stacks():
+			if stack.location=="carried": cargo[stack.owner]=true
 	for i in range(actors.size()):
 		if i>=world.citizens.size(): actors[i].visible=false;continue
 		var citizen: Dictionary = world.citizens[i]
@@ -92,14 +92,19 @@ func _process(delta: float) -> void:
 		actors[i].position = point * 16.0
 		if world is ColonyWorld:
 			actors[i].visible = not citizen.death_recorded and not citizen.departed and citizen.carried_by == 0 and ColonyRegion.visible(world,citizen)
-			actors[i].rotation = PI*0.5 if citizen.downed else 0.0
-			actors[i].modulate = Color("E9BA67") if citizen.health < 50 else Color.WHITE
+			if actors[i].visible: actors[i].animate(world,citizen,delta,simulation_speed,cargo.has(citizen.id))
 		if citizen.id == follow_id:
 			if world is ColonyWorld and not ColonyRegion.visible(world,citizen): follow_id=0
 			else: camera_tile = point
 	_update_transform()
 	queue_redraw()
 	carried_overlay.queue_redraw()
+
+func _add_actor(index: int) -> void:
+	var actor: Sprite2D = CitizenSprite.new() if world is ColonyWorld else Sprite2D.new()
+	if not world is ColonyWorld:
+		actor.texture=load("res://assets/exported/citizens/%s.svg" % ["mira","oren","tavi","sela"][index%4]);actor.offset=Vector2(0,-8)
+	actor_layer.add_child(actor);actors.append(actor)
 
 func _gui_input(event: InputEvent) -> void:
 	# Godot also emits a device -1 mouse event for a touch. Track the real

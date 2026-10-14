@@ -60,6 +60,7 @@ var test_insets: Vector4 = Vector4.ZERO
 var controls: Array[Button] = []
 var nav_labels: Array[Label] = []
 var inspector_details: Label
+var inspector_portrait: TextureRect
 var rotation_button: Button
 var placement_kind: String = "stockpile"
 var paint_build_definition: String = ""
@@ -332,6 +333,7 @@ func _process(delta: float) -> void:
 		runner.pause()
 		notice="Saving is slow; paused to protect recent progress. Resume after saving finishes."
 	runner.advance_frame(delta)
+	view.simulation_speed=runner.speed
 	guidance_elapsed += delta
 	if world is ColonyWorld:
 		var signature: String = world.session_id+JSON.stringify(_tutorial_state())
@@ -642,6 +644,8 @@ func select_citizen(id: int) -> void:
 	rows.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(rows)
 	var citizen: Dictionary = world.find(world.citizens,id) if world is ColonyWorld else world.citizens[id-1]
+	if world is ColonyWorld:
+		inspector_portrait=CitizenArt.portrait(citizen.appearance,64);rows.add_child(inspector_portrait)
 	inspector_details = label("", rows)
 	_update_inspector()
 	if world is ColonyWorld: button("Assign bed",func()->void:show_beds(id),rows)
@@ -674,8 +678,13 @@ func show_sheet(title: String) -> void:
 	var top: HBoxContainer = HBoxContainer.new()
 	rows.add_child(top)
 	var heading: Label = label(title, top)
+	heading.name="SheetHeading"
+	heading.autowrap_mode=TextServer.AUTOWRAP_OFF
+	heading.clip_text=true
+	heading.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	heading.tooltip_text=title
 	heading.add_theme_font_override("font", load("res://assets/exported/fonts/kenney_bold.ttf"))
-	heading.add_theme_font_size_override("font_size", int(20 * text_scale))
+	heading.add_theme_font_size_override("font_size", int(16 * text_scale))
 	var close_button: Button = button("Close", close_sheet, top, 64)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var pause_button: Button = button("Pause", func() -> void: runner.pause(), top, 72)
@@ -896,6 +905,8 @@ func _replace_world(state: RefCounted) -> void:
 	saving_disabled = false
 	runner = SimRunner.new(world)
 	view.world = world
+	for actor in view.actors:
+		if actor is CitizenSprite: actor.reset_pose()
 	view.refresh_terrain()
 	view.forecast_mask.clear()
 	view.cancel_gesture()
@@ -1134,6 +1145,7 @@ func _update_inspector() -> void:
 		return
 	var citizen: Dictionary = world.find(world.citizens,selected) if world is ColonyWorld else world.citizens[selected-1]
 	if world is ColonyWorld:
+		if is_instance_valid(inspector_portrait): CitizenArt.update_portrait(inspector_portrait,citizen.appearance)
 		var job: Dictionary = world.find(world.jobs, citizen.job)
 		inspector_details.text = "%s - %s\nFood %d/1000 | Rest %d/1000\nHealth %d | %s first\n%s" % [citizen.name, citizen.activity, citizen.fullness, citizen.rest, citizen.health, citizen.preferred,
 			("Work %d/%d WU" % [job.work / 1000, job.required / 1000]) if not job.is_empty() and job.required > 0 else ("Needs take priority over ordinary work." if not job.is_empty() else "Choose orders in Work or Build.")]
@@ -1603,13 +1615,43 @@ func show_bed_choice(id: int, target: int) -> void:
 		label(person.name+" will sleep on safe ground without an assigned bed." if target==0 else person.name+" walks here when tired. Assignment does not move them or add rest.",sheet_body)
 	button("Back to beds",func()->void:show_beds(id),sheet_body)
 
+func show_appearance(id: int, draft: Dictionary = {}) -> void:
+	var person: Dictionary = world.find(world.citizens,id)
+	if person.is_empty() or person.death_recorded or person.departed: return
+	var choices: Dictionary = person.appearance.duplicate() if draft.is_empty() else draft.duplicate()
+	show_sheet("Style")
+	sheet_feedback.visible=false
+	var preview_row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(preview_row)
+	preview_row.add_child(CitizenArt.portrait(choices,64))
+	label(person.name+"\nAll choices are cosmetic.",preview_row)
+	for key in ColonyAppearance.OPTIONS:
+		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
+		var value: Label = label(CitizenArt.LABELS[key]+": "+CitizenArt.label_for(key,choices[key]),row)
+		value.size_flags_horizontal=Control.SIZE_EXPAND_FILL;value.custom_minimum_size.x=80
+		for step in [-1,1]:
+			var change: Button = button("<" if step<0 else ">",func()->void:
+				var next: Dictionary = choices.duplicate()
+				next[key]=posmod(next[key]+step,ColonyAppearance.OPTIONS[key])
+				show_appearance(id,next),row)
+			change.name="Appearance_"+key+("_Previous" if step<0 else "_Next")
+			change.size_flags_horizontal=Control.SIZE_SHRINK_END
+			change.tooltip_text=("Previous " if step<0 else "Next ")+CitizenArt.LABELS[key]
+	button("Save appearance",func()->void:_submit("citizen_appearance",{"target":id,"appearance":choices});close_sheet(),sheet_body).name="SaveAppearance"
+	button("Cancel",func()->void:show_person(id),sheet_body).name="CancelAppearance"
+
 func show_person(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_sheet(citizen.name)
+	sheet_body.add_child(CitizenArt.portrait(citizen.appearance))
+	if not citizen.death_recorded and not citizen.departed: button("Appearance",func()->void:show_appearance(id),sheet_body)
 	button("Rename",func()->void:show_rename(id),sheet_body)
 	button("Remembered moments",func()->void:show_person_history(id),sheet_body)
 	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
 	label(ColonyBeds.description(world,citizen),sheet_body)
+	for trait_name in citizen.traits:
+		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
+		var icon: TextureRect = TextureRect.new();icon.texture=load("res://assets/exported/ui/traits/%s.svg" % trait_name.to_lower());icon.custom_minimum_size=Vector2(48,48);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;row.add_child(icon)
+		label(trait_name,row)
 	if not citizen.death_recorded and not citizen.departed: button("Assign bed",func()->void:show_beds(id),sheet_body)
 	if citizen.health < 100: button("Care and recovery",show_care,sheet_body)
 	label("Active morale causes",sheet_body)

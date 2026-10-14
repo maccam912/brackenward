@@ -77,7 +77,7 @@ static func beds(check: Callable) -> void:
 	var ledger: Dictionary = world.ledger.duplicate(true)
 	var order: int = world.queue_command("assign_bed",{"citizen":person.id,"target":bed.id})
 	var paused: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
-	check.call("BED/pending_assignment_saves_without_applying_while_paused",person.bed==previous.id and paused.has("world") and paused.world.pending_commands==world.pending_commands and paused.world.schema_revision==21,str(paused.get("error","")))
+	check.call("BED/pending_assignment_saves_without_applying_while_paused",person.bed==previous.id and paused.has("world") and paused.world.pending_commands==world.pending_commands and paused.world.schema_revision==ColonyWorld.SCHEMA_REVISION,str(paused.get("error","")))
 	world.step()
 	check.call("BED/public_assignment_releases_old_owner_without_moving_or_granting_goods",world.receipts[order]=="accepted" and person.bed==bed.id and bed.user==person.id and previous.user==0 and Vector2i(person.x,person.y)==point and world.ledger==ledger)
 	var original: String = world.canonical_hash()
@@ -125,8 +125,9 @@ static func beds(check: Callable) -> void:
 	var legacy: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/campaign-replay-7200.brackenward")
 	var payload: Dictionary = ColonyState.unpack(JSON.parse_string(JSON.parse_string(legacy.get_string_from_utf8()).payload))
 	loaded=ColonyCodec.decode(legacy)
-	var expected: Dictionary = payload.duplicate(true);expected.schema_revision=21
-	check.call("SAVE/schema_twenty_upgrade_only_changes_revision",loaded.has("world") and loaded.world.payload()==expected and payload.schema_revision==20,str(loaded.get("error","")))
+	var expected: Dictionary = payload.duplicate(true);expected.schema_revision=ColonyWorld.SCHEMA_REVISION
+	for resident in expected.citizens: resident["appearance"]=ColonyAppearance.defaults(resident.id)
+	check.call("SAVE/schema_twenty_upgrade_only_adds_declared_cosmetics_and_header",loaded.has("world") and loaded.world.payload()==expected and payload.schema_revision==20,str(loaded.get("error","")))
 
 static func quiet_room(world: ColonyWorld) -> Dictionary:
 	for y in range(75,79):

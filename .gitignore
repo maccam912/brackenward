@@ -13,6 +13,7 @@ reports/beds-validation/
 reports/prepared-validation/
 reports/stack-query-validation/
 reports/geometry-validation/
+reports/appearance-validation/
 platform/android_save/.gradle/
 platform/android_save/build/
 platform/android_save/plugin/build/

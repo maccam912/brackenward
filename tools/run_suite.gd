@@ -31,6 +31,7 @@ func run() -> void:
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
 		"persistence":
+			AppearanceTests.run(check)
 			PreparedSnapshotTests.run(check)
 			await PreparedSnapshotTests.asynchronous(self,check)
 			CaptureTests.run(check)
@@ -461,14 +462,15 @@ func ui() -> void:
 		citizen.progress = 0
 		colony_game.view.camera_tile = Vector2(75,55)
 		await process_frame
-		var actor_sample: Vector2 = colony_game.view.get_global_transform()*colony_game.view.tile_to_screen(Vector2(75.5,55.5))-Vector2(0,colony_game.view.tile_size)
+		var actor_foot: Vector2 = colony_game.view.get_global_transform()*colony_game.view.tile_to_screen(Vector2(75.5,55.5))
+		var actor_region: Rect2i = Rect2i(actor_foot-Vector2(colony_game.view.tile_size*0.5,colony_game.view.tile_size*1.5),Vector2(colony_game.view.tile_size,colony_game.view.tile_size*1.5))
 		colony_game.view.actor_layer.visible = false
 		await RenderingServer.frame_post_draw
-		var without_actor: Color = root.get_texture().get_image().get_pixelv(Vector2i(actor_sample))
+		var without_actor: PackedByteArray = root.get_texture().get_image().get_region(actor_region).get_data()
 		colony_game.view.actor_layer.visible = true
 		await RenderingServer.frame_post_draw
-		var with_actor: Color = root.get_texture().get_image().get_pixelv(Vector2i(actor_sample))
-		check("M2/UI_worker_visible_over_field",without_actor != with_actor,str([without_actor,with_actor]))
+		var with_actor: PackedByteArray = root.get_texture().get_image().get_region(actor_region).get_data()
+		check("M2/UI_worker_visible_over_field",without_actor != with_actor,"Actual animated pose must change pixels over the field, including a sleeping resident.")
 		root.get_texture().get_image().save_png("res://reports/m2-landscape.png")
 		root.size = Vector2i(390, 844)
 		colony_game.size = Vector2(390, 844)
@@ -915,6 +917,7 @@ func ui() -> void:
 	await AsyncSaveTests.ui(colony_game,check)
 	await PreparedSnapshotTests.ui(colony_game,check)
 	await PlacementUITests.run(colony_game,check)
+	await AppearanceUITests.run(colony_game,check)
 	TutorialUITests.run(colony_game,check)
 	colony_game._tutorial_state().forecast_pinned=false
 	ColonyTutorial.replay(colony_game._tutorial_state(),"follow")

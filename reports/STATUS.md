@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.6.18-m6` in progress (schema 21), content `colony-v2`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.0-m7` in progress (schema 22), content `colony-v2`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -16,17 +16,17 @@ Checkpoint: `0.6.18-m6` in progress (schema 21), content `colony-v2`, developmen
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `7089f14`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38517543639) passed the full suite, all four desktop replay/startup targets, exports and publication. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
+| Remote CI | Pass at `88ee5e8`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38517543639) passed the full suite, all four desktop replay/startup targets, exports and publication. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
 | M3–M6 gameplay and progression | Pass, automated campaign/native subset | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. All three Standard-site and Pine Shelf Hearthside vegetarian Charters pass, including ceremony, Continue and later play. The separate Winter sweep, M7 and physical/human gates remain. |
-| M7 release quality | In progress | Final original character animation, media/audio, accessibility/rebinding, balance, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `7089f14` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-7089f14568b4); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
+| M7 release quality | In progress | Original animated citizens, matching portraits and editable cosmetics are implemented. Animal/environment art, final audio, accessibility/rebinding, balance, stress optimization and platform/human release gates remain. |
+| Development APK publication | Pass at `88ee5e8` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-88ee5e83861b); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 1,613 checks, zero failures, including 364 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 1,643 checks, zero failures, including 376 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -390,3 +390,61 @@ Pine Standard's full ordinary vegetarian trace passes through tick 489,600, cere
 All three Standard sites plus Pine Hearthside now have full local vegetarian Charter/ceremony/Continue evidence, meeting the M6 campaign subset. `7089f14` passes all four native replay/startup targets and APK publication; `1b6f2d7` also passes. Current geometry source has its own subsequent workflow. The separate mixed-source Winter sweep currently has 24 of 30 observed passes and still needs provenance/current-source review. M7 original art/animation/audio, accessibility/rebinding, release stress/balance, physical Android and human gates remain open. Weekly remaining last observed 92%; implementation proceeds into release quality.
 
 The final fresh-colony 65-second traced run advances all 650 ticks, crosses two preparations, and has no storage/invariant error or protective pause. Maximum callback is 18.6 ms (none over 50 ms), save capture 1.92 ms, preparation capture 1.11 ms and completion 0.68 ms. Final Android export passes with four Kotlin tests and verified `0.6.18-m6` / code 38 metadata. The final route-sensitive colony/region/scheduler suites pass after the shortcut. M7 work follows this checkpoint; no physical-phone performance certificate is claimed.
+
+
+## M7 original citizens and migration checkpoint — 14 October 2026
+
+Version `0.7.0-m7`, Android build 39, adds eight original adult clothing silhouettes,
+eight independent hair shapes, six skin colors, eight hair colors and independent
+eight-color coats/scarves. The shared indexed atlas authors all 99 poses for each
+body/hair combination: all thirteen states and the specified four-direction states.
+Movement follows authoritative grid progress, action frames follow actual jobs, and
+visual rates cap at 10 fps at 4×. Real tools and task hats render separately. Hurt,
+downed, sleep, meal, supper conversation and the Charter cheer have distinct states.
+No animation callback affects simulation completion. Portraits use the same clothing,
+hair and palette at 64 pixels. Eight original trait pictograms appear with labels.
+Editable source, original-asset provenance, exported masks, layout metadata and
+visually inspected contact sheets are retained in the repository. M0's frozen SVG
+travelers remain for prototype regression only. Animal/environment animation and
+final audio are still outstanding; this is a character-art subset of M7.
+
+The resident Appearance action opens a Style card. Changes preview locally, Cancel
+discards, and Save queues one exact `citizen_appearance` command for the next tick.
+Schema 22 adds only cosmetic dictionaries and a header change; deterministic defaults
+consume no RNG stream, resources or entity IDs. A 100-tick comparison verifies that
+changing appearance does not alter gameplay. Both old frozen replay checkpoints,
+with only cosmetics removed and the old header restored, equal their exact previous
+hashes. Input bytes and the original foreign-save bytes are unchanged.
+
+A retained schema-21 snapshot plus two real command/delta checkpoints exposed the
+need to fold journals against their original raw schema before migrating the final
+acknowledged payload. Recovery and pruning now use that path. Tests verify every old
+acknowledged field, exact original bytes and both migration backups. Malformed and
+out-of-range appearance records/pending commands fail validation.
+
+Local validation passes 1,643 checks across 28 suites: the complete 27-headless-suite
+run plus corrected final population/scheduler reruns and 376 final native UI checks.
+The two reruns corrected test expectations for the declared cosmetics; the dining
+normalization also needed its own deep copy so it could not mutate the loaded world.
+Three tutorial flows pass 22 checks each. Native GPU sampling verifies selected skin
+colors; portrait/landscape 150% text screenshots were inspected. The sheet header now
+stays compact, and twelve independent shape/color controls remain at least 48 dp.
+Autosave lifecycle tests remain separate from the appearance fixture's UI rendering.
+The final independent replay passes 62 accepted commands, 234 invariant checkpoints,
+both reviewed schema-22 hashes and the retained foreign-save continuation in 100.4 s.
+Tick 7200: `b90bc5f56f4270729272a1a83909868162ddf83917e9ceddac4e6185c11c0e7f`.
+Tick 72000: `94c0be9713bdac78577ceca26375a44c5efdc48eafa07f4cfcd786c91f35c14a`.
+Catalog/provenance validation passes 24 shipped media entries. Local Android export
+passes, with four Kotlin tests and verified `0.7.0-m7` / build 39 package metadata.
+
+The fresh 65-second foreground CPU run advances 650 ticks across two snapshot
+preparations without storage pause, storage error or invariant failure. Maximum
+callback 20.15 ms, none over 50 ms; maximum checkpoint capture 2.34 ms, preparation
+capture 1.22 ms and completion 0.67 ms. This measures macOS callbacks, not physical
+phone/GPU performance. The M6 `88ee5e8` workflow passes all four native replay/startup
+targets and APK publication. The original mixed-revision 30-seed Winter sweep finished
+30/30; a fresh matrix now runs against a clean managed checkout pinned to exactly
+`88ee5e83861b8bd639a2237deca0fb9ae838e2a6`. The sweep utility records source/harness
+provenance, exact snapshots, logs and a separate fail-closed audit. Its evidence stays
+outside the frozen checkout. Current-source certification waits for that full matrix.
+Weekly remaining is still 91%; authorized release work continues.

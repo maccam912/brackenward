@@ -50,6 +50,7 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		header.erase("chronicle_state")
 		if not ColonyCodec._record(result,header) or result.citizens.size() != 4: return data
 		var citizen_template: Dictionary = template.citizens[0].duplicate()
+		citizen_template.erase("appearance")
 		for key in ["story_memory_until","away","expedition","camp_sleeping"]+ColonyDefense.citizen_defaults().keys(): citizen_template.erase(key)
 		for key in ColonySocial.citizen_defaults(): citizen_template.erase(key)
 		for key in ColonyCare.citizen_defaults(): citizen_template.erase(key)
@@ -196,4 +197,11 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		# for the additive public bed-assignment command in paused saves.
 		result=result.duplicate(true)
 		result.schema_revision=21
+	if result.get("schema_revision")==21:
+		if not result.get("citizens") is Array: return data
+		result=result.duplicate(true)
+		for person in result.citizens:
+			if not person is Dictionary or not person.get("id") is int: return data
+			if not person.has("appearance"): person["appearance"]=ColonyAppearance.defaults(person.id)
+		result.schema_revision=22
 	return result

@@ -276,7 +276,7 @@ func load_latest() -> Dictionary:
 			if journal.has("error"):
 				earlier_errors.append(journal.error)
 				continue
-			decoded = ColonyJournal.replay(decoded.world, journal.records,header.get("sha256",""),journal.digests)
+			decoded = ColonyJournal.replay(decoded.world, journal.records,header.get("sha256",""),journal.digests,ColonyJournal.snapshot_base(header))
 			if decoded.has("error"):
 				earlier_errors.append(decoded.error)
 				continue
@@ -318,7 +318,7 @@ func _generation_recoverable(path: String, snapshot_digest: String) -> bool:
 		if valid:
 			var decoded: Dictionary = decode(bytes)
 			valid=decoded.has("world")
-			if valid: valid=not ColonyJournal.replay(decoded.world,journal.records,header.get("sha256",""),journal.digests).has("error")
+			if valid: valid=not ColonyJournal.replay(decoded.world,journal.records,header.get("sha256",""),journal.digests,ColonyJournal.snapshot_base(header)).has("error")
 	if valid:
 		verified_journals[journal_path]=evidence;rejected_journals.erase(journal_path)
 	else:

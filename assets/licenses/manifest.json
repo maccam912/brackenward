@@ -138,5 +138,105 @@
     "sha256": "79f2fa2f039fcdab0407f77364f83ecf4d2edd3c6435807f9ce5e9b751447069",
     "edited": false,
     "evidence": "assets/licenses/original_media.md"
+  },
+  {
+    "id": "adult_animations",
+    "path": "assets/exported/citizens/adults.png",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "c92a2a2b35c57f8322a8b8cdb324e3c8a715c199b3e45316471841a76aa4843a",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "adult_portraits",
+    "path": "assets/exported/citizens/portraits.png",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "83897ee3628af05346eeff6aefada5c442a97f94a441d32cf52dae9d426f7a74",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "trait_kind",
+    "path": "assets/exported/ui/traits/kind.svg",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "b87fabc312ac03a0364f97b02509c0508cf1f44b30afe9008bcf9e887981dc2e",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "trait_homebody",
+    "path": "assets/exported/ui/traits/homebody.svg",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "ec845d43d71fba958aba93c229744d0c72d8d9b6900b0a23c2f6b8264320d220",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "trait_steady",
+    "path": "assets/exported/ui/traits/steady.svg",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "3c755b9f19b7a7eb6d8e408ce2c26f7de9afdf65de239286ed9c72286cc1bd14",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "trait_sociable",
+    "path": "assets/exported/ui/traits/sociable.svg",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "3bc29662796272c682d924b2edcdf09ecd029a6cce6a0e2cdd868c24d48a75bc",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "trait_outdoorsy",
+    "path": "assets/exported/ui/traits/outdoorsy.svg",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "ca8cd814ddff8ffbf33d6e06fb7225bebfcd3e2bd8ad0bee9f99033e26336e46",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "trait_restless",
+    "path": "assets/exported/ui/traits/restless.svg",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "70cf784871e75401c508d7c0efa3aeeabf8bbbd1358eb671262f854444fd9759",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "trait_curious",
+    "path": "assets/exported/ui/traits/curious.svg",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "7039dd4b6c81d373625d91f23e06c26cce3a372e22f3b3c5e9d069ea09562bcc",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
+  },
+  {
+    "id": "trait_private",
+    "path": "assets/exported/ui/traits/private.svg",
+    "source": "tools/author_citizens.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "0eeb580d026514076562cbfe15b8408294fe177f29dbb01ee1dc03d034902a0c",
+    "edited": false,
+    "evidence": "assets/licenses/citizen_art.md"
   }
 ]

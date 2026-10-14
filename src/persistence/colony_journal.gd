@@ -67,7 +67,13 @@ static func _digest_valid(value: Variant) -> bool:
 static func _delta_header(value: Variant, tick: int) -> bool:
 	return value is Dictionary and ColonyCodec._keys(value,["version","base_tick","campaign_id","parent","patch"]) and value.version==1 and value.version is int and value.base_tick is int and value.base_tick>=1800 and value.base_tick<=tick and value.campaign_id is String and not value.campaign_id.is_empty() and value.campaign_id.length()<=80 and _digest_valid(value.parent) and value.patch is Dictionary
 
-static func replay(world: RefCounted, records: Array[Dictionary], initial_hash: String = "", digests: Array = []) -> Dictionary:
+static func snapshot_base(header: Dictionary) -> Dictionary:
+	if (header.get("version")!=3 and header.get("version")!=4 and header.get("version")!=5) or not header.get("payload") is String: return {}
+	if header.payload.sha256_text()!=header.get("sha256"): return {}
+	var value: Variant = ColonyState.unpack(JSON.parse_string(header.payload))
+	return value if value is Dictionary else {}
+
+static func replay(world: RefCounted, records: Array[Dictionary], initial_hash: String = "", digests: Array = [], base_payload: Dictionary = {}) -> Dictionary:
 	if not digests.is_empty() and (digests.size()!=records.size() or not digests.all(_digest_valid)): return {"error":"Invalid journal digest evidence"}
 	var final_tick: int = world.tick
 	var previous_tick: int = world.tick
@@ -91,7 +97,10 @@ static func replay(world: RefCounted, records: Array[Dictionary], initial_hash: 
 				final_state = record.state.duplicate(true)
 			elif record.has("delta"):
 				if not world is ColonyWorld or not _delta_header(record.delta,record.tick): return {"error":"Unsupported delta recovery marker"}
-				if final_state.is_empty(): final_state=world.payload().duplicate(true)
+				# Fold old deltas against their exact original schema. Migrating a
+				# snapshot first can mix new fields with whole old record replacements.
+				# Only the final acknowledged payload advances through migrations.
+				if final_state.is_empty(): final_state=(base_payload if not base_payload.is_empty() else world.payload()).duplicate(true)
 				if parent.is_empty(): parent=world.canonical_hash()
 				if record.delta.parent!=parent or record.delta.base_tick!=final_state.tick or record.delta.campaign_id!=world.session_id: return {"error":"Delta checkpoint parent, tick or campaign mismatch"}
 				# This state is owned by recovery; patching it cannot change the
