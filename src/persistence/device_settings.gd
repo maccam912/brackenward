@@ -1,7 +1,7 @@
 class_name DeviceSettings
 extends RefCounted
 ## Device-wide UI preferences. Imported campaigns never replace this record.
-const VERSION: int = 4
+const VERSION: int = 5
 var path: String = "user://device-settings.json"
 var values: Dictionary = defaults()
 
@@ -33,6 +33,8 @@ func load_local() -> void:
 		candidate["auto_pauses"]=SimRunner.default_auto_pauses();candidate["bindings"]=ControlBindings.DEFAULTS.duplicate(true)
 	if candidate is Dictionary and candidate.get("schema_version")==3 and ColonyCodec._keys(candidate,["schema_version","text_scale","left_handed","last_slot","cameras","tutorials","reduced_motion","high_contrast","inspector_pause","quality","auto_pauses","bindings"]):
 		candidate=candidate.duplicate(true);candidate.schema_version=4;candidate["audio"]=audio_defaults();candidate["haptics"]=false
+	if candidate is Dictionary and candidate.get("schema_version")==4 and ColonyCodec._keys(candidate,defaults().keys()):
+		candidate=candidate.duplicate(true);candidate.schema_version=5
 	if not _valid(candidate): return
 	values = candidate
 	values.schema_version = int(values.schema_version)
@@ -56,9 +58,9 @@ func _valid(data: Variant) -> bool:
 		if not camera is Array or camera.size() != 3:
 			return false
 		for value in camera:
-			if not value is float and not value is int:
+			if (not value is float and not value is int) or not is_finite(float(value)):
 				return false
-		if camera[0] < 0 or camera[0] > 128 or camera[1] < 0 or camera[1] > 128 or camera[2] < 16 or camera[2] > 64:
+		if camera[0] < 0 or camera[0] > 128 or camera[1] < 0 or camera[1] > 128 or camera[2] < WorldView.MIN_TILE_SIZE or camera[2] > WorldView.MAX_TILE_SIZE:
 			return false
 	if not data.tutorials is Dictionary or data.tutorials.size()>1024: return false
 	for campaign_id in data.tutorials:

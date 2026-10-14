@@ -10,6 +10,13 @@ var world: RefCounted
 var gestures: GestureState = GestureState.new()
 var camera_tile: Vector2 = Vector2(68, 63)
 var tile_size: float = 32.0
+const MIN_TILE_SIZE: float = 2.0
+const MAX_TILE_SIZE: float = 64.0
+var confirmed_key: String = ""
+var confirmed_cells: Dictionary = {}
+var confirmed_buildings: Array[Dictionary] = []
+var confirmed_build_tiles: Dictionary = {}
+var confirmed_resources: Array[Vector2i] = []
 var focus_offset: Vector2 = Vector2.ZERO:
 	set(value):
 		if value==focus_offset: return
@@ -100,6 +107,7 @@ func _update_frame(delta: float) -> void:
 		_apply_intent(action)
 	if world == null:
 		return
+	refresh_confirmed_orders()
 	while actors.size()<world.citizens.size():
 		_add_actor(actors.size())
 	var cargo: Dictionary = {}
@@ -264,9 +272,55 @@ func center_camera(point: Vector2) -> void:
 
 func zoom_at(ratio: float, point: Vector2) -> void:
 	var anchor: Vector2 = (point - size * 0.5 - focus_offset) / tile_size + camera_tile
-	tile_size = clampf(tile_size * ratio, 16.0, 64.0)
+	tile_size = clampf(tile_size * ratio, MIN_TILE_SIZE, MAX_TILE_SIZE)
 	camera_tile = anchor - (point - size * 0.5 - focus_offset) / tile_size
 	_update_transform()
+
+func refresh_confirmed_orders() -> void:
+	# Queued commands are already saved state, but execute only on the next tick.
+	# Derive immediate feedback without granting work or advancing anyone's needs.
+	if world==null: return
+	var key: String = "%d|%d|%d|%d" % [world.get_instance_id(),world.tick,world.next_command_id,world.pending_commands.size()]
+	if key==confirmed_key: return
+	confirmed_key=key;confirmed_cells.clear();confirmed_buildings.clear();confirmed_build_tiles.clear();confirmed_resources.clear()
+	var seen: Dictionary = {}
+	for command in world.pending_commands:
+		if command.session!=world.session_id or world.receipts.has(command.id) or seen.has(command.id): continue
+		seen[command.id]=true
+		if not world is ColonyWorld:
+			for tile in command.tiles: confirmed_cells[tile]=true
+			continue
+		var args: Dictionary = command.args
+		if command.kind in ["stockpile","field","forest","pen","designate"]:
+			for tile in args.get("tiles",[]): confirmed_cells[tile]=true
+		elif command.kind=="gather_area" and world is ColonyWorld:
+			for resource in world.gather_targets(args.definition,args.tiles):
+				var point: Vector2i = Vector2i(resource.x,resource.y)
+				if not confirmed_resources.has(point): confirmed_resources.append(point)
+		elif world is ColonyWorld:
+			var plans: Array = []
+			if command.kind=="build": plans=[args]
+			elif command.kind=="build_area":
+				for tile in args.tiles: plans.append({"definition":args.definition,"x":tile.x,"y":tile.y,"rotation":0})
+			elif command.kind=="lodge": plans=ColonyConstruction.lodge(Vector2i(args.x,args.y))
+			elif command.kind in ["move_furniture","cart_move"]:
+				var source: Dictionary = world.find(world.structures,args.target)
+				if not source.is_empty(): plans=[{"definition":source.definition,"x":args.x,"y":args.y,"rotation":args.get("rotation",source.rotation)}]
+			for plan in plans:
+				if not world.definitions.buildings.has(plan.get("definition","")): continue
+				confirmed_buildings.append(plan)
+				for tile in world.footprint(plan):
+					confirmed_cells[tile]=true
+					if not confirmed_build_tiles.has(tile): confirmed_build_tiles[tile]=[]
+					confirmed_build_tiles[tile].append(plan.definition)
+
+func confirmed_build_error(kind: String, tiles: Array) -> String:
+	refresh_confirmed_orders()
+	for tile in tiles:
+		for definition in confirmed_build_tiles.get(tile,[]):
+			if (kind in ColonyConstruction.OVERLAYS)==(definition in ColonyConstruction.OVERLAYS) or (kind in ColonyConstruction.OVERLAYS and definition=="bridge"):
+				return ColonyText.text("ui.placement.already_confirmed")
+	return ""
 
 func cancel_gesture() -> void:
 	gestures.cancel()
@@ -310,6 +364,14 @@ func _draw_frame() -> void:
 
 func _draw_feedback(painter: CanvasItem) -> void:
 	if world==null: return
+	refresh_confirmed_orders()
+	for tile in confirmed_cells:
+		var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size)
+		if not rectangle.intersects(Rect2(Vector2.ZERO,size)): continue
+		painter.draw_rect(rectangle,Color(0.91,0.73,0.4,0.28))
+		painter.draw_rect(rectangle,Color("E9BA67"),false,minf(1.5,tile_size*0.25))
+		painter.draw_line(rectangle.position,rectangle.end,Color("E9BA67"),minf(1.5,tile_size*0.25))
+	for tile in confirmed_resources: _draw_gather_mark(Vector2(tile),Color("E9BA67"),painter)
 	var flooded: Array = world.weather_state.flooded if world is ColonyWorld else []
 	for tile in flooded + forecast_mask:
 		var point: Vector2 = tile_to_screen(Vector2(tile))
@@ -336,7 +398,7 @@ func _draw_feedback(painter: CanvasItem) -> void:
 					painter.draw_line(rectangle.position,rectangle.end,Color.BLACK,4);painter.draw_line(rectangle.position+Vector2(rectangle.size.x,0),rectangle.position+Vector2(0,rectangle.size.y),Color.BLACK,4)
 	if preview_visible and preview_lodge and world is ColonyWorld:
 		for blueprint in ColonyConstruction.lodge(preview_start):
-			for tile in world.footprint(blueprint): painter.draw_rect(Rect2(tile_to_screen(Vector2(tile))+Vector2.ONE*2,Vector2.ONE*(tile_size-4)),Color("F3E8CC"),false,2)
+			for tile in world.footprint(blueprint): painter.draw_rect(Rect2(tile_to_screen(Vector2(tile))+Vector2.ONE*tile_size*0.0625,Vector2.ONE*tile_size*0.875),Color("F3E8CC"),false,minf(2,tile_size*0.25))
 	if preview_visible and not preview_resource.is_empty() and world is ColonyWorld:
 		for resource in world.gather_targets(preview_resource,preview_tiles()):
 			_draw_gather_mark(Vector2(resource.x,resource.y),Color("F3E8CC"),painter)

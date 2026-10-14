@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.25-m7` (campaign schema 23, device settings schema 4), content `colony-v5`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.26-m7` (campaign schema 23, device settings schema 5), content `colony-v5`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.25-m7` (campaign schema 23, device settings schema 4), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `00013c2` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-00013c23d0c1); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,270 checks, zero failures, including 542 native UI checks; every suite was freshly run for this content revision. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,315 checks, zero failures, including 584 native UI checks. The v5 full baseline is retained; changed UI/settings/persistence suites were freshly rerun for this checkpoint. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -1849,3 +1849,43 @@ revision will have a separate workflow. Weekly remaining usage last observed
 72%; authorized work continues. The new phone export and latest requested
 placement, deletion, zoom, sleep pacing and quiet-night acceleration work are
 tracked in ANDROID_DEVICE_EVIDENCE.md and remain subsequent work.
+
+
+## 0.7.26 immediate placement feedback, speed restoration and wider zoom
+
+Confirmed commands now immediately derive hatched placement/resource marks from
+pending saved state. They do not advance the simulation or grant inventory/work.
+A subsequent preview has its own enabled Confirm; repeated Confirm on the hidden
+previous preview stays idempotent. Pending building footprints prevent duplicate
+claims on the same layer, while floor-under-building remains supported. Invalid
+paint cells keep their existing visible reasons. All receipt IDs are reconciled,
+including rejections, and the pending marks retire after actual tick processing.
+The M0 fixture's distinct command shape remains supported.
+
+Placement records entry speed before the first menu pause, carries it through
+nested menus and restores precisely 1x/2x/4x after confirmation. Paused entry stays
+paused. Cancel, explicit Pause, backgrounding and world replacement clear the
+resume intent; guarded storage/ending checks still apply. Paused new commands
+trigger a full verified snapshot at the same logical tick rather than being
+skipped by the journal's equal-tick guard. Another same-tick command is captured
+again. Durable-progress checks include queued command IDs.
+
+Maximum zoom-out is now 2 logical pixels per tile, versus 16, retaining the
+64-pixel close limit and cursor/pinch anchor. Settings schema 5 accepts and
+retains this wider range; v4 upgrades preserve every previous setting and the
+original preference file until an explicit save. Nonfinite camera data rejects.
+
+Fresh native UI passes 584 checks, including real pixel changes for a confirmed
+paused marker, consecutive field/stockpile/build orders, pending-state recovery,
+layer overlap, exact speed restoration through direct/nested entry, cancellation,
+explicit Pause and portrait/landscape anchored zoom/preference restoration.
+Persistence passes 295 checks, including v4 preference preservation and far-zoom
+restart. The initial UI attempt caught an M0 command-shape omission, retained red
+cell expectations and stale placement IDs in tests that directly swap worlds;
+those are corrected, original failures retained, and the final suite passes.
+Source/world changes invalidate placement receipt ownership. Local rendered
+placement-confirmed-paused.png was inspected. Catalog validation passes all 416
+referenced UI keys. Final Android debug export passes (0.7.26-m7 / code 65); all four Kotlin tests
+pass. The native 60-frame startup/audio-drain check passes. Unit/integration
+suites freshly pass 20/6 checks. Remote CI for 7015cc4 and this revision is
+separate. Physical phone retesting remains pending.

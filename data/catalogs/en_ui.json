@@ -331,6 +331,8 @@
   "ui.performance.stage.simulation_batch": "simulation batch",
   "ui.performance.stage.snapshot_capture": "snapshot capture",
   "ui.performance.timing": "{stage} / {speed}: {samples}, max {max_ms} ms, {slow} over 50 ms; p95 bucket upper {upper_ms} ms.",
+  "ui.placement.accepted": "Order accepted. Work is marked on the map.",
+  "ui.placement.already_confirmed": "Another confirmed order occupies this tile.",
   "ui.placement.area_notice": "Tap for one tile or drag an area, then Confirm. Dragging never submits an order.",
   "ui.placement.blocked_cells": {
     "one": "{count} blocked cell stays unsubmitted",
@@ -342,6 +344,7 @@
   "ui.placement.cancel_notice": "Unconfirmed area canceled. Time stays paused.",
   "ui.placement.cart": "Move cart · 20 WU · stored goods stay aboard\n{status}",
   "ui.placement.cart_route": "Needs a clear two-by-two route",
+  "ui.placement.confirmed": "Order confirmed and marked. Work begins when time runs.",
   "ui.placement.forest": "Forest zone | Keep 75% of its tree sites mature\nAutomatically cut excess and replant stumps",
   "ui.placement.furniture": "Move {building} · {work} WU · materials retained\n{status}",
   "ui.placement.gather": "Gather {item} | {targets}\nDrag a rectangle, then Confirm",

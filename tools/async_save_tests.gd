@@ -217,6 +217,16 @@ static func ui(game: GameSession, check: Callable) -> void:
 	check.call("SAVE/UI_background_joins_writer_then_saves_latest_tick",not game.save_queue.busy() and game.runner.speed==0 and recovered.has("world") and recovered.world.canonical_hash()==final_hash)
 	game.resume_from_background();game.close_sheet()
 	check.call("SAVE/UI_background_return_remains_paused",game.runner.speed==0 and game.world.canonical_hash()==final_hash)
+	game.begin_field();game.view.preview_start=Vector2i(90,80);game.view.preview_end=Vector2i(91,80);game.confirm_placement()
+	var paused_tick: int=game.world.tick;var queued_hash: String=game.world.canonical_hash()
+	game.journal_elapsed=1.0;game._process(0.0)
+	check.call("SAVE/UI_paused_new_order_starts_durable_capture_without_a_tick",game.save_queue.busy() and game.world.tick==paused_tick and game.world.pending_commands.size()==1)
+	game._finish_background_save(true)
+	recovered=load_saved(game.store)
+	check.call("SAVE/UI_paused_queued_order_recovers_exactly_at_same_tick",recovered.has("world") and recovered.world.canonical_hash()==queued_hash and game.world.tick==paused_tick and game.store.journal_tick==paused_tick)
+	game.begin_placement();game.view.preview_start=Vector2i(93,80);game.view.preview_end=Vector2i(94,80);game.confirm_placement()
+	queued_hash=game.world.canonical_hash();game.journal_elapsed=1.0;game._process(0.0);game._finish_background_save(true);recovered=load_saved(game.store)
+	check.call("SAVE/UI_second_paused_order_also_recovers_without_running",recovered.has("world") and recovered.world.canonical_hash()==queued_hash and recovered.world.pending_commands.size()==2 and game.world.tick==paused_tick)
 
 static func content4_upgrade(root: String, check: Callable) -> void:
 	var audit: Dictionary=Content4Migration.audit()

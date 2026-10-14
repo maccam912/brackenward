@@ -933,6 +933,7 @@ func ui() -> void:
 	await PreparedSnapshotTests.ui(colony_game,check)
 	await PlacementUITests.run(colony_game,check)
 	PlacementUITests.inactive_preview(colony_game,check)
+	await PlacementUITests.confirmed_orders(colony_game,check)
 	ClockUITests.run(colony_game,check)
 	TextTests.ui(colony_game,check)
 	await AppearanceUITests.run(colony_game,check)

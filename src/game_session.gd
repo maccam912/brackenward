@@ -31,11 +31,15 @@ var work_orders_page: int = 0
 var sheet_name: String = ""
 var sheet_title_key: String = ""
 var sheet_camera_center: Vector2 = Vector2.ZERO
+var sheet_entry_speed: int = 0
+var placement_entry_speed: int = 0
 var text_scale: float = 1.0
 var left_handed: bool = false
 var logical_scale: float = 1.0
 var notice: String = "Four travelers. A ruined wayhouse. Make a place to stay."
 var submitted_command: int = 0
+var placement_commands: Array[int] = []
+var placement_world_id: int = 0
 var backgrounded: bool = false
 var last_saved_tick: int = 1800
 var autosave_elapsed: float = 0.0
@@ -378,6 +382,7 @@ func _process(delta: float) -> void:
 
 func _advance_frame(delta: float) -> void:
 	if quitting: return
+	_sync_placement_world()
 	if native_smoke_remaining>0:
 		native_smoke_remaining-=1
 		if native_smoke_remaining==0: quit_application();return
@@ -387,7 +392,7 @@ func _advance_frame(delta: float) -> void:
 	_finish_background_save()
 	var preparation: Dictionary = save_queue.poll_preparation()
 	if not preparation.get("error","").is_empty(): _storage_failed(preparation.error)
-	if store is ColonyStore and world.tick==store.journal_tick: durable_at=save_clock
+	if store is ColonyStore and not _has_undurable_progress(): durable_at=save_clock
 	if _storage_wait_required() and runner.speed>0:
 		diagnostics.count("slow_storage_pauses")
 		runner.pause()
@@ -442,12 +447,20 @@ func _advance_frame(delta: float) -> void:
 		diagnostics.count("speed_reductions")
 		notice = "Speed reduced to keep the colony responsive."
 		runner.speed_reduced = false
-	if submitted_command > 0 and world.receipts.has(submitted_command):
-		var receipt: String = world.receipts[submitted_command]
-		if is_instance_valid(soundscape): soundscape.cue("ui_confirm" if receipt=="accepted" else "ui_error")
-		notice = "Order accepted. Resume to watch the work." if receipt == "accepted" else "Order rejected: " + receipt
-		submitted_command = 0
-		confirm_button.disabled = false
+	var waiting: Array[int] = placement_commands.duplicate()
+	if submitted_command>0 and not waiting.has(submitted_command): waiting.append(submitted_command)
+	var rejected: Array[String] = []
+	for command_id in waiting:
+		if not world.receipts.has(command_id): continue
+		var receipt: String = world.receipts[command_id]
+		var accepted: bool = receipt=="accepted" or receipt.begins_with("Accepted ")
+		if is_instance_valid(soundscape): soundscape.cue("ui_confirm" if accepted else "ui_error")
+		notice = ColonyText.text("ui.placement.accepted") if receipt == "accepted" else (receipt if accepted else "Order rejected: " + receipt)
+		if not accepted: rejected.append(receipt)
+		placement_commands.erase(command_id)
+		if submitted_command==command_id: submitted_command=0
+		if not placement.visible: confirm_button.disabled=false
+	if not rejected.is_empty(): notice="Order rejected: "+"; ".join(rejected)
 	_update_inspector()
 	if world is ColonyWorld:
 		forecast_elapsed += delta
@@ -471,7 +484,8 @@ func _advance_frame(delta: float) -> void:
 	if is_instance_valid(soundscape): soundscape.observe()
 	journal_elapsed += delta
 	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony:
-		if world.tick!=store.journal_tick: _start_background_save(false)
+		var new_commands: bool = world.next_command_id!=store.journal_payload.get("next_command_id",world.next_command_id)
+		if world.tick!=store.journal_tick or new_commands: _start_background_save(world.tick==store.journal_tick)
 		journal_elapsed = 0.0
 	autosave_elapsed += delta
 	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony:
@@ -529,10 +543,14 @@ func _poll_background_save(wait: bool, report_error: bool) -> String:
 	return ""
 
 func _storage_wait_required() -> bool:
-	return store is ColonyStore and not saving_disabled and not recovery_failed and not awaiting_first_colony and world.tick!=store.journal_tick and save_clock-durable_at>=1.75
+	return store is ColonyStore and not saving_disabled and not recovery_failed and not awaiting_first_colony and _has_undurable_progress() and save_clock-durable_at>=1.75
+
+func _has_undurable_progress() -> bool:
+	return world.tick!=store.journal_tick or world.next_command_id!=store.journal_payload.get("next_command_id",world.next_command_id)
 
 func set_speed(value: int) -> void:
 	if quitting: return
+	if value==0: placement_entry_speed=0;sheet_entry_speed=0
 	if value>0 and _storage_wait_required():
 		notice="Saving is still in progress. Resume after saving finishes."
 		return
@@ -559,14 +577,16 @@ func set_speed(value: int) -> void:
 	runner.set_speed(value)
 
 func begin_placement() -> void:
+	_sync_placement_world()
 	if awaiting_first_colony:
 		show_new_colony(store.slot)
 		return
 	var center: Vector2 = sheet_camera_center if sheet!=null and view.follow_id>0 else view.camera_center()
+	placement_entry_speed=sheet_entry_speed if sheet!=null else runner.speed
 	view.follow_id=0
 	close_sheet()
 	runner.pause()
-	confirm_button.disabled = submitted_command>0
+	confirm_button.disabled = false
 	view.cancel_gesture()
 	view.follow_id = 0
 	view.preview_visible = true
@@ -585,6 +605,8 @@ func begin_placement() -> void:
 	view.preview_end = view.preview_start
 
 func cancel_placement() -> void:
+	placement_entry_speed=0
+	view.rejected_build_tiles.clear()
 	view.cancel_gesture()
 	view.preview_visible = false
 	view.gestures.mode = "select"
@@ -604,16 +626,23 @@ func confirm_placement() -> void:
 			return
 	if world is ColonyWorld and not view.preview_definition.is_empty():
 		var error: String = ColonyMaintenance.cart_position_error(world,world.find(world.structures,moving_target),view.preview_start) if placement_kind=="cart_move" else world.placement_error(view.preview_definition,view.preview_start,view.preview_rotation,0,moving_target)
+		if error.is_empty(): error=view.confirmed_build_error(view.preview_definition,view.preview_tiles())
 		if not error.is_empty():
 			notice = error
 			return
 	if placement_kind == "lodge":
 		var error: String = ColonyConstruction.lodge_error(world,view.preview_start)
+		if error.is_empty():
+			for plan in ColonyConstruction.lodge(view.preview_start):
+				error=view.confirmed_build_error(plan.definition,world.footprint(plan))
+				if not error.is_empty(): break
 		if not error.is_empty(): notice=error;return
+	var paint_tiles: Array[Vector2i] = []
 	if placement_kind == "build_area":
-		var preview: Dictionary = ColonyConstruction.paint_preview(world,paint_build_definition,view.preview_tiles())
+		var preview: Dictionary = _paint_preview()
 		view.rejected_build_tiles=preview.rejected
 		if preview.valid.is_empty(): notice="No valid tiles. Inspect the red cells or clear obstructions.";return
+		paint_tiles.assign(preview.valid)
 	confirm_button.disabled = true
 	if world is ColonyWorld and placement_kind=="rally":
 		submitted_command=world.queue_command("draft",{"citizens":defend_citizens.duplicate(),"rally":Vector2i((view.preview_start.x+view.preview_end.x)/2,(view.preview_start.y+view.preview_end.y)/2),"stand_fast":defend_stand_fast})
@@ -624,7 +653,7 @@ func confirm_placement() -> void:
 	elif world is ColonyWorld and placement_kind == "lodge":
 		submitted_command=world.queue_command("lodge",{"x":view.preview_start.x,"y":view.preview_start.y})
 	elif world is ColonyWorld and placement_kind == "build_area":
-		submitted_command=world.queue_command("build_area",{"definition":paint_build_definition,"tiles":view.preview_tiles()})
+		submitted_command=world.queue_command("build_area",{"definition":paint_build_definition,"tiles":paint_tiles})
 	elif world is ColonyWorld and not view.preview_definition.is_empty():
 		submitted_command = world.queue_command("build", {"definition": view.preview_definition, "x": view.preview_start.x, "y": view.preview_start.y, "rotation": view.preview_rotation})
 	elif world is ColonyWorld and placement_kind == "gather":
@@ -641,12 +670,17 @@ func confirm_placement() -> void:
 		submitted_command = world.queue_command("field", {"crop":"turnip", "tiles":view.preview_tiles()})
 	else:
 		submitted_command = world.queue_designation(view.preview_tiles())
+	placement_commands.append(submitted_command)
 	view.cancel_gesture()
 	view.preview_visible = false
 	placement.visible = false
 	view.gestures.mode = "select"
-	notice = "Area pending. Resume to validate it on the next tick."
+	notice = ColonyText.text("ui.placement.confirmed")
+	view.refresh_confirmed_orders()
 	_layout()
+	var resume_speed: int = placement_entry_speed
+	placement_entry_speed=0
+	if resume_speed>0: set_speed(resume_speed)
 
 func _map_intent(action: Dictionary) -> void:
 	if action.kind == "notice": notice=action.text;return
@@ -769,7 +803,9 @@ func close_inspector() -> void:
 func show_sheet(title: String, title_key: String = "") -> void:
 	listening_binding=""
 	text_entry_error=""
-	if sheet==null: sheet_camera_center=view.camera_center()
+	if sheet==null:
+		sheet_camera_center=view.camera_center()
+		sheet_entry_speed=runner.speed
 	runner.pause()
 	view.cancel_gesture()
 	if sheet != null:
@@ -907,6 +943,7 @@ func close_sheet() -> void:
 		sheet = null
 	sheet_name = ""
 	sheet_title_key=""
+	sheet_entry_speed=0
 	notice = "Paused. Choose 1x, 2x, or 4x to resume."
 	_layout()
 
@@ -1059,6 +1096,7 @@ func _replace_world(state: RefCounted) -> void:
 	close_inspector()
 	cancel_placement()
 	submitted_command = 0
+	placement_commands.clear()
 	confirm_button.disabled = false
 	last_saved_tick = world.tick
 	if world is ColonyWorld: save_queue.prime(world)
@@ -1159,6 +1197,7 @@ func suspend() -> void:
 	if backgrounded:
 		return
 	backgrounded = true
+	placement_entry_speed=0;sheet_entry_speed=0
 	diagnostics.count("backgrounds");diagnostics.foreground=false;diagnostics.break_frame_clock()
 	if is_instance_valid(soundscape): soundscape.suspend()
 	runner.pause()
@@ -1305,9 +1344,9 @@ func _preview_text() -> String:
 			placement_cache_key=key;placement_cache={"error":ColonyConstruction.lodge_error(world,view.preview_start)}
 		return ColonyText.text("ui.placement.lodge",{"status":ColonyText.text("ui.placement.valid_lodge") if placement_cache.error.is_empty() else placement_cache.error})
 	if placement_kind=="build_area":
-		var key: String = "%s|%s|%s|%d" % [paint_build_definition,view.preview_start,view.preview_end,world.tick]
+		var key: String = "%s|%s|%s|%d|%d" % [paint_build_definition,view.preview_start,view.preview_end,world.tick,world.next_command_id]
 		if key!=placement_cache_key:
-			placement_cache_key=key;placement_cache=ColonyConstruction.paint_preview(world,paint_build_definition,view.preview_tiles())
+			placement_cache_key=key;placement_cache=_paint_preview()
 		view.rejected_build_tiles=placement_cache.rejected
 		var cost: Dictionary = {}
 		for item in world.definitions.buildings[paint_build_definition].materials: cost[item]=world.definitions.buildings[paint_build_definition].materials[item]*placement_cache.valid.size()
@@ -1327,6 +1366,14 @@ func _preview_text() -> String:
 	var height: int = absi(view.preview_end.y-view.preview_start.y)+1
 	return ColonyText.plural("ui.placement.rectangle",width*height,{"width":width,"height":height,"mode":ColonyText.text("ui.placement.pan_mode" if view.gestures.mode=="pan" else ("ui.placement.turnip_mode" if placement_kind=="field" else "ui.placement.stockpile_mode"))})
 
+func _paint_preview() -> Dictionary:
+	var result: Dictionary = ColonyConstruction.paint_preview(world,paint_build_definition,view.preview_tiles())
+	for tile in result.valid.duplicate():
+		var error: String = view.confirmed_build_error(paint_build_definition,[tile])
+		if error.is_empty(): continue
+		result.valid.erase(tile);result.rejected[tile]=error
+	return result
+
 func _update_inspector() -> void:
 	if selected <= 0 or not is_instance_valid(inspector_details):
 		return
@@ -1343,15 +1390,21 @@ func _update_inspector() -> void:
 
 func _submit(kind: String, args: Dictionary) -> void:
 	if quitting: return
+	_sync_placement_world()
 	if awaiting_first_colony:
 		notice = "Choose a site and create this colony first."
 		return
-	if submitted_command > 0 and kind not in ["preference","schedule","priority","stock_filter","food_policy"]:
+	if submitted_command > 0 and not placement_commands.has(submitted_command) and kind not in ["preference","schedule","priority","stock_filter","food_policy"]:
 		notice = "An order is pending. Resume to apply it before another action."
 		return
 	submitted_command = world.queue_command(kind, args)
 	confirm_button.disabled = true
 	notice = "Order pending. Close the panel and resume to apply it."
+
+func _sync_placement_world() -> void:
+	if placement_world_id==world.get_instance_id(): return
+	placement_world_id=world.get_instance_id()
+	placement_commands.clear()
 
 func _resource_sheet(resource: Dictionary) -> void:
 	show_sheet(resource.definition.capitalize())
@@ -1578,6 +1631,7 @@ func _storage_sheet(storage: Dictionary) -> void:
 			_submit("stock_filter",{"target":storage.id,"filters":filters,"priority":storage.priority}),sheet_body)
 
 func _storage_failed(error: String) -> void:
+	placement_entry_speed=0;sheet_entry_speed=0
 	diagnostics.count("storage_alerts")
 	storage_error = error
 	runner.pause()
