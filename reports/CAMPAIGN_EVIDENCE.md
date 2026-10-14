@@ -163,3 +163,16 @@ spoiled/season-closed packing and public stockpile expansion, not state grants.
 Canonical `e89ab3b4364dfc1011c4adc478847f8ebd0f11cf6f8ece347a7d66d295d165c1`.
 This mode/site certificate is separate from current-code seed sweeps and
 physical-device gates. Standard Pine/Reed continuations remain active.
+
+14 October bed/access continuation: `bed-access-checkpoint-preservation.json`
+records the untouched Pine tick-439,200 report/snapshot (canonical
+`06eda88adb558208d07e35565301712b605f7784d0a21bfdc31b8de5cd65111a`)
+and Reed tick-453,600 daily report/snapshot (canonical
+`eab397a89d5a29593a03c26ad7396fefa249f29add285be8ab62a80ac9d13a84`).
+Schema-20 Pine loads through the explicit revision-only schema-21 migration;
+the original envelope digest must still exactly match its source report.
+`charter-access-20261014-*` continues these worlds with public bed assignment
+and physical maintenance work. These continuations are in progress, with no
+new complete-Charter claim. The interrupted initial Pine attempt had not
+published a new daily checkpoint; its original verified input remains the
+continuation source.

@@ -191,4 +191,9 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 		result["chronicle_state"]=ColonyChronicle.from_legacy(result)
 		result.facts=result.facts.slice(maxi(0,result.facts.size()-ColonyChronicle.ORDINARY_LIMIT))
 		result.schema_revision=20
+	if result.get("schema_revision")==20:
+		# No resident, bed, history or map edits. This revision declares support
+		# for the additive public bed-assignment command in paused saves.
+		result=result.duplicate(true)
+		result.schema_revision=21
 	return result

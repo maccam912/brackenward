@@ -73,8 +73,11 @@ static func acceptance(world: ColonyWorld, request: Dictionary) -> Dictionary:
 	if living(world)>=20: return {"error":"Twenty residents is the colony limit"}
 	var entry: Vector2i = request.entry
 	if not ColonyWorld.inside(entry) or not world.walkable(entry) or not world.accessible(entry) or not ColonyDanger.safe(world,entry): return {"error":"Boundary route blocked: clear a safe arrival route"}
-	var beds: Array = world.structures.filter(func(s:Dictionary)->bool:return s.health>0 and s.definition in ["bed","bedroll"] and s.user==0 and world.accessible(Vector2i(s.x,s.y)))
-	beds.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.id<b.id)
+	var beds: Array = world.structures.filter(func(s:Dictionary)->bool:return s.health>0 and s.definition in ["bed","bedroll"] and s.user==0 and not ColonyFire.burning(world,"structure",s.id) and world.accessible(Vector2i(s.x,s.y)) and ColonyDanger.safe(world,Vector2i(s.x,s.y)))
+	beds.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
+		if a.definition!=b.definition: return a.definition=="bed"
+		var roof_a: bool = world.roofed(Vector2i(a.x,a.y));var roof_b: bool = world.roofed(Vector2i(b.x,b.y))
+		return roof_a if roof_a!=roof_b else a.id<b.id)
 	if beds.is_empty(): return {"error":"Build one reachable free bed or bedroll first"}
 	var home_count: int = ColonyRegion.home(world).size()+1
 	var forecast: Dictionary = FoodForecast.calculate(world,home_count)

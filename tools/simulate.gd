@@ -31,16 +31,18 @@ func run() -> void:
 		var parsed: Variant = ColonyState.unpack(JSON.parse_string(FileAccess.get_file_as_string(options.resume)))
 		if not parsed is Dictionary or not parsed.get("ordinary_play_only",false): printerr("Resume needs an ordinary-play report");quit(2);return
 		previous=parsed
-		var decoded: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes(options.resume.get_basename()+"-final.brackenward"))
+		var saved_bytes: PackedByteArray = FileAccess.get_file_as_bytes(options.resume.get_basename()+"-final.brackenward")
+		var decoded: Dictionary = ColonyCodec.decode(saved_bytes)
 		if not decoded.has("world"): printerr(decoded);quit(2);return
 		world=decoded.world
-		if world.canonical_hash()!=previous.get("canonical_hash") or world.seed!=int(options.seed) or world.site_id!=options.site or previous.get("mode")!=options.mode or world.tick!=previous.get("end_tick"):
+		var original_envelope: Dictionary = JSON.parse_string(saved_bytes.get_string_from_utf8())
+		if original_envelope.get("sha256")!=previous.get("canonical_hash") or world.seed!=int(options.seed) or world.site_id!=options.site or previous.get("mode")!=options.mode or world.tick!=previous.get("end_tick"):
 			printerr("Resume snapshot/report hash, site, seed, mode or tick mismatch");quit(2);return
 		initial=FileAccess.get_file_as_bytes(options.resume.get_basename()+"-initial.brackenward")
 		if initial.is_empty(): printerr("Resume original starting snapshot missing");quit(2);return
 		world.command_trace.assign(previous.commands)
 		policy.resume(world,previous.policy_decisions)
-		print("Resuming verified ordinary-play snapshot at tick %d; canonical %s" % [world.tick,world.canonical_hash()])
+		print("Resuming verified ordinary-play snapshot at tick %d; source canonical %s; migrated canonical %s" % [world.tick,previous.canonical_hash,world.canonical_hash()])
 	else:
 		if options.mode=="Hearthside": world.queue_command("care_mode",{"mode":"Hearthside"})
 		initial=ColonyCodec.encode(world)

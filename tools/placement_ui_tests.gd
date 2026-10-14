@@ -66,6 +66,7 @@ static func run(game: GameSession, check: Callable) -> void:
 			game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()
 			game.view.camera_tile=Vector2(90.25,80.75)
 	await overlay_camera(game,check)
+	await bed_assignment(game,check)
 	tree.root.size=original_size;game.size=Vector2(original_size);game.text_scale=original_scale;game._build_theme();game._layout()
 
 static func overlay_camera(game: GameSession, check: Callable) -> void:
@@ -102,3 +103,37 @@ static func overlay_camera(game: GameSession, check: Callable) -> void:
 		check.call("UI03/placement_stops_follow_without_losing_original_view_%d" % viewport_size.x,game.view.follow_id==0 and game.view.camera_center().is_equal_approx(desired) and game.view.tile_to_screen(point).is_equal_approx(followed))
 		game.cancel_placement()
 	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()
+
+static func bed_assignment(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree = game.get_tree()
+	for viewport_size in [Vector2i(390,844),Vector2i(640,360)]:
+		game._replace_world(ColonyTests.world());game.close_sheet();game.close_inspector();game._tutorial_dismiss()
+		tree.root.size=viewport_size;game.size=Vector2(viewport_size);game.text_scale=1.5;game._build_theme();game._layout()
+		var world: ColonyWorld = game.world
+		var bed: Dictionary = world._structure("bed",Vector2i(74,64),0)
+		game.show_person(1)
+		var choices: Array = game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Assign bed")
+		check.call("BED/UI_person_offers_bed_control_%d" % viewport_size.x,choices.size()==1)
+		choices[0].pressed.emit();await tree.process_frame
+		var choose: Array = game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Choose 74,64")
+		check.call("BED/UI_lists_actual_free_bed_without_pending_order_%d" % viewport_size.x,choose.size()==1 and world.pending_commands.is_empty() and game.runner.speed==0)
+		choose[0].pressed.emit();await tree.process_frame
+		var confirm: Array = game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Assign this bed")
+		check.call("BED/UI_assignment_has_visible_large_text_confirmation_%d" % viewport_size.x,confirm.size()==1 and confirm[0].size.y>=48 and game.sheet.get_global_rect().encloses(confirm[0].get_global_rect()))
+		if DisplayServer.get_name()!="headless":
+			await RenderingServer.frame_post_draw
+			tree.root.get_texture().get_image().save_png("res://reports/bed-assignment-%d.png" % viewport_size.x)
+		confirm[0].pressed.emit()
+		check.call("BED/UI_assignment_queues_one_public_command_%d" % viewport_size.x,world.pending_commands.size()==1 and world.pending_commands[0].kind=="assign_bed" and world.citizens[0].bed!=bed.id)
+		game.set_speed(1);game.runner.advance_frame(0.1);game.runner.pause();game._process(0.0)
+		check.call("BED/UI_assignment_applies_on_resume_%d" % viewport_size.x,world.citizens[0].bed==bed.id and bed.user==1)
+		game.show_bed_choice(2,bed.id)
+		check.call("BED/UI_occupied_choice_explains_named_owner_%d" % viewport_size.x,game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Mira")) and not game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Assign this bed"))
+		game.show_station(bed)
+		var unassign: Array = game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Unassign bed")
+		unassign[0].pressed.emit()
+		var clear: Array = game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Unassign")
+		check.call("BED/UI_unassign_explains_ground_rate_before_order_%d" % viewport_size.x,clear.size()==1 and game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("80 rest/hour")) and world.pending_commands.is_empty())
+		clear[0].pressed.emit();game.set_speed(1);game.runner.advance_frame(0.1);game.runner.pause();game._process(0.0)
+		check.call("BED/UI_unassign_releases_real_bed_%d" % viewport_size.x,world.citizens[0].bed==0 and bed.user==0)
+	game._replace_world(ColonyTests.world());game.close_sheet();game.close_inspector();game._tutorial_dismiss()

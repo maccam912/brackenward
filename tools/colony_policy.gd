@@ -48,6 +48,9 @@ func plan(world: ColonyWorld) -> void:
 		_gather(world,"berry_bush",32,2,24)
 		_gather(world,"mushroom_patch",24,2,24)
 	var long_campaign: bool = scenario!="first_week"
+	if long_campaign:
+		_assign_beds(world)
+		if _repair_lodge_access(world): return
 	if long_campaign: _gather(world,"stone_node",100,2)
 	if not _present(world,"table"):
 		_build(world,"table");return
@@ -150,11 +153,15 @@ func _empty_room(world: ColonyWorld) -> Vector2i:
 	var occupied: Dictionary = {}
 	for structure in world.structures:
 		for point in world.footprint(structure): occupied[point]=true
+		if structure.definition=="door" and structure.health>0:
+			for direction in ([Vector2i.UP,Vector2i.DOWN] if structure.rotation%2==0 else [Vector2i.LEFT,Vector2i.RIGHT]): occupied[Vector2i(structure.x,structure.y)+direction]=true
 		if structure.definition=="table" and structure.health>0:
 			for point in ColonySocial.seats_for(world,structure): occupied[point]=true
 	for job in world.jobs:
 		if job.kind=="build" and job.state not in ["Complete","Canceled"]:
 			for point in world.footprint(job): occupied[point]=true
+			if job.definition=="door":
+				for direction in ([Vector2i.UP,Vector2i.DOWN] if job.rotation%2==0 else [Vector2i.LEFT,Vector2i.RIGHT]): occupied[Vector2i(job.x,job.y)+direction]=true
 	for field in world.fields: occupied[Vector2i(field.x,field.y)]=true
 	for command in world.pending_commands:
 		if command.kind=="field":
@@ -173,6 +180,38 @@ func _empty_room(world: ColonyWorld) -> Vector2i:
 					if not valid: break
 				if valid and ColonyConstruction.lodge_error(world,Vector2i(x,y)).is_empty(): return Vector2i(x,y)
 	return Vector2i(-1,-1)
+
+func _assign_beds(world: ColonyWorld) -> bool:
+	var free: Array = world.structures.filter(func(s:Dictionary)->bool:return s.definition=="bed" and s.health>0 and s.user==0)
+	free.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
+		var a_roof: bool = world.roofed(Vector2i(a.x,a.y));var b_roof: bool = world.roofed(Vector2i(b.x,b.y))
+		return a_roof if a_roof!=b_roof else a.id<b.id)
+	for person in world.citizens:
+		if person.away or person.death_recorded or person.departed: continue
+		var current: Dictionary = world.find(world.structures,person.bed)
+		if current.get("definition")=="bed" and current.health>0: continue
+		for bed in free:
+			if world.pending_commands.any(func(c:Dictionary)->bool:return c.kind=="assign_bed" and (c.args.citizen==person.id or c.args.target==bed.id)): continue
+			if not ColonyBeds.quote(world,person.id,bed.id).is_empty(): continue
+			issue(world,"assign_bed",{"citizen":person.id,"target":bed.id});return true
+	return false
+
+func _repair_lodge_access(world: ColonyWorld) -> bool:
+	# Repair only the known adjacent-lodge mistake in older ordinary traces.
+	# The wall still needs a reachable builder and real demolition work.
+	for origin in lodge_origins:
+		var entrance: Vector2i = origin+Vector2i(4,5)
+		if world.accessible(entrance) or not world.structures.any(func(s:Dictionary)->bool:return s.definition=="door" and s.health>0 and Vector2i(s.x,s.y)==entrance): continue
+		for direction in [Vector2i.UP,Vector2i.DOWN]:
+			var point: Vector2i = entrance+direction
+			var far: Vector2i = entrance+direction*2
+			if not world.walkable(entrance-direction) or not world.walkable(far) or not world.accessible(far) or not ColonyDanger.safe(world,far): continue
+			if not lodge_origins.any(func(other:Vector2i)->bool:return other!=origin and Rect2i(other,Vector2i(8,6)).has_point(point) and (point.x in [other.x,other.x+7] or point.y in [other.y,other.y+5])): continue
+			for wall in world.structures:
+				if wall.definition!="wood_wall" or wall.health<=0 or Vector2i(wall.x,wall.y)!=point: continue
+				if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="demolish" and j.target==wall.id) or world.pending_commands.any(func(c:Dictionary)->bool:return c.kind=="demolish" and c.args.target==wall.id): continue
+				issue(world,"demolish",{"target":wall.id});return true
+	return false
 
 func _fields(world: ColonyWorld, crop: String, desired: int, roof: bool) -> void:
 	var definition: Dictionary = world.definitions.crops[crop]

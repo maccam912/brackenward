@@ -2,6 +2,7 @@ class_name PopulationTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	beds(check)
 	var world: ColonyWorld = ColonyTests.world()
 	var twin: ColonyWorld = ColonyTests.world()
 	var a: Dictionary = ColonyPopulation.offer(world)
@@ -66,3 +67,69 @@ static func run(check: Callable) -> void:
 	check.call("POP/twenty_resident_hard_cap",ColonyPopulation.acceptance(world,a).error.contains("Twenty") and ColonyPopulation.command(world,{"target":a.id,"accept":true}).contains("Twenty") and world.citizens.size()==20)
 	decoded=ColonyCodec.decode(ColonyCodec.encode(world))
 	check.call("SAVE/twenty_residents_and_190_relationships_roundtrip",decoded.has("world") and world.social_state.pairs.size()==190 and world.equipment_state.size()==20 and world.invariant_errors().is_empty(),str(decoded.get("error",world.invariant_errors())))
+
+static func beds(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var person: Dictionary = world.citizens[0]
+	var previous: Dictionary = world.find(world.structures,person.bed)
+	var bed: Dictionary = world._structure("bed",Vector2i(74,64),0)
+	var point: Vector2i = Vector2i(person.x,person.y)
+	var ledger: Dictionary = world.ledger.duplicate(true)
+	var order: int = world.queue_command("assign_bed",{"citizen":person.id,"target":bed.id})
+	var paused: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("BED/pending_assignment_saves_without_applying_while_paused",person.bed==previous.id and paused.has("world") and paused.world.pending_commands==world.pending_commands and paused.world.schema_revision==21,str(paused.get("error","")))
+	world.step()
+	check.call("BED/public_assignment_releases_old_owner_without_moving_or_granting_goods",world.receipts[order]=="accepted" and person.bed==bed.id and bed.user==person.id and previous.user==0 and Vector2i(person.x,person.y)==point and world.ledger==ledger)
+	var original: String = world.canonical_hash()
+	check.call("BED/repeating_current_assignment_is_idempotent",ColonyBeds.command(world,{"citizen":person.id,"target":bed.id})=="accepted" and world.canonical_hash()==original)
+	check.call("BED/occupied_assignment_explains_owner_without_displacement",ColonyBeds.command(world,{"citizen":2,"target":bed.id}).contains(person.name) and world.canonical_hash()==original)
+	check.call("BED/rejects_missing_resident_wrong_structure_and_malformed_arguments",not ColonyBeds.quote(world,999999,bed.id).is_empty() and ColonyBeds.quote(world,1,ColonyTrade.cart(world).id).contains("bed") and ColonyBeds.command(world,{"citizen":"1","target":bed.id})!="accepted" and world.canonical_hash()==original)
+	person.away=true
+	check.call("BED/away_assignment_waits_for_return",ColonyBeds.quote(world,1,bed.id).contains("returns"))
+	person.away=false;bed.health=0
+	check.call("BED/destroyed_bed_cannot_be_assigned",ColonyBeds.quote(world,1,bed.id).contains("completed"))
+	bed.health=200
+	ColonyFire.ignite(world,"structure",bed.id)
+	check.call("BED/burning_bed_cannot_be_assigned",ColonyBeds.quote(world,1,bed.id).contains("Extinguish"))
+	world=ColonyTests.world();person=world.citizens[0];bed=world._structure("bed",Vector2i(80,80),0)
+	for y in range(79,82):
+		for x in range(79,83):
+			if x in [79,82] or y in [79,81]: world._structure("wood_wall",Vector2i(x,y),0)
+	check.call("BED/sealed_bed_rejects_with_clear_access_action",ColonyBeds.quote(world,1,bed.id).contains("unreachable") and person.bed!=bed.id and bed.user==0)
+	world=ColonyTests.world();person=world.citizens[0];bed=world._structure("bed",Vector2i(70,65),0)
+	person.fullness=1000;person.rest=200;person.bed_memory_until=world.tick+100;person.bed_sleep_ticks=100
+	var sleep: Dictionary = world._job("sleep","","",person.bed,Vector2i(person.x,person.y),0)
+	sleep.worker=person.id;sleep.state="Working";person.job=sleep.id
+	person.progress=500;person.edge_x=person.x+1;person.edge_y=person.y
+	check.call("BED/reassignment_retargets_existing_sleep_without_resetting_edge_progress",ColonyBeds.command(world,{"citizen":1,"target":bed.id})=="accepted" and sleep.state=="Moving" and sleep.target==bed.id and sleep.work_x==bed.x and person.progress==500 and person.x==65 and person.bed_sleep_ticks==0 and person.bed_memory_until==world.tick+100)
+	var loaded: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/bed_reassignment_mid_edge_roundtrips_exactly",loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash(),str(loaded.get("error","")))
+	for tick in range(160): world.step()
+	check.call("BED/reassigned_sleeper_walks_to_new_bed_and_rests_there",sleep.state=="Working" and Vector2i(person.x,person.y)==Vector2i(bed.x,bed.y) and person.rest>200 and person.bed_sleep_ticks>0)
+	check.call("BED/unassign_uses_ground_sleep_and_releases_bed",ColonyBeds.command(world,{"citizen":1,"target":0})=="accepted" and person.bed==0 and bed.user==0 and sleep.target==0 and person.bed_sleep_ticks==0 and ColonyBeds.description(world,person).contains("80/hour"))
+	world.step();loaded=ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/unassigned_sleep_roundtrip_and_conservation",loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash() and world.invariant_errors().is_empty(),str(loaded.get("error",world.invariant_errors())))
+	person.rest=50
+	check.call("BED/reassignment_preserves_exhausted_nearest_ground_sleep",ColonyBeds.command(world,{"citizen":1,"target":bed.id})=="accepted" and person.bed==bed.id and sleep.target==0 and sleep.reason.contains("Exhausted") and Vector2i(sleep.work_x,sleep.work_y)==Vector2i(person.x,person.y))
+	world=ColonyTests.world()
+	var request: Dictionary = ColonyPopulation.offer(world)
+	var roll: Dictionary = world._structure("bedroll",Vector2i(74,64),0)
+	var outdoor: Dictionary = world._structure("bed",Vector2i(80,80),0)
+	bed=quiet_room(world)
+	check.call("BED/newcomer_prefers_roofed_bed_over_older_roll_and_outdoor_bed",ColonyPopulation.acceptance(world,request).get("bed")==bed.id and roll.id<outdoor.id and outdoor.id<bed.id)
+	bed.user=1
+	check.call("BED/newcomer_next_prefers_free_real_bed",ColonyPopulation.acceptance(world,request).get("bed")==outdoor.id)
+	world=ColonyTests.world();person=world.citizens[0];bed=quiet_room(world)
+	var quiet: Dictionary = {"actor":1,"kind":"quiet_bed"}
+	check.call("BED/quiet_bed_request_can_be_fulfilled_by_public_assignment",not ColonySocial.fulfilled(world,quiet) and ColonyBeds.command(world,{"citizen":1,"target":bed.id})=="accepted" and ColonySocial.fulfilled(world,quiet))
+	var legacy: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/campaign-replay-7200.brackenward")
+	var payload: Dictionary = ColonyState.unpack(JSON.parse_string(JSON.parse_string(legacy.get_string_from_utf8()).payload))
+	loaded=ColonyCodec.decode(legacy)
+	var expected: Dictionary = payload.duplicate(true);expected.schema_revision=21
+	check.call("SAVE/schema_twenty_upgrade_only_changes_revision",loaded.has("world") and loaded.world.payload()==expected and payload.schema_revision==20,str(loaded.get("error","")))
+
+static func quiet_room(world: ColonyWorld) -> Dictionary:
+	for y in range(75,79):
+		for x in range(75,79):
+			if x in [75,78] or y in [75,78]: world._structure("door" if Vector2i(x,y)==Vector2i(77,78) else "wood_wall",Vector2i(x,y),0)
+	return world._structure("bed",Vector2i(76,76),0)

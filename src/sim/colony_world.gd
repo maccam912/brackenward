@@ -3,7 +3,7 @@ extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
 const CONTENT_VERSION: String = "colony-v2"
-const SCHEMA_REVISION: int = 20
+const SCHEMA_REVISION: int = 21
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -394,6 +394,7 @@ func gather_targets(definition: String, tiles: Array) -> Array[Dictionary]:
 func _command(command: Dictionary) -> String:
 	var args: Dictionary = command.args
 	match command.kind:
+		"assign_bed": return ColonyBeds.command(self,args)
 		"pin_moment", "rename": return ColonyChronicle.command(self,command.kind,args)
 		"start_supper", "cancel_supper", "start_ceremony", "cancel_ceremony", "continue_settlement", "charter_appearance": return ColonyCharter.command(self,command.kind,args)
 		"minor_event": return ColonyOpportunities.command(self,args)
@@ -869,7 +870,12 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 		return ad < bd or (ad == bd and a.y * SIZE + a.x < b.y * SIZE + b.x))
 	var work_position: Vector2i = Vector2i(-1, -1)
 	var unsafe_position: bool = false
+	var unreachable_position: bool = false
+	var maintenance_from_home: bool = job.kind in ["repair","demolish"] and accessible(Vector2i(citizen.edge_x,citizen.edge_y) if citizen.progress>0 else Vector2i(citizen.x,citizen.y))
 	for position in positions:
+		if maintenance_from_home and not accessible(position):
+			unreachable_position=true
+			continue
 		if job.kind not in ["hunt","escort_hunt"] and not job.emergency and not ColonyDanger.safe(self,position):
 			unsafe_position = true
 			continue
@@ -884,7 +890,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 			work_position = position
 			break
 	if work_position.x < 0:
-		return _block(job,"Unsafe route: work avoids eight tiles around danger" if unsafe_position else "No free work position")
+		return _block(job,"Unsafe route: work avoids eight tiles around danger" if unsafe_position else ("No reachable free work position: clear access or finish nearby work" if unreachable_position else "No free work position"))
 	if job.kind not in ["hunt","escort_hunt"] and not job.emergency and not ColonyDanger.safe(self,work_position): return _block(job,"Unsafe route: work avoids eight tiles around danger")
 	var requests: Array[Dictionary] = []
 	if job.kind == "haul":

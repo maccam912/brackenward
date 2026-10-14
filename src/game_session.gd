@@ -636,6 +636,7 @@ func select_citizen(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id) if world is ColonyWorld else world.citizens[id-1]
 	inspector_details = label("", rows)
 	_update_inspector()
+	if world is ColonyWorld: button("Assign bed",func()->void:show_beds(id),rows)
 	var actions: HBoxContainer = HBoxContainer.new()
 	inspector_rows.add_child(actions)
 	button("Follow", func() -> void:
@@ -1567,12 +1568,41 @@ func _queued_preference(id: int,category: String) -> int:
 		if command.kind == "preference" and command.args.citizen == id and command.args.category == category: value = command.args.value
 	return value
 
+func show_beds(id: int) -> void:
+	var person: Dictionary = world.find(world.citizens,id)
+	if person.is_empty(): return
+	show_sheet("Bed: "+person.name)
+	label(ColonyBeds.description(world,person),sheet_body)
+	label("Choose a free bed or bedroll. Assignment is immediate when time resumes; sleep still needs a safe walk. Occupied beds must be unassigned first.",sheet_body)
+	if person.bed>0: button("Unassign current bed",func()->void:show_bed_choice(id,0),sheet_body)
+	for bed in world.structures:
+		if bed.health<=0 or bed.definition not in ["bed","bedroll"]: continue
+		var owner: String = "Assigned to "+ColonyChronicle.display_name(world,bed.user) if bed.user>0 else "Free"
+		label("%s at %d,%d | %s | %s" % [ColonyChronicle.display_name(world,bed.id),bed.x,bed.y,owner,"Roofed" if world.roofed(Vector2i(bed.x,bed.y)) else "Outdoors"],sheet_body)
+		if bed.user==0: button("Choose %d,%d" % [bed.x,bed.y],func()->void:show_bed_choice(id,bed.id),sheet_body)
+	button("Back to "+person.name,func()->void:show_person(id),sheet_body)
+
+func show_bed_choice(id: int, target: int) -> void:
+	var person: Dictionary = world.find(world.citizens,id)
+	if person.is_empty(): return
+	show_sheet(person.name+" bed")
+	var error: String = ColonyBeds.quote(world,id,target)
+	if not error.is_empty(): label(error,sheet_body)
+	else:
+		var bed: Dictionary = world.find(world.structures,target)
+		label("Ground sleep: 80 rest/hour." if target==0 else "%s at %d,%d" % [ColonyChronicle.display_name(world,target),bed.x,bed.y],sheet_body)
+		button("Unassign" if target==0 else "Assign this bed",func()->void:_submit("assign_bed",{"citizen":id,"target":target});close_sheet(),sheet_body)
+		label(person.name+" will sleep on safe ground without an assigned bed." if target==0 else person.name+" walks here when tired. Assignment does not move them or add rest.",sheet_body)
+	button("Back to beds",func()->void:show_beds(id),sheet_body)
+
 func show_person(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_sheet(citizen.name)
 	button("Rename",func()->void:show_rename(id),sheet_body)
 	button("Remembered moments",func()->void:show_person_history(id),sheet_body)
 	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
+	label(ColonyBeds.description(world,citizen),sheet_body)
+	if not citizen.death_recorded and not citizen.departed: button("Assign bed",func()->void:show_beds(id),sheet_body)
 	if citizen.health < 100: button("Care and recovery",show_care,sheet_body)
 	label("Active morale causes",sheet_body)
 	for term in citizen.mood_terms: label("%s: %+d" % [term,citizen.mood_terms[term]],sheet_body)
@@ -1647,6 +1677,15 @@ func show_station(station: Dictionary) -> void:
 		button("Neighbors and trade",show_valley,sheet_body)
 	if station.definition != "supply_cart":
 		button("Repair or demolish",func()->void:show_maintenance(station),sheet_body)
+	if station.definition in ["bed","bedroll"]:
+		label("Assigned to "+ColonyChronicle.display_name(world,station.user) if station.user>0 else "Unassigned sleeping place",sheet_body)
+		label("Rest %d/hour. Assignment reserves the bed; residents walk here to sleep. A roofed bed earns its morale memory after four hours of actual sleep." % (150 if station.definition=="bed" else 120),sheet_body)
+		if station.user>0: button("Unassign bed",func()->void:show_bed_choice(station.user,0),sheet_body)
+		else:
+			for person in world.citizens:
+				if person.death_recorded or person.departed: continue
+				button("Assign "+person.name,func()->void:show_bed_choice(person.id,station.id),sheet_body)
+		return
 	if station.definition in ColonyFire.INDUSTRIAL:
 		var hazards: Array = ColonyFire.unsafe(world,station)
 		label("Unsafe operating perimeter: suspend the station or move wood/fiber/cloth and flammable structures at least two tiles away, including diagonals." if not hazards.is_empty() else "Perimeter safe or station idle. An operating kiln/smelter near flammable objects can receive a twelve-hour overheating warning; suspending or clearing the fixed target prevents ignition.",sheet_body)

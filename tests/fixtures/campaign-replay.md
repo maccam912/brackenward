@@ -74,3 +74,16 @@ at 72,000. The current foreign save SHA-256 is
 The unchanged earlier foreign bytes remain in
 `m6-before-table-dining-7200.brackenward`; scheduler tests verify its original
 acknowledged state and exact continued simulation under the current rules.
+
+14 October bed-assignment command: schema 21 declares support for the additive
+`assign_bed` command in pending saves. Migration changes only the revision
+header. The same 62 frozen commands, input bytes, catalogs and foreign schema-20
+snapshot are retained. Both recorded checkpoint payloads, after changing only
+`schema_revision` back to 20, reproduce their previous complete canonical
+hashes above. No gameplay fields or accepted receipts were rebased. The new
+schema-21 hashes are
+`3f6f39218476c9e1b023487ad55370f0ae5aa1b8716404d9c91b45ee2638700f`
+at 7,200 and
+`a3acab0583d26caf61996e8f2680245f30bfda976808c17be8fda31b9867441f`
+at 72,000. `beds-metadata-rebaseline.json` records the comparison; the ordinary
+non-recording replay must still pass both checkpoints and foreign continuation.

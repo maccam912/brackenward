@@ -203,6 +203,20 @@ static func work_position(check: Callable) -> void:
 	var gather: Dictionary = world._job("gather","Gathering","Field",resource.id,Vector2i(70,70),16000)
 	var accepted: bool = world._reserve(gather,person)
 	check.call("SCHED/unsafe_nearest_position_does_not_hide_safe_work_position",accepted and ColonyDanger.safe(world,Vector2i(gather.work_x,gather.work_y)),gather.reason)
+	for inside_room in [false,true]:
+		world=ColonyTests.world();person=world.citizens[0]
+		var wall: Dictionary = {}
+		for y in range(79,83):
+			for x in range(79,83):
+				if x not in [79,82] and y not in [79,82]: continue
+				var built: Dictionary = world._structure("wood_wall",Vector2i(x,y),0)
+				if Vector2i(x,y)==Vector2i(80,79): wall=built
+		person.x=80;person.y=80 if inside_room else 84
+		person.edge_x=person.x;person.edge_y=person.y
+		var task: Dictionary = world._job("demolish","Building","Build",wall.id,Vector2i(wall.x,wall.y),3000)
+		task.definition="wood_wall"
+		accepted=world._reserve(task,person)
+		check.call("SCHED/maintenance_can_work_from_inside_sealed_room" if inside_room else "SCHED/maintenance_skips_closer_sealed_side_of_wall",accepted and Vector2i(task.work_x,task.work_y)==Vector2i(80,80 if inside_room else 78),task.reason)
 
 static func reachable_food(check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]
