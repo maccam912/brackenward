@@ -38,10 +38,6 @@ static func state_for(world: ColonyWorld, person: Dictionary, cargo: bool) -> St
 
 func animate(world: ColonyWorld, person: Dictionary, delta: float, speed: int, cargo: bool, reduced_motion: bool = false) -> void:
 	var appearance: Dictionary = person.appearance
-	if choices!=appearance:
-		choices=appearance.duplicate()
-		if material==null: material=CitizenArt.material_for(appearance)
-		else: CitizenArt.apply_palette(material,appearance)
 	var movement: Vector2i = Vector2i(person.edge_x-person.x,person.edge_y-person.y)
 	if movement!=Vector2i.ZERO:
 		facing=1 if movement.x>0 else (3 if movement.x<0 else (0 if movement.y>0 else 2))
@@ -50,14 +46,21 @@ func animate(world: ColonyWorld, person: Dictionary, delta: float, speed: int, c
 	last_health=person.health
 	if not person.downed and hurt_remaining>0:
 		state="hurt";hurt_remaining=maxf(0.0,hurt_remaining-delta)
+	set_visual(appearance,state,delta,speed,reduced_motion)
+	var job: Dictionary = world.find(world.jobs,person.job)
+	task_kind=job.get("kind","");task_skill=job.get("skill","");weapon=person.equipment.weapon
+	equipment_layer.queue_redraw()
+
+func set_visual(appearance: Dictionary, state: String, delta: float, speed: int, reduced_motion: bool) -> void:
+	if choices!=appearance:
+		choices=appearance.duplicate()
+		if material==null: material=CitizenArt.material_for(appearance)
+		else: CitizenArt.apply_palette(material,appearance)
 	if state!=pose: pose=state;clock=0.0
 	var fps: float = 1.0 if pose in ["idle","sleep"] else (6.0 if pose in ["walk","carry"] else 4.0)
 	clock=0.0 if reduced_motion else fmod(clock+delta*minf(fps*speed,10.0),120.0)
 	animation_frame=int(clock)%int(CitizenArt.animations()[pose].frames)
 	region_rect=CitizenArt.frame_rect(appearance,pose,facing,animation_frame)
-	var job: Dictionary = world.find(world.jobs,person.job)
-	task_kind=job.get("kind","");task_skill=job.get("skill","");weapon=person.equipment.weapon
-	equipment_layer.queue_redraw()
 
 func _draw_equipment() -> void:
 	# Actual job and equipment determine these large, readable overlays. No
@@ -81,6 +84,9 @@ func _draw_equipment() -> void:
 	elif pose=="melee" and weapon=="spear":
 		var end: Vector2 = Vector2(8+animation_frame*2,-14)
 		equipment_layer.draw_line(Vector2(4,-3),end,ink,2);equipment_layer.draw_line(end,end+Vector2(1,-3),cream,2)
+	elif pose=="melee" and weapon=="club":
+		var hand: Vector2 = Vector2(6,-7-animation_frame*2)
+		equipment_layer.draw_line(hand,hand+Vector2(2,-7),Color("B96C50"),3)
 	elif pose=="shoot" and weapon=="bow":
 		equipment_layer.draw_arc(Vector2(5,-10),5,-PI*0.5,PI*0.5,6,Color("B96C50"),2)
 		equipment_layer.draw_line(Vector2(5,-15),Vector2(5-animation_frame,-10),cream,1)

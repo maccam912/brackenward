@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "frame_size": [
+    24,
+    24
+  ],
+  "columns": 16,
+  "rows_per_kind": 4,
+  "kinds": {
+    "hare": {
+      "block_row": 0,
+      "states": {
+        "idle": {
+          "first": 0,
+          "frames": 2,
+          "directions": 4
+        },
+        "walk": {
+          "first": 8,
+          "frames": 4,
+          "directions": 4
+        },
+        "eat": {
+          "first": 24,
+          "frames": 2,
+          "directions": 4
+        },
+        "downed": {
+          "first": 32,
+          "frames": 1,
+          "directions": 4
+        }
+      },
+      "frames": 36
+    },
+    "deer": {
+      "block_row": 1,
+      "states": {
+        "idle": {
+          "first": 0,
+          "frames": 2,
+          "directions": 4
+        },
+        "walk": {
+          "first": 8,
+          "frames": 4,
+          "directions": 4
+        },
+        "eat": {
+          "first": 24,
+          "frames": 2,
+          "directions": 4
+        },
+        "downed": {
+          "first": 32,
+          "frames": 1,
+          "directions": 4
+        }
+      },
+      "frames": 36
+    },
+    "boar": {
+      "block_row": 2,
+      "states": {
+        "idle": {
+          "first": 0,
+          "frames": 2,
+          "directions": 4
+        },
+        "walk": {
+          "first": 8,
+          "frames": 4,
+          "directions": 4
+        },
+        "eat": {
+          "first": 24,
+          "frames": 2,
+          "directions": 4
+        },
+        "downed": {
+          "first": 32,
+          "frames": 1,
+          "directions": 4
+        },
+        "charge": {
+          "first": 36,
+          "frames": 4,
+          "directions": 4
+        }
+      },
+      "frames": 52
+    },
+    "marsh_goose": {
+      "block_row": 3,
+      "states": {
+        "idle": {
+          "first": 0,
+          "frames": 2,
+          "directions": 4
+        },
+        "walk": {
+          "first": 8,
+          "frames": 4,
+          "directions": 4
+        },
+        "eat": {
+          "first": 24,
+          "frames": 2,
+          "directions": 4
+        },
+        "downed": {
+          "first": 32,
+          "frames": 1,
+          "directions": 4
+        }
+      },
+      "frames": 36
+    },
+    "hen": {
+      "block_row": 4,
+      "states": {
+        "idle": {
+          "first": 0,
+          "frames": 2,
+          "directions": 4
+        },
+        "walk": {
+          "first": 8,
+          "frames": 4,
+          "directions": 4
+        },
+        "eat": {
+          "first": 24,
+          "frames": 2,
+          "directions": 4
+        },
+        "downed": {
+          "first": 32,
+          "frames": 1,
+          "directions": 4
+        }
+      },
+      "frames": 36
+    },
+    "pack_goat": {
+      "block_row": 5,
+      "states": {
+        "idle": {
+          "first": 0,
+          "frames": 2,
+          "directions": 4
+        },
+        "walk": {
+          "first": 8,
+          "frames": 4,
+          "directions": 4
+        },
+        "eat": {
+          "first": 24,
+          "frames": 2,
+          "directions": 4
+        },
+        "downed": {
+          "first": 32,
+          "frames": 1,
+          "directions": 4
+        }
+      },
+      "frames": 36
+    },
+    "merchant_pack": {
+      "block_row": 6,
+      "states": {
+        "idle": {
+          "first": 0,
+          "frames": 2,
+          "directions": 4
+        },
+        "walk": {
+          "first": 8,
+          "frames": 4,
+          "directions": 4
+        },
+        "eat": {
+          "first": 24,
+          "frames": 2,
+          "directions": 4
+        },
+        "downed": {
+          "first": 32,
+          "frames": 1,
+          "directions": 4
+        }
+      },
+      "frames": 36
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.2-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.3-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -55,8 +55,10 @@ python3 tools/replay_campaign.py --report reports/replay-local.json
 
 The scenario harness saves verified daily checkpoints, original/final snapshots and its public command trace. Add `--resume reports/charter-latest.json` with a different output report to continue that exact save; `--days` then means additional days. Policy success is measured separately from simulation invariants. Replay uses frozen commands, canonical hashes at ticks 7,200 and 72,000, and continuation from a committed foreign-host save. CI runs it on Windows, Linux, Apple Silicon and Intel Mac; a workflow configuration alone is not a passing platform result.
 
-The first M7 art checkpoint adds original animated adult citizens, matching portraits, independent cosmetic choices in People > Appearance, and labeled trait pictograms. The indexed art uses one shared atlas and per-citizen palette materials. Original authoring sources and inspected contact sheets are retained; animal/environment art and other release gates remain in progress.
+The first M7 art checkpoint adds original animated adult citizens, matching portraits, independent cosmetic choices in People > Appearance, and labeled trait pictograms. The indexed art uses one shared atlas and per-citizen palette materials. Original authoring sources and inspected contact sheets are retained; environment art and other release gates remain in progress.
 
 Menu > Settings contains reduced motion, high-contrast selection, pause-on-inspect, 30/60 FPS graphics presets, individual automatic pauses and keyboard rebinding (including modifier shortcuts). Device preferences upgrade separately from campaign saves. Automatic warnings remain visible when their pause is disabled; a departure card shows its remaining game time and recovery threshold.
 
 Original day/night/tension music and environmental loops now accompany licensed interface/work sounds. Settings offers Master, Music, Effects and Interface volumes; optional Android vibration starts off. Backgrounding stops sound and resume discards old cues. Essential warnings retain their visible notices when muted. The pinned thirty-run first-Winter matrix passes on all sites; physical audio/performance and human listening gates remain separate.
+
+Wildlife and livestock now use an original shared atlas with four facings, idle/walk/eat/downed states and boar charge. Visitors, merchants and attackers reuse the adult character system; weapons, travel gear and threat/neutral markers distinguish them. Taps follow their visible movement positions.

@@ -884,6 +884,8 @@ Required animation states per character body are idle (2 frames), walk (4), carr
 
 Hares, deer, boars, geese, hens, goats, and merchant pack animals need idle/walk/eat/downed states, plus boar charge. Use 2 idle/eat and 4 walk frames with mirrored sides. Wild and domestic goats share art. Human hostiles reuse the character system with readable bandanas, weapons, and a faction-neutral hostile marker. Death uses a covered body sprite with no gore; burial and memorials carry emotional weight without graphic imagery.
 
+The M7 animal source is `tools/author_animals.py`, with a shared 384x672 atlas, 268 nonempty frames and retained layout/contact sheet. Pooled animal/visitor views rebuild their membership only on simulation tick or world adoption and use authoritative movement edges; no pose callback affects the simulation. Animal eating poses observe actual feeding/bite changes and do not replay an old meal on load. Merchant pack art follows its merchant as cosmetic luggage, adding no independent inventory, capacity or collision. Human guests reuse citizen palettes/poses with travel gear, hats, weapons and bandanas; active threats and stable neutral people have different marker shapes as well as colors. Equal-foot-y actor ties use immutable global IDs, and hit testing uses the same moved positions as the displayed figures. Actor/prop integration and the remaining environment media are subsequent rendering work.
+
 ### 19.3 Asset sourcing and authoring
 
 Use only original project art/audio or verified CC0/public-domain visual/audio/font assets. The engine's software license and build-tool licenses are a separate category; this restriction concerns game media. Do not mix arbitrary asset-store packs or use material from another commercial colony game.

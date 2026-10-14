@@ -125,7 +125,7 @@ func _ready() -> void:
 	content = Control.new()
 	content.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(content)
-	view = WorldView.new()
+	view = _make_world_view()
 	content.add_child(view)
 	view.setup(world)
 	if world is ColonyWorld:
@@ -153,6 +153,9 @@ func _ready() -> void:
 
 func _make_soundscape() -> ColonyAudio:
 	return ColonyAudio.new()
+
+func _make_world_view() -> WorldView:
+	return WorldView.new()
 
 func _build_theme() -> void:
 	var ui_theme: Theme = Theme.new()
@@ -606,27 +609,27 @@ func _map_intent(action: Dictionary) -> void:
 	if world is ColonyWorld:
 		for enemy in world.defense_state.enemies:
 			if enemy.state=="Gone": continue
-			var separation: float = view.tile_to_screen(Vector2(enemy.x+0.5,enemy.y+0.5)).distance_to(action.point)
+			var separation: float = view.tile_to_screen(AnimalSprite.route_point(enemy)).distance_to(action.point)
 			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"enemy","object":enemy,"rank":1,"distance":separation})
 		for visitor in world.opportunity_state.visitors:
 			if visitor.state in ["Waiting","Gone"]: continue
-			var separation: float = view.tile_to_screen(Vector2(visitor.x+0.5,visitor.y+0.5)).distance_to(action.point)
+			var separation: float = view.tile_to_screen(AnimalSprite.route_point(visitor)).distance_to(action.point)
 			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"visitor","object":visitor,"rank":1,"distance":separation})
 		for merchant in world.trade_state.merchants:
 			if merchant.state not in ["Entering","Trading","Leaving"]: continue
-			var separation: float = view.tile_to_screen(Vector2(merchant.x+0.5,merchant.y+0.5)).distance_to(action.point)
+			var separation: float = view.tile_to_screen(AnimalSprite.route_point(merchant)).distance_to(action.point)
 			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"merchant","object":merchant,"rank":1,"distance":separation})
 		for animal in world.domestic_state.animals:
 			if animal.health<=0 or animal.away: continue
-			var separation: float = view.tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5)).distance_to(action.point)
+			var separation: float = view.tile_to_screen(AnimalSprite.point_for(world,animal,"domestic")).distance_to(action.point)
 			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"domestic","object":animal,"rank":2,"distance":separation})
 		for animal in world.wildlife_state.animals:
 			if animal.health<=0: continue
-			var separation: float = view.tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5)).distance_to(action.point)
+			var separation: float = view.tile_to_screen(AnimalSprite.route_point(animal)).distance_to(action.point)
 			if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"wildlife","object":animal,"rank":2,"distance":separation})
 		for structure in world.structures:
 			if world.footprint(structure).has(action.tile): candidates.append({"kind":"station","object":structure,"rank":3,"distance":0.0})
-		for job in world.jobs:
+		for job in world.unfinished_jobs():
 			if job.kind=="build" and job.state not in ["Complete","Canceled"] and world.footprint(job).has(action.tile): candidates.append({"kind":"job","object":job,"rank":4,"distance":0.0})
 		for resource in world.resources:
 			if Vector2i(resource.x,resource.y)==action.tile: candidates.append({"kind":"resource","object":resource,"rank":5,"distance":0.0})

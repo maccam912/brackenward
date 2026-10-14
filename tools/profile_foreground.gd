@@ -32,9 +32,19 @@ class ProfileAudio extends ColonyAudio:
 	func _process(delta: float) -> void:
 		var started: int = Time.get_ticks_usec();super(delta);update_us.append(Time.get_ticks_usec()-started)
 
+class ProfileView extends WorldView:
+	var update_us: Array[int] = []
+	var draw_us: Array[int] = []
+	func _process(delta: float) -> void:
+		var started: int = Time.get_ticks_usec();super(delta);update_us.append(Time.get_ticks_usec()-started)
+	func _draw() -> void:
+		var started: int = Time.get_ticks_usec();super();draw_us.append(Time.get_ticks_usec()-started)
+
 class ProfileSession extends GameSession:
 	func _make_soundscape() -> ColonyAudio:
 		return ProfileAudio.new()
+	func _make_world_view() -> WorldView:
+		return ProfileView.new()
 	var frame_us: Array[int] = []
 	var capture_us: Array[int] = []
 	var preparation_us: Array[int] = []
@@ -127,6 +137,8 @@ func run() -> void:
 	game.runner.pause();game._finish_background_save(true)
 	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"save_finish":stats(game.finish_us),"snapshot_preparation_capture":stats(game.preparation_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors(),"trace_spikes":trace_spikes,"slow_frames":game.slow_frames,"phase_peaks_us":game.phase_peaks,"slow_jobs":world.slow_jobs if trace_spikes else []}
 	result["audio_update_frames"]=stats(game.soundscape.update_us)
+	result["view_update_frames"]=stats(game.view.update_us)
+	result["view_draw_frames"]=stats(game.view.draw_us)
 	if not await game.soundscape.drain(): result.storage_error="Audio streaming shutdown did not drain"
 	DirAccess.make_dir_recursive_absolute(report_path.get_base_dir())
 	var file: FileAccess = FileAccess.open(report_path,FileAccess.WRITE);file.store_string(JSON.stringify(result,"\t",true));file.close()

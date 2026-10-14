@@ -29,3 +29,4 @@ addons/android_save/*.aar
 .DS_Store
 __pycache__/
 /data/build.json
+reports/animals-validation/

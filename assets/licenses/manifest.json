@@ -478,5 +478,15 @@
     "sha256": "d5fc12c4eb2df153957c4726309297c5c5228c79b5a97c562e6ffdd0b7e4829b",
     "edited": false,
     "evidence": "assets/licenses/kenney_rpg_audio.txt"
+  },
+  {
+    "id": "woodland_animals",
+    "path": "assets/exported/animals/woodland.png",
+    "source": "tools/author_animals.py",
+    "author": "Brackenward project",
+    "license": "Original project asset",
+    "sha256": "7cbdadb53c680ef606403b9fee3a8e166509204986bce1e55d4a621e6e1a42f1",
+    "edited": false,
+    "evidence": "assets/licenses/animal_art.md"
   }
 ]

@@ -35,6 +35,11 @@ var actor_layer: Node2D
 var carried_overlay: Node2D
 var terrain: TileMapLayer
 var actors: Array[Sprite2D] = []
+var extra_actors: Dictionary = {}
+var extra_tick: int = -1
+var extra_world: RefCounted
+var extra_wanted: Dictionary = {}
+var extra_order_changed: bool = false
 var simulation_speed: int = 0
 var reduced_motion: bool = false
 var high_contrast: bool = false
@@ -86,6 +91,7 @@ func _process(delta: float) -> void:
 	for i in range(actors.size()):
 		if i>=world.citizens.size(): actors[i].visible=false;continue
 		var citizen: Dictionary = world.citizens[i]
+		actors[i].set_meta("world_id",citizen.id)
 		var point: Vector2 = Vector2(citizen.x + 0.5, citizen.y + 0.5)
 		if world is ColonyWorld:
 			point += Vector2(citizen.edge_x - citizen.x, citizen.edge_y - citizen.y) * float(citizen.progress) / 10000.0
@@ -98,6 +104,12 @@ func _process(delta: float) -> void:
 		if citizen.id == follow_id:
 			if world is ColonyWorld and not ColonyRegion.visible(world,citizen): follow_id=0
 			else: camera_tile = point
+	if world is ColonyWorld:
+		_refresh_extra_actors()
+		for actor in extra_actors.values():
+			if actor is AnimalSprite: actor.animate(world,delta,simulation_speed,reduced_motion)
+			else: actor.animate_guest(world,delta,simulation_speed,reduced_motion)
+			actor.visible=Rect2(Vector2.ZERO,size).grow(tile_size*2).has_point(tile_to_screen(actor.position/16.0))
 	_update_transform()
 	queue_redraw()
 	carried_overlay.queue_redraw()
@@ -107,6 +119,47 @@ func _add_actor(index: int) -> void:
 	if not world is ColonyWorld:
 		actor.texture=load("res://assets/exported/citizens/%s.svg" % ["mira","oren","tavi","sela"][index%4]);actor.offset=Vector2(0,-8)
 	actor_layer.add_child(actor);actors.append(actor)
+	extra_order_changed=true
+
+func _refresh_extra_actors() -> void:
+	if extra_world!=world:
+		for actor in extra_actors.values(): actor.queue_free()
+		extra_actors.clear();extra_world=world;extra_tick=-1;extra_order_changed=true
+	if extra_tick==world.tick and not extra_order_changed: return
+	extra_tick=world.tick;extra_wanted.clear()
+	for animal in world.wildlife_state.animals:
+		if animal.health>0: _want_extra("wild:%d" % animal.id,animal.definition,animal,"wildlife")
+	for animal in world.domestic_state.animals:
+		if animal.health>0 and not animal.away: _want_extra("domestic:%d" % animal.id,animal.definition,animal,"domestic")
+	for carcass in world.wildlife_state.carcasses:
+		if not carcass.done and not carcass.spoiled: _want_extra("carcass:%d" % carcass.id,carcass.definition,carcass,"carcass")
+	for visitor in world.opportunity_state.visitors:
+		if visitor.state not in ["Waiting","Gone"]: _want_extra("visitor:%d" % visitor.id,"",visitor,"visitor")
+	for merchant in world.trade_state.merchants:
+		if merchant.state in ["Entering","Trading","Leaving"]:
+			_want_extra("merchant:%d" % merchant.id,"",merchant,"merchant")
+			_want_extra("pack:%d" % merchant.id,"merchant_pack",merchant,"pack")
+	for enemy in world.defense_state.enemies:
+		if enemy.state!="Gone": _want_extra("enemy:%d" % enemy.id,"",enemy,"enemy")
+	for key in extra_actors.keys():
+		if not extra_wanted.has(key): extra_actors[key].queue_free();extra_actors.erase(key);extra_order_changed=true
+	if extra_order_changed:
+		# Godot resolves equal-y ties by tree order. Restore stable global IDs
+		# after pooling rather than depending on which actor appeared first.
+		var ordered: Array = actor_layer.get_children().filter(func(child:Node)->bool:return not child.is_queued_for_deletion())
+		ordered.sort_custom(func(a:Node,b:Node)->bool:return a.get_meta("world_id",0)<b.get_meta("world_id",0) if a.get_meta("world_id",0)!=b.get_meta("world_id",0) else str(a.get_meta("role","resident"))<str(b.get_meta("role","resident")))
+		for index in range(ordered.size()): actor_layer.move_child(ordered[index],index)
+		extra_order_changed=false
+
+func _want_extra(key: String, kind: String, record: Dictionary, role: String) -> void:
+	extra_wanted[key]=true
+	if not extra_actors.has(key):
+		var actor: Sprite2D = AnimalSprite.new() if not kind.is_empty() else GuestSprite.new()
+		actor.name=key.replace(":","_");actor.set_meta("world_id",record.id);actor.set_meta("role",role)
+		actor_layer.add_child(actor);extra_actors[key]=actor;extra_order_changed=true
+	var actor: Sprite2D = extra_actors[key]
+	actor.record=record;actor.role=role
+	if actor is AnimalSprite: actor.kind=kind
 
 func _gui_input(event: InputEvent) -> void:
 	# Godot also emits a device -1 mouse event for a touch. Track the real
@@ -323,56 +376,18 @@ func _draw_colony() -> void:
 		if task.get("kind")=="extinguish" and task.memo.phase in ["carry","apply"]:
 			var point: Vector2 = tile_to_screen(citizen_point(person))
 			draw_rect(Rect2(point+Vector2(0.2,0.1)*tile_size,Vector2(0.2,0.25)*tile_size),Color("7096B4"))
-	for visitor in world.opportunity_state.visitors:
-		if visitor.state in ["Waiting","Gone"]: continue
-		var tile: Vector2 = Vector2(visitor.x+0.5,visitor.y+0.5)
-		if not visitor.route.is_empty(): tile+=Vector2(visitor.route[0]-Vector2i(visitor.x,visitor.y))*float(visitor.progress)/10000.0
-		var point: Vector2 = tile_to_screen(tile)
-		draw_circle(point,tile_size*0.27,Color("77915A"))
-		draw_circle(point+Vector2(0,-0.27)*tile_size,tile_size*0.15,Color("F3E8CC"))
-		draw_line(point+Vector2(-0.4,-0.35)*tile_size,point+Vector2(-0.4,0.4)*tile_size,Color("B96C50"),maxf(2,tile_size*0.08))
-	for merchant in world.trade_state.merchants:
-		if merchant.state not in ["Entering","Trading","Leaving"]: continue
-		var tile: Vector2 = Vector2(merchant.x+0.5,merchant.y+0.5)
-		if not merchant.route.is_empty(): tile+=Vector2(merchant.route[0]-Vector2i(merchant.x,merchant.y))*float(merchant.progress)/10000.0
-		var point: Vector2 = tile_to_screen(tile)
-		draw_circle(point,tile_size*0.27,Color("716D88"));draw_circle(point+Vector2(0,-0.27)*tile_size,tile_size*0.15,Color("E9BA67"))
-		draw_rect(Rect2(point+Vector2(-0.65,-0.2)*tile_size,Vector2(0.35,0.35)*tile_size),Color("B96C50"))
 	for pen in world.domestic_state.pens:
 		for tile in pen.tiles:
 			var point: Vector2 = tile_to_screen(Vector2(tile))
 			if Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): draw_rect(Rect2(point,Vector2.ONE*tile_size),Color(0.7,0.7,0.45,0.12))
-	for animal in world.domestic_state.animals:
-		if animal.health<=0 or animal.away: continue
-		var point: Vector2 = tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5))
-		var color: Color = Color("E9BA67") if animal.definition=="hen" else Color("B96C50")
-		draw_circle(point,tile_size*(0.18 if animal.definition=="hen" else 0.28),color)
-		draw_circle(point+Vector2(0.22,-0.1)*tile_size,tile_size*0.12,color)
-		if animal.definition=="hen": draw_circle(point+Vector2(0.2,-0.25)*tile_size,tile_size*0.06,Color("B96C50"))
-		else: draw_line(point+Vector2(0.2,-0.2)*tile_size,point+Vector2(0.1,-0.45)*tile_size,Color("F3E8CC"),2)
 	for source in ColonyDanger.sources(world):
 		var center: Vector2 = tile_to_screen(Vector2(source)+Vector2(0.5,0.5))
 		var radius: float = tile_size*8
 		draw_polyline(PackedVector2Array([center+Vector2(0,-radius),center+Vector2(radius,0),center+Vector2(0,radius),center+Vector2(-radius,0),center+Vector2(0,-radius)]),Color("E9BA67"),2)
-	for animal in world.wildlife_state.animals:
-		if animal.health<=0: continue
-		var point: Vector2 = tile_to_screen(Vector2(animal.x+0.5,animal.y+0.5))
-		if not animal.route.is_empty(): point += Vector2(animal.route[0]-Vector2i(animal.x,animal.y))*tile_size*float(animal.progress)/10000.0
-		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): continue
-		var color: Color = {"hare":Color("D9CEAB"),"deer":Color("B96C50"),"boar":Color("716D88"),"marsh_goose":Color("F3E8CC")}[animal.definition]
-		draw_circle(point,tile_size*(0.18 if animal.definition in ["hare","marsh_goose"] else 0.3),color)
-		draw_circle(point+Vector2(tile_size*0.2,-tile_size*0.08),tile_size*0.12,color)
-		if animal.definition == "hare":
-			for x in [-0.1,0.1]: draw_line(point+Vector2(x,-0.2)*tile_size,point+Vector2(x,-0.45)*tile_size,color,3)
-		elif animal.definition == "deer":
-			draw_line(point+Vector2(0.2,-0.2)*tile_size,point+Vector2(0.3,-0.5)*tile_size,color,2)
-		elif animal.definition == "boar":
-			draw_line(point+Vector2(0.25,0.05)*tile_size,point+Vector2(0.4,-0.05)*tile_size,Color("F3E8CC"),2)
-		if world.jobs.any(func(j:Dictionary)->bool:return j.kind == "hunt" and j.target == animal.id and j.state not in ["Complete","Canceled"]): _draw_gather_mark(Vector2i(animal.x,animal.y),Color("E9BA67"))
-	for carcass in world.wildlife_state.carcasses:
-		if carcass.done or carcass.spoiled: continue
-		var point: Vector2 = tile_to_screen(Vector2(carcass.x+0.5,carcass.y+0.5))
-		draw_rect(Rect2(point-Vector2(tile_size*0.3,tile_size*0.12),Vector2(tile_size*0.6,tile_size*0.24)),Color("716D88"))
+	for task in world.unfinished_jobs():
+		if task.kind=="hunt":
+			var animal: Dictionary = world.find(world.wildlife_state.animals,task.target)
+			if not animal.is_empty() and animal.health>0: _draw_gather_mark(Vector2i(animal.x,animal.y),Color("E9BA67"))
 	for field in world.fields:
 		var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(field.x,field.y)),Vector2.ONE*tile_size)
 		draw_rect(rectangle.grow(-1),Color("B96C50") if field.prepared else Color(0.72,0.42,0.31,0.25))
@@ -464,19 +479,6 @@ func _draw_colony() -> void:
 			var center: Vector2 = tile_to_screen(Vector2(tile)+Vector2(0.5,0.5))
 			draw_colored_polygon(PackedVector2Array([center+Vector2(-0.3,0.3)*tile_size,center+Vector2(0,-0.45)*tile_size,center+Vector2(0.3,0.3)*tile_size]),Color("E9BA67"))
 
-
-	for enemy in world.defense_state.enemies:
-		if enemy.state=="Gone": continue
-		var tile: Vector2 = Vector2(enemy.x+0.5,enemy.y+0.5)
-		if not enemy.route.is_empty(): tile+=Vector2(enemy.route[0]-Vector2i(enemy.x,enemy.y))*float(enemy.progress)/10000.0
-		var point: Vector2 = tile_to_screen(tile);var neutral: bool = enemy.state in ["Downed","Leaving"]
-		var color: Color = Color("E9BA67") if neutral else Color("B96C50")
-		draw_rect(Rect2(point-Vector2(0.2,0.25)*tile_size,Vector2(0.4,0.5)*tile_size),color)
-		draw_circle(point+Vector2(0,-0.3)*tile_size,tile_size*0.15,Color("F3E8CC"))
-		if enemy.state=="Downed": draw_line(point+Vector2(-0.3,0)*tile_size,point+Vector2(0.3,0)*tile_size,Color("263C3B"),3)
-		if enemy.definition=="bow_raider": draw_arc(point+Vector2(0.3,0)*tile_size,tile_size*0.2,-PI*0.5,PI*0.5,8,Color("263C3B"),2)
-		var fraction: float = float(enemy.health)/world.definitions.enemies[enemy.definition].health
-		draw_rect(Rect2(point+Vector2(-0.3,0.35)*tile_size,Vector2(0.6*fraction,0.06)*tile_size),Color("375749"))
 
 func _draw_carried_items() -> void:
 	if not world is ColonyWorld:
