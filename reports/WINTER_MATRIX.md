@@ -1,6 +1,16 @@
 # Frozen first-Winter matrix
 
-## Current content v3 / schema 23
+## Content v4 loading audit
+
+All thirty frozen v3 final saves load under 0.7.15-m7 / content v4, preserve every
+gameplay field after restoring only their original content header for comparison,
+pass invariants and round-trip under the current header. No time advances and
+source files remain byte-identical. The raw audit is
+`reports/winter-v3-v4-migration-audit.json`, SHA-256 `e054d6e5094e09d556c1c80e1233e7816536d242655bb1afe9d7e327b877898f`.
+This verifies migration; the completed simulation matrix below remains v3 evidence.
+A new v4 survival matrix is still required for that content revision.
+
+## Frozen content v3 / schema 23
 
 The current-content matrix passes **30/30** at clean, unchanged source
 `fe118288c17efc56a252318d042c4bc1af1c2ac6` (0.7.7-m7). The same ten unsigned

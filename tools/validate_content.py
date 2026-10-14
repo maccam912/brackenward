@@ -239,3 +239,8 @@ budget_catalog=json.loads((root / 'data/catalogs/colony_v3.json').read_text())
 assert budget_catalog['version']=='colony-v3'
 assert {**budget_catalog,'version':'colony-v2'}==next_catalog, 'Work-budget content revision may not change released recipes, quantities, geometry or progression'
 print('Validated work-budget content v3; every catalog value except the version is identical to retained v2.')
+
+current_catalog=json.loads((root / 'data/catalogs/colony_v4.json').read_text())
+assert current_catalog['version']=='colony-v4'
+assert {**current_catalog,'version':'colony-v3'}==budget_catalog, 'Food interruption correction must retain every released recipe, quantity, geometry and progression rule'
+print('Validated food-interruption content v4; definitions are identical to retained v3 except the declared version.')

@@ -77,7 +77,8 @@ func run() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
 	if args.size()!=2 or not args[1].is_valid_int() or int(args[1])<1 or int(args[1])>7200:
 		printerr("Usage: -- SNAPSHOT TICKS (1..7200)");quit(2);return
-	var decoded: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes(args[0]))
+	var source_bytes: PackedByteArray = FileAccess.get_file_as_bytes(args[0])
+	var decoded: Dictionary = ColonyCodec.decode(source_bytes)
 	if not decoded.has("world"): printerr(decoded);quit(2);return
 	var baseline: ColonyWorld = decoded.world
 	var instrumented: ProfileWorld = ProfileWorld.new(baseline.definitions)
@@ -87,6 +88,8 @@ func run() -> void:
 		if value is Array: instrumented.get(field).assign(value.duplicate(true))
 		elif value is Dictionary: instrumented.set(field,value.duplicate(true))
 		else: instrumented.set(field,value)
+	instrumented.record_indexes.clear();instrumented.reset_job_queries();instrumented.reset_stack_queries()
+	instrumented.navigation_dirty=true;instrumented.reachability_dirty=true;instrumented.rooms_dirty=true
 	var before: Dictionary = inventory(baseline)
 	var start_hash: String = baseline.canonical_hash()
 	var start: int = Time.get_ticks_usec()
@@ -100,7 +103,16 @@ func run() -> void:
 	ranked.sort_custom(func(a:String,b:String)->bool:return instrumented.timings[a]>instrumented.timings[b])
 	var phases: Array = []
 	for phase in ranked: phases.append({"phase":phase,"microseconds":instrumented.timings[phase],"calls":instrumented.counts[phase]})
-	print(JSON.stringify({"snapshot":args[0],"ticks":int(args[1]),"baseline_us":baseline_us,"profiled_us":profiled_us,"canonical_match":matching,"start_hash":start_hash,"canonical_hash":baseline.canonical_hash(),"before":before,"after":inventory(baseline),"phases":phases},"\t",true))
+	var result: Dictionary = {"snapshot":args[0],"ticks":int(args[1]),"baseline_us":baseline_us,"profiled_us":profiled_us,"canonical_match":matching,"start_hash":start_hash,"canonical_hash":baseline.canonical_hash(),"before":before,"after":inventory(baseline),"phases":phases}
+	var envelope: Variant = JSON.parse_string(source_bytes.get_string_from_utf8())
+	if envelope is Dictionary and envelope.get("payload") is String:
+		var original: Variant = ColonyState.unpack(JSON.parse_string(envelope.payload))
+		if original is Dictionary and original.get("schema_revision") in [20,21,22,23]:
+			result["source_content"]=original.content
+			var normalized: Dictionary = SchemaCompatibility.normalize(baseline,original)
+			result["source_header_normalization_available"]=not normalized.is_empty()
+			result["canonical_in_source_header"]=JSON.stringify(ColonyState.pack(normalized),"",true).sha256_text() if not normalized.is_empty() else null
+	print(JSON.stringify(result,"\t",true))
 	quit(0 if matching else 1)
 
 func inventory(world: ColonyWorld) -> Dictionary:

@@ -345,3 +345,44 @@ Maximum frame gaps are 141.813, 144.666, 153.259 and 151.315 ms, with 14, 47,
 invariants/storage and the corresponding prior 1x/4x end loads. The tick and frame
 gates still fail. Further work must address scheduling peaks; this checkpoint
 does not claim the isolated selector gain fixes whole-game stalls.
+
+
+## 0.7.15 food-shortage interruption / content v4
+
+The controlled hungry-cook case makes no meals, records 903 jobs and ends at
+health 36/rest 0 under v3. The same starting snapshot continued under corrected
+v4 rules makes eight real meals, eats, ends at health 100/rest 1000 and records
+43 jobs. Its original acknowledged state is preserved during loading. This is a
+controlled regression with explicit extra grain, not an ordinary balance run.
+
+The 1,200-tick crowded continuation under v4 has canonical hash
+`46cc90218fa6bbf435dfed45acec80cfb6a80e2357600dd392b06e9284e5f919`;
+restoring only its original v3 header yields the exact earlier
+`b9cfe7a9c9e5469082a9aec02f0a075b7e165581c1b8f5a4cecaa1d22d5cc771`.
+Its instrumented twin matches. The actual snowy save likewise matches frozen
+continuation under its original header, with full current v4 hash
+`3169d6dd685eaa1fe7d8271849d88bec8292709ca366ae613de637adeb02c598`.
+Profiler clones now explicitly reset derived indexes after copying state. Header
+normalization is reported unavailable instead of hashing an empty representation
+when older schemas cannot represent actual capacity deferral.
+
+Four final thirty-second native profiles use the same v3 input fixture, loaded
+through current migration, 960x600, Balanced/30 FPS and center 68,72. Scoped
+runtime/media/profiler fingerprint
+`5e313a313355041ce806d16997695ba9b3667ff5beb684488608074e9b4fe049`
+remains unchanged. Two Charter workers are observed at each start/end; concurrency
+is not sampled continuously and these are not isolated hardware measurements.
+
+| View / speed | Wall seconds | Logical ticks | Main p95 / max ms | Main callbacks >50 ms | Tick p50 / p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Close / 1x | 30.025 | 300 | 11.394 / 135.960 | 12 | 2.988 / 46.005 |
+| Close / 4x | 30.033 | 1,200 | 40.261 / 127.447 | 26 | 2.790 / 35.838 |
+| Far / 1x | 30.034 | 300 | 10.572 / 143.163 | 11 | 2.988 / 43.674 |
+| Far / 4x | 30.038 | 1,200 | 40.306 / 134.548 | 18 | 2.840 / 34.016 |
+
+Frame-gap maxima are 149.206, 140.239, 152.056 and 144.556 ms, with 20, 39,
+21 and 40 over 50 ms respectively. Tick maxima are 134.896, 126.690, 142.196
+and 133.558 ms. All preserve requested speed, sub-0.1-second backlog and clean
+invariants/storage. End loads match the preceding corresponding 1x/4x rows.
+The tick and frame requirements still fail. The food fix prevents a real shortage
+livelock; it does not by itself meet the crowded-colony performance budget.

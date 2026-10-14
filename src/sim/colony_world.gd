@@ -2,7 +2,7 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v3"
+const CONTENT_VERSION: String = "colony-v4"
 const SCHEMA_REVISION: int = 23
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
@@ -10,6 +10,7 @@ const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
 # These activities are recreated from the resident's current needs and orders.
 # They cannot return to the shared work queue after their owner leaves them.
 const PERSONAL_JOBS: Array[String] = ["eat","sleep","leisure","recover","depart","escape","step_aside","shelter","defend","expedition_meet","expedition_walk"]
+const RELEASE_KEEPS_RESERVATIONS: Array[String] = ["trade","expedition_pack","raid_pay","minor_work","supper_reserve"]
 var definitions: Dictionary
 var work_budget: ColonyWorkBudget = ColonyWorkBudget.new()
 var stone_path_tiles: Dictionary = {}
@@ -774,6 +775,7 @@ func _assign_search(citizen: Dictionary) -> void:
 	var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
 	var needs_sleep: bool = citizen.rest <= rest_threshold or ((hour >= 22 or hour < 6) and citizen.rest < 900)
 	var current: Dictionary = find(jobs, citizen.job)
+	var hunger_food: Dictionary = {};var hunger_food_checked: bool = false
 	var taking_break: bool = citizen.break_until > tick
 	var draft_ready: bool = citizen.drafted and not taking_break and citizen.fullness > 0 and citizen.rest > 100 and (citizen.health > 40 or citizen.stand_fast)
 	var treatment_wait: bool = not draft_ready and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.kind == "treat" and j.target == citizen.id and j.state not in ["Complete","Canceled"])
@@ -783,11 +785,16 @@ func _assign_search(citizen: Dictionary) -> void:
 		return
 	if not current.is_empty():
 		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
-		var urgent_self_care: bool = (citizen.fullness == 0 and current.kind != "eat") or (citizen.rest <= 100 and current.kind not in ["eat","sleep"])
+		var ordinary_food: bool = not draft_ready and not current.emergency and citizen.fullness<=food_threshold and current.kind!="eat" and (current.kind!="sleep" or citizen.rest>100)
+		if ordinary_food or (citizen.fullness==0 and current.kind!="eat"):
+			# Query the exact food that releasing this job would expose, without
+			# dropping its cargo unless a reachable meal can actually be taken.
+			hunger_food=_food(citizen,current);hunger_food_checked=true
+		var urgent_self_care: bool = (citizen.fullness == 0 and current.kind != "eat" and (not hunger_food.is_empty() or current.kind=="defend")) or (citizen.rest <= 100 and current.kind not in ["eat","sleep"])
 		var change_to_defense: bool = draft_ready and not current.emergency and current.kind != "defend"
 		# Hunger still drains during sleep. Wake for ordinary food before reaching
 		# zero, while protecting life-critical rest until it exceeds 100.
-		var needs_food: bool = citizen.fullness <= food_threshold and current.kind != "eat" and (current.kind != "sleep" or citizen.rest > 100)
+		var needs_food: bool = ordinary_food and not hunger_food.is_empty()
 		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or (needs_sleep and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
 		if urgent_self_care or break_interrupt or (emergency and not current.emergency) or change_to_defense or ordinary_needs:
@@ -798,10 +805,11 @@ func _assign_search(citizen: Dictionary) -> void:
 		var emergencies: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
 		_sort_jobs(emergencies,citizen)
 		for emergency in emergencies:
+			hunger_food_checked=false
 			if _reserve(emergency,citizen): citizen.job = emergency.id; return
 	if draft_ready and ColonyDefense.assign(self,citizen): return
 	if citizen.fullness <= food_threshold:
-		var food: Dictionary = _food(citizen)
+		var food: Dictionary = hunger_food if hunger_food_checked else _food(citizen)
 		if not food.is_empty():
 			var eat_job: Dictionary = _job("eat", "", "", citizen.id, Vector2i(citizen.x, citizen.y), 2000)
 			eat_job.inputs = {food.item: 1}
@@ -828,7 +836,6 @@ func _assign_search(citizen: Dictionary) -> void:
 		citizen.job = recovery.id
 		return
 	if not taking_break and ColonyDefense.shelter_assign(self,citizen): return
-	if not taking_break and ColonyDefense.assign(self,citizen): return
 	if not taking_break and ColonyRegion.assign(self,citizen): return
 	if not arrival.is_empty() and _reserve(arrival,citizen):
 		citizen.job=arrival.id
@@ -1444,7 +1451,7 @@ func _release(job: Dictionary, cancel: bool) -> void:
 	ColonyFire.released(self,job)
 	ColonyCare.released(self,job)
 	for stack in stacks:
-		if cancel or job.kind not in ["trade","expedition_pack","raid_pay","minor_work","supper_reserve"]: stack.reservations.erase(job.id)
+		if cancel or job.kind not in RELEASE_KEEPS_RESERVATIONS: stack.reservations.erase(job.id)
 		if (stack.location == "carry" and stack.job == job.id) or (cancel and stack.location == "escrow" and stack.owner == job.id):
 			stack.location = "ground"
 			if stack.owner > 0 and not find(citizens, stack.owner).is_empty():
@@ -1453,7 +1460,7 @@ func _release(job: Dictionary, cancel: bool) -> void:
 				stack.y = carrier.y
 			stack.owner = 0
 			stack.job = 0
-			if not cancel and job.kind in ["trade","expedition_pack","raid_pay","minor_work","supper_reserve"] and stack.count>0: stack.reservations[job.id]=stack.count
+			if not cancel and job.kind in RELEASE_KEEPS_RESERVATIONS and stack.count>0: stack.reservations[job.id]=stack.count
 	if job.worker > 0:
 		var citizen: Dictionary = find(citizens, job.worker)
 		citizen.job = 0
@@ -1518,11 +1525,23 @@ func _escrow_count(job_id: int, item: String) -> int:
 			result += stack.count
 	return result
 
-func _food(citizen: Dictionary) -> Dictionary:
+func _food(citizen: Dictionary, releasing: Dictionary = {}) -> Dictionary:
 	var edible: Array[Dictionary] = []
+	var points: Dictionary = {}
+	var release_id: int = releasing.get("id",0)
+	var cancel: bool = releasing.get("kind","") in PERSONAL_JOBS
+	var frees_reservations: bool = release_id>0 and (cancel or releasing.kind not in RELEASE_KEEPS_RESERVATIONS)
 	for stack in nonempty_stacks():
-		if stack.count - _reserved(stack) > 0 and definitions.items[stack.item].fullness > 0 and stack.location in ["ground", "store", "output"] and ColonyFire.usable(self,stack) and (stack.item != "travel_ration" or use_rations):
+		if definitions.items[stack.item].fullness<=0 or (stack.item=="travel_ration" and not use_rations): continue
+		var available_count: int = stack.count-_reserved(stack)
+		if frees_reservations: available_count+=stack.reservations.get(release_id,0)
+		var drops_carry: bool = release_id>0 and stack.location=="carry" and stack.job==release_id
+		var drops_escrow: bool = release_id>0 and cancel and stack.location=="escrow" and stack.owner==release_id
+		if drops_carry and not frees_reservations: available_count=0
+		if available_count>0 and (stack.location in ["ground","store","output"] or drops_carry or drops_escrow) and ColonyFire.usable(self,stack):
 			edible.append(stack)
+			var carrier: Dictionary = find(citizens,stack.owner) if drops_carry or drops_escrow else {}
+			points[stack.id]=Vector2i(carrier.x,carrier.y) if not carrier.is_empty() else Vector2i(stack.x,stack.y)
 	edible.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
 		if a.age != b.age:
 			return a.age > b.age
@@ -1531,7 +1550,7 @@ func _food(citizen: Dictionary) -> Dictionary:
 		return a.item < b.item or (a.item == b.item and a.id < b.id))
 	var start: Vector2i = Vector2i(citizen.x,citizen.y)
 	for stack in edible:
-		var point: Vector2i = Vector2i(stack.x,stack.y)
+		var point: Vector2i = points[stack.id]
 		if not accessible(point) or not ColonyDanger.safe(self,point): continue
 		if point == start or not ColonyNavigation.path(start,point,func(p:Vector2i)->bool:return walkable(p) and ColonyDanger.safe(self,p),can_step).is_empty(): return stack
 	return {}

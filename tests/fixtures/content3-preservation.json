@@ -1,0 +1,44 @@
+{
+  "source_commit": "977313e33b848b469dab31bd45e5ece7c546b837",
+  "content": "colony-v3",
+  "schema": 23,
+  "scope": "Read-only acknowledgement migration fixtures; future food-interruption behavior intentionally changes in v4",
+  "snapshots": [
+    {
+      "file": "content3-replay-initial.brackenward",
+      "sha256": "400c38524cf7a04eb5965c5fc1dd050e5ae144da01cd49d3dedce8dcce9e8138",
+      "canonical_hash": "d0cdf985468a29b969fb698f69c89039625bfffd86770e81a55a9f95fd0ca868",
+      "role": "frozen ordinary replay acknowledgement"
+    },
+    {
+      "file": "content3-replay-7200.brackenward",
+      "sha256": "1e7a36a977f6c469b5b027bed60aa404e4ae5cf1318d0a61161ab69a992d70d3",
+      "canonical_hash": "425d6d9f8cdc88639949f384872f2a1d4dd38d13b62cb8e86ca16c90eaca2310",
+      "role": "frozen ordinary replay acknowledgement"
+    },
+    {
+      "file": "content3-replay-72000.brackenward",
+      "sha256": "e34bf7a8ac961ff684bdc8ff65fb7adad1e8cfbb85fbeaa1335fb2a1f2a8f4c8",
+      "canonical_hash": "72d90d8c79787adec9abd9ebb06273602edde9a8586a0b7f7e63dadcb0e87f50",
+      "role": "frozen ordinary replay acknowledgement"
+    },
+    {
+      "file": "content3-hungry-cook.brackenward",
+      "sha256": "a1602677fe19ba2f0593b1a8a7f504b95dc8fea787a2b07669490bda79c5e9d9",
+      "canonical_hash": "64dcf0c079ba4bd70a1a22a256b6720c4c9fecd2f1d707aaba0ed082b63bd63d",
+      "role": "controlled reproduction; extra grain, consumed initial meals, one Cooking worker; not ordinary-play evidence"
+    },
+    {
+      "file": "content3-delta-final.brackenward",
+      "sha256": "e5394e0d830aae7d9bd158112bcebd52722a3c1bc93e17db17803cc8df1dada4",
+      "canonical_hash": "6bb98e215828e151c203465e2bc826c174d776716826840cf27317e079da3338",
+      "role": "600 acknowledged v3 ticks of the controlled hungry-cook case, not replayed during migration"
+    }
+  ],
+  "delta": {
+    "content3-delta-base.brackenward": "b92c3354b86835dbe54bd5edba9d7f2b713716f2eb272d268943b510bee015eb",
+    "content3-delta.frames": "5bef1472a03b952daf46ea69e60d355acfdb9fab5eabc84e660edfc9c331c044",
+    "content3-delta-final.brackenward": "e5394e0d830aae7d9bd158112bcebd52722a3c1bc93e17db17803cc8df1dada4"
+  },
+  "frozen_replay_verified": true
+}

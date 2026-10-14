@@ -1,7 +1,79 @@
 class_name SchedulerTests
 extends RefCounted
 
+static func food_interruption(check: Callable) -> void:
+	var loaded: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content3-hungry-cook.brackenward"))
+	if not loaded.has("world"): check.call("SCHED/hungry_cook_fixture_loads",false,str(loaded));return
+	var world: ColonyWorld = loaded.world;var chef: Dictionary = world.citizens[0]
+	var produced: int = world.ledger.produced.get("meal",0);var fed: bool = false
+	for index in range(1500):
+		world.step();fed=fed or chef.fullness>350
+	check.call("SCHED/hungry_cook_finishes_real_food_without_restarting_fetches",world.ledger.produced.get("meal",0)>produced and fed and chef.health==100 and world.jobs.size()<100,str([chef.health,world.jobs.size(),world.ledger.produced.get("meal",0)-produced]))
+	check.call("SCHED/hungry_cook_recovery_conserves_all_materials",world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	world=ColonyTests.world()
+	for stack in world.stacks:
+		if stack.item=="meal": world._record("consumed","meal",stack.count);stack.count=0
+	var person: Dictionary = world.citizens[0];var bed: Dictionary = world.find(world.structures,person.bed)
+	world.tick=6600;person.x=bed.x;person.y=bed.y;person.fullness=0;person.rest=50
+	var sleeping: Dictionary = world._job("sleep","","",bed.id,Vector2i(bed.x,bed.y),0)
+	sleeping.worker=person.id;sleeping.state="Working";person.job=sleeping.id
+	world._assign(person)
+	check.call("SCHED/no_food_does_not_recreate_critical_sleep",person.job==sleeping.id)
+	for index in range(200): world.step()
+	check.call("SCHED/starving_sleeper_can_restore_rest_without_food",person.job==sleeping.id and person.rest>50 and person.health==100)
+	loaded=ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content3-hungry-cook.brackenward"))
+	world=loaded.world;person=world.citizens[0];person.fullness=0;person.drafted=true
+	world._create_work()
+	var defense: Dictionary = world._job("defend","","",person.id,person.rally,0)
+	defense.worker=person.id;defense.state="Working";person.job=defense.id
+	world._assign(person)
+	check.call("SCHED/starving_guard_keeps_order_but_can_prepare_missing_food",person.drafted and defense.state=="Canceled" and world.find(world.jobs,person.job).get("kind")=="cook")
+	for index in range(1000): world.step()
+	check.call("SCHED/guard_resumes_defense_after_critical_food_recovery",person.drafted and person.fullness>350 and person.health==100 and world.find(world.jobs,person.job).get("kind")=="defend" and world.invariant_errors().is_empty(),str([person.fullness,person.activity,world.invariant_errors()]))
+	loaded=ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content3-hungry-cook.brackenward"))
+	world=loaded.world;person=world.citizens[0];person.fullness=0;person.rest=50
+	world._create_work();world._assign(person)
+	check.call("SCHED/critical_rest_still_precedes_food_production",world.find(world.jobs,person.job).get("kind")=="sleep")
+
+static func clone_food_fixture(world: ColonyWorld) -> ColonyWorld:
+	var result: ColonyWorld = ColonyWorld.new(world.definitions)
+	for field in world.payload():
+		if field in ["content","content_hash"]: continue
+		var value: Variant = world.get(field)
+		if value is Array: result.get(field).assign(value.duplicate(true))
+		elif value is Dictionary: result.set(field,value.duplicate(true))
+		else: result.set(field,value)
+	result.record_indexes.clear();result.reset_job_queries();result.reset_stack_queries()
+	result.navigation_dirty=true;result.reachability_dirty=true;result.rooms_dirty=true
+	return result
+
+static func prospective_food(check: Callable) -> void:
+	# Private-query fixtures deliberately exercise release contracts without
+	# constructing full trade/expedition/supper scenarios. The reference actually
+	# releases a deep copy; the preview must leave every original field intact.
+	for kind in ["cook","craft","gather","sleep","trade","expedition_pack","raid_pay","minor_work","supper_reserve","supper"]:
+		for location in ["ground","store","output","carry","escrow"]:
+			var world: ColonyWorld = ColonyTests.world();var person: Dictionary = world.citizens[0]
+			for stack in world.stacks:
+				if stack.item=="meal": world._record("consumed","meal",stack.count);stack.count=0
+			person.x=70;person.y=65
+			var job: Dictionary = world._job(kind,"","",0,Vector2i(70,65),0)
+			job.worker=person.id;job.state="Working";person.job=job.id
+			var other: Dictionary = world._job("cook","Cooking","Cooking",0,Vector2i(70,65),0)
+			var owner: int = person.id if location=="carry" else job.id if location=="escrow" else world.stores[0].id if location in ["store","output"] else 0
+			var food: Dictionary = world._make_stack("berry",3,location,owner,Vector2i(10,10) if location=="carry" else Vector2i(67,63),true)
+			food.age=800;food.job=job.id if location=="carry" else 0
+			if location!="carry": food.reservations={job.id:2,other.id:1}
+			var fallback: Dictionary = world._make_stack("mushroom",1,"ground",0,Vector2i(66,63),true);fallback.age=100
+			var reference: ColonyWorld = clone_food_fixture(world);var before: String = world.canonical_hash()
+			var preview: Dictionary = world._food(person,job)
+			reference._release(reference.find(reference.jobs,job.id),false)
+			var actual: Dictionary = reference._food(reference.find(reference.citizens,person.id))
+			check.call("FOOD/release_preview_matches_actual_%s_%s" % [kind,location],preview.get("id",0)==actual.get("id",0) and world.canonical_hash()==before,str([preview.get("id",0),actual.get("id",0)]))
+
 static func run(check: Callable) -> void:
+	food_interruption(check)
+	prospective_food(check)
 	WorkBudgetTests.run(check)
 	MovementCostTests.run(check)
 	StorageQueryTests.run(check)

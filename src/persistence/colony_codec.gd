@@ -24,8 +24,8 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		if legacy.has("error"): return legacy
 		return restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
-	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content != "colony-v1" and envelope.content != "colony-v2" and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
-		return {"error":"Unsupported save version/content: this build supports version 5 plus earlier colony migration"}
+	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
+		return {"error":"Unsupported save version %s / content %s. This build supports envelope 5, content %s and earlier colony migration. Original files retained." % [str(envelope.get("version","?")).left(16),str(envelope.get("content","?")).left(64),ColonyWorld.CONTENT_VERSION]}
 	if not envelope.generator_version is float or (envelope.generator_version != 0 and envelope.generator_version != 1) or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
 		return {"error":"Invalid snapshot metadata"}
 	if not envelope.payload is String or not envelope.sha256 is String or envelope.payload.sha256_text() != envelope.sha256:
@@ -54,10 +54,11 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/colony_v1.json")
 		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released catalog; original files retained"}
 		data = ColonyMigrations.catalog_v1(data,world.definitions,previous.items.keys())
-	if data.get("content") == "colony-v2":
-		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/colony_v2.json")
-		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released v2 catalog; original files retained"}
-		# Every definition is identical in v3. Change only its declared header;
+	if data.get("content") in ["colony-v2","colony-v3"]:
+		var previous_version: String = data.content
+		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/%s.json" % previous_version.replace("-","_"))
+		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released %s catalog; original files retained" % previous_version.trim_prefix("colony-")}
+		# Definitions are identical. Change only the declared content header;
 		# unlike older acquisition upgrades, preserve even user filter ordering.
 		data=data.duplicate(true);data.content=ColonyWorld.CONTENT_VERSION;data.content_hash=world.definitions.content_hash
 	if initialize_weather and data.get("weather_state") == {}:

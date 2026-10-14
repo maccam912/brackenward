@@ -9,6 +9,7 @@ class GatedQueue extends ColonySaveQueue:
 
 static func run(tree: SceneTree, check: Callable) -> void:
 	var root: String = "user://async-save-tests-%d" % Time.get_ticks_usec()
+	content3_upgrade(root,check)
 	var world: ColonyWorld = ColonyTests.world()
 	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("campaign")
 	check.call("SAVE/async_fixture_snapshot",store.save(world).is_empty())
@@ -142,6 +143,44 @@ static func verified_generation_integrity(root: String, check: Callable) -> void
 	check.call("SAVE/generation_cache_rechecks_bytes_before_pruning",store.save(world).is_empty() and not store.verified_generations.has(path) and FileAccess.get_file_as_bytes(path)==bytes and store._generations().size()==4)
 	world.step();store.save(world)
 	check.call("SAVE/generation_cache_retains_three_valid_and_corrupt_evidence",store._generations().size()==4 and FileAccess.get_file_as_bytes(path)==bytes and load_saved(store).world.canonical_hash()==world.canonical_hash())
+
+static func content3_upgrade(root: String, check: Callable) -> void:
+	var audit: Dictionary = Content3Migration.audit()
+	for row in audit.rows:
+		check.call("SAVE/acknowledgement_migration_"+row.file,row.passed,str(row.get("error",row.get("preserved_gameplay_hash",""))))
+	check.call("SAVE/all_reviewed_v3_and_foreign_acknowledgements_preserved",audit.passed and audit.rows.size()==6)
+	var envelope: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/content3-hungry-cook.brackenward"))
+	var changed: Dictionary = ColonyState.unpack(JSON.parse_string(envelope.payload))
+	changed.content_hash="0".repeat(64);envelope.content_hash=changed.content_hash
+	envelope.payload=JSON.stringify(ColonyState.pack(changed),"",true);envelope.sha256=envelope.payload.sha256_text()
+	check.call("SAVE/v3_upgrade_requires_its_exact_released_catalog",ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","").begins_with("Unknown released v3 catalog"))
+	envelope.content="colony-v5"
+	var newer: String = ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","")
+	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v5") and newer.contains("colony-v4"))
+	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("content-v4-upgrade")
+	DirAccess.make_dir_recursive_absolute(store.directory)
+	var snapshot: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/content3-delta-base.brackenward")
+	var journal: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/content3-delta.frames")
+	var manifest: Dictionary = JSON.parse_string(FileAccess.get_file_as_string(Content3Migration.MANIFEST))
+	check.call("SAVE/v3_delta_fixture_bytes_remain_frozen",FileAccess.get_sha256("res://tests/fixtures/content3-delta-base.brackenward")==manifest.delta["content3-delta-base.brackenward"] and FileAccess.get_sha256("res://tests/fixtures/content3-delta.frames")==manifest.delta["content3-delta.frames"])
+	var snapshot_path: String = store.directory.path_join("snapshot-0000000001.brackenward")
+	var journal_path: String = store.directory.path_join("journal-0000000001.frames")
+	var file: FileAccess = FileAccess.open(snapshot_path,FileAccess.WRITE);file.store_buffer(snapshot);file.close()
+	file=FileAccess.open(journal_path,FileAccess.WRITE);file.store_buffer(journal);file.close()
+	var expected: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content3-delta-final.brackenward"))
+	var recovered: Dictionary = store.load_latest()
+	check.call("SAVE/v3_delta_folds_before_content_header_upgrade",expected.has("world") and recovered.has("world") and recovered.world.tick==2400 and recovered.world.canonical_hash()==expected.world.canonical_hash(),str(recovered.get("error","")))
+	if not expected.has("world") or not recovered.has("world"): return
+	check.call("SAVE/v3_delta_migration_retains_original_and_backup_bytes",FileAccess.get_file_as_bytes(snapshot_path)==snapshot and FileAccess.get_file_as_bytes(journal_path)==journal and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-journal-0000000001.frames"))==journal)
+	var fresh: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content3-hungry-cook.brackenward"))
+	for index in range(600): fresh.world.step()
+	check.call("SAVE/acknowledged_v3_marker_is_not_replayed_under_v4_rules",fresh.world.canonical_hash()!=recovered.world.canonical_hash())
+	var world: ColonyWorld = recovered.world
+	for index in range(1200): world.step()
+	check.call("SAVE/migrated_hungry_cook_can_recover_in_future_play",world.citizens[0].health==100 and world.citizens[0].fullness>350 and world.invariant_errors().is_empty(),str([world.citizens[0].fullness,world.citizens[0].activity]))
+	var error: String = store.checkpoint(world)
+	var reloaded: Dictionary = load_saved(store)
+	check.call("SAVE/v4_post_upgrade_checkpoint_continues_exactly",error.is_empty() and reloaded.has("world") and reloaded.world.canonical_hash()==world.canonical_hash() and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-journal-0000000001.frames"))==journal,str(error))
 
 static func load_saved(store: ColonyStore) -> Dictionary:
 	var reader: ColonyStore = ColonyStore.new();reader.directory=store.directory

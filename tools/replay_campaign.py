@@ -64,7 +64,14 @@ def main():
             if not json.loads(audit.read_text()).get("passed"):
                 raise RuntimeError("Schema-22 gameplay/foreign-fixture preservation audit failed")
             evidence["schema22_gameplay_preservation"] = True
-            report.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
+        migration = report.with_name(report.stem + "-content3-migration.json")
+        migration.unlink(missing_ok=True)
+        run_engine(binary, ["--script", "tools/check_content3_migration.gd", "--",
+                           "--audit", str(migration)], 180, logs)
+        if not json.loads(migration.read_text()).get("passed"):
+            raise RuntimeError("Frozen v3 acknowledgement migration audit failed")
+        evidence["content3_acknowledgement_preservation"] = True
+        report.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         if isinstance(error, subprocess.TimeoutExpired) and error.stdout:
             logs.append(error.stdout.decode(errors="replace") if isinstance(error.stdout, bytes) else error.stdout)

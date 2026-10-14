@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.14-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content version. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.15-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content version. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -83,3 +83,10 @@ retains failed runs and checks ceremony, Continue and later play. Use `--audit`
 with the same source/report directory to recheck saved evidence. Results and
 known planner failures are recorded in reports/STATUS.md; a running sweep is not
 a completed release gate.
+
+
+Food-shortage recovery now keeps an assigned task or sleep when no reachable
+allowed food is available, so a hungry cook can finish making a meal. Starving
+residents temporarily yield defense while retaining their draft order. Content v4
+keeps the existing campaign schema and preserves old acknowledged state and raw
+migration backups; it changes scheduling during subsequent play.
