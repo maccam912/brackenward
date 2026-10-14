@@ -50,7 +50,7 @@ class ProfileWorld extends ColonyWorld:
 			_profile("ColonyDomestic.create_jobs",func()->void:ColonyDomestic.create_jobs(self))
 			_profile("ColonyConstruction.create_helpers",func()->void:ColonyConstruction.create_helpers(self))
 			_profile("ColonyEquipment.create_jobs",func()->void:ColonyEquipment.create_jobs(self))
-			_profile("work_budget",func()->void:work_budget.reconcile(self))
+			_profile("work_budget",func()->void:work_budget.mark_dirty();work_budget.reconcile_runtime(self))
 			for citizen in citizens:
 				_profile("_assign",func()->void:_assign(citizen))
 		for citizen in citizens:
@@ -67,7 +67,7 @@ class ProfileWorld extends ColonyWorld:
 		_profile("ColonyOpportunities.advance",func()->void:ColonyOpportunities.advance(self))
 		_profile("ColonyCharter.advance",func()->void:ColonyCharter.advance(self))
 		_profile("ColonyChronicle.advance",func()->void:ColonyChronicle.advance(self))
-		_profile("work_budget",func()->void:work_budget.reconcile(self))
+		_profile("work_budget",func()->void:work_budget.reconcile_runtime(self))
 		committing_work=false;in_tick=false
 
 func _initialize() -> void:

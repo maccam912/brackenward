@@ -236,3 +236,33 @@ the corresponding 0.7.7 1x/4x rows: active threats retreat, 1x ends with 400
 structures/1,035 stacks/268 targets, 4x with 401/1,059/267; the other actor/crop
 counts and rain remain. The tick and frame requirements still fail, and these
 runs do not satisfy any physical performance gate.
+
+
+## 0.7.12 admission invalidation and deadlines
+
+The source fingerprint `073da11c0b57c45f5d3198eb3a043d1b25df19a17a02b756b7e3e87283205647`
+remains unchanged across all four thirty-second native runs. The v3 fixture,
+camera center 68,72, Balanced/30 FPS and 960x600 remain as above. Two frozen Winter
+workers were observed immediately before and after each run; that is not a
+continuous concurrency sample or an isolated device benchmark.
+
+| View / speed | Wall seconds | Logical ticks | Main p95 / max ms | Main callbacks >50 ms | Tick p50 / p95 ms |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Close / 1x | 30.024 | 299 | 12.725 / 150.204 | 12 | 5.167 / 44.697 |
+| Close / 4x | 30.017 | 1,199 | 41.788 / 143.520 | 23 | 5.168 / 36.478 |
+| Far / 1x | 30.025 | 299 | 13.130 / 155.026 | 12 | 5.293 / 40.076 |
+| Far / 4x | 30.010 | 1,199 | 42.843 / 142.592 | 23 | 5.107 / 35.712 |
+
+All retain requested speed, under 0.1 second logical backlog and clean
+invariants/storage. Ending actor/crop/weather and load counts match the preceding
+corresponding 1x/4x rows. Tick maxima are 149.190, 142.224, 153.977 and 141.808 ms.
+The 4 ms tick and frame requirements still fail.
+
+A separate fixed 1,200-tick final benchmark retains full canonical hash
+`b9cfe7a9c9e5469082a9aec02f0a075b7e165581c1b8f5a4cecaa1d22d5cc771`,
+also matching its instrumented twin. Uninstrumented/instrumented totals are
+8.782/8.903 seconds. Inclusive admission is 0.787 ms per tick, work 1.839 ms,
+assignment 1.540 ms and work creation 0.915 ms. The remaining Winter workers
+completed around this interval; differences from older benchmarks cannot be
+attributed solely to the optimization. The exact replay/oracle and cold-save
+continuation comparisons establish behavior preservation, not phone performance.

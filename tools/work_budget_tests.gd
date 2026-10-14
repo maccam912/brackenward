@@ -2,13 +2,21 @@ class_name WorkBudgetTests
 extends RefCounted
 
 class UncachedBudget extends ColonyWorkBudget:
+	func reconcile_runtime(world: ColonyWorld) -> void:
+		reconcile(world)
 	func after_commands(world: ColonyWorld, _had_commands: bool) -> void:
 		reconcile(world)
 	func reconcile(world: ColonyWorld) -> void:
 		var result: Dictionary = reconcile_records(world.citizens,world.unfinished_jobs(),world.tick)
 		used=result.used
 
+class CountingBudget extends ColonyWorkBudget:
+	var inspections: int = 0
+	func reconcile(world: ColonyWorld) -> void:
+		inspections+=1;super.reconcile(world)
+
 static func run(check: Callable) -> void:
+	runtime_deadlines(check)
 	scheduling_bounds(check)
 	precomputed_order(check)
 	stress_tick_order(check)
@@ -51,6 +59,60 @@ static func scheduling_bounds(check: Callable) -> void:
 	for change in [{"priority":0},{"priority":-1},{"priority":4},{"created":-1},{"created":world.tick+1},{"retry":-1}]:
 		var payload: Dictionary = world.payload().duplicate(true);payload.jobs[0].merge(change,true)
 		check.call("SAVE/admission_metadata_bounds_%s" % str(change),ColonyCodec.restore(payload).get("error","")=="Invalid job scheduling metadata")
+
+static func runtime_deadlines(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world();var reference: ColonyWorld = ColonyTests.world()
+	var budget: CountingBudget = CountingBudget.new();world.work_budget=budget;reference.work_budget=UncachedBudget.new()
+	var exact: bool = true
+	for index in range(200):
+		world.step();reference.step();exact=exact and world.canonical_hash()==reference.canonical_hash()
+	check.call("BUDGET/unchanged_ticks_skip_order_inspection_without_changing_state",exact and budget.inspections<80 and world.invariant_errors().is_empty(),str(budget.inspections))
+	world=ColonyTests.world();budget=CountingBudget.new();world.work_budget=budget
+	for index in range(600):
+		var job: Dictionary = world._job("build","Building","Build",0,Vector2i(80+index%20,80+index/20),16000)
+		job.definition="wood_wall";job.priority=2 if index==0 else 3
+	budget.reconcile_runtime(world)
+	var waiting: Dictionary = world.jobs[0];var before: int = budget.inspections;var next_id: int = world.next_id
+	world.tick=8999;budget.reconcile_runtime(world)
+	check.call("BUDGET/aging_deadline_is_not_polled_before_due",waiting.state=="Queued" and budget.inspections==before and budget.next_review_tick==9000)
+	world.tick=9000;budget.reconcile_runtime(world)
+	check.call("BUDGET/aging_deadline_admits_existing_low_id_order_exactly",waiting.state=="Ready" and budget.inspections==before+1 and world.next_id==next_id)
+	var retry: Dictionary = world.jobs[1];world._block(retry,"Waiting for supplies");budget.reconcile_runtime(world);before=budget.inspections
+	world.tick=9049;budget.reconcile_runtime(world)
+	check.call("BUDGET/future_retry_keeps_cached_admission",budget.inspections==before and budget.next_review_tick==9050)
+	world.tick=9050;budget.reconcile_runtime(world)
+	var expected: Array = world.jobs.duplicate(true);ColonyWorkBudget.reconcile_records(world.citizens,expected,world.tick)
+	check.call("BUDGET/retry_deadline_reconciles_on_exact_logical_tick",budget.inspections==before+1 and world.jobs==expected)
+	before=budget.inspections
+	for person in world.citizens: person.preferences.Building=0
+	budget.reconcile_runtime(world)
+	check.call("BUDGET/enabled_category_signature_detects_live_worker_changes",budget.inspections==before+1)
+	world.jobs=world.jobs.duplicate(true);before=budget.inspections;budget.reconcile_runtime(world)
+	check.call("BUDGET/runtime_cache_detects_same_length_array_replacement",budget.inspections==before+1)
+	world.jobs[0].priority=1;before=budget.inspections;budget.reconcile(world)
+	expected=world.jobs.duplicate(true);ColonyWorkBudget.reconcile_records(world.citizens,expected,world.tick)
+	check.call("BUDGET/explicit_reconciliation_observes_direct_dictionary_edits",budget.inspections==before+1 and world.jobs==expected)
+	for person in world.citizens: person.preferences.Cooking=0
+	world.citizens[0].preferences.Cooking=2;budget.reconcile_runtime(world)
+	var cook: Dictionary = world._job("cook","Cooking","Cooking",0,Vector2i(70,62),24000);budget.reconcile_runtime(world)
+	check.call("BUDGET/one_enabled_home_cook_admits_usable_work",cook.state=="Ready")
+	before=budget.inspections;world.citizens[0].away=true;budget.reconcile_runtime(world)
+	check.call("BUDGET/last_home_worker_departure_invalidates_category_availability",budget.inspections==before+1 and cook.state=="Queued")
+	before=budget.inspections;world.citizens[0].away=false;world.citizens[0].downed=true;budget.reconcile_runtime(world)
+	check.call("BUDGET/equivalent_unavailable_worker_state_keeps_admission",budget.inspections==before and cook.state=="Queued")
+	world.citizens[0].downed=false;budget.reconcile_runtime(world)
+	check.call("BUDGET/recovered_home_worker_restores_usable_admission",budget.inspections==before+1 and cook.state=="Ready")
+	before=budget.inspections;world.citizens[1].pinned_job=world.jobs[599].id;budget.reconcile_runtime(world)
+	check.call("BUDGET/live_pin_membership_invalidates_without_a_command_hook",budget.inspections==before+1 and world.jobs[599].state=="Ready")
+	before=budget.inspections;world.citizens[0].departed=true;budget.reconcile_runtime(world)
+	expected=world.jobs.duplicate(true);ColonyWorkBudget.reconcile_records(world.citizens,expected,world.tick)
+	check.call("BUDGET/living_count_changes_reserved_capacity_exactly",budget.inspections==before+1 and ColonyWorkBudget.ordinary_limit(world.citizens)==508 and world.jobs==expected)
+	world.tick+=3;world._block(world.jobs[0],"Waiting for supplies");var due: int = world.jobs[0].retry;budget.reconcile_runtime(world)
+	world.tick=due-1;world._release(world.jobs[0],false);budget.reconcile_runtime(world);before=budget.inspections
+	check.call("BUDGET/released_ready_order_keeps_deadline_after_deferral",world.jobs[0].state=="Queued" and budget.next_review_tick==due)
+	world.tick=due;budget.reconcile_runtime(world)
+	expected=world.jobs.duplicate(true);ColonyWorkBudget.reconcile_records(world.citizens,expected,world.tick)
+	check.call("BUDGET/released_order_retry_is_reviewed_between_assignment_ticks",due%10!=0 and budget.inspections==before+1 and world.jobs==expected)
 
 static func precomputed_order(check: Callable) -> void:
 	for variant in range(8):

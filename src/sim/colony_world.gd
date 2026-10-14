@@ -343,7 +343,7 @@ func step() -> void:
 		ColonyDomestic.create_jobs(self)
 		ColonyConstruction.create_helpers(self)
 		ColonyEquipment.create_jobs(self)
-		work_budget.reconcile(self)
+		work_budget.mark_dirty();work_budget.reconcile_runtime(self)
 		for citizen in citizens:
 			_assign(citizen)
 	for citizen in citizens:
@@ -360,7 +360,7 @@ func step() -> void:
 	ColonyOpportunities.advance(self)
 	ColonyCharter.advance(self)
 	ColonyChronicle.advance(self)
-	work_budget.reconcile(self)
+	work_budget.reconcile_runtime(self)
 	committing_work=false;in_tick=false
 
 func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job: int = 0, excluded_structure: int = 0) -> String:
@@ -577,6 +577,7 @@ func _command(command: Dictionary) -> String:
 	return "accepted"
 
 func _job(kind: String, category: String, skill: String, target: int, point: Vector2i, effort: int) -> Dictionary:
+	work_budget.mark_dirty()
 	var state: String = work_budget.initial_state(self,kind)
 	var job: Dictionary = {"id": _id(), "kind": kind, "category": category, "skill": skill, "target": target,
 		"x": point.x, "y": point.y, "definition": "", "rotation": 0, "required": effort, "work": 0,
@@ -743,6 +744,7 @@ func _needs(citizen: Dictionary) -> void:
 		citizen.starving_ticks = 0
 
 func _assign(citizen: Dictionary) -> void:
+	work_budget.mark_dirty()
 	if citizen.away: return
 	if citizen.death_recorded or citizen.departed:
 		citizen.activity = "Died" if citizen.death_recorded else "Departed"
@@ -891,6 +893,7 @@ func _job_rank(job: Dictionary, citizen: Dictionary) -> int:
 
 func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary = {}) -> bool:
 	if job.state=="Queued": return false
+	work_budget.mark_dirty()
 	if job.kind in ["minor_work","minor_study"] and not ColonyOpportunities.reserve(self,job,citizen): return false
 	if job.kind=="enemy_treat" and find(defense_state.enemies,job.target).get("state")!="Downed": _release(job,true);return false
 	if job.kind=="raid_pay" and find(defense_state.raids,job.target).get("state")!="Payment": return _block(job,"Payment is no longer awaiting delivery")
@@ -1022,6 +1025,7 @@ func _block(job: Dictionary, reason: String) -> bool:
 		job.reason=reason
 		return false
 	if job.state in ["Complete","Canceled"]: return false
+	work_budget.mark_dirty()
 	job.state = "Blocked"
 	job.queue_state=""
 	job.reason = reason
@@ -1352,6 +1356,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 	_complete(citizen, job, {"changes":changes})
 
 func _complete(citizen: Dictionary, job: Dictionary, details: Dictionary = {}) -> void:
+	work_budget.mark_dirty()
 	var preferred_memory_earned: bool = false
 	if job.kind == "build": ColonyConstruction.finish_helpers(self,citizen,job)
 	for stack in stacks:
@@ -1403,6 +1408,7 @@ func _award_xp(job: Dictionary) -> void:
 func _release(job: Dictionary, cancel: bool) -> void:
 	if job.is_empty() or job.state in ["Complete","Canceled"]:
 		return
+	work_budget.mark_dirty()
 	cancel=cancel or job.kind in PERSONAL_JOBS
 	if cancel and job.kind=="trade":
 		var exchange: Dictionary = find(trade_state.exchanges,job.target)

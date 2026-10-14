@@ -4,12 +4,48 @@ extends RefCounted
 const LIMIT: int = 512
 const PERSONAL: Array = ["eat","sleep","leisure","recover","depart","escape","step_aside","shelter","defend","expedition_meet","expedition_walk","arrival","supper"]
 const TERMINAL: Array = ["Complete","Canceled"]
+const NEVER: int = 1<<62
 var used: int = -1
 var fingerprint: PackedInt64Array = PackedInt64Array()
 var admitted_ids: Dictionary = {}
+var runtime_dirty: bool = true
+var runtime_source: Array = []
+var runtime_count: int = -1
+var runtime_tick: int = -1
+var runtime_residents: PackedInt64Array = PackedInt64Array()
+var next_review_tick: int = 0
 
 func reset() -> void:
 	used=-1;fingerprint.clear();admitted_ids.clear()
+	runtime_dirty=true;runtime_source=[];runtime_count=-1;runtime_tick=-1;runtime_residents.clear();next_review_tick=0
+
+func mark_dirty() -> void:
+	runtime_dirty=true
+
+static func resident_signature(citizens: Array) -> PackedInt64Array:
+	var living: int = 0;var enabled: int = 0;var pins: Array[int] = []
+	for person: Dictionary in citizens:
+		if person.death_recorded or person.departed: continue
+		living+=1
+		if person.pinned_job>0 and not pins.has(person.pinned_job): pins.append(person.pinned_job)
+		if person.away or person.downed: continue
+		for index in range(ColonyWorld.CATEGORIES.size()):
+			if person.preferences.get(ColonyWorld.CATEGORIES[index],0)>0: enabled|=1<<index
+	pins.sort()
+	var result: PackedInt64Array = PackedInt64Array([mini(20,living),enabled])
+	for id in pins: result.append(id)
+	return result
+
+func reconcile_runtime(world: ColonyWorld) -> void:
+	# Only complete-tick/assignment stages use this path. Their mutation hooks
+	# invalidate order changes; the small resident signature and exact deadlines
+	# cover eligibility changes without polling every unchanged waiting target.
+	var residents: PackedInt64Array = resident_signature(world.citizens)
+	var unchanged: bool = not runtime_dirty and is_same(runtime_source,world.jobs) and runtime_count==world.jobs.size() and runtime_residents==residents and world.tick>=runtime_tick and world.tick<next_review_tick
+	runtime_tick=world.tick
+	if unchanged: return
+	reconcile(world)
+	runtime_source=world.jobs;runtime_count=world.jobs.size();runtime_residents=residents;runtime_tick=world.tick;runtime_dirty=false
 
 func initial_state(world: ColonyWorld, kind: String) -> String:
 	# One slot per living resident and one communal-supper bank cannot be
@@ -26,10 +62,14 @@ func initial_state(world: ColonyWorld, kind: String) -> String:
 func after_commands(world: ColonyWorld, had_commands: bool) -> void:
 	# The previous complete tick already reconciled unchanged orders. Retry/age
 	# changes are reconciled before assignment and at this tick's complete state.
-	if had_commands: reconcile(world)
+	if had_commands: mark_dirty();reconcile_runtime(world)
 
 func reconcile(world: ColonyWorld) -> void:
+	# Explicit callers retain full live-record inspection, including fixtures
+	# that deliberately edit dictionaries outside the simulation mutation API.
+	mark_dirty()
 	var jobs: Array = world.unfinished_jobs();var pinned: Dictionary = {}
+	next_review_tick=NEVER
 	var tick: int = world.tick
 	var enabled: Dictionary = enabled_categories(world.citizens)
 	for person in world.citizens:
@@ -42,14 +82,20 @@ func reconcile(world: ColonyWorld) -> void:
 	var inconsistent: bool = false
 	var cursor: int = 1
 	for job: Dictionary in jobs:
-		var id: int = job.id;var worker: int = job.worker;var state: String = job.state
+		var id: int = job.id;var worker: int = job.worker;var state: String = job.state;var retry: int = job.retry
 		var is_pinned: bool = pinned.has(id)
 		var code: int = int(worker>0)+2*int(job.kind=="supper_reserve" or (worker>0 and job.kind in PERSONAL))
-		var eligible: bool = not (job.retry>tick and (state=="Blocked" or state=="Queued") and not is_pinned)
+		# A released Ready order can become Queued during this inspection, so
+		# retain its future retry even when it is currently eligible.
+		if code==0 and retry>tick: next_review_tick=mini(next_review_tick,retry)
+		var eligible: bool = not (retry>tick and (state=="Blocked" or state=="Queued") and not is_pinned)
 		if not eligible: code+=4
 		if code==0:
 			var category: String = job.category;var priority: int = job.priority;var created: int = job.created
-			code=8*int(job.emergency)+16*int(is_pinned)+32*mini(3,priority+(tick-created)/7200)+128*int(category=="" or enabled.has(category))
+			var waited_days: int = (tick-created)/7200
+			var aged: int = mini(3,priority+waited_days)
+			if aged<3: next_review_tick=mini(next_review_tick,created+(waited_days+1)*7200)
+			code=8*int(job.emergency)+16*int(is_pinned)+32*aged+128*int(category=="" or enabled.has(category))
 			if admitted_ids.has(id)!=(state!="Queued"): inconsistent=true
 		signature[cursor]=id*256+code;cursor+=1
 	if not inconsistent and signature==fingerprint: return
