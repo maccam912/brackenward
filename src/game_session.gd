@@ -33,6 +33,10 @@ var backgrounded: bool = false
 var last_saved_tick: int = 1800
 var autosave_elapsed: float = 0.0
 var journal_elapsed: float = 0.0
+var save_queue: ColonySaveQueue = ColonySaveQueue.new()
+var save_clock: float = 0.0
+var durable_at: float = 0.0
+var save_requested_at: float = 0.0
 var file_dialog: FileDialog
 var catalog_strings: Dictionary = {}
 var seen_care_alert: int = -1
@@ -317,6 +321,12 @@ func _build_placement() -> void:
 func _process(delta: float) -> void:
 	if not is_node_ready() or backgrounded:
 		return
+	save_clock+=delta
+	_finish_background_save()
+	if store is ColonyStore and world.tick==store.journal_tick: durable_at=save_clock
+	if _storage_wait_required() and runner.speed>0:
+		runner.pause()
+		notice="Saving is slow; paused to protect recent progress. Resume after saving finishes."
 	runner.advance_frame(delta)
 	guidance_elapsed += delta
 	if world is ColonyWorld:
@@ -378,17 +388,44 @@ func _process(delta: float) -> void:
 		sheet_feedback.text = notice
 	preview_label.text = _preview_text()
 	journal_elapsed += delta
-	if store is ColonyStore and journal_elapsed >= 2.0 and not saving_disabled and not recovery_failed and not awaiting_first_colony:
-		var error: String = store.checkpoint(world)
-		if not error.is_empty():
-			_storage_failed(error)
+	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony:
+		if world.tick!=store.journal_tick: _start_background_save(false)
 		journal_elapsed = 0.0
 	autosave_elapsed += delta
 	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony:
-		save_local()
-		autosave_elapsed = 0.0
+		if store is ColonyStore:
+			if not save_queue.busy():
+				_start_background_save(true)
+				autosave_elapsed = 0.0
+		else:
+			save_local()
+			autosave_elapsed = 0.0
+
+func _start_background_save(full_snapshot: bool) -> void:
+	save_requested_at=save_clock
+	var error: String = save_queue.start(store,world,full_snapshot)
+	if not error.is_empty(): _storage_failed(error)
+
+func _finish_background_save(wait: bool = false, report_error: bool = true) -> String:
+	var result: Dictionary = save_queue.poll(wait)
+	if result.is_empty(): return ""
+	if result.world!=world or result.store!=store: return result.error
+	if not result.error.is_empty():
+		if report_error: _storage_failed(result.error)
+		return result.error
+	durable_at=save_requested_at
+	if result.snapshot:
+		last_saved_tick=result.tick
+		_save_settings()
+	return ""
+
+func _storage_wait_required() -> bool:
+	return store is ColonyStore and not saving_disabled and not recovery_failed and not awaiting_first_colony and world.tick!=store.journal_tick and save_clock-durable_at>=1.75
 
 func set_speed(value: int) -> void:
+	if value>0 and _storage_wait_required():
+		notice="Saving is still in progress. Resume after saving finishes."
+		return
 	if value > 0 and creation_thread != null and creation_thread.is_started():
 		notice = "Map generation is still running. Time stays paused."
 		return
@@ -793,10 +830,12 @@ func _resize() -> void:
 
 func save_local() -> String:
 	if awaiting_first_colony: return ""
+	_finish_background_save(true,false)
 	if recovery_failed:
 		return "Recovery failed; original campaign will not be overwritten"
 	var error: String = store.save(world)
 	if error.is_empty():
+		durable_at=save_clock
 		last_saved_tick = world.tick
 		_save_settings()
 		saving_disabled = false
@@ -810,6 +849,7 @@ func save_local() -> String:
 
 func load_local() -> void:
 	runner.pause()
+	if not _finish_background_save(true).is_empty(): return
 	var result: Dictionary = store.load_latest()
 	if result.has("error"):
 		notice = result.error
@@ -818,6 +858,9 @@ func load_local() -> void:
 	notice = "Colony restored. Time stays paused."
 
 func _replace_world(state: RefCounted) -> void:
+	_finish_background_save(true,false)
+	durable_at=save_clock
+	journal_elapsed=0.0
 	world = state
 	# Every caller supplies a loaded, imported or newly adopted campaign. The
 	# first-launch placeholder must no longer block play or persistence.
@@ -1429,6 +1472,7 @@ func _name_snapshot(index: int, exists: bool, previous_name: String) -> void:
 	entry.grab_focus()
 
 func _save_named(index: int, name: String, replace: bool) -> void:
+	if not _finish_background_save(true).is_empty(): return
 	var error: String = store.save_named(world,index,name,replace)
 	if not error.is_empty():
 		_storage_failed(error)
@@ -1808,6 +1852,7 @@ func _create_new_colony(number: int, seed_value: int, site: String, mode: String
 	if world.terrain_state.fallback: notice = "This seed uses the verified fallback layout. See generation details in Menu."
 
 func _exit_tree() -> void:
+	_finish_background_save(true,false)
 	if creation_thread != null and creation_thread.is_started(): creation_thread.wait_to_finish()
 
 func _home_tile(point: Vector2i) -> Vector2i:

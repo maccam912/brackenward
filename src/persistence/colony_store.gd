@@ -2,6 +2,8 @@ class_name ColonyStore
 extends PrototypeStore
 var journal_tick: int = 0
 var journal_sequence: int = 0
+var journal_length: int = 0
+var journal_digest: String = ""
 var recovered: bool = false
 var slot: int = 1
 const CAMPAIGN_ROOT: String = "user://campaigns"
@@ -17,6 +19,7 @@ func select_slot(number: int) -> void:
 	sequence = 0
 	journal_tick = 0
 	journal_sequence = 0
+	journal_length=0;journal_digest=""
 	recovered = false
 
 static func occupied(number: int, root: String = CAMPAIGN_ROOT) -> bool:
@@ -45,6 +48,7 @@ func save(world: RefCounted) -> String:
 		return error
 	journal_tick = world.tick
 	journal_sequence = 0
+	journal_length=0;journal_digest=""
 	world.command_trace.clear()
 	recovered = false
 	# Delete only journals whose verified snapshot is no longer retained.
@@ -77,31 +81,48 @@ func checkpoint(world: ColonyWorld) -> String:
 		return save(world)
 	records.append_array(tick_frame)
 	var path: String = directory.path_join("journal-%010d.frames" % sequence)
+	var prior_length: int = 0
 	if FileAccess.file_exists(path):
 		var existing: FileAccess = FileAccess.open(path, FileAccess.READ)
 		if existing == null:
 			return "Could not read durable journal length"
-		var length: int = existing.get_length()
+		prior_length = existing.get_length()
 		existing.close()
-		if length + records.size() > ColonyJournal.MAX_JOURNAL:
+		if prior_length + records.size() > ColonyJournal.MAX_JOURNAL:
 			return save(world)
-	var file: FileAccess = FileAccess.open(path, FileAccess.READ_WRITE if FileAccess.file_exists(path) else FileAccess.WRITE)
+		var digest: String = FileAccess.get_sha256(path)
+		if not journal_digest.is_empty():
+			if prior_length!=journal_length or digest!=journal_digest:
+				recovered=true
+				return "Journal changed since verification; original evidence retained"
+		else:
+			var prior: Dictionary = ColonyJournal.read(FileAccess.get_file_as_bytes(path))
+			if prior.has("error") or prior.get("torn_tail",false) or prior.records.size()!=journal_sequence:
+				recovered=true
+				return "Journal prefix verification failed; original evidence retained"
+	var file: FileAccess = FileAccess.open(path, FileAccess.READ_WRITE if FileAccess.file_exists(path) else FileAccess.WRITE_READ)
 	if file == null:
 		return "Could not open durable journal"
 	file.seek_end()
 	file.store_buffer(records)
 	file.flush()
 	var error: Error = file.get_error()
+	file.seek(prior_length)
+	var appended: PackedByteArray = file.get_buffer(records.size())
+	var complete_length: int = file.get_length()
 	file.close()
 	if error != OK:
 		recovered = true # Retry creates an immutable snapshot, never appends after a torn tail.
 		return "Journal write failed: " + error_string(error)
-	var verified: Dictionary = ColonyJournal.read(FileAccess.get_file_as_bytes(path))
-	if verified.has("error") or verified.get("torn_tail", false):
+	# Previously verified frames are protected by the prefix digest. Reparse
+	# only the newly written tail instead of every prior full-state checkpoint.
+	var verified: Dictionary = ColonyJournal.read(appended,journal_sequence+1)
+	if appended!=records or complete_length!=prior_length+records.size() or verified.has("error") or verified.get("torn_tail", false):
 		recovered = true
 		return "Journal verification failed; current state retained in memory"
 	journal_tick = world.tick
 	journal_sequence = next_sequence
+	journal_length=complete_length;journal_digest=FileAccess.get_sha256(path)
 	world.command_trace.clear()
 	return ""
 

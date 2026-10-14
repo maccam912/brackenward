@@ -19,12 +19,13 @@ static func _hash(bytes: PackedByteArray) -> PackedByteArray:
 	context.update(bytes)
 	return context.finish()
 
-static func read(bytes: PackedByteArray) -> Dictionary:
+static func read(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
+	if first_sequence<1: return {"error":"Invalid initial journal sequence"}
 	if bytes.size() > MAX_JOURNAL:
 		return {"error": "Journal exceeds recovery bound"}
 	var records: Array[Dictionary] = []
 	var offset: int = 0
-	var sequence: int = 1
+	var sequence: int = first_sequence
 	while offset < bytes.size():
 		if bytes.size() - offset < 4:
 			return {"records": records, "torn_tail": true}

@@ -3,6 +3,7 @@ extends RefCounted
 
 var directory: String = "user://m0"
 var sequence: int = 0
+var verified_generations: Dictionary = {}
 
 func save(world: RefCounted) -> String:
 	var error: Error = DirAccess.make_dir_recursive_absolute(directory)
@@ -29,14 +30,24 @@ func save(world: RefCounted) -> String:
 	error = DirAccess.rename_absolute(temporary, final_path)
 	if error != OK:
 		return "Could not finalize save: %s" % error_string(error)
+	verified_generations[final_path]=FileAccess.get_sha256(final_path)
 	generations = _generations()
 	# Prune only valid old generations after a verified replacement exists.
 	var valid: PackedStringArray = []
 	for name in generations:
-		if not decode(FileAccess.get_file_as_bytes(directory.path_join(name))).has("error"):
+		var path: String = directory.path_join(name)
+		var digest: String = FileAccess.get_sha256(path)
+		# Immutable generations already decoded by this writer only need their
+		# bytes checked again. Changed files still undergo full validation.
+		if (not digest.is_empty() and verified_generations.get(path,"")==digest) or not decode(FileAccess.get_file_as_bytes(path)).has("error"):
 			valid.append(name)
+			verified_generations[path]=digest
+		else:
+			verified_generations.erase(path)
 	while valid.size() > 3:
-		DirAccess.remove_absolute(directory.path_join(valid[0]))
+		var path: String = directory.path_join(valid[0])
+		DirAccess.remove_absolute(path)
+		verified_generations.erase(path)
 		valid.remove_at(0)
 	return ""
 

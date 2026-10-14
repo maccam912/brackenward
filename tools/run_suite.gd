@@ -30,7 +30,9 @@ func run() -> void:
 		"ui": await ui()
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
-		"persistence": CampaignTests.run(check)
+		"persistence":
+			CampaignTests.run(check)
+			await AsyncSaveTests.run(self,check)
 		"seasons": SeasonTests.run(check)
 		"people": SocialTests.run(check)
 		"production": ProductionTests.run(check)
@@ -903,6 +905,7 @@ func ui() -> void:
 		if child is Button and child.text=="Continue settlement": child.pressed.emit();break
 	colony_game.set_speed(1);colony_game.runner.advance_frame(0.1);colony_game.runner.pause()
 	check("CHARTER/UI_continue_keeps_colony",colony_game.world.charter_state.continued and colony_game.world.citizens.size()==8)
+	await AsyncSaveTests.ui(colony_game,check)
 	await PlacementUITests.run(colony_game,check)
 	TutorialUITests.run(colony_game,check)
 	colony_game._tutorial_state().forecast_pinned=false
