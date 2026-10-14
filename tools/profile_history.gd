@@ -1,6 +1,6 @@
 extends SceneTree
 ## Paired complete-tick timing against the original positive-only lazy lookup.
-## Lookup: 44fffb9. Reservation/index: 2f1a8fb. Production: cc84275. Inputs: 2e4d4c1.
+## Lookup: 44fffb9. Reservation/index: 2f1a8fb. Production: cc84275. Inputs: 2e4d4c1. Assignment: d6b3dab.
 ## Alternate execution order and compare full state; UI never participates.
 class OriginalFind extends ColonyWorld:
 	func _init(catalog: Dictionary) -> void: super(catalog)
@@ -62,6 +62,7 @@ func _initialize() -> void: call_deferred("run")
 func clone_world(source: ColonyWorld, original: bool) -> ColonyWorld:
 	var result: ColonyWorld
 	if not original: result=ColonyWorld.new(source.definitions)
+	elif reference_mode=="assignment": result=AssignmentReadTests.OriginalWorld.new(source.definitions)
 	elif reference_mode=="inputs": result=ReservationReadTests.OriginalWorld.new(source.definitions)
 	elif reference_mode=="production": result=ProductionReadTests.OriginalWorld.new(source.definitions)
 	elif reference_mode=="reservation": result=OriginalReservation.new(source.definitions)
@@ -76,11 +77,12 @@ func clone_world(source: ColonyWorld, original: bool) -> ColonyWorld:
 	result.navigation_dirty=true;result.reachability_dirty=true;result.rooms_dirty=true
 	return result
 func run() -> void:
+	var source_before: Dictionary=source_evidence()
 	var args: PackedStringArray=OS.get_cmdline_user_args()
 	if args.size() not in [2,3] or not args[1].is_valid_int() or int(args[1])<1 or int(args[1])>7200:
-		printerr("Usage: -- SNAPSHOT|fresh TICKS [lookup|reservation|production|inputs] (1..7200; four pairs)");quit(2);return
+		printerr("Usage: -- SNAPSHOT|fresh TICKS [lookup|reservation|production|inputs|assignment] (1..7200; four pairs)");quit(2);return
 	if args.size()==3: reference_mode=args[2]
-	if reference_mode not in ["lookup","reservation","production","inputs"]: quit(2);return
+	if reference_mode not in ["lookup","reservation","production","inputs","assignment"]: quit(2);return
 	var decoded: Dictionary
 	if args[0]=="fresh":
 		decoded={"world":ColonyTests.world()}
@@ -100,5 +102,20 @@ func run() -> void:
 			exact=exact and hash==expected and world.invariant_errors().is_empty()
 			rows.append({"round":round_index,"original":original,"microseconds":elapsed,"hash":hash})
 			print(JSON.stringify(rows[-1]))
-	print(JSON.stringify({"reference":reference_mode,"reference_commit":"2e4d4c1" if reference_mode=="inputs" else ("cc84275" if reference_mode=="production" else ("2f1a8fb" if reference_mode=="reservation" else "44fffb9")),"snapshot":args[0],"snapshot_sha256":FileAccess.get_sha256(args[0]) if args[0]!="fresh" else "","ticks":int(args[1]),"exact":exact,"rows":rows}))
+	var source_unchanged: bool=source_before==source_evidence()
+	exact=exact and source_unchanged
+	print(JSON.stringify({"source_evidence":source_before,"source_unchanged":source_unchanged,"reference":reference_mode,"reference_commit":"d6b3dab" if reference_mode=="assignment" else ("2e4d4c1" if reference_mode=="inputs" else ("cc84275" if reference_mode=="production" else ("2f1a8fb" if reference_mode=="reservation" else "44fffb9"))),"snapshot":args[0],"snapshot_sha256":FileAccess.get_sha256(args[0]) if args[0]!="fresh" else "","ticks":int(args[1]),"exact":exact,"rows":rows}))
 	quit(0 if exact else 1)
+
+func source_evidence() -> Dictionary:
+	var files: Dictionary={}
+	for directory in ["src","data"]: source_directory(directory,files)
+	for path in ["project.godot","tools/assignment_read_tests.gd","tools/reservation_read_tests.gd","tools/production_read_tests.gd","tools/profile_history.gd","tools/stress_fixture.gd","tools/colony_tests.gd"]:
+		files[path]=FileAccess.get_sha256("res://"+path)
+	return {"sha256":JSON.stringify(files,"",true).sha256_text(),"files":files.size(),"scope":"src, data, project settings, independent reference sources and executed history-pair harness"}
+
+func source_directory(path: String, files: Dictionary) -> void:
+	for name in DirAccess.get_files_at("res://"+path):
+		if name.ends_with(".uid") or name.ends_with(".import"): continue
+		var file: String=path.path_join(name);files[file]=FileAccess.get_sha256("res://"+file)
+	for name in DirAccess.get_directories_at("res://"+path): source_directory(path.path_join(name),files)
