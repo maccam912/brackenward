@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.26-m7` (campaign schema 23, device settings schema 5), content `colony-v5`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.27-m7` (campaign schema 23, device settings schema 5), content `colony-v5`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.26-m7` (campaign schema 23, device settings schema 5), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `00013c2` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-00013c23d0c1); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,315 checks, zero failures, including 584 native UI checks. The v5 full baseline is retained; changed UI/settings/persistence suites were freshly rerun for this checkpoint. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,336 checks, zero failures, including 592 native UI checks. The v5 full baseline is retained; changed UI/settings/persistence suites were freshly rerun for this checkpoint. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -1889,3 +1889,57 @@ referenced UI keys. Final Android debug export passes (0.7.26-m7 / code 65); all
 pass. The native 60-frame startup/audio-drain check passes. Unit/integration
 suites freshly pass 20/6 checks. Remote CI for 7015cc4 and this revision is
 separate. Physical phone retesting remains pending.
+
+
+## 0.7.27 campaign and named-snapshot deletion
+
+Campaigns now offers Delete per occupied/retained slot; Named snapshots offers
+Delete per existing named slot, including damaged copies. A review names the
+selection and counts verified files/bytes, with Cancel and Permanently delete.
+Campaign scope explicitly includes autosaves, named saves, replacement archives
+and slot-1 legacy fallback. Named deletion includes valid, damaged and partial
+copies of that slot alone. Other campaigns and named slots remain unchanged.
+
+The private deletion helper hashes a sorted manifest, rejects linked/unreadable
+paths and requires unchanged review evidence before detaching targets. Rename
+failures roll back; cleanup failures leave a visible error and a retry control.
+Cleanup recognizes exact random owned names, not arbitrary matching prefixes.
+The campaign list uses cheap existence checks rather than hashing every campaign.
+A Save problem panel also exposes Manage saves to permit freeing space.
+
+The writer/preparation is joined/discarded before review; automatic saves stop
+while its review is open. Deleting the current campaign retires its world and
+returns to an unsaved first-colony placeholder. Logical time, Home/return and
+Resume cannot recreate its files. Repeated/stale confirmation cannot delete
+another slot or another adopted campaign. Storage failures preserve truthful
+partial/cleanup status instead of claiming that bytes were reclaimed.
+
+Persistence passes 308 checks, including exact other-slot bytes, damaged/partial
+named copies, changed-review rejection, rename rollback, cleanup failure/retry,
+owned cleanup names and a real macOS symlink boundary. Native UI passes 592
+checks, including review/Cancel, repeated confirmation, other-campaign survival,
+writer join and no active-campaign resurrection. Initial checks caught noisy
+missing-directory enumeration and an incorrect fixture file-count assumption;
+those were corrected and the original failed logs remain. The final
+phone-sized rendered review is inspected, local Android export passes at code 66,
+and final native 60-frame/audio-drain startup passes. Remote publication remains
+a separate pending gate.
+Schema 23/content v5/envelope 5/settings 5 remain unchanged.
+
+The reviewed phone-sized delete-campaign screenshot is readable with both
+48-pixel controls visible. New reviews clear stale success notices. The local
+Android debug export passes (0.7.27-m7 / code 66) and the 60-frame native
+startup/audio drain passes; final targeted reruns follow the evidence addition.
+
+Remote 7015cc4 passes its main build and three native targets, but Windows
+publication is blocked by the content-v4 preservation audit. Its gameplay
+replay and all five acknowledgement rows pass. Reproducing Git's Windows
+core.autocrlf filter identifies the frozen producer's 45 converted line endings:
+expected LF hash 222dfdb75ea303e1c1997df64e79ef14f09023ca20ca2ebf594e7870e8a5b293,
+CRLF hash df9ffc0e98e010b1eb46a935e7ffc642b0ff273351efae99c1a801ec6c8d0c1b.
+An explicit LF checkout attribute now preserves that producer, and snapshot/frame
+fixtures are explicitly binary. The same Windows-filtered local check now matches
+the original producer hash exactly, with zero CRLFs. No frozen bytes or expected
+hashes changed and the strict gate remains; individual delta/producer evidence
+is now included in audit reports so a failure is directly diagnosable. Remote
+verification/publication of this fix remains pending.

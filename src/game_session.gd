@@ -4,6 +4,7 @@ extends Control
 var world: RefCounted = ColonyWorld.new(ColonyCatalog.load_data(), Crypto.new().generate_random_bytes(16).hex_encode())
 var runner: SimRunner = SimRunner.new(world)
 var store: PrototypeStore = ColonyStore.new()
+var deletion: ColonyDeletion = ColonyDeletion.new()
 var view: WorldView
 var content: Control
 var status: PanelContainer
@@ -483,12 +484,12 @@ func _advance_frame(delta: float) -> void:
 	if placement.visible: preview_label.text = ColonyFonts.display(_preview_text())
 	if is_instance_valid(soundscape): soundscape.observe()
 	journal_elapsed += delta
-	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony:
+	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_name!="Delete saves":
 		var new_commands: bool = world.next_command_id!=store.journal_payload.get("next_command_id",world.next_command_id)
 		if world.tick!=store.journal_tick or new_commands: _start_background_save(world.tick==store.journal_tick)
 		journal_elapsed = 0.0
 	autosave_elapsed += delta
-	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony:
+	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_name!="Delete saves":
 		if store is ColonyStore:
 			if not save_queue.preparing() and not save_queue.ready(world): _start_snapshot_preparation()
 			if save_queue.ready(world) and not save_queue.busy():
@@ -1646,6 +1647,7 @@ func _storage_failed(error: String) -> void:
 		saving_disabled = true
 		close_sheet()
 		notice = "Saving is disabled. Retry Save in Menu to restore it.",sheet_body)
+	button(ColonyText.text("ui.action.manage_saves"),func()->void:show_campaigns(true),sheet_body)
 
 func show_recovery_problem() -> void:
 	runner.pause()
@@ -1654,16 +1656,62 @@ func show_recovery_problem() -> void:
 	button(ColonyText.text("ui.action.campaign_slots"),show_campaigns,sheet_body)
 	button(ColonyText.text("ui.action.import_verified_save"),func() -> void: choose_document(false),sheet_body)
 
-func show_campaigns() -> void:
+func show_campaigns(skip_save: bool = false) -> void:
 	if not store is ColonyStore:
 		return
-	if not recovery_failed and not saving_disabled and not save_local().is_empty():
+	if not skip_save and not recovery_failed and not saving_disabled and not save_local().is_empty():
 		return
 	show_sheet("Campaigns","ui.sheet.campaigns")
 	label(ColonyText.text("ui.help.campaigns.five_independent_campaign_slots_switching_first_saves"),sheet_body)
 	for number in range(1,6):
 		var exists: bool = ColonyStore.occupied(number,store.root_directory)
 		button(("Load" if exists else "New") + " campaign %d" % number,func() -> void: _switch_campaign(number,exists),sheet_body)
+		if deletion.has_saves(store,number):
+			button(ColonyText.text("ui.action.delete_campaign",{"slot":number}),func()->void:show_delete_saves(number),sheet_body)
+	if not deletion.cleanup_paths(store).is_empty():
+		button(ColonyText.text("ui.action.retry_deletion_cleanup"),func()->void:
+			var error: String=deletion.cleanup(store)
+			show_campaigns(true)
+			notice=error if not error.is_empty() else ColonyText.text("ui.save.cleanup_done"),sheet_body)
+
+func show_delete_saves(number: int, snapshot: int = 0) -> void:
+	if not store is ColonyStore: return
+	runner.pause();placement_entry_speed=0;sheet_entry_speed=0
+	_finish_background_save(true,false)
+	var owner: ColonyStore=store
+	var session: String=world.session_id
+	var review: Dictionary=deletion.preview(owner,number,snapshot)
+	show_sheet("Delete saves","ui.sheet.delete_saves")
+	notice=""
+	if not review.get("error","").is_empty(): label(review.error,sheet_body);return
+	if review.targets.is_empty(): label(ColonyText.text("ui.save.already_removed"),sheet_body);return
+	var name: String=""
+	if snapshot>0:
+		var previous: ColonyStore=ColonyStore.new();previous.root_directory=owner.root_directory;previous.select_slot(number)
+		name=previous.named_snapshots()[snapshot-1].name
+	label(ColonyText.text("ui.save.delete_campaign_review",{"slot":number}) if snapshot==0 else ColonyText.text("ui.save.delete_snapshot_review",{"slot":snapshot,"name":name,"campaign":number}),sheet_body)
+	label(ColonyText.plural("ui.save.files_to_remove",review.files.size(),{"bytes":String.humanize_size(review.bytes)}),sheet_body)
+	button(ColonyText.text("ui.action.permanently_delete"),func()->void:_delete_saves(owner,session,review),sheet_body)
+	button(ColonyText.text("ui.action.cancel"),func()->void:
+		if snapshot==0: show_campaigns(true)
+		else: show_named_snapshots(),sheet_body)
+
+func _delete_saves(owner: ColonyStore, session: String, review: Dictionary) -> void:
+	if store!=owner or world.session_id!=session or sheet_name!="Delete saves": return
+	_finish_background_save(true,false)
+	var result: Dictionary=deletion.commit(owner,review)
+	if (result.deleted or result.get("unsafe_to_resume",false)) and review.snapshot==0 and review.slot==store.slot:
+		_replace_world(ColonyWorld.new(ColonyCatalog.load_data(),Crypto.new().generate_random_bytes(16).hex_encode()))
+		store.select_slot(review.slot)
+		awaiting_first_colony=true
+		_save_settings()
+	if not result.deleted:
+		if result.get("unsafe_to_resume",false): show_campaigns(true)
+		notice=result.error
+		return
+	if review.snapshot==0: show_campaigns(true)
+	else: show_named_snapshots()
+	notice=result.error if not result.error.is_empty() else ColonyText.text("ui.save.campaign_deleted",{"slot":review.slot}) if review.snapshot==0 else ColonyText.text("ui.save.snapshot_deleted",{"slot":review.snapshot})
 
 func _switch_campaign(number: int, exists: bool) -> void:
 	if not exists:
@@ -1740,6 +1788,7 @@ func show_named_snapshots() -> void:
 		if row.valid:
 			button("Load snapshot %d" % row.index,func() -> void: _load_named(row.index),sheet_body)
 		button(("Replace" if row.exists else "Save")+" snapshot %d" % row.index,func() -> void: _name_snapshot(row.index,row.exists,row.name),sheet_body)
+		if row.exists: button(ColonyText.text("ui.action.delete_snapshot",{"slot":row.index}),func()->void:show_delete_saves(store.slot,row.index),sheet_body)
 
 func _name_snapshot(index: int, exists: bool, previous_name: String) -> void:
 	show_sheet("Name snapshot","ui.sheet.name_snapshot")

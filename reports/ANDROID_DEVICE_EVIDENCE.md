@@ -48,6 +48,8 @@ The user also requested these concrete interaction changes, now prioritized:
   ending as soon as someone wakes or something needs attention. Preserve the
   player's chosen speed and responsiveness; never skip simulation/alerts.
 
-These entries record intent, not completed implementation. Each subsequent
-checkpoint must replace its own pending statement with actual behavior and
-validation. Physical retesting remains distinct from local automated checks.
+Placement feedback, multiple paused confirmations, exact entry-speed restoration
+and wider zoom are implemented in 0.7.26. Campaign/named-snapshot deletion is
+implemented and locally checked in 0.7.27. Sleep pacing and quiet-sleep
+acceleration remain pending subsequent work. Physical retesting remains distinct
+from local automated checks.

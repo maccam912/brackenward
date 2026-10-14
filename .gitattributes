@@ -20,3 +20,6 @@ assets/licenses/kenney_rpg_audio.txt -text
 assets/licenses/kenney_tiny_town.txt -text
 tests/fixtures/schema22-budget-upgrade.brackenward -text
 tests/fixtures/schema22-replay-golden.json text eol=lf
+tests/fixtures/*.brackenward -text
+tests/fixtures/*.frames -text
+tools/record_content4_sleep_fixture.gd text eol=lf
