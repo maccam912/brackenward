@@ -18,7 +18,7 @@ static func enemy_active(enemy: Dictionary) -> bool:
 	return enemy.state=="Active" and enemy.health>10
 
 static func passable(world: ColonyWorld, point: Vector2i) -> bool:
-	return world.walkable(point) and (world.defense_state.open_passage or not world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition in ["door","reinforced_gate"] and world.footprint(s).has(point)))
+	return world.walkable(point) and (world.defense_state.open_passage or not world.door_tiles.has(point))
 
 static func boundary(world: ColonyWorld) -> Array[Vector2i]:
 	var wagon: Dictionary = ColonyTrade.cart(world);var start: Vector2i = Vector2i(wagon.x,wagon.y)
@@ -107,21 +107,41 @@ static func stock_rank(world: ColonyWorld, enemy: Dictionary, stack: Dictionary)
 	return 100 if preference==GOODS and world.definitions.items[stack.item].barter_value>0 else -1
 
 static func choose_goods(world: ColonyWorld, enemy: Dictionary) -> Dictionary:
-
-	var candidates: Array = []
-	var start: Vector2i = Vector2i(enemy.x,enemy.y)
-	var queue: Array[Vector2i] = [start];var distance: Dictionary = {start:0};var cursor: int = 0
-	while cursor<queue.size():
-		var point: Vector2i = queue[cursor];cursor+=1
-		for delta in ColonyNavigation.NEIGHBORS:
-			var next: Vector2i = point+delta
-			if not distance.has(next) and passable(world,next) and world.can_step(point,next): distance[next]=distance[point]+1;queue.append(next)
-	for stack in world.stacks:
-		if stack.count<=0 or stack.location not in ["ground","store","output"] or not ColonyFire.usable(world,stack): continue
-		var rank: int = stock_rank(world,enemy,stack);var point: Vector2i = Vector2i(stack.x,stack.y)
-		if rank>=0 and distance.has(point): candidates.append({"stack":stack,"rank":rank,"distance":distance[point]})
-	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.rank<b.rank if a.rank!=b.rank else (a.distance<b.distance if a.distance!=b.distance else a.stack.id<b.stack.id))
-	return {} if candidates.is_empty() else candidates[0].stack
+	# Same unweighted N/E/S/W distances and rank/distance/ID choice, without
+	# a structures scan at every explored neighbor or a sorted candidate array.
+	var goods: Dictionary = {};var minimum_rank: int = 2147483647
+	for stack in world.nonempty_stacks():
+		if stack.location not in ["ground","store","output"] or not ColonyFire.usable(world,stack): continue
+		var rank: int = stock_rank(world,enemy,stack)
+		if rank<0: continue
+		minimum_rank=mini(minimum_rank,rank)
+		var cell: int = stack.y*128+stack.x
+		if not goods.has(cell) or rank<goods[cell].rank or (rank==goods[cell].rank and stack.id<goods[cell].stack.id): goods[cell]={"rank":rank,"stack":stack}
+	if goods.is_empty(): return {}
+	var grid: Dictionary = world.navigation_grid()
+	var cells: PackedByteArray = grid.passable;var bridges: PackedByteArray = grid.bridges
+	if not world.defense_state.open_passage:
+		for point in world.door_tiles: cells[point.y*128+point.x]=0
+	var distance: PackedInt32Array = PackedInt32Array();distance.resize(16384);distance.fill(-1)
+	var queue: PackedInt32Array = PackedInt32Array();queue.resize(16384)
+	var start: int = enemy.y*128+enemy.x;queue[0]=start;distance[start]=0
+	var cursor: int = 0;var tail: int = 1
+	var steps: Array[int] = [-128,1,128,-1]
+	var chosen: Dictionary = {};var best_rank: int = 2147483647;var best_distance: int = 2147483647
+	while cursor<tail:
+		var index: int = queue[cursor];var column: int = index%128;cursor+=1
+		if best_rank==minimum_rank and distance[index]>best_distance: break
+		if goods.has(index):
+			var candidate: Dictionary = goods[index];var length: int = distance[index]
+			if candidate.rank<best_rank or (candidate.rank==best_rank and (length<best_distance or (length==best_distance and candidate.stack.id<chosen.id))):
+				chosen=candidate.stack;best_rank=candidate.rank;best_distance=length
+		for direction in range(4):
+			var next: int = index+steps[direction]
+			if next<0 or next>=16384 or (direction==1 and column==127) or (direction==3 and column==0): continue
+			if distance[next]>=0 or not cells[next]: continue
+			if world.generator_version>0 and not bridges[index] and not bridges[next] and absi(world.terrain_state.elevation[index]-world.terrain_state.elevation[next])>1: continue
+			distance[next]=distance[index]+1;queue[tail]=next;tail+=1
+	return chosen
 
 static func steal(world: ColonyWorld, enemy: Dictionary, stack: Dictionary) -> void:
 	var carried: int = 0

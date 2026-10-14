@@ -194,21 +194,9 @@ func accessible(point: Vector2i) -> bool:
 	if reachability_dirty:
 		# Reachability needs membership only. Packed row-major cells avoid four
 		# full walkability/bridge/height queries for every tile in the colony.
-		var passable: PackedByteArray = PackedByteArray();passable.resize(SIZE*SIZE);passable.fill(1)
-		var bridges: PackedByteArray = PackedByteArray();bridges.resize(SIZE*SIZE)
-		if generator_version>0:
-			for index in range(SIZE*SIZE):
-				if terrain_state.elevation[index]==0: passable[index]=0
-			for tile in terrain_state.bridges:
-				passable[tile.y*SIZE+tile.x]=1;bridges[tile.y*SIZE+tile.x]=1
-		else:
-			for y in range(SIZE):
-				if y in [63,64]: continue
-				for x in range(32,36): passable[y*SIZE+x]=0
-		for tile in bridge_tiles:
-			if inside(tile): passable[tile.y*SIZE+tile.x]=1
-		for tile in solid_tiles:
-			if inside(tile): passable[tile.y*SIZE+tile.x]=0
+		var grid: Dictionary = navigation_grid()
+		var passable: PackedByteArray = grid.passable
+		var bridges: PackedByteArray = grid.bridges
 		var seen: PackedByteArray = PackedByteArray();seen.resize(SIZE*SIZE)
 		var queue: PackedInt32Array = PackedInt32Array();queue.resize(SIZE*SIZE)
 		var tail: int = 0
@@ -234,6 +222,27 @@ func accessible(point: Vector2i) -> bool:
 		reachable_cells=seen
 		reachability_dirty = false
 	return inside(point) and reachable_cells[point.y*SIZE+point.x]==1
+
+func navigation_grid() -> Dictionary:
+	# Caller-owned packed masks with precisely the walkable()/can_step() rules.
+	# Built bridges override water; only authored bridges waive elevation steps.
+	_refresh_navigation()
+	var cells: PackedByteArray = PackedByteArray();cells.resize(SIZE*SIZE);cells.fill(1)
+	var bridges: PackedByteArray = PackedByteArray();bridges.resize(SIZE*SIZE)
+	if generator_version>0:
+		for index in range(SIZE*SIZE):
+			if terrain_state.elevation[index]==0: cells[index]=0
+		for tile in terrain_state.bridges:
+			cells[tile.y*SIZE+tile.x]=1;bridges[tile.y*SIZE+tile.x]=1
+	else:
+		for y in range(SIZE):
+			if y in [63,64]: continue
+			for x in range(32,36): cells[y*SIZE+x]=0
+	for tile in bridge_tiles:
+		if inside(tile): cells[tile.y*SIZE+tile.x]=1
+	for tile in solid_tiles:
+		if inside(tile): cells[tile.y*SIZE+tile.x]=0
+	return {"passable":cells,"bridges":bridges}
 
 
 func footprint(object: Dictionary) -> Array[Vector2i]:
@@ -650,13 +659,7 @@ func _create_work() -> void:
 			for stack in nonempty_stacks():
 				if recipe.alternatives.has(stack.item) and stack.location in ["ground","store","output"] and stack.count > _reserved(stack) and ColonyFire.usable(self,stack) and accessible(Vector2i(stack.x,stack.y)):
 					food.append(stack)
-			food.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
-				var ae: int = FoodForecast.expiry_ticks(self,a)
-				var be: int = FoodForecast.expiry_ticks(self,b)
-				var ad: int = absi(a.x-hearth.x)+absi(a.y-hearth.y)
-				var bd: int = absi(b.x-hearth.x)+absi(b.y-hearth.y)
-				return ae < be or (ae == be and (ad < bd or (ad == bd and (a.item < b.item or (a.item == b.item and a.id < b.id))))))
-			for stack in food:
+			for stack in ColonyProduction.first_inputs(self,food,Vector2i(hearth.x,hearth.y),4):
 				var item: String = stack.item
 				var quantity: int = mini(4 - count, stack.count-_reserved(stack))
 				if quantity > 0:
@@ -761,7 +764,7 @@ func _assign(citizen: Dictionary) -> void:
 			return
 	if citizen.health > 20 and citizen.fullness > 0 and citizen.rest > 100 and citizen.break_until <= tick:
 		var emergencies: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
-		emergencies.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return _higher_score(a,b,citizen))
+		_sort_jobs(emergencies,citizen)
 		for emergency in emergencies:
 			if _reserve(emergency,citizen): citizen.job = emergency.id; return
 	if draft_ready and ColonyDefense.assign(self,citizen): return
@@ -807,7 +810,7 @@ func _assign(citizen: Dictionary) -> void:
 	if citizen.break_until > tick or (hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
 		if not taking_break:
 			var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _score(j,citizen)[0]==3)
-			urgent.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return _higher_score(a,b,citizen))
+			_sort_jobs(urgent,citizen)
 			for job in urgent:
 				if _reserve(job,citizen): citizen.job=job.id;return
 		var leisure: Dictionary = _job("leisure", "", "", citizen.id, ColonySocial.leisure_seat(self,citizen), 0)
@@ -827,9 +830,15 @@ func _assign(citizen: Dictionary) -> void:
 		if job.worker != 0 or job.state in ["Complete", "Canceled"] or tick < job.retry or citizen.preferences.get(job.category, 0) == 0:
 			continue
 		candidates.append(job)
-	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return _higher_score(a,b,citizen))
-	for job in candidates:
-		if _reserve(job, citizen):
+	var queue: ColonyJobQueue = ColonyJobQueue.new(candidates,self,citizen)
+	var storage_context: Dictionary = {}
+	while not queue.heap.is_empty():
+		var job: Dictionary = queue.pop()
+		# Failed hauling probes commit no reservation. Share this search's exact
+		# occupancy snapshot until a task succeeds; every resident starts fresh.
+		if job.kind!="haul": storage_context.clear()
+		elif storage_context.is_empty(): storage_context=_storage_context()
+		if _reserve(job, citizen, storage_context):
 			citizen.job = job.id
 			return
 	if citizen.fullness > 350:
@@ -840,14 +849,25 @@ func _score(job: Dictionary, citizen: Dictionary) -> Array:
 		1 if citizen.preferred == job.category else 0, citizen.skills.get(job.skill, 0),
 		-absi(citizen.x - job.x) - absi(citizen.y - job.y), -job.id]
 
-func _higher_score(a: Dictionary, b: Dictionary, citizen: Dictionary) -> bool:
-	var aa: Array = _score(a,citizen)
-	var bb: Array = _score(b,citizen)
-	for index in range(aa.size()):
-		if aa[index] != bb[index]: return aa[index] > bb[index]
-	return false
+func _sort_jobs(candidates: Array, citizen: Dictionary) -> void:
+	# Valid priorities/preferences are 0..3, preferred is 0..1, skills 0..5,
+	# and Manhattan distance on this 128x128 map is 0..254. Pack the existing
+	# first five tuple terms once, preserving the final immutable-ID tie.
+	var scores: Dictionary = {}
+	for job in candidates:
+		scores[job.id]=Vector2i(_job_rank(job,citizen),-job.id)
+	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
+		var aa: Vector2i = scores[a.id];var bb: Vector2i = scores[b.id]
+		return aa.x>bb.x if aa.x!=bb.x else aa.y>bb.y)
 
-func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
+func _job_rank(job: Dictionary, citizen: Dictionary) -> int:
+	var rank: int = mini(3,job.priority+(tick-job.created)/7200)
+	rank=rank*4+citizen.preferences.get(job.category,0)
+	rank=rank*2+int(citizen.preferred==job.category)
+	rank=rank*6+citizen.skills.get(job.skill,0)
+	return rank*255+254-absi(citizen.x-job.x)-absi(citizen.y-job.y)
+
+func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary = {}) -> bool:
 	if job.kind in ["minor_work","minor_study"] and not ColonyOpportunities.reserve(self,job,citizen): return false
 	if job.kind=="enemy_treat" and find(defense_state.enemies,job.target).get("state")!="Downed": _release(job,true);return false
 	if job.kind=="raid_pay" and find(defense_state.raids,job.target).get("state")!="Payment": return _block(job,"Payment is no longer awaiting delivery")
@@ -932,7 +952,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 		var quantity: int = mini(8, source.count - _reserved(source))
 		if quantity <= 0:
 			return _block(job, "Inputs reserved by another job; waiting for its completion")
-		var destination: Dictionary = _destination(source.item, quantity, point, source.tags)
+		var destination: Dictionary = _destination(source.item, quantity, point, source.tags, storage_context)
 		if destination.is_empty():
 			return _block(job, "No storage space: paint a stockpile or build a rack")
 		job.destination = destination.id
@@ -950,11 +970,9 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 			if job.kind=="move_furniture":
 				for bundle in stacks:
 					if bundle.location=="move_bundle" and bundle.owner==job.id and bundle.item==item: needed -= bundle.count
-			var sources: Array = nonempty_stacks().filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and ColonyFire.usable(self,s) and accessible(Vector2i(s.x,s.y)))
-			sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(self,a,b,Vector2i(citizen.x,citizen.y)))
-			for stack in sources:
-				if stack.item != item or stack.location not in ["ground", "store", "output"] or (job.kind in ["eat","feed"] and stack.id != job.source):
-					continue
+			if needed<=0: continue
+			var sources: Array = nonempty_stacks().filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and (job.kind not in ["eat","feed"] or s.id==job.source) and ColonyFire.usable(self,s) and accessible(Vector2i(s.x,s.y)))
+			for stack in ColonyProduction.first_inputs(self,sources,Vector2i(citizen.x,citizen.y),needed):
 				var count: int = mini(needed, stack.count - _reserved(stack))
 				if count > 0:
 					requests.append({"stack": stack.id, "count": count})
@@ -1466,36 +1484,41 @@ func _food(citizen: Dictionary) -> Dictionary:
 		if point == start or not ColonyNavigation.path(start,point,func(p:Vector2i)->bool:return walkable(p) and ColonyDanger.safe(self,p),can_step).is_empty(): return stack
 	return {}
 
-func _destination(item: String, quantity: int, from: Vector2i, tags: Array = []) -> Dictionary:
+func _storage_context() -> Dictionary:
+	var result: Dictionary = {"occupied":{},"tiles":{},"working_tiles":{}}
+	var reserved: Dictionary = {};var carried: Dictionary = {}
+	for stack in nonempty_stacks():
+		if stack.location=="store":
+			result.occupied[stack.owner]=result.occupied.get(stack.owner,0)+stack.count
+			var key: Vector3i = Vector3i(stack.owner,stack.x,stack.y)
+			if not result.tiles.has(key): result.tiles[key]=[]
+			result.tiles[key].append(stack)
+		for job_id in stack.reservations: reserved[job_id]=reserved.get(job_id,0)+stack.reservations[job_id]
+		if stack.location=="carry": carried[stack.job]=carried.get(stack.job,0)+stack.count
+	for job in jobs:
+		if job.kind!="haul" or job.worker<=0: continue
+		result.occupied[job.destination]=result.occupied.get(job.destination,0)+reserved.get(job.id,0)+carried.get(job.id,0)
+		result.working_tiles[Vector3i(job.destination,job.work_x,job.work_y)]=true
+	return result
+
+func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [], context: Dictionary = {}) -> Dictionary:
 	var candidates: Array[Dictionary] = []
-	var goods: Array = nonempty_stacks()
+	if context.is_empty(): context=_storage_context()
 	for store in stores:
 		if ColonyFire.burning(self,"structure",store.id): continue
 		if not store.filters.has(item):
 			continue
-		var occupied: int = 0
-		for stack in goods:
-			if stack.location == "store" and stack.owner == store.id:
-				occupied += stack.count
-		for job in jobs:
-			if job.kind == "haul" and job.destination == store.id and job.worker > 0:
-				for stack in goods:
-					occupied += stack.reservations.get(job.id, 0)
-					if stack.location == "carry" and stack.job == job.id:
-						occupied += stack.count
+		var occupied: int = context.occupied.get(store.id,0)
 		if occupied + quantity > store.capacity:
 			continue
 		for tile: Vector2i in store.tiles:
 			var used: int = 0
 			var blocked: bool = false
 			if find(structures, store.id).is_empty():
-				for stack in goods:
-					if stack.location == "store" and stack.owner == store.id and Vector2i(stack.x, stack.y) == tile and stack.count > 0:
-						blocked = blocked or stack.item != item or stack.tags != tags
-						used += stack.count
-				for job in jobs:
-					if job.kind == "haul" and job.worker > 0 and job.destination == store.id and Vector2i(job.work_x, job.work_y) == tile:
-						blocked = true
+				var key: Vector3i = Vector3i(store.id,tile.x,tile.y)
+				for stack in context.tiles.get(key,[]):
+					blocked=blocked or stack.item!=item or stack.tags!=tags;used+=stack.count
+				blocked=blocked or context.working_tiles.has(key)
 				if used + quantity > definitions.items[item].stack_limit:
 					blocked = true
 			if not blocked:

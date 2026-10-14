@@ -31,6 +31,7 @@ func run() -> void:
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
 		"persistence":
+			StressTests.run(check)
 			EnvironmentTests.run(check)
 			DiagnosticsTests.run(check)
 			AnimalArtTests.run(check)

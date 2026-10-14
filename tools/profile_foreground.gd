@@ -4,16 +4,22 @@ const CampaignProfile = preload("res://tools/profile_campaign.gd")
 class TraceWorld extends CampaignProfile.ProfileWorld:
 	var phases: Dictionary = {}
 	var slow_jobs: Array[Dictionary] = []
+	var tick_us: Array[int] = []
 	func _profile(label: String, action: Callable) -> void:
 		var started: int = Time.get_ticks_usec();action.call();elapsed(label,started)
 	func elapsed(label: String, started: int) -> void:
 		phases[label]=phases.get(label,0)+Time.get_ticks_usec()-started
 	func step() -> void:
 		var started: int = Time.get_ticks_usec();super.step();elapsed("simulation",started)
+		tick_us.append(Time.get_ticks_usec()-started)
 	func _create_work() -> void:
 		var started: int = Time.get_ticks_usec();super._create_work();elapsed("create_work",started)
 	func _assign(citizen: Dictionary) -> void:
 		var started: int = Time.get_ticks_usec();super._assign(citizen);elapsed("assign",started)
+	func _reserve(job: Dictionary, citizen: Dictionary, context: Dictionary = {}) -> bool:
+		var started: int = Time.get_ticks_usec();var result: bool = super._reserve(job,citizen,context);elapsed("reserve/"+job.kind,started);return result
+	func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [], context: Dictionary = {}) -> Dictionary:
+		var started: int = Time.get_ticks_usec();var result: Dictionary = super._destination(item,quantity,from,tags,context);elapsed("destination",started);return result
 	func _work(citizen: Dictionary, job: Dictionary) -> void:
 		var origin: Vector2i = Vector2i(citizen.x,citizen.y)
 		var state: String = job.state
@@ -40,6 +46,7 @@ class ProfileView extends WorldView:
 		var started: int = Time.get_ticks_usec();super(delta);update_us.append(Time.get_ticks_usec()-started)
 
 class ProfileSession extends GameSession:
+	var processed_delta_seconds: float = 0.0
 	func _make_soundscape() -> ColonyAudio:
 		return ProfileAudio.new()
 	func _make_world_view() -> WorldView:
@@ -54,6 +61,7 @@ class ProfileSession extends GameSession:
 	var ui_phases: Dictionary = {}
 	var phase_peaks: Dictionary = {}
 	func _process(delta: float) -> void:
+		processed_delta_seconds+=delta
 		if trace_spikes: world.phases.clear();ui_phases.clear()
 		var before: int = runner.speed
 		var started: int = Time.get_ticks_usec()
@@ -85,6 +93,9 @@ var seconds: int = 12
 var snapshot: String = ""
 var report_path: String = "reports/foreground-profile.json"
 var trace_spikes: bool = false
+var speed: int = 1
+var camera: String = "close"
+var quality: String = "Balanced"
 
 func _initialize() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
@@ -99,11 +110,15 @@ func _initialize() -> void:
 			"--trace-spikes":
 				if args[index+1] not in ["true","false"]: quit(2);return
 				trace_spikes=args[index+1]=="true"
+			"--speed": speed=int(args[index+1]) if args[index+1].is_valid_int() else -1
+			"--camera": camera=args[index+1]
+			"--quality": quality=args[index+1]
 			_: quit(2);return
-	if seconds<3 or seconds>120: quit(2);return
+	if seconds<3 or seconds>1800 or speed not in [1,2,4] or camera not in ["close","far"] or quality not in ["Battery","Balanced","Smooth"]: quit(2);return
 	call_deferred("run")
 
 func run() -> void:
+	var source_before: Dictionary = source_evidence()
 	var world: ColonyWorld
 	if snapshot.is_empty():
 		world=ColonyTests.world()
@@ -128,15 +143,37 @@ func run() -> void:
 	game.store.root_directory=scratch;game.store.select_slot(1);game.settings.path=scratch.path_join("settings.json")
 	root.size=Vector2i(960,600);game.size=Vector2(root.size)
 	root.add_child(game);game.close_sheet();game._tutorial_dismiss()
+	for key in game.settings.values.auto_pauses: game.settings.values.auto_pauses[key]=false
+	game.settings.values.quality=quality;game._apply_device_settings()
+	if camera=="far": game.view.zoom_at(0.01,game.view.size*0.5)
+	var initial_counts: Dictionary = StressFixture.counts(world)
 	if not game.save_local().is_empty(): quit(2);return
+	var warmup_end: int = Time.get_ticks_usec()+1000000
+	while Time.get_ticks_usec()<warmup_end: await process_frame
 	game.frame_us.clear();game.capture_us.clear();game.finish_us.clear();game.preparation_us.clear()
+	game.view.update_us.clear();game.view.draw_us.clear();game.view.draw_command_us=0;game.soundscape.update_us.clear()
 	game.diagnostics.reset()
+	game.processed_delta_seconds=0.0
 	var initial_tick: int = world.tick
-	game.runner.set_speed(1)
-	await create_timer(seconds).timeout
+	game.runner.set_speed(speed)
+	var measurement_started: int = Time.get_ticks_usec()
+	while Time.get_ticks_usec()-measurement_started<seconds*1000000: await process_frame
+	var measured_wall_seconds: float = float(Time.get_ticks_usec()-measurement_started)/1000000.0
+	var final_speed: int = game.runner.speed
+	var final_accumulator: float = game.runner.accumulator
 	game.runner.pause();game._finish_background_save(true)
 	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"save_finish":stats(game.finish_us),"snapshot_preparation_capture":stats(game.preparation_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors(),"trace_spikes":trace_spikes,"slow_frames":game.slow_frames,"phase_peaks_us":game.phase_peaks,"slow_jobs":world.slow_jobs if trace_spikes else []}
 	result["audio_update_frames"]=stats(game.soundscape.update_us)
+	result["requested_speed"]=speed;result["camera"]=camera;result["quality"]=quality
+	result["initial_counts"]=initial_counts;result["final_counts"]=StressFixture.counts(world)
+	result["final_speed"]=final_speed;result["remaining_logical_backlog_seconds"]=final_accumulator
+	result["simulation_ticks"]=stats(world.tick_us) if trace_spikes else {}
+	result["measured_wall_seconds"]=measured_wall_seconds
+	result["processed_delta_seconds"]=game.processed_delta_seconds
+	result["source_evidence"]=source_before
+	result["source_unchanged"]=source_before==source_evidence()
+	result["snapshot_sha256"]=FileAccess.get_sha256(snapshot) if not snapshot.is_empty() else ""
+	if not result.source_unchanged: result.storage_error="Profile source changed during measurement"
 	result["view_update_frames"]=stats(game.view.update_us)
 	result["view_draw_frames"]=stats(game.view.draw_us)
 	result["in_game_diagnostics"]=game._performance_report()
@@ -151,3 +188,22 @@ func stats(values: Array[int]) -> Dictionary:
 	if values.is_empty(): return {"count":0}
 	values.sort()
 	return {"count":values.size(),"p50_us":values[values.size()/2],"p95_us":values[mini(values.size()-1,values.size()*95/100)],"max_us":values[-1],"over_50ms":values.filter(func(value:int)->bool:return value>50000).size()}
+
+func source_evidence() -> Dictionary:
+	var files: Dictionary = {}
+	for directory in ["src","data","scenes","assets/exported"]: source_directory(directory,files)
+	for path in ["project.godot","tools/profile_foreground.gd","tools/profile_campaign.gd","tools/stress_fixture.gd"]:
+		files[path]=FileAccess.get_sha256("res://"+path)
+	return {"sha256":JSON.stringify(files,"",true).sha256_text(),"files":files.size(),"scope":"src, data, scenes, exported media, project settings and profiling/fixture sources; relative paths and file bytes"}
+
+func source_directory(path: String, files: Dictionary) -> void:
+	var directory: DirAccess = DirAccess.open("res://"+path)
+	directory.list_dir_begin()
+	var name: String = directory.get_next()
+	while not name.is_empty():
+		if not name.begins_with("."):
+			var child: String = path.path_join(name)
+			if directory.current_is_dir(): source_directory(child,files)
+			else: files[child]=FileAccess.get_sha256("res://"+child)
+		name=directory.get_next()
+	directory.list_dir_end()

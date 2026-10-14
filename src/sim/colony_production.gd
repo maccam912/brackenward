@@ -207,8 +207,7 @@ static func replace_food(world: ColonyWorld, job: Dictionary) -> void:
 		if held > 0: food[item] = held; needed -= held
 	var station: Dictionary = world.find(world.structures,job.target)
 	var choices: Array = world.nonempty_stacks().filter(func(s:Dictionary)->bool:return filters.has(s.item) and s.count-world._reserved(s) > 0 and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
-	choices.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return input_before(world,a,b,Vector2i(station.x,station.y)))
-	for stack in choices:
+	for stack in first_inputs(world,choices,Vector2i(station.x,station.y),needed):
 		var count: int = mini(needed,stack.count-world._reserved(stack))
 		if count > 0: food[stack.item] = food.get(stack.item,0)+count; needed -= count
 		if needed == 0: break
@@ -221,6 +220,23 @@ static func input_before(world: ColonyWorld, a: Dictionary, b: Dictionary, origi
 	var ad: int = absi(a.x-origin.x)+absi(a.y-origin.y)
 	var bd: int = absi(b.x-origin.x)+absi(b.y-origin.y)
 	return ae < be or (ae == be and (ad < bd or (ad == bd and (a.item < b.item or (a.item == b.item and a.id < b.id)))))
+
+static func first_inputs(world: ColonyWorld, candidates: Array, origin: Vector2i, needed: int) -> Array:
+	# Four food units and small material requests normally use a single stack.
+	# Select only the required prefix of the exact former expiry/distance/item/ID
+	# order. Large requests retain full sorting to avoid quadratic selection.
+	if needed<=0: return []
+	if needed>16:
+		candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return input_before(world,a,b,origin))
+		return candidates
+	var result: Array = [];var remaining: Array = candidates.duplicate()
+	while needed>0 and not remaining.is_empty():
+		var best: int = 0
+		for index in range(1,remaining.size()):
+			if input_before(world,remaining[index],remaining[best],origin): best=index
+		var stack: Dictionary = remaining[best];remaining.remove_at(best);result.append(stack)
+		needed-=maxi(0,stack.count-world._reserved(stack))
+	return result
 
 static func validate(data: Variant, definitions: Dictionary, citizen_ids: Array = [1,2,3,4]) -> bool:
 	if not data is Dictionary or not ColonyCodec._keys(data,["orders","project","progress","insight","queue","discoveries"]) or not data.orders is Array or data.orders.size() > 10000 or not data.project is String or not data.progress is Dictionary or not data.insight is int or data.insight < 0 or data.insight > 1000 or not data.queue is Array or data.queue.size() > 3 or not data.discoveries is Dictionary: return false

@@ -40,13 +40,16 @@ def main():
     parser.add_argument("--executable", default=str(ROOT / "tools/godot.sh"))
     parser.add_argument("--require-smoke-exit", action="store_true")
     parser.add_argument("--working-directory", type=Path, default=ROOT)
+    parser.add_argument("--timeout", type=float, default=180, help="Wall-clock command limit in seconds (up to one hour)")
     parser.add_argument("arguments", nargs=argparse.REMAINDER)
     args = parser.parse_args()
     forwarded = args.arguments[1:] if args.arguments[:1] == ["--"] else args.arguments
     if not forwarded:
         parser.error("Pass Godot arguments after --")
+    if not 0 < args.timeout <= 3600:
+        parser.error("--timeout must be positive and at most 3600 seconds")
     return run_command([str(Path(args.executable).resolve()), *forwarded], args.require_smoke_exit,
-                       working_directory=args.working_directory)
+                       timeout=args.timeout, working_directory=args.working_directory)
 
 
 if __name__ == "__main__":

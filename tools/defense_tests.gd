@@ -7,6 +7,7 @@ static func raid(world: ColonyWorld, budget: int = 2) -> Dictionary:
 	return result
 
 static func run(check: Callable) -> void:
+	goods_queries(check)
 	payment_history(check)
 	var world: ColonyWorld = ColonyTests.world()
 	check.call("RAID/budgets_have_exact_composition_and_cap",ColonyDefense.party(2)==["hungry_thief","hungry_thief"] and ColonyDefense.party(5)==["road_raider","hungry_thief","hungry_thief"] and ColonyDefense.party(10)==["road_raider","bow_raider","hungry_thief","hungry_thief","hungry_thief","hungry_thief"])
@@ -153,3 +154,43 @@ static func payment_history(check: Callable) -> void:
 	check.call("SAVE/unlinked_active_raid_payment_is_rejected",ColonyCodec.decode(ColonyCodec.encode(world)).get("error","")=="Invalid raid supplies")
 	rejected.state="Canceled";rejected.target=world.next_id+100
 	check.call("SAVE/canceled_raid_payment_still_requires_real_raid",ColonyCodec.decode(ColonyCodec.encode(world)).get("error","")=="Invalid raid supplies")
+
+static func goods_queries(check: Callable) -> void:
+	for site in ["legacy","meadow_reach","pine_shelf","reed_bend"]:
+		var world: ColonyWorld = ColonyTests.world()
+		if site!="legacy":
+			var error: String = ColonyGeneration.configure(world,104729,site)
+			if not error.is_empty(): check.call("RAID/goods_query_site_"+site,false,error);continue
+		world._structure("door",Vector2i(67,64),0)
+		world._structure("reinforced_gate",Vector2i(68,64),1)
+		world._make_stack("medicine",12,"ground",0,Vector2i(67,65),true)
+		world._make_stack("meal",8,"ground",0,Vector2i(70,65),true)
+		world._make_stack("meal",8,"ground",0,Vector2i(70,65),true)
+		world._make_stack("iron",8,"ground",0,Vector2i(90,90),true)
+		for delta in ColonyNavigation.NEIGHBORS: world._structure("stone_wall",Vector2i(90,90)+delta,0)
+		var enemy: Dictionary = ColonyDefense.enemy_template();enemy.x=66;enemy.y=65
+		for open in [false,true]:
+			world.defense_state.open_passage=open
+			for kind in ["hungry_thief","road_raider"]:
+				enemy.definition=kind
+				var before: String = world.canonical_hash()
+				var expected: Dictionary = reference_goods(world,enemy)
+				var actual: Dictionary = ColonyDefense.choose_goods(world,enemy)
+				check.call("RAID/packed_distances_match_reference_%s_%s_%s" % [site,str(open),kind],actual.get("id",0)==expected.get("id",0) and before==world.canonical_hash(),str([actual.get("id",0),expected.get("id",0)]))
+
+static func reference_goods(world: ColonyWorld, enemy: Dictionary) -> Dictionary:
+	# Retained former dictionary flood fill and structural passability query.
+	var candidates: Array = [];var start: Vector2i = Vector2i(enemy.x,enemy.y)
+	var queue: Array[Vector2i] = [start];var distance: Dictionary = {start:0};var cursor: int = 0
+	while cursor<queue.size():
+		var point: Vector2i = queue[cursor];cursor+=1
+		for delta in ColonyNavigation.NEIGHBORS:
+			var next: Vector2i = point+delta
+			var passable: bool = world.walkable(next) and (world.defense_state.open_passage or not world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition in ["door","reinforced_gate"] and world.footprint(s).has(next)))
+			if not distance.has(next) and passable and world.can_step(point,next): distance[next]=distance[point]+1;queue.append(next)
+	for stack in world.stacks:
+		if stack.count<=0 or stack.location not in ["ground","store","output"] or not ColonyFire.usable(world,stack): continue
+		var rank: int = ColonyDefense.stock_rank(world,enemy,stack);var point: Vector2i = Vector2i(stack.x,stack.y)
+		if rank>=0 and distance.has(point): candidates.append({"stack":stack,"rank":rank,"distance":distance[point]})
+	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.rank<b.rank if a.rank!=b.rank else (a.distance<b.distance if a.distance!=b.distance else a.stack.id<b.stack.id))
+	return {} if candidates.is_empty() else candidates[0].stack
