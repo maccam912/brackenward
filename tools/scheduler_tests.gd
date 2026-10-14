@@ -2,6 +2,7 @@ class_name SchedulerTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	obstructed_start(check)
 	StackQueryTests.run(check)
 	JobQueryTests.run(check)
 	DiningTests.run(check)
@@ -114,6 +115,7 @@ static func unreachable_bed(check: Callable) -> void:
 	var sleep_job: Dictionary = world.find(world.jobs,person.job)
 	world._work(person,sleep_job)
 	check.call("SCHED/unreachable_bed_falls_back_to_safe_ground",sleep_job.state=="Working" and sleep_job.target==0 and sleep_job.worker==person.id and person.bed==bed.id and sleep_job.reason.contains("Assigned bed unreachable"))
+	check.call("SCHED/disconnected_route_preserves_one_request_slot_and_ground_fallback",world.path_requests==1 and world.accessible(Vector2i(person.x,person.y)) and not world.accessible(Vector2i(bed.x,bed.y)))
 	var job_count: int = world.jobs.size()
 	for index in range(300):
 		world._needs(person)
@@ -240,3 +242,15 @@ static func confined_escape(check: Callable) -> void:
 	if escaped:
 		world._release(job,true);person.x=84;person.y=80
 		check.call("SCHED/safest_confined_tile_explains_need_for_an_exit",not ColonyDanger.escape(world,person) and person.activity.contains("clear an exit"))
+
+static func obstructed_start(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var person: Dictionary = world.citizens[0]
+	var origin: Vector2i = Vector2i(person.x,person.y)
+	world._structure("wood_wall",origin,0)
+	var goal: Vector2i = origin+Vector2i.RIGHT
+	var arrived: bool = false
+	for attempt in range(12):
+		arrived=world._walk(person,goal)
+		if arrived: break
+	check.call("SCHED/obstructed_start_can_still_step_out_through_normal_astar",arrived and Vector2i(person.x,person.y)==goal and world.path_requests==1)

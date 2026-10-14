@@ -2,37 +2,35 @@ class_name ColonyRooms
 extends RefCounted
 
 static func compute(world: ColonyWorld) -> Dictionary:
-	var boundaries: Dictionary = {}
+	var side: int = ColonyWorld.SIZE
+	var visited: PackedByteArray = PackedByteArray();visited.resize(side*side);visited.fill(0)
 	for structure in world.structures:
 		if structure.health<=0: continue
 		if structure.definition != "supply_cart" and world.definitions.buildings[structure.definition].room_boundary:
 			for point in world.footprint(structure):
-				boundaries[point] = true
-	var visited: Dictionary = boundaries.duplicate()
+				if ColonyWorld.inside(point): visited[point.y*side+point.x]=1
 	var roofed: Dictionary = {}
-	for y in range(128):
-		for x in range(128):
-			var start: Vector2i = Vector2i(x, y)
-			if visited.has(start):
-				continue
-			var queue: Array[Vector2i] = [start]
-			var cursor: int = 0
-			var interior: Array[Vector2i] = []
-			var open: bool = false
-			visited[start] = true
-			while cursor < queue.size():
-				var point: Vector2i = queue[cursor]
-				cursor += 1
-				interior.append(point)
-				open = open or point.x in [0, 127] or point.y in [0, 127] or world.is_water(point)
-				for delta in ColonyNavigation.NEIGHBORS:
-					var neighbor: Vector2i = point + delta
-					if ColonyWorld.inside(neighbor) and not visited.has(neighbor):
-						visited[neighbor] = true
-						queue.append(neighbor)
-			if not open and interior.size() <= 64:
-				for point in interior:
-					roofed[point] = start.y * 128 + start.x
+	var queue: PackedInt32Array = PackedInt32Array();queue.resize(side*side)
+	var steps: Array[int] = [-side,1,side,-1]
+	for start in range(side*side):
+		if visited[start]: continue
+		var cursor: int = 0
+		var tail: int = 1
+		var open: bool = false
+		queue[0]=start;visited[start]=1
+		while cursor<tail:
+			var index: int = queue[cursor];cursor+=1
+			var column: int = index%side
+			open=open or index<side or index>=side*(side-1) or column==0 or column==side-1 or world.is_water(Vector2i(column,index/side))
+			# Same north/east/south/west traversal and row-major component IDs.
+			for direction in range(4):
+				var next: int = index+steps[direction]
+				if next<0 or next>=side*side or (direction==1 and column==side-1) or (direction==3 and column==0) or visited[next]: continue
+				visited[next]=1;queue[tail]=next;tail+=1
+		if not open and tail<=64:
+			for cursor_index in range(tail):
+				var index: int = queue[cursor_index]
+				roofed[Vector2i(index%side,index/side)]=start
 	for structure in world.structures:
 		if structure.health>0 and world.definitions.buildings[structure.definition].built_in_roof:
 			for point in world.footprint(structure):

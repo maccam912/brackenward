@@ -176,3 +176,35 @@ and physical maintenance work. These continuations are in progress, with no
 new complete-Charter claim. The interrupted initial Pine attempt had not
 published a new daily checkpoint; its original verified input remains the
 continuation source.
+
+14 October Pine Standard completion: `charter-complete-20261014-pine-standard`
+passes through tick 489,600 (Day 69), all five stages, ceremony completion at
+440,401 and Continue with almost seven subsequent game days. Eight residents
+remain alive, minimum health 100, zero zero-fullness or starvation-grace-
+exceeded citizen-ticks, and 1,626 invariant checkpoints pass. The final
+report, payload SHA and saved-world round trip match exactly. Canonical:
+`910fb2328b22d2f878ec2ccb7e1c73452983b8f9d9ae99969dc1174601f164ad`.
+The frozen daily input at tick 482,400 is recorded in
+`stack-query-checkpoint-preservation.json`. No supplies, skills, needs or
+construction progress were granted; bed assignment and doorway demolition
+use real public commands/work. Historical reports/snapshots remain untouched.
+Reed's ongoing ordinary run now also has all stages, ceremony and Continue;
+its final later-day continuation still needs a completion report, with the
+already recorded historical health/starvation limit retained.
+
+14 October Reed Standard completion: `charter-access-20261014-reed` passes
+through tick 583,200 (Day 82), all five stages, ceremony completion at 535,201,
+and Continue with almost seven later days. Eight residents remain alive,
+all currently at 100 health, and 1,938 invariant checkpoints pass. The original
+report/payload SHA and final snapshot round trip agree. Canonical:
+`4b93eb710af1c3e036029c17a8a051fcf7ee58fede772fe37d7bdcb3e4b7b31d`.
+The lineage retains minimum health 64, 20,944 zero-fullness citizen-ticks and
+4,965 beyond starvation grace from earlier runs; those counters did not
+increase in the latest continuation. This is a completed vegetarian Charter,
+not a zero-hunger or zero-damage certificate. No meat/leather was consumed,
+Husbandry was not researched and the two trips used real supplies/people.
+
+The M6 ordinary campaign set now includes all three Standard sites and Pine
+Hearthside, with ceremony, Continue and later play. These local simulation
+certificates remain separate from current-source Winter sweeps, M7 media,
+accessibility/stress work, physical Android and human-comprehension gates.

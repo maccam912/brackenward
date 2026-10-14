@@ -2,6 +2,7 @@ class_name WildlifeTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	occupancy_cache(check)
 	var world: ColonyWorld = ColonyTests.world()
 	ColonyGeneration.configure(world,104729,"meadow_reach")
 	check.call("ANIMAL/initial_six_four_two_four",["hare","deer","boar","marsh_goose"].map(func(k:String)->int:return world.wildlife_state.animals.filter(func(a:Dictionary)->bool:return a.definition==k).size())==[6,4,2,4])
@@ -111,3 +112,34 @@ static func run(check: Callable) -> void:
 	world._assign(world.citizens[0])
 	job=world.find(world.jobs,world.citizens[0].job)
 	check.call("DANGER/civilian_escapes_before_ordinary_work",job.kind=="escape" and ColonyDanger.safe(world,Vector2i(job.x,job.y)))
+
+static func occupancy_cache(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var point: Vector2i = Vector2i(74,64)
+	var before: String = world.canonical_hash()
+	check.call("ANIMAL/occupancy_query_is_derived_and_clear_land_stays_open",ColonyWildlife.animal_walkable(world,point) and world.canonical_hash()==before)
+	var bed: Dictionary = world._structure("bed",point,0)
+	check.call("ANIMAL/new_furniture_blocks_its_full_footprint_only_for_wildlife",world.walkable(point) and not ColonyWildlife.animal_walkable(world,point) and not ColonyWildlife.animal_walkable(world,point+Vector2i.RIGHT) and ColonyWildlife.animal_walkable(world,point+Vector2i.UP))
+	var id: int = world.queue_command("move_furniture",{"target":bed.id,"x":80,"y":64,"rotation":1})
+	var dismantled: bool = false
+	for tick in range(1800):
+		world.step()
+		if bed.health==0 and not dismantled:
+			dismantled=true
+			check.call("ANIMAL/dismantling_reopens_old_footprint_before_rebuild",ColonyWildlife.animal_walkable(world,point) and ColonyWildlife.animal_walkable(world,point+Vector2i.RIGHT))
+		if bed.health>0 and bed.x==80: break
+	check.call("ANIMAL/physical_furniture_move_invalidates_both_footprints",world.receipts.get(id)=="accepted" and dismantled and bed.x==80 and bed.rotation==1 and ColonyWildlife.animal_walkable(world,point) and not ColonyWildlife.animal_walkable(world,Vector2i(80,64)) and not ColonyWildlife.animal_walkable(world,Vector2i(80,65)) and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	var saved: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/import_rebuilds_furniture_occupancy_without_saved_cache_fields",saved.has("world") and saved.world.canonical_hash()==world.canonical_hash() and not ColonyWildlife.animal_walkable(saved.world,Vector2i(80,64)) and ColonyWildlife.animal_walkable(saved.world,point),str(saved.get("error","")))
+	ColonyMaintenance.destroy(world,bed)
+	check.call("ANIMAL/destroyed_furniture_leaves_no_stale_wildlife_obstacle",ColonyWildlife.animal_walkable(world,Vector2i(80,64)) and ColonyWildlife.animal_walkable(world,Vector2i(80,65)))
+	var door: Dictionary = world._structure("door",Vector2i(90,90),0)
+	check.call("ANIMAL/doors_stay_closed_to_wildlife_while_people_can_walk",world.walkable(Vector2i(90,90)) and not ColonyWildlife.animal_walkable(world,Vector2i(90,90)))
+	ColonyMaintenance.destroy(world,door)
+	check.call("ANIMAL/destroyed_door_reopens_wildlife_route",ColonyWildlife.animal_walkable(world,Vector2i(90,90)))
+	world._structure("wood_floor",Vector2i(91,90),0);world._structure("stone_path",Vector2i(92,90),0)
+	check.call("ANIMAL/floor_and_path_overlays_remain_traversable",ColonyWildlife.animal_walkable(world,Vector2i(91,90)) and ColonyWildlife.animal_walkable(world,Vector2i(92,90)))
+	var river: Vector2i = Vector2i(32,68)
+	var water: bool = not ColonyWildlife.animal_walkable(world,river)
+	world._structure("bridge",river,0)
+	check.call("ANIMAL/bridge_rebuilds_water_and_wildlife_walkability",water and ColonyWildlife.animal_walkable(world,river))

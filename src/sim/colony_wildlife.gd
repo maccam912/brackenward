@@ -25,10 +25,7 @@ static func initialize(world: ColonyWorld) -> void:
 static func animal_walkable(world: ColonyWorld, point: Vector2i) -> bool:
 	if not world.walkable(point): return false
 	# Wildlife does not open doors or pen gates, or enter occupied buildings.
-	for structure in world.structures:
-		if structure.health<=0: continue
-		if structure.definition not in ["wood_floor","stone_path","bridge"] and world.footprint(structure).has(point): return false
-	return true
+	return not world.wildlife_obstacles.has(point)
 
 static func distance(a: Dictionary, b: Dictionary) -> int:
 	return absi(a.x-b.x)+absi(a.y-b.y)

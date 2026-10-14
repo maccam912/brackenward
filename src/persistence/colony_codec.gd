@@ -73,6 +73,7 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 			else:
 				world.set(field, data[field])
 	world.record_indexes.clear()
+	world.navigation_dirty=true;world.reachability_dirty=true;world.rooms_dirty=true
 	world.reset_job_queries()
 	world.reset_stack_queries()
 	var errors: Array[String] = world.invariant_errors()

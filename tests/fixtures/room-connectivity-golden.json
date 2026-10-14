@@ -1,0 +1,168 @@
+{
+	"cases": {
+		"authored/bridged": {
+			"sha256": "a9867056e6a81c849e6c46b9a4fc910aad4e5014d866eeeb2825d15fb63a6992",
+			"tiles": 42
+		},
+		"authored/builtins": {
+			"sha256": "5bb1d85a650ebac188c9d4d228b175b31a854b87e9af670ad50e00a6ee761443",
+			"tiles": 50
+		},
+		"authored/edge": {
+			"sha256": "cf8301b4ce8834a106ea504478dbe390de80655e65de2c0334e58e6c1fbe18ce",
+			"tiles": 16
+		},
+		"authored/empty": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"authored/hole": {
+			"sha256": "91f5ca5b819f4bd9d8927811299dda85f9456a8db3a8b71c73930509adc8bd35",
+			"tiles": 16
+		},
+		"authored/limit64": {
+			"sha256": "733fd75f0643c55933bff1a47a0a0b3cc1bdf1cf0618130a56035a18aa7bd3dd",
+			"tiles": 64
+		},
+		"authored/limit65": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"authored/partition": {
+			"sha256": "0c98b6e047173b9212a4af2366bc6a8fb036e2ba349ab947524a4c3e0eeb28d3",
+			"tiles": 44
+		},
+		"authored/small": {
+			"sha256": "91f5ca5b819f4bd9d8927811299dda85f9456a8db3a8b71c73930509adc8bd35",
+			"tiles": 16
+		},
+		"authored/water": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"meadow_reach/bridged": {
+			"sha256": "a9867056e6a81c849e6c46b9a4fc910aad4e5014d866eeeb2825d15fb63a6992",
+			"tiles": 42
+		},
+		"meadow_reach/builtins": {
+			"sha256": "e44525874c0cb679990770bd4384df7c1fe59484a917466ed22f6d03163db07f",
+			"tiles": 35
+		},
+		"meadow_reach/edge": {
+			"sha256": "cf8301b4ce8834a106ea504478dbe390de80655e65de2c0334e58e6c1fbe18ce",
+			"tiles": 16
+		},
+		"meadow_reach/empty": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"meadow_reach/hole": {
+			"sha256": "91f5ca5b819f4bd9d8927811299dda85f9456a8db3a8b71c73930509adc8bd35",
+			"tiles": 16
+		},
+		"meadow_reach/limit64": {
+			"sha256": "733fd75f0643c55933bff1a47a0a0b3cc1bdf1cf0618130a56035a18aa7bd3dd",
+			"tiles": 64
+		},
+		"meadow_reach/limit65": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"meadow_reach/partition": {
+			"sha256": "0c98b6e047173b9212a4af2366bc6a8fb036e2ba349ab947524a4c3e0eeb28d3",
+			"tiles": 44
+		},
+		"meadow_reach/small": {
+			"sha256": "91f5ca5b819f4bd9d8927811299dda85f9456a8db3a8b71c73930509adc8bd35",
+			"tiles": 16
+		},
+		"meadow_reach/water": {
+			"sha256": "a9867056e6a81c849e6c46b9a4fc910aad4e5014d866eeeb2825d15fb63a6992",
+			"tiles": 42
+		},
+		"pine_shelf/bridged": {
+			"sha256": "a9867056e6a81c849e6c46b9a4fc910aad4e5014d866eeeb2825d15fb63a6992",
+			"tiles": 42
+		},
+		"pine_shelf/builtins": {
+			"sha256": "fadcf290c6c619d1ddce8e21d5159ba811968672105df00438d8b85cfed51484",
+			"tiles": 35
+		},
+		"pine_shelf/edge": {
+			"sha256": "cf8301b4ce8834a106ea504478dbe390de80655e65de2c0334e58e6c1fbe18ce",
+			"tiles": 16
+		},
+		"pine_shelf/empty": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"pine_shelf/hole": {
+			"sha256": "91f5ca5b819f4bd9d8927811299dda85f9456a8db3a8b71c73930509adc8bd35",
+			"tiles": 16
+		},
+		"pine_shelf/limit64": {
+			"sha256": "733fd75f0643c55933bff1a47a0a0b3cc1bdf1cf0618130a56035a18aa7bd3dd",
+			"tiles": 64
+		},
+		"pine_shelf/limit65": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"pine_shelf/partition": {
+			"sha256": "0c98b6e047173b9212a4af2366bc6a8fb036e2ba349ab947524a4c3e0eeb28d3",
+			"tiles": 44
+		},
+		"pine_shelf/small": {
+			"sha256": "91f5ca5b819f4bd9d8927811299dda85f9456a8db3a8b71c73930509adc8bd35",
+			"tiles": 16
+		},
+		"pine_shelf/water": {
+			"sha256": "a9867056e6a81c849e6c46b9a4fc910aad4e5014d866eeeb2825d15fb63a6992",
+			"tiles": 42
+		},
+		"reed_bend/bridged": {
+			"sha256": "a9867056e6a81c849e6c46b9a4fc910aad4e5014d866eeeb2825d15fb63a6992",
+			"tiles": 42
+		},
+		"reed_bend/builtins": {
+			"sha256": "52d3b0ee2e2ecc7b5729d6252eac1f76600df32129a213986ed198f096fd9dd8",
+			"tiles": 35
+		},
+		"reed_bend/edge": {
+			"sha256": "cf8301b4ce8834a106ea504478dbe390de80655e65de2c0334e58e6c1fbe18ce",
+			"tiles": 16
+		},
+		"reed_bend/empty": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"reed_bend/hole": {
+			"sha256": "91f5ca5b819f4bd9d8927811299dda85f9456a8db3a8b71c73930509adc8bd35",
+			"tiles": 16
+		},
+		"reed_bend/limit64": {
+			"sha256": "733fd75f0643c55933bff1a47a0a0b3cc1bdf1cf0618130a56035a18aa7bd3dd",
+			"tiles": 64
+		},
+		"reed_bend/limit65": {
+			"sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+			"tiles": 0
+		},
+		"reed_bend/partition": {
+			"sha256": "0c98b6e047173b9212a4af2366bc6a8fb036e2ba349ab947524a4c3e0eeb28d3",
+			"tiles": 44
+		},
+		"reed_bend/small": {
+			"sha256": "91f5ca5b819f4bd9d8927811299dda85f9456a8db3a8b71c73930509adc8bd35",
+			"tiles": 16
+		},
+		"reed_bend/water": {
+			"sha256": "a9867056e6a81c849e6c46b9a4fc910aad4e5014d866eeeb2825d15fb63a6992",
+			"tiles": 42
+		}
+	},
+	"scope": "Geometry fixtures, not ordinary-play campaign certificates",
+	"source_algorithm": "Original Vector2i Dictionary full-grid flood fill",
+	"source_commit": "7089f14",
+	"version": 1
+}

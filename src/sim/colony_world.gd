@@ -57,6 +57,7 @@ var weather: String = "clear"
 var navigation_dirty: bool = true
 var solid_tiles: Dictionary = {}
 var bridge_tiles: Dictionary = {}
+var wildlife_obstacles: Dictionary = {}
 var reachable_cells: PackedByteArray = PackedByteArray()
 var reachable_home: Dictionary:
 	get:
@@ -169,12 +170,15 @@ func _refresh_navigation() -> void:
 		care_destinations.clear()
 		solid_tiles.clear()
 		bridge_tiles.clear()
+		wildlife_obstacles.clear()
 		for resource in resources:
 			if resource.remaining > 0 and definitions.resources[resource.definition].solid:
 				solid_tiles[Vector2i(resource.x,resource.y)] = true
 		for structure in structures:
 			if structure.health<=0: continue
 			if structure.definition=="bridge": bridge_tiles[Vector2i(structure.x,structure.y)]=true
+			if structure.definition not in ["wood_floor","stone_path","bridge"]:
+				for tile in footprint(structure): wildlife_obstacles[tile]=true
 			if structure.definition != "supply_cart" and definitions.buildings[structure.definition].solid:
 				for tile in footprint(structure):
 					solid_tiles[tile] = true
@@ -1112,9 +1116,17 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 			if path_requests >= 4:
 				return false
 			path_requests += 1
-			citizen.route = ColonyNavigation.path(Vector2i(citizen.x, citizen.y), goal, func(p:Vector2i)->bool:return ColonyDanger.allowed(self,citizen,p),func(a:Vector2i,b:Vector2i)->bool:
-				var task: Dictionary = find(jobs,citizen.job)
-				return ColonyMaintenance.cart_edge(self,a,b) if task.get("kind")=="cart_move" and task.memo.phase=="push" and task.state=="Working" else can_step(a,b))
+			var origin: Vector2i = Vector2i(citizen.x,citizen.y)
+			# Opposite sides of the known home component cannot share a route.
+			# Still consume the request slot and preserve normal no-route handling.
+			# An obstructed starting tile may step out, so it keeps the A* fallback.
+			var disconnected: bool = walkable(origin) and walkable(goal) and accessible(origin)!=accessible(goal)
+			var route: Array[Vector2i] = []
+			if not disconnected:
+				route=ColonyNavigation.path(origin,goal,func(p:Vector2i)->bool:return ColonyDanger.allowed(self,citizen,p),func(a:Vector2i,b:Vector2i)->bool:
+					var task: Dictionary = find(jobs,citizen.job)
+					return ColonyMaintenance.cart_edge(self,a,b) if task.get("kind")=="cart_move" and task.memo.phase=="push" and task.state=="Working" else can_step(a,b))
+			citizen.route=route
 			citizen.route_goal = [goal.x, goal.y]
 		if citizen.route.is_empty():
 			var job: Dictionary = find(jobs, citizen.job)
