@@ -104,7 +104,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 		if pier.health<=0: continue
 		if pier.definition != "fishing_pier" or not pier.cooking or committed >= 16: continue
 		if pending.any(func(j:Dictionary)->bool:return j.target == pier.id) or fish.piers.get(pier.id,0) >= 8: continue
-		if world.stacks.filter(func(s:Dictionary)->bool:return s.count > 0 and s.location == "output" and s.owner == pier.id).size() >= 2: continue
+		if world.nonempty_stacks().filter(func(s:Dictionary)->bool:return s.count > 0 and s.location == "output" and s.owner == pier.id).size() >= 2: continue
 		world._job("fish","Gathering","Field",pier.id,Vector2i(pier.x,pier.y),12000)
 		committed += 2
 

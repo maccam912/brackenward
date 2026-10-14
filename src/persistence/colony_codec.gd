@@ -74,6 +74,7 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 				world.set(field, data[field])
 	world.record_indexes.clear()
 	world.reset_job_queries()
+	world.reset_stack_queries()
 	var errors: Array[String] = world.invariant_errors()
 	if not errors.is_empty():
 		return {"error": "Invalid colony invariants: " + str(errors)}

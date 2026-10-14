@@ -13,6 +13,7 @@ static func prepare(captured: Dictionary, catalog: Dictionary) -> Dictionary:
 		if field in ["content","content_hash"]: continue
 		if captured[field] is Array: frozen.get(field).assign(captured[field])
 		else: frozen.set(field,captured[field])
+	frozen.reset_stack_queries()
 	var result: ColonyPreparedSnapshot = ColonyPreparedSnapshot.new()
 	result.payload=captured
 	result.text=JSON.stringify(ColonyState.pack(captured),"",true)

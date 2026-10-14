@@ -2,6 +2,7 @@ class_name SchedulerTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	StackQueryTests.run(check)
 	JobQueryTests.run(check)
 	DiningTests.run(check)
 	var ordered: ColonyWorld = ColonyTests.world()

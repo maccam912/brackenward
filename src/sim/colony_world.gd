@@ -83,6 +83,10 @@ var job_query_tick: int = -1
 var job_query_count: int = 0
 var job_query_source: Array = []
 var job_query_live: Array = []
+var stack_query_tick: int = -1
+var stack_query_count: int = 0
+var stack_query_source: Array = []
+var stack_query_live: Array = []
 
 func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 	definitions = catalog.duplicate(true)
@@ -573,6 +577,24 @@ func unfinished_jobs() -> Array:
 func reset_job_queries() -> void:
 	job_query_tick=-1;job_query_count=0;job_query_source=[];job_query_live=[]
 
+func nonempty_stacks() -> Array:
+	# Depleted records remain authoritative history. Runtime transfers create a
+	# new record; _merge_stored only merges into a still-positive stack. A zero
+	# record never becomes goods again. Imports explicitly reset this cache.
+	if not is_same(stack_query_source,stacks) or stack_query_count>stacks.size():
+		reset_stack_queries();stack_query_source=stacks
+	if stack_query_tick!=tick:
+		stack_query_live=stack_query_live.filter(func(s:Dictionary)->bool:return s.count>0)
+		stack_query_tick=tick
+	for index in range(stack_query_count,stacks.size()):
+		var stack: Dictionary = stacks[index]
+		if stack.count>0: stack_query_live.append(stack)
+	stack_query_count=stacks.size()
+	return stack_query_live.filter(func(s:Dictionary)->bool:return s.count>0)
+
+func reset_stack_queries() -> void:
+	stack_query_tick=-1;stack_query_count=0;stack_query_source=[];stack_query_live=[]
+
 func _perimeter(tiles: Array[Vector2i]) -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for tile in tiles:
@@ -587,7 +609,7 @@ func _create_work() -> void:
 	if not personal_jobs_reconciled:
 		# Older snapshots can contain abandoned personal work. Retain its history
 		# and release any real supplies through the ordinary cancellation path.
-		for job in jobs:
+		for job in unfinished_jobs():
 			if job.kind in PERSONAL_JOBS and job.worker==0 and job.state not in ["Complete","Canceled"]:
 				_release(job,true)
 		personal_jobs_reconciled=true
@@ -604,10 +626,10 @@ func _create_work() -> void:
 		var active: bool = false
 		var output_batches: int = 0
 		var in_progress: int = 0
-		for stack in stacks:
+		for stack in nonempty_stacks():
 			if stack.location == "output" and stack.owner == hearth.id and stack.count > 0:
 				output_batches += 1
-		for job in jobs:
+		for job in unfinished_jobs():
 			if job.kind in ["cook","craft"] and job.target == hearth.id and job.state not in ["Complete", "Canceled"]:
 				active = true
 				in_progress += 2
@@ -616,7 +638,7 @@ func _create_work() -> void:
 			var inputs: Dictionary = recipe.materials.duplicate()
 			var count: int = 0
 			var food: Array[Dictionary] = []
-			for stack in stacks:
+			for stack in nonempty_stacks():
 				if recipe.alternatives.has(stack.item) and stack.location in ["ground","store","output"] and stack.count > _reserved(stack) and ColonyFire.usable(self,stack) and accessible(Vector2i(stack.x,stack.y)):
 					food.append(stack)
 			food.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
@@ -638,10 +660,10 @@ func _create_work() -> void:
 	# Completed work remains in history; index only live hauling reservations
 	# once instead of rescanning that history for every loose stack.
 	var haul_sources: Dictionary = {}
-	for existing in jobs:
+	for existing in unfinished_jobs():
 		if existing.kind == "haul" and existing.state not in ["Complete", "Canceled"]:
 			haul_sources[existing.source] = true
-	for stack in stacks.duplicate():
+	for stack in nonempty_stacks():
 		var invalid_store: bool = false
 		if stack.location == "store":
 			var store: Dictionary = find(stores,stack.owner)
@@ -919,7 +941,7 @@ func _reserve(job: Dictionary, citizen: Dictionary) -> bool:
 			if job.kind=="move_furniture":
 				for bundle in stacks:
 					if bundle.location=="move_bundle" and bundle.owner==job.id and bundle.item==item: needed -= bundle.count
-			var sources: Array = stacks.filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and ColonyFire.usable(self,s) and accessible(Vector2i(s.x,s.y)))
+			var sources: Array = nonempty_stacks().filter(func(s:Dictionary)->bool:return s.item == item and s.count > _reserved(s) and s.location in ["ground","store","output"] and ColonyFire.usable(self,s) and accessible(Vector2i(s.x,s.y)))
 			sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(self,a,b,Vector2i(citizen.x,citizen.y)))
 			for stack in sources:
 				if stack.item != item or stack.location not in ["ground", "store", "output"] or (job.kind in ["eat","feed"] and stack.id != job.source):
@@ -1384,14 +1406,14 @@ func _reserved(stack: Dictionary) -> int:
 
 func available(item: String) -> int:
 	var result: int = 0
-	for stack in stacks:
+	for stack in nonempty_stacks():
 		if stack.item == item and stack.location in ["ground", "store", "output"] and ColonyFire.usable(self,stack) and accessible(Vector2i(stack.x,stack.y)):
 			result += stack.count - _reserved(stack)
 	return result
 
 func total(item: String) -> int:
 	var result: int = 0
-	for stack in stacks:
+	for stack in nonempty_stacks():
 		if stack.item == item:
 			result += stack.count
 	for structure in structures:
@@ -1404,14 +1426,14 @@ func total(item: String) -> int:
 
 func _escrow_count(job_id: int, item: String) -> int:
 	var result: int = 0
-	for stack in stacks:
+	for stack in nonempty_stacks():
 		if stack.item == item and stack.location == "escrow" and stack.owner == job_id:
 			result += stack.count
 	return result
 
 func _food(citizen: Dictionary) -> Dictionary:
 	var edible: Array[Dictionary] = []
-	for stack in stacks:
+	for stack in nonempty_stacks():
 		if stack.count - _reserved(stack) > 0 and definitions.items[stack.item].fullness > 0 and stack.location in ["ground", "store", "output"] and ColonyFire.usable(self,stack) and (stack.item != "travel_ration" or use_rations):
 			edible.append(stack)
 	edible.sort_custom(func(a: Dictionary, b: Dictionary) -> bool:
@@ -1429,17 +1451,18 @@ func _food(citizen: Dictionary) -> Dictionary:
 
 func _destination(item: String, quantity: int, from: Vector2i, tags: Array = []) -> Dictionary:
 	var candidates: Array[Dictionary] = []
+	var goods: Array = nonempty_stacks()
 	for store in stores:
 		if ColonyFire.burning(self,"structure",store.id): continue
 		if not store.filters.has(item):
 			continue
 		var occupied: int = 0
-		for stack in stacks:
+		for stack in goods:
 			if stack.location == "store" and stack.owner == store.id:
 				occupied += stack.count
 		for job in jobs:
 			if job.kind == "haul" and job.destination == store.id and job.worker > 0:
-				for stack in stacks:
+				for stack in goods:
 					occupied += stack.reservations.get(job.id, 0)
 					if stack.location == "carry" and stack.job == job.id:
 						occupied += stack.count
@@ -1449,7 +1472,7 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [])
 			var used: int = 0
 			var blocked: bool = false
 			if find(structures, store.id).is_empty():
-				for stack in stacks:
+				for stack in goods:
 					if stack.location == "store" and stack.owner == store.id and Vector2i(stack.x, stack.y) == tile and stack.count > 0:
 						blocked = blocked or stack.item != item or stack.tags != tags
 						used += stack.count
@@ -1532,7 +1555,7 @@ func comfortable(citizen: Dictionary) -> bool:
 	return ColonyLiving.comfortable(self, citizen)
 
 func _merge_stored(incoming: Dictionary) -> void:
-	for other in stacks:
+	for other in nonempty_stacks():
 		if other.id != incoming.id and other.location == "store" and other.owner == incoming.owner and other.x == incoming.x and other.y == incoming.y and other.item == incoming.item and other.tags == incoming.tags and other.count > 0 and other.count + incoming.count <= definitions.items[incoming.item].stack_limit:
 			other.count += incoming.count
 			if incoming.age > other.age or (incoming.age == other.age and incoming.age_rem > other.age_rem):

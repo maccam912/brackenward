@@ -15,7 +15,7 @@ static func rank(item: String) -> int:
 	return 2 if item=="forged_toolkit" else (0 if item.is_empty() else 1)
 
 static func source(world: ColonyWorld, person: Dictionary, item: String) -> Dictionary:
-	var sources: Array = world.stacks.filter(func(s:Dictionary)->bool:return s.item==item and s.count>world._reserved(s) and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
+	var sources: Array = world.nonempty_stacks().filter(func(s:Dictionary)->bool:return s.item==item and s.count>world._reserved(s) and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
 	sources.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return ColonyProduction.input_before(world,a,b,Vector2i(person.x,person.y)))
 	return {} if sources.is_empty() else sources[0]
 

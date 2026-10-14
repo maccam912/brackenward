@@ -120,6 +120,7 @@ static func _world(captured: Dictionary, catalog: Dictionary) -> ColonyWorld:
 		if field in ["content","content_hash"]: continue
 		if captured[field] is Array: frozen.get(field).assign(captured[field])
 		else: frozen.set(field,captured[field])
+	frozen.reset_stack_queries()
 	return frozen
 
 func poll(wait: bool = false) -> Dictionary:

@@ -54,7 +54,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 		elif job.kind=="research" and job.definition==world.production_state.project: research_desks[job.target]=true
 	var output_batches: Dictionary = {}
 	var material_stock: Dictionary = {}
-	for stack in world.stacks:
+	for stack in world.nonempty_stacks():
 		if stack.count<=0: continue
 		if stack.location=="output": output_batches[stack.owner]=output_batches.get(stack.owner,0)+1
 		if stack.location in ["ground","store","output"] and ColonyFire.usable(world,stack) and world.accessible(Vector2i(stack.x,stack.y)):
@@ -97,7 +97,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 		var inputs: Dictionary = recipe.materials.duplicate()
 		var needed: int = recipe.food_count
 		if needed > 0:
-			var choices: Array = world.stacks.filter(func(s:Dictionary)->bool:return order.filters.has(s.item) and s.count-world._reserved(s) > 0 and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
+			var choices: Array = world.nonempty_stacks().filter(func(s:Dictionary)->bool:return order.filters.has(s.item) and s.count-world._reserved(s) > 0 and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
 			choices.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
 				var ae: int = FoodForecast.expiry_ticks(world,a)
 				var be: int = FoodForecast.expiry_ticks(world,b)
@@ -125,7 +125,7 @@ static func completed(world: ColonyWorld, job: Dictionary) -> void:
 
 static func policy_stock(world: ColonyWorld, item: String) -> int:
 	var count: int = 0
-	for stack in world.stacks:
+	for stack in world.nonempty_stacks():
 		if stack.count<=0 or stack.item != item or stack.location not in ["ground","store","output","carry"]: continue
 		if stack.location == "carry":
 			var delivery: Dictionary = world.find(world.jobs,stack.job)
@@ -206,7 +206,7 @@ static func replace_food(world: ColonyWorld, job: Dictionary) -> void:
 		var held: int = world._escrow_count(job.id,item)
 		if held > 0: food[item] = held; needed -= held
 	var station: Dictionary = world.find(world.structures,job.target)
-	var choices: Array = world.stacks.filter(func(s:Dictionary)->bool:return filters.has(s.item) and s.count-world._reserved(s) > 0 and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
+	var choices: Array = world.nonempty_stacks().filter(func(s:Dictionary)->bool:return filters.has(s.item) and s.count-world._reserved(s) > 0 and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
 	choices.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return input_before(world,a,b,Vector2i(station.x,station.y)))
 	for stack in choices:
 		var count: int = mini(needed,stack.count-world._reserved(stack))

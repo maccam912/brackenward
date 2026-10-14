@@ -416,7 +416,7 @@ func _draw_colony() -> void:
 		else:
 			draw_rect(rectangle.grow(-tile_size * 0.1), color)
 			draw_rect(rectangle.grow(-tile_size * 0.1), Color("263C3B"), false, 3)
-	for job in world.jobs:
+	for job in world.unfinished_jobs():
 		if job.state in ["Complete", "Canceled"]:
 			continue
 		if job.kind == "gather":
@@ -428,10 +428,10 @@ func _draw_colony() -> void:
 				draw_rect(rectangle.grow(-2), Color("E9BA67"), false, 2)
 			var point: Vector2 = tile_to_screen(Vector2(job.x, job.y))
 			draw_rect(Rect2(point, Vector2(tile_size * float(job.work) / job.required, 4)), Color("F3E8CC"))
-	for job in world.jobs:
+	for job in world.unfinished_jobs():
 		if job.kind=="move_furniture" and job.state not in ["Complete","Canceled"]:
 			for tile in ColonyMaintenance.move_footprint(world,job): draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size).grow(-1),Color("E9BA67"),false,2)
-	for stack in world.stacks:
+	for stack in world.nonempty_stacks():
 		if stack.count <= 0:
 			continue
 		if stack.location == "expedition_cargo" and world.find(world.region_state.trips,stack.owner).get("state") not in ["Preparing","Ready","Unloading"]: continue
@@ -478,7 +478,7 @@ func _draw_carried_items() -> void:
 		var point: Vector2 = tile_to_screen(Vector2(body.x+0.5,body.y+0.5))
 		carried_overlay.draw_rect(Rect2(point-Vector2(tile_size*0.4,5),Vector2(tile_size*0.8,10)),Color("716D88"))
 		carried_overlay.draw_line(point-Vector2(0,10),point+Vector2(0,10),Color("F3E8CC"),2)
-	for stack in world.stacks:
+	for stack in world.nonempty_stacks():
 		if stack.count <= 0 or stack.location != "carry":
 			continue
 		var citizen: Dictionary = world.find(world.citizens,stack.owner)

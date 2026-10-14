@@ -11,6 +11,7 @@ reports/winter-release-*/
 reports/capture-validation/
 reports/beds-validation/
 reports/prepared-validation/
+reports/stack-query-validation/
 platform/android_save/.gradle/
 platform/android_save/build/
 platform/android_save/plugin/build/

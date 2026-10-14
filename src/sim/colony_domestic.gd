@@ -147,7 +147,7 @@ static func _feed_dawn(world: ColonyWorld) -> void:
 			var reachable_feed: bool = info.barns.has(animal.barn) and pen.tiles.has(Vector2i(animal.x,animal.y)) and not barn.is_empty() and barn.health>0
 			if reachable_feed and feed_count(world,animal.barn)>=required:
 				var remaining: int = required
-				var supplies: Array = world.stacks.filter(func(s:Dictionary)->bool:return s.location=="animal_feed" and s.owner==animal.barn and s.count>0)
+				var supplies: Array = world.nonempty_stacks().filter(func(s:Dictionary)->bool:return s.location=="animal_feed" and s.owner==animal.barn and s.count>0)
 				supplies.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.age>b.age if a.age!=b.age else a.id<b.id)
 				for stack in supplies:
 					var used: int = mini(remaining,stack.count);stack.count -= used;remaining -= used;world._record("consumed",stack.item,used)
@@ -180,7 +180,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 			for animal in residents: daily += demand(world,animal,world.tick/7200+1)
 			var shortage: int = mini(24,daily*2)-feed_count(world,barn_id)
 			if shortage<=0 or world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="stock_feed" and j.target==barn_id and j.state not in ["Complete","Canceled"]): continue
-			var candidates: Array = world.stacks.filter(func(s:Dictionary)->bool:return feed_item(world,s.item) and s.count>world._reserved(s) and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
+			var candidates: Array = world.nonempty_stacks().filter(func(s:Dictionary)->bool:return feed_item(world,s.item) and s.count>world._reserved(s) and s.location in ["ground","store","output"] and world.accessible(Vector2i(s.x,s.y)))
 			candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.age>b.age if a.age!=b.age else a.id<b.id)
 			if candidates.is_empty(): pen.reason="No grain or vegetables available for barn feed";continue
 			var source: Dictionary = candidates[0]

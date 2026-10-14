@@ -2,7 +2,7 @@ class_name ColonyLiving
 extends RefCounted
 
 static func advance(world: ColonyWorld) -> void:
-	for stack in world.stacks:
+	for stack in world.nonempty_stacks():
 		if stack.count == 0:
 			continue
 		var shelf: int = world.definitions.items[stack.item].shelf_ticks
