@@ -1,6 +1,6 @@
 extends SceneTree
 ## Paired complete-tick timing against the original positive-only lazy lookup.
-## Lookup reference: 44fffb9. Reservation/index reference: 2f1a8fb.
+## Lookup reference: 44fffb9. Reservation/index reference: 2f1a8fb. Production: cc84275.
 ## Alternate execution order and compare full state; UI never participates.
 class OriginalFind extends ColonyWorld:
 	func _init(catalog: Dictionary) -> void: super(catalog)
@@ -62,6 +62,7 @@ func _initialize() -> void: call_deferred("run")
 func clone_world(source: ColonyWorld, original: bool) -> ColonyWorld:
 	var result: ColonyWorld
 	if not original: result=ColonyWorld.new(source.definitions)
+	elif reference_mode=="production": result=ProductionReadTests.OriginalWorld.new(source.definitions)
 	elif reference_mode=="reservation": result=OriginalReservation.new(source.definitions)
 	else: result=OriginalFind.new(source.definitions)
 	for field in source.payload():
@@ -76,9 +77,9 @@ func clone_world(source: ColonyWorld, original: bool) -> ColonyWorld:
 func run() -> void:
 	var args: PackedStringArray=OS.get_cmdline_user_args()
 	if args.size() not in [2,3] or not args[1].is_valid_int() or int(args[1])<1 or int(args[1])>7200:
-		printerr("Usage: -- SNAPSHOT|fresh TICKS [lookup|reservation] (1..7200; four pairs)");quit(2);return
+		printerr("Usage: -- SNAPSHOT|fresh TICKS [lookup|reservation|production] (1..7200; four pairs)");quit(2);return
 	if args.size()==3: reference_mode=args[2]
-	if reference_mode not in ["lookup","reservation"]: quit(2);return
+	if reference_mode not in ["lookup","reservation","production"]: quit(2);return
 	var decoded: Dictionary
 	if args[0]=="fresh":
 		decoded={"world":ColonyTests.world()}
@@ -98,5 +99,5 @@ func run() -> void:
 			exact=exact and hash==expected and world.invariant_errors().is_empty()
 			rows.append({"round":round_index,"original":original,"microseconds":elapsed,"hash":hash})
 			print(JSON.stringify(rows[-1]))
-	print(JSON.stringify({"reference":reference_mode,"reference_commit":"2f1a8fb" if reference_mode=="reservation" else "44fffb9","snapshot":args[0],"snapshot_sha256":FileAccess.get_sha256(args[0]) if args[0]!="fresh" else "","ticks":int(args[1]),"exact":exact,"rows":rows}))
+	print(JSON.stringify({"reference":reference_mode,"reference_commit":"cc84275" if reference_mode=="production" else ("2f1a8fb" if reference_mode=="reservation" else "44fffb9"),"snapshot":args[0],"snapshot_sha256":FileAccess.get_sha256(args[0]) if args[0]!="fresh" else "","ticks":int(args[1]),"exact":exact,"rows":rows}))
 	quit(0 if exact else 1)

@@ -49,7 +49,9 @@ func run() -> void:
 			await AsyncSaveTests.run(self,check)
 		"seasons": SeasonTests.run(check)
 		"people": SocialTests.run(check)
-		"production": ProductionTests.run(check)
+		"production":
+			ProductionReadTests.run(check)
+			ProductionTests.run(check)
 		"care": CareTests.run(check)
 		"generation": GenerationTests.run(check)
 		"nature": NatureTests.run(check)

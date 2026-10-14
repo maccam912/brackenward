@@ -617,3 +617,20 @@ failure context are now explicit; later focus, speed or storage interruptions
 still stop the real session. A revised sixty-second-warmup/three-second canary
 passes with twenty residents, 61 ticks and exact round trip. It is plumbing
 validation, not a long soak. The full case needs a new clean frozen revision.
+
+## 0.7.22 production selection and borrowed reads
+
+Explicit food recipe proposals now share the prefix helper already used by default
+cooking and replacement inputs. Production/live-stock reads borrow private views
+only inside trusted ticks; all original state/quantity predicates stay in place.
+Twelve independent checks retain cc84275 creation, maintained-stock and complete-
+step references, accepted fixtures and exact full-state comparisons through 600
+ticks, including same-tick cancellation/depletion/append and direct reopening.
+
+Four alternating original/current full 1,200-tick pairs per input all retain exact
+hashes and invariants. Median CPU seconds: fresh 0.416156/0.413192, cold
+2.473606/2.468693, late 4.527185/4.525181, crowded 8.613415/8.500077.
+Fresh/cold/late differences are near neutral; crowded improves slightly. Inputs
+and canonical endpoints are unchanged from the preceding sections. These runs
+share a host with two Charter workers, native soak and headless tests; they do
+not certify Android, rendering, memory or the 4 ms simulation p95 gate.

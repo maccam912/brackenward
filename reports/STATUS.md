@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.21-m7` in progress (campaign schema 23, device settings schema 4), content `colony-v4`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.22-m7` in progress (campaign schema 23, device settings schema 4), content `colony-v4`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.21-m7` in progress (campaign schema 23, device settings schema 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `cf34471` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-cf344711ad87); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,207 checks, zero failures, including 538 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation baseline plus current targeted reruns: 28 GDScript suites, 2,219 checks, zero failures, including 538 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -1625,3 +1625,38 @@ and four Kotlin checks pass. Native sixty-frame/audio-drained startup passes; aa
 All cf34471 remote jobs passed and its stable-identity debug APK is published;
 this revision's remote checks follow its own push. Weekly remaining is 74%;
 implementation/polish continues.
+
+## 0.7.22 shared recipe selection and production reads
+
+Production proposals and maintained-stock counting borrow the trusted-tick live
+job/inventory views with original state/count predicates. Queued work, same-tick
+cancellation/depletion/new stock and direct fixture reads remain visible. Explicit
+food recipes reuse the existing exact prefix-selection helper, preserving expiry,
+distance, item and ID order without another comparator/sort implementation.
+Cancellation/completion/history metadata writes remain full scans.
+
+Twelve new production checks retain cc84275 creation/stock functions plus its
+complete step with only the production call changed to the reference. Accepted,
+conserved fixtures include real Maintain/Repeat recipes, research, 120 food stacks,
+8,000 terminal jobs and 8,000 depleted rows. They compare complete payloads across
+proposals, duplicates, cancellations, stock depletion/append, direct reopening and
+six complete-tick checkpoints through 600 ticks. Production 49, scheduler 293 and
+persistence 267 pass; the retained full baseline plus additions totals 2,219.
+Native UI's 538-check baseline is from 0.7.21; no local graphical rerun occurs while
+the frozen thirty-minute soak runs. Current revision CI includes its UI run.
+
+Four alternating old/current pairs of full 1,200-tick continuations retain identical
+hashes/invariants in every pair. Median old/current CPU seconds are fresh
+0.416156/0.413192, cold 2.473606/2.468693, late 4.527185/4.525181 and crowded
+8.613415/8.500077. Most are near neutral; the crowded difference is small. The
+headless comparisons overlap two Charter workers, the native soak and other tests,
+so they do not establish phone/frame-budget compliance. The full old step stays
+as an independent oracle rather than measuring the optimized implementation twice.
+
+Frozen replay passes 62 commands/234 invariant checks in 83.397 seconds, with
+strict schema-22 gameplay and all six frozen acknowledgement-preservation audits
+passing. Content validation, Android export and four Kotlin checks pass; aapt
+reports 0.7.22-m7 / 61. Native startup remains the successful 0.7.21 source run
+while the graphical host is reserved for the frozen soak; this revision's fresh
+native launch/UI/replay/export checks also run in its own remote workflow. The frozen v4 Charter and native-soak runs remain active.
+Weekly remaining is last observed 74%; implementation/polish continues.
