@@ -75,6 +75,7 @@ func run() -> void:
 		"scheduler":
 			SleepCycleTests.run(check)
 			SleepCycleTests.pacing(check)
+			QuietSleepTests.run(check)
 			ReservationReadTests.run(check)
 			CreationReadTests.run(check)
 			SchedulerTests.run(check)
@@ -938,6 +939,7 @@ func ui() -> void:
 	await PlacementUITests.confirmed_orders(colony_game,check)
 	await DeletionTests.ui(colony_game,check)
 	ClockUITests.run(colony_game,check)
+	await QuietSleepTests.ui(colony_game,check)
 	TextTests.ui(colony_game,check)
 	await AppearanceUITests.run(colony_game,check)
 	await FontUITests.run(colony_game,check)

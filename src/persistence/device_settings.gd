@@ -1,7 +1,7 @@
 class_name DeviceSettings
 extends RefCounted
 ## Device-wide UI preferences. Imported campaigns never replace this record.
-const VERSION: int = 5
+const VERSION: int = 6
 var path: String = "user://device-settings.json"
 var values: Dictionary = defaults()
 
@@ -10,7 +10,7 @@ static func defaults() -> Dictionary:
 		"cameras":[[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0],[68.0,63.0,32.0]],
 		"reduced_motion":false,"high_contrast":false,"inspector_pause":false,"quality":"Balanced",
 		"auto_pauses":SimRunner.default_auto_pauses(),
-		"bindings":ControlBindings.DEFAULTS.duplicate(true),"audio":audio_defaults(),"haptics":false}
+		"bindings":ControlBindings.DEFAULTS.duplicate(true),"audio":audio_defaults(),"haptics":false,"quiet_sleep_speed":true}
 
 static func audio_defaults() -> Dictionary:
 	return {"master":0.8,"music":0.35,"effects":0.6,"ui":0.6}
@@ -25,6 +25,7 @@ func load_local() -> void:
 	if parser.parse(handle.get_as_text()) != OK:
 		return
 	var candidate: Variant = parser.data
+	var earlier_keys: Array=defaults().keys();earlier_keys.erase("quiet_sleep_speed")
 	if candidate is Dictionary and candidate.get("schema_version")==1 and ColonyCodec._keys(candidate,["schema_version","text_scale","left_handed","last_slot","cameras"]):
 		candidate=candidate.duplicate(true);candidate.schema_version=2;candidate["tutorials"]={}
 	if candidate is Dictionary and candidate.get("schema_version")==2 and ColonyCodec._keys(candidate,["schema_version","text_scale","left_handed","last_slot","cameras","tutorials"]):
@@ -33,8 +34,10 @@ func load_local() -> void:
 		candidate["auto_pauses"]=SimRunner.default_auto_pauses();candidate["bindings"]=ControlBindings.DEFAULTS.duplicate(true)
 	if candidate is Dictionary and candidate.get("schema_version")==3 and ColonyCodec._keys(candidate,["schema_version","text_scale","left_handed","last_slot","cameras","tutorials","reduced_motion","high_contrast","inspector_pause","quality","auto_pauses","bindings"]):
 		candidate=candidate.duplicate(true);candidate.schema_version=4;candidate["audio"]=audio_defaults();candidate["haptics"]=false
-	if candidate is Dictionary and candidate.get("schema_version")==4 and ColonyCodec._keys(candidate,defaults().keys()):
+	if candidate is Dictionary and candidate.get("schema_version")==4 and ColonyCodec._keys(candidate,earlier_keys):
 		candidate=candidate.duplicate(true);candidate.schema_version=5
+	if candidate is Dictionary and candidate.get("schema_version")==5 and ColonyCodec._keys(candidate,earlier_keys):
+		candidate=candidate.duplicate(true);candidate.schema_version=6;candidate["quiet_sleep_speed"]=true
 	if not _valid(candidate): return
 	values = candidate
 	values.schema_version = int(values.schema_version)
@@ -45,7 +48,7 @@ func load_local() -> void:
 func _valid(data: Variant) -> bool:
 	if not data is Dictionary or not ColonyCodec._keys(data,defaults().keys()) or data.schema_version != VERSION or not data.left_handed is bool or data.text_scale not in [1.0,1.25,1.5] or not data.last_slot is float and not data.last_slot is int:
 		return false
-	for key in ["reduced_motion","high_contrast","inspector_pause","haptics"]:
+	for key in ["reduced_motion","high_contrast","inspector_pause","haptics","quiet_sleep_speed"]:
 		if not data[key] is bool: return false
 	if data.quality not in ["Battery","Balanced","Smooth"] or not ControlBindings.valid(data.bindings): return false
 	if not data.auto_pauses is Dictionary or not ColonyCodec._keys(data.auto_pauses,defaults().auto_pauses.keys()) or not data.auto_pauses.values().all(func(v:Variant)->bool:return v is bool): return false

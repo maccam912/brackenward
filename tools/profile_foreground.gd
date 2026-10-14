@@ -47,6 +47,10 @@ class ProfileView extends WorldView:
 
 class ProfileSession extends GameSession:
 	var processed_delta_seconds: float = 0.0
+	var quiet_sleep_frames: int = 0
+	var quiet_sleep_ticks: int = 0
+	var quiet_sleep_first_stop: Dictionary = {}
+	var observe_quiet_sleep: bool = false
 	func _make_soundscape() -> ColonyAudio:
 		return ProfileAudio.new()
 	func _make_world_view() -> WorldView:
@@ -71,8 +75,12 @@ class ProfileSession extends GameSession:
 		processed_delta_seconds+=delta
 		if trace_spikes: world.phases.clear();ui_phases.clear()
 		var before: int = runner.speed
+		var before_tick: int = world.tick
 		var started: int = Time.get_ticks_usec()
 		super(delta)
+		if observe_quiet_sleep and runner.has_method("playback_speed") and runner.get("frame_speed")==12:
+			quiet_sleep_frames+=1;quiet_sleep_ticks+=world.tick-before_tick
+			if not runner.get("sleep_fast_forward") and quiet_sleep_first_stop.is_empty(): quiet_sleep_first_stop={"tick":world.tick,"awake":not runner.call("_all_asleep"),"selected_speed":runner.speed}
 		var duration: int = Time.get_ticks_usec()-started
 		frame_us.append(duration)
 		if trace_spikes:
@@ -108,6 +116,7 @@ var quality: String = "Balanced"
 var center: Vector2 = Vector2(68,63)
 var tutorial: String = "none"
 var preview_setup: String = "none"
+var quiet_sleep: bool = false
 
 func _initialize() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
@@ -122,6 +131,9 @@ func _initialize() -> void:
 			"--trace-spikes":
 				if args[index+1] not in ["true","false"]: quit(2);return
 				trace_spikes=args[index+1]=="true"
+			"--quiet-sleep":
+				if args[index+1] not in ["true","false"]: quit(2);return
+				quiet_sleep=args[index+1]=="true"
 			"--speed": speed=int(args[index+1]) if args[index+1].is_valid_int() else -1
 			"--camera": camera=args[index+1]
 			"--quality": quality=args[index+1]
@@ -161,10 +173,15 @@ func run() -> void:
 	var scratch: String = "user://foreground-profile-%d" % Time.get_ticks_usec()
 	var game: ProfileSession = ProfileSession.new()
 	game.trace_spikes=trace_spikes
+	game.observe_quiet_sleep=quiet_sleep
 	game.world=world;game.runner=SimRunner.new(world)
 	game.store.root_directory=scratch;game.store.select_slot(1);game.settings.path=scratch.path_join("settings.json")
 	root.size=Vector2i(960,600);game.size=Vector2(root.size)
 	root.add_child(game);game.close_sheet();game._tutorial_dismiss()
+	if game.settings.values.has("quiet_sleep_speed"):
+		game.settings.values.quiet_sleep_speed=quiet_sleep;game._apply_device_settings()
+	elif quiet_sleep:
+		printerr("This frozen source does not support automatic sleep speed");quit(2);return
 	if tutorial!="none":
 		ColonyTutorial.replay(game._tutorial_state(),tutorial);game._refresh_guidance()
 	if preview_setup=="canceled_floor":
@@ -186,6 +203,7 @@ func run() -> void:
 	if trace_spikes: world.tick_us.clear();world.slow_jobs.clear();world.phases.clear()
 	game.view.update_us.clear();game.view.draw_us.clear();game.view.draw_command_us=0;game.soundscape.update_us.clear()
 	game.diagnostics.reset()
+	game.quiet_sleep_frames=0;game.quiet_sleep_ticks=0;game.quiet_sleep_first_stop.clear()
 	game.processed_delta_seconds=0.0
 	var initial_tick: int = world.tick
 	game.runner.set_speed(speed)
@@ -202,6 +220,8 @@ func run() -> void:
 	var result: Dictionary = {"scope":"Foreground CPU callbacks; no physical Android or GPU certification","host":OS.get_name(),"snapshot":snapshot,"seconds":seconds,"initial_tick":initial_tick,"final_tick":world.tick,"frames":stats(game.frame_us),"save_capture":stats(game.capture_us),"save_finish":stats(measured_finish),"post_measurement_save_drain_us":drain_us,"snapshot_preparation_capture":stats(game.preparation_us),"slow_storage_pauses":game.slow_storage_pauses,"storage_error":game.storage_error,"invariants":world.invariant_errors(),"trace_spikes":trace_spikes,"slow_frames":game.slow_frames,"phase_peaks_us":game.phase_peaks,"slow_jobs":world.slow_jobs if trace_spikes else []}
 	result["audio_update_frames"]=stats(game.soundscape.update_us)
 	result["requested_speed"]=speed;result["camera"]=camera;result["quality"]=quality
+	result["automatic_sleep_acceleration"]=quiet_sleep
+	result["quiet_sleep_frames"]=game.quiet_sleep_frames;result["quiet_sleep_ticks"]=game.quiet_sleep_ticks;result["quiet_sleep_first_stop"]=game.quiet_sleep_first_stop
 	result["tutorial_requested"]=tutorial;result["tutorial_final"]=game._tutorial_state().active if game._tutorial_state().enabled else "none"
 	result["guidance_refresh"]=stats(game.guidance_us)
 	result["preview_setup"]=preview_setup;result["placement_final_visible"]=game.placement.visible
@@ -236,7 +256,8 @@ func source_evidence() -> Dictionary:
 	for directory in ["src","data","scenes","assets/exported"]: source_directory(directory,files)
 	for path in ["project.godot","tools/profile_foreground.gd","tools/profile_campaign.gd","tools/stress_fixture.gd"]:
 		files[path]=FileAccess.get_sha256("res://"+path)
-	return {"sha256":JSON.stringify(files,"",true).sha256_text(),"files":files.size(),"scope":"src, data, scenes, exported media, project settings and profiling/fixture sources; relative paths and file bytes"}
+	files["executed_profile_script"]=FileAccess.get_sha256(get_script().resource_path)
+	return {"sha256":JSON.stringify(files,"",true).sha256_text(),"files":files.size(),"scope":"src, data, scenes, exported media, project settings, profiling/fixture sources and exact executed profiler bytes"}
 
 func source_directory(path: String, files: Dictionary) -> void:
 	var directory: DirAccess = DirAccess.open("res://"+path)

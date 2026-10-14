@@ -61,13 +61,13 @@ static func settings(check: Callable) -> void:
 	var error: String = preferences.save_local()
 	var loaded: DeviceSettings = DeviceSettings.new();loaded.path=preferences.path;loaded.load_local()
 	check.call("AUDIO/all_four_levels_and_tactile_preference_roundtrip",error.is_empty() and loaded.values==preferences.values,error)
-	var legacy: Dictionary = preferences.values.duplicate(true);legacy.erase("audio");legacy.erase("haptics");legacy.schema_version=3
+	var legacy: Dictionary = preferences.values.duplicate(true);legacy.erase("audio");legacy.erase("haptics");legacy.erase("quiet_sleep_speed");legacy.schema_version=3
 	legacy.reduced_motion=true;legacy.high_contrast=true;legacy.quality="Smooth";legacy.auto_pauses.fire=false
 	legacy.bindings=ControlBindings.rebind(legacy.bindings,"pause",KEY_R|KEY_MASK_CTRL).bindings
 	var file: FileAccess = FileAccess.open(preferences.path,FileAccess.WRITE);file.store_string(JSON.stringify(legacy));file.close()
 	var original: PackedByteArray = FileAccess.get_file_as_bytes(preferences.path)
 	loaded=DeviceSettings.new();loaded.path=preferences.path;loaded.load_local()
-	var expected: Dictionary = legacy.duplicate(true);expected.schema_version=DeviceSettings.VERSION;expected["audio"]=DeviceSettings.audio_defaults();expected["haptics"]=false
+	var expected: Dictionary = legacy.duplicate(true);expected.schema_version=DeviceSettings.VERSION;expected["audio"]=DeviceSettings.audio_defaults();expected["haptics"]=false;expected["quiet_sleep_speed"]=true
 	check.call("AUDIO/schema_three_preserves_controls_cameras_and_lessons",loaded.values==expected and FileAccess.get_file_as_bytes(preferences.path)==original)
 	for value in [-0.1,1.1,true,"0.5"]:
 		var malformed: Dictionary = preferences.values.duplicate(true);malformed.audio.music=value

@@ -51,5 +51,7 @@ The user also requested these concrete interaction changes, now prioritized:
 Placement feedback, multiple paused confirmations, exact entry-speed restoration
 and wider zoom are implemented in 0.7.26. Campaign/named-snapshot deletion is
 implemented and locally checked in 0.7.27. Independent sleep pacing and recovery rates are implemented and locally checked
-in 0.7.28; quiet-sleep acceleration above 4x remains next work. Physical retesting remains distinct
+in 0.7.28. Automatic 12x quiet-sleep playback, exact waking/event cutoff, retained
+selected speed, an opt-out and CPU fallback are implemented and locally checked
+in 0.7.29. Physical retesting remains distinct
 from local automated checks.

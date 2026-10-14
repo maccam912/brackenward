@@ -80,6 +80,7 @@ func run() -> void:
 	root.size=Vector2i(960,600);game.size=Vector2(root.size);root.add_child(game)
 	game.close_sheet();game._tutorial_dismiss()
 	for key in game.settings.values.auto_pauses: game.settings.values.auto_pauses[key]=false
+	if game.settings.values.has("quiet_sleep_speed"): game.settings.values.quiet_sleep_speed=false
 	game.settings.values.quality="Balanced";game._apply_device_settings();game.view.center_camera(Vector2(68,72))
 	# Let native startup focus/window notifications settle while time is paused.
 	# Any later focus loss still stops the probe through the real product code.
@@ -169,7 +170,8 @@ func source_evidence() -> Dictionary:
 	for directory in ["src","data","scenes","assets/exported"]: source_directory(directory,files)
 	for path in ["project.godot","tools/profile_foreground.gd","tools/profile_campaign.gd","tools/stress_fixture.gd"]:
 		files[path]=FileAccess.get_sha256("res://"+path)
-	return {"sha256":JSON.stringify(files,"",true).sha256_text(),"files":files.size(),"scope":"src, data, scenes, exported media, project settings and profiling/fixture sources; relative paths and file bytes"}
+	files["executed_soak_script"]=FileAccess.get_sha256(get_script().resource_path)
+	return {"sha256":JSON.stringify(files,"",true).sha256_text(),"files":files.size(),"scope":"src, data, scenes, exported media, project settings, profiling/fixture sources and exact executed soak bytes"}
 
 func source_directory(path: String, files: Dictionary) -> void:
 	var directory: DirAccess = DirAccess.open("res://"+path)

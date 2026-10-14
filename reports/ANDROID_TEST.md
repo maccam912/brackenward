@@ -44,6 +44,20 @@ The ignored local APK can predate source; identify the tested build in Menu.
    unconfirmed one-cell/area preview without moving it or submitting it. Export,
    cancel and reimport a verified campaign through the document picker. Force-
    stop/recover and stable-identity update checks remain required independently.
+7. Confirm several placements while paused: each immediately leaves a queued
+   map mark and the next preview can be confirmed without running time. Repeat
+   after entering from 1x/2x/4x: confirmation resumes that same selected speed.
+   Zoom out to the new limit and check selection, warnings and map readability.
+8. In Menu > Campaigns / saves, review and delete an old campaign and a named
+   snapshot. Check the listed targets, cancel once, then confirm the intended
+   deletion; other campaigns/snapshots remain usable after restart.
+9. Observe residents with different energy: only tired residents start sleeping;
+   sleepers wake near rest 900 rather than waiting for a clock hour. A bed
+   recovers 600 points in eight game hours; bedrolls take ten. During a quiet
+   period with everyone actually asleep, the clock shows 12x sleep and stops
+   accelerating on the first waking or important event. Check return to each
+   selected speed, Pause, Home/return and the quiet-sleep setting opt-out. Export
+   a report with 12x samples and retain any CPU-fallback notice/counter.
 
 Mark each case Pass / Fail / Not run with exact reproduction, version and saved
 logical ticks. Physical readability, audio focus, gestures, storage, performance,

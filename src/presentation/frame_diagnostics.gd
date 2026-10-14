@@ -7,7 +7,7 @@ const MAX_EVENTS: int = 32
 const MAX_EXPORT_BYTES: int = 65536
 var samples: Dictionary = {}
 var slow_events: Array[Dictionary] = []
-var counters: Dictionary = {"slow_storage_pauses":0,"speed_reductions":0,"backgrounds":0,"storage_alerts":0}
+var counters: Dictionary = {"slow_storage_pauses":0,"speed_reductions":0,"backgrounds":0,"storage_alerts":0,"quiet_sleep_limits":0}
 var previous_frame_us: int = 0
 var tick: int = 0
 var speed: int = 0
@@ -26,7 +26,7 @@ func count(key: String) -> void:
 
 func record(stage: String, microseconds: int, measured_tick: int = -1, measured_speed: int = -1) -> void:
 	var at_speed: int = speed if measured_speed<0 else measured_speed
-	if not foreground or stage not in STAGES or microseconds<0 or at_speed not in [0,1,2,4]: return
+	if not foreground or stage not in STAGES or microseconds<0 or at_speed not in [0,1,2,4,12]: return
 	var key: String = "%s:%d" % [stage,at_speed]
 	if not samples.has(key): samples[key]={"stage":stage,"speed":at_speed,"count":0,"sum_us":0,"max_us":0,"over_50ms":0,"buckets":Array(LIMITS_US).map(func(_limit:int)->int:return 0)+[0]}
 	var entry: Dictionary = samples[key]

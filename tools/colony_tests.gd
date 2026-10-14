@@ -182,6 +182,7 @@ static func run(check: Callable) -> void:
 		w.queue_command("gather", {"target": w.resources[0].id})
 		w.queue_command("build", {"definition": "bed", "x": 74, "y": 63, "rotation": 0})
 		var runner: SimRunner = SimRunner.new(w)
+		runner.quiet_sleep_enabled=false # Compare the three explicit manual speeds.
 		runner.set_speed(speed)
 		for frame in range(72000 / speed):
 			runner.advance_frame(0.1)

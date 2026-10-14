@@ -24,14 +24,22 @@ static func run(check: Callable) -> void:
 	for camera in expected.cameras:
 		for index in range(3): camera[index]=float(camera[index])
 	check.call("SETTINGS/schema_two_preserves_every_existing_preference",loaded.values==expected and FileAccess.get_file_as_bytes(settings.path)==original)
-	var fourth: Dictionary=settings.values.duplicate(true);fourth.schema_version=4;fourth.audio.master=0.45;fourth.haptics=true
+	var fourth: Dictionary=settings.values.duplicate(true);fourth.schema_version=4;fourth.erase("quiet_sleep_speed");fourth.audio.master=0.45;fourth.haptics=true
 	file=FileAccess.open(settings.path,FileAccess.WRITE);file.store_string(JSON.stringify(fourth));file.close()
 	original=FileAccess.get_file_as_bytes(settings.path);loaded=DeviceSettings.new();loaded.path=settings.path;loaded.load_local()
-	expected=fourth.duplicate(true);expected.schema_version=5
+	expected=fourth.duplicate(true);expected.schema_version=DeviceSettings.VERSION;expected["quiet_sleep_speed"]=true
 	check.call("SETTINGS/schema_four_wider_zoom_migration_preserves_all_preferences_and_original",loaded.values==expected and FileAccess.get_file_as_bytes(settings.path)==original)
+	var fifth: Dictionary=fourth.duplicate(true);fifth.schema_version=5;fifth.cameras[0]=[42.5,63.25,2.0]
+	file=FileAccess.open(settings.path,FileAccess.WRITE);file.store_string(JSON.stringify(fifth));file.close()
+	original=FileAccess.get_file_as_bytes(settings.path);loaded=DeviceSettings.new();loaded.path=settings.path;loaded.load_local()
+	expected=fifth.duplicate(true);expected.schema_version=DeviceSettings.VERSION;expected["quiet_sleep_speed"]=true
+	check.call("SETTINGS/schema_five_adds_only_quiet_sleep_default_and_preserves_original",loaded.values==expected and FileAccess.get_file_as_bytes(settings.path)==original)
+	loaded.values.quiet_sleep_speed=false
+	var off_error: String=loaded.save_local();var off: DeviceSettings=DeviceSettings.new();off.path=settings.path;off.load_local()
+	check.call("SETTINGS/quiet_sleep_opt_out_survives_restart",off_error.is_empty() and off.values==loaded.values and not off.values.quiet_sleep_speed,off_error)
 	loaded.values.cameras[2]=[64.0,64.0,2.0]
 	var zoom_error: String=loaded.save_local();var zoomed: DeviceSettings=DeviceSettings.new();zoomed.path=settings.path;zoomed.load_local()
-	check.call("SETTINGS/schema_five_far_camera_survives_restart",zoom_error.is_empty() and zoomed.values==loaded.values,zoom_error)
+	check.call("SETTINGS/schema_six_far_camera_survives_restart",zoom_error.is_empty() and zoomed.values==loaded.values,zoom_error)
 	check.call("SETTINGS/nonfinite_or_out_of_range_camera_rejected",not loaded._valid(loaded.values.merged({"cameras":[[64.,64.,1.9],[64.,64.,32.],[64.,64.,32.],[64.,64.,32.],[64.,64.,32.]]},true)))
 	for bad in [settings.values.merged({"quality":"Ultra"},true),settings.values.merged({"inspector_pause":1},true),settings.values.merged({"auto_pauses":{"fire":true}},true),settings.values.merged({"future":true},true)]:
 		file=FileAccess.open(settings.path,FileAccess.WRITE);file.store_string(JSON.stringify(bad));file.close()

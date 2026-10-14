@@ -377,7 +377,7 @@ func _build_placement() -> void:
 
 func _process(delta: float) -> void:
 	var started: int = Time.get_ticks_usec()
-	if is_node_ready() and not backgrounded and not quitting: diagnostics.frame(started,world.tick,runner.speed)
+	if is_node_ready() and not backgrounded and not quitting: diagnostics.frame(started,world.tick,runner.playback_speed())
 	_advance_frame(delta)
 	if not backgrounded and not quitting: diagnostics.record("session",Time.get_ticks_usec()-started)
 
@@ -400,10 +400,13 @@ func _advance_frame(delta: float) -> void:
 		notice="Saving is slow; paused to protect recent progress. Resume after saving finishes."
 	var tick_before: int = world.tick
 	var simulation_started: int = Time.get_ticks_usec()
+	runner.quiet_sleep_allowed=food_warning_level<2
 	runner.advance_frame(delta)
-	if world.tick>tick_before: diagnostics.record("simulation_batch",Time.get_ticks_usec()-simulation_started)
+	if world.tick>tick_before: diagnostics.record("simulation_batch",Time.get_ticks_usec()-simulation_started,world.tick,runner.frame_speed)
+	diagnostics.speed=runner.frame_speed
 	if not runner.notice.is_empty(): notice=runner.notice;runner.notice=""
-	view.simulation_speed=runner.speed
+	if runner.speed>0 and notice==ColonyText.text("ui.notice.paused"): notice=ColonyText.text("ui.notice.running")
+	view.simulation_speed=runner.playback_speed()
 	guidance_elapsed += delta
 	if world is ColonyWorld:
 		var signature: String = world.session_id+JSON.stringify(_tutorial_state())
@@ -448,6 +451,10 @@ func _advance_frame(delta: float) -> void:
 		diagnostics.count("speed_reductions")
 		notice = "Speed reduced to keep the colony responsive."
 		runner.speed_reduced = false
+	if runner.sleep_boost_limited:
+		diagnostics.count("quiet_sleep_limits")
+		notice=ColonyText.text("ui.notice.quiet_sleep_limited")
+		runner.sleep_boost_limited=false
 	var waiting: Array[int] = placement_commands.duplicate()
 	if submitted_command>0 and not waiting.has(submitted_command): waiting.append(submitted_command)
 	var rejected: Array[String] = []
@@ -503,11 +510,13 @@ func _refresh_clock() -> void:
 	# Stock changes only at complete simulation ticks. A new world can share the
 	# old tick, and pause/speed changes must still appear immediately.
 	var identity: int = world.get_instance_id()
-	if clock_world_id==identity and clock_tick==world.tick and clock_speed==runner.speed: return
-	clock_world_id=identity;clock_tick=world.tick;clock_speed=runner.speed
+	var playback: int=runner.playback_speed()
+	if clock_world_id==identity and clock_tick==world.tick and clock_speed==playback: return
+	clock_world_id=identity;clock_tick=world.tick;clock_speed=playback
 	var season_name: String = ColonyText.text(["ui.clock.spring","ui.clock.summer","ui.clock.autumn","ui.clock.winter"][ColonyAgriculture.season(world.tick)])
 	var stock: String = ColonyText.text("ui.clock.stock",{"meals":world.available("meal"),"wood":world.available("wood")}) if world is ColonyWorld else ColonyText.plural("ui.clock.travelers",world.citizens.size())
-	var speed_name: String = ColonyText.speed_label(runner.speed)
+	var speed_name: String = ColonyText.text("ui.clock.quiet_sleep") if runner.sleep_fast_forward else ColonyText.speed_label(runner.speed)
+	clock_label.tooltip_text=ColonyText.text("ui.help.quiet_sleep",{"speed":runner.speed}) if runner.sleep_fast_forward else ""
 	clock_label.text=ColonyText.text("ui.clock.status",{"season":season_name,"day":(world.tick/7200)%8+1,"year":world.tick/230400+1,"hour":"%02d" % ((world.tick%7200)/300),"minute":"%02d" % ((world.tick%300)/5),"stock":stock,"speed":speed_name})
 
 func _start_background_save(full_snapshot: bool) -> void:
@@ -576,6 +585,7 @@ func set_speed(value: int) -> void:
 		notice = "Close the panel or confirm/cancel the area before resuming."
 		return
 	runner.set_speed(value)
+	if value==0 and notice==ColonyText.text("ui.notice.running"): notice=ColonyText.text("ui.notice.paused")
 
 func begin_placement() -> void:
 	_sync_placement_world()
@@ -804,6 +814,7 @@ func close_inspector() -> void:
 func show_sheet(title: String, title_key: String = "") -> void:
 	listening_binding=""
 	text_entry_error=""
+	if notice==ColonyText.text("ui.notice.running"): notice=ColonyText.text("ui.notice.paused")
 	if sheet==null:
 		sheet_camera_center=view.camera_center()
 		sheet_entry_speed=runner.speed
@@ -945,7 +956,7 @@ func close_sheet() -> void:
 	sheet_name = ""
 	sheet_title_key=""
 	sheet_entry_speed=0
-	notice = "Paused. Choose 1x, 2x, or 4x to resume."
+	notice = ColonyText.text("ui.notice.paused")
 	_layout()
 
 func _layout() -> void:
@@ -1858,6 +1869,10 @@ func _save_settings() -> void:
 
 func _apply_device_settings() -> void:
 	runner.auto_pauses=settings.values.auto_pauses.duplicate()
+	runner.frame_clock=func()->int:return Time.get_ticks_usec()
+	if runner.quiet_sleep_enabled!=settings.values.quiet_sleep_speed:
+		runner.sleep_boost_suppressed=false;runner.sleep_fast_forward=false
+	runner.quiet_sleep_enabled=settings.values.quiet_sleep_speed
 	Engine.max_fps=60 if settings.values.quality=="Smooth" else 30
 	if is_instance_valid(view):
 		view.reduced_motion=settings.values.reduced_motion
@@ -1868,6 +1883,7 @@ func _apply_device_settings() -> void:
 func _performance_report() -> Dictionary:
 	var memory: int = OS.get_static_memory_usage()
 	var metadata: Dictionary = {"build":str(ProjectSettings.get_setting("application/config/version")),"engine":Engine.get_version_info().string,"platform":OS.get_name(),"os_version":OS.get_version().left(128),"device_model":OS.get_model_name().left(128),"gpu":RenderingServer.get_video_adapter_name().left(128),"renderer":RenderingServer.get_current_rendering_method(),"quality":settings.values.quality,"fps_cap":Engine.max_fps,"engine_static_memory_bytes":memory if memory>0 else null,"viewport":[get_viewport_rect().size.x,get_viewport_rect().size.y]}
+	metadata.merge({"selected_speed":runner.speed,"playback_speed":runner.playback_speed(),"quiet_sleep_accelerated":runner.sleep_fast_forward})
 	if world is ColonyWorld:
 		var orders: Array = world.unfinished_jobs()
 		metadata["executable_jobs"]=orders.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,world.tick)).size()
@@ -1929,6 +1945,9 @@ func show_accessibility() -> void:
 		var toggle: Button = button("On" if settings.values[key] else "Off",func()->void:
 			settings.values[key]=not settings.values[key];_apply_device_settings();_save_settings();show_accessibility(),row,64)
 		toggle.size_flags_horizontal=Control.SIZE_SHRINK_END;toggle.name="Setting_"+key
+	button(ColonyText.text("ui.action.quiet_sleep_on" if settings.values.quiet_sleep_speed else "ui.action.quiet_sleep_off"),func()->void:
+		settings.values.quiet_sleep_speed=not settings.values.quiet_sleep_speed;_apply_device_settings();_save_settings();show_accessibility(),sheet_body).name="Setting_quiet_sleep_speed"
+	label(ColonyText.text("ui.help.quiet_sleep_setting"),sheet_body)
 	var graphics: HBoxContainer = HBoxContainer.new();sheet_body.add_child(graphics);label(ColonyText.text("ui.help.accessibility.graphics"),graphics)
 	var quality: CycleChoiceButton = CycleChoiceButton.new()
 	for choice in ["Battery","Balanced","Smooth"]: quality.add_item(choice)
