@@ -142,7 +142,6 @@ static func destination(world: ColonyWorld, patient: Dictionary) -> Dictionary:
 	if world.navigation_dirty:
 		world.care_destinations.clear()
 		world.walkable(Vector2i.ZERO)
-	var candidates: Array = []
 	var origin: Vector2i = Vector2i(patient.x,patient.y)
 	var occupied_beds: Array = []
 	for bed in world.structures:
@@ -150,23 +149,51 @@ static func destination(world: ColonyWorld, patient: Dictionary) -> Dictionary:
 		if bed.definition in ["bed","bedroll"] and world.citizens.any(func(c:Dictionary)->bool:return c.id != patient.id and c.health > 0 and not c.departed and c.x == bed.x and c.y == bed.y): occupied_beds.append(bed.id)
 	var cached: Dictionary = world.care_destinations.get(patient.id,{})
 	if cached.get("origin") == origin and cached.get("occupied") == occupied_beds: return cached.result
+	var beds: Dictionary = {}
 	for bed in world.structures:
-		if bed.health<=0: continue
-		if bed.definition not in ["bed","bedroll"]: continue
+		if bed.health<=0 or bed.definition not in ["bed","bedroll"]: continue
+		# Keep the original first-record behavior when already on a bed, even if
+		# another resident is there. Other ties use the immutable bed ID.
 		if origin == Vector2i(bed.x,bed.y): return {"id":bed.id,"point":origin,"distance":0}
 		if occupied_beds.has(bed.id): continue
-		var point: Vector2i = Vector2i(bed.x,bed.y)
-		var route: Array = [] if point == origin else ColonyNavigation.path(origin,point,world.walkable,world.can_step)
-		if point != origin and route.is_empty(): continue
-		candidates.append({"id":bed.id,"point":point,"distance":route.size()})
-	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.distance < b.distance or (a.distance == b.distance and a.id < b.id))
-	if not candidates.is_empty():
-		world.care_destinations[patient.id] = {"origin":origin,"occupied":occupied_beds,"result":candidates[0]}
-		return candidates[0]
+		var cell: int=bed.y*128+bed.x
+		if not beds.has(cell) or bed.id<beds[cell]: beds[cell]=bed.id
+	var distance: PackedInt32Array = PackedInt32Array()
+	if not beds.is_empty():
+		# Only route length is used here. One breadth-first search gives the same
+		# shortest lengths as every earlier A*, including bridges/elevation.
+		var grid: Dictionary=world.navigation_grid()
+		var cells: PackedByteArray=grid.passable;var bridges: PackedByteArray=grid.bridges
+		distance.resize(16384);distance.fill(-1)
+		var queue: PackedInt32Array=PackedInt32Array();queue.resize(16384)
+		var start: int=origin.y*128+origin.x;distance[start]=0;queue[0]=start
+		var cursor: int=0;var tail: int=1;var best: Dictionary={}
+		var steps: Array[int]=[-128,1,128,-1]
+		while cursor<tail:
+			var index: int=queue[cursor];var column: int=index%128;cursor+=1
+			var length: int=distance[index]
+			if not best.is_empty() and length>best.distance: break
+			if beds.has(index) and cells[index]:
+				if best.is_empty() or beds[index]<best.id:
+					best={"id":beds[index],"point":Vector2i(column,index/128),"distance":length}
+			if not best.is_empty(): continue
+			for direction in range(4):
+				var next: int=index+steps[direction]
+				if next<0 or next>=16384 or (direction==1 and column==127) or (direction==3 and column==0): continue
+				if distance[next]>=0 or not cells[next]: continue
+				if world.generator_version>0 and not bridges[index] and not bridges[next] and absi(world.terrain_state.elevation[index]-world.terrain_state.elevation[next])>1: continue
+				distance[next]=length+1;queue[tail]=next;tail+=1
+		if not best.is_empty():
+			world.care_destinations[patient.id]={"origin":origin,"occupied":occupied_beds,"result":best}
+			return best
 	var cart: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition == "supply_cart")[0]
 	for point in world._perimeter(world.footprint(cart)):
-		var route: Array = [] if point == origin else ColonyNavigation.path(origin,point,world.walkable,world.can_step)
-		if point == origin or not route.is_empty(): return {"id":0,"point":point,"distance":route.size()}
+		if not distance.is_empty():
+			var length: int=distance[point.y*128+point.x]
+			if length>=0: return {"id":0,"point":point,"distance":length}
+		else:
+			var route: Array = [] if point == origin else ColonyNavigation.path(origin,point,world.walkable,world.can_step)
+			if point == origin or not route.is_empty(): return {"id":0,"point":point,"distance":route.size()}
 	return {"id":0,"point":origin,"distance":0}
 
 static func create_jobs(world: ColonyWorld) -> void:

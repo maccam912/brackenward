@@ -229,6 +229,8 @@
   "ui.help.audio_settings.warnings_stay_visible_when_sound_is_muted": "Warnings stay visible when sound is muted.",
   "ui.help.auto_pauses.each_event_pauses_once_turning_a_pause": "Each event pauses once. Turning a pause off keeps its notice. Resume stays explicit.",
   "ui.help.beds.choose_a_free_bed_or_bedroll_assignment": "Choose a free bed or bedroll. Assignment is immediate when time resumes; sleep still needs a safe walk. Occupied beds must be unassigned first.",
+  "ui.help.beds.ground_rate": "Ground sleep: {rate} rest/hour.",
+  "ui.help.beds.recovery_rate": "Rest {rate}/hour. Assignment reserves the bed; residents walk here to sleep. A roofed bed earns its morale memory after four hours of actual sleep.",
   "ui.help.campaigns.five_independent_campaign_slots_switching_first_saves": "Five independent campaign slots. Switching first saves the current colony. Imported campaigns use an empty slot or a confirmed replacement.",
   "ui.help.care.everyone_at_home_is_downed_available_recovery": "Everyone at home is downed. Available recovery is shown above. In Standard an unstabilized patient continues bleeding; Hearthside recovery continues with time.",
   "ui.help.care.rescue_carries_a_downed_person_to_the": "Rescue carries a downed person to the nearest reachable bed or cart rally and slows the carrier by 25%. Emergency rescue and urgent stabilization in place override Care Off. Ordinary treatment needs Care enabled; Treat now pins one visible override. Patients receive food automatically and rest until 50 health before working.",

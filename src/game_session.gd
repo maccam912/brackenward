@@ -2075,7 +2075,7 @@ func show_bed_choice(id: int, target: int) -> void:
 	if not error.is_empty(): label(error,sheet_body)
 	else:
 		var bed: Dictionary = world.find(world.structures,target)
-		label("Ground sleep: 80 rest/hour." if target==0 else "%s at %d,%d" % [ColonyChronicle.display_name(world,target),bed.x,bed.y],sheet_body)
+		label(ColonyText.text("ui.help.beds.ground_rate",{"rate":ColonyRest.GROUND}) if target==0 else "%s at %d,%d" % [ColonyChronicle.display_name(world,target),bed.x,bed.y],sheet_body)
 		button("Unassign" if target==0 else "Assign this bed",func()->void:_submit("assign_bed",{"citizen":id,"target":target});close_sheet(),sheet_body)
 		label(person.name+" will sleep on safe ground without an assigned bed." if target==0 else person.name+" walks here when tired. Assignment does not move them or add rest.",sheet_body)
 	button(ColonyText.text("ui.action.back_to_beds"),func()->void:show_beds(id),sheet_body)
@@ -2201,7 +2201,7 @@ func show_station(station: Dictionary) -> void:
 		button(ColonyText.text("ui.action.repair_or_demolish"),func()->void:show_maintenance(station),sheet_body)
 	if station.definition in ["bed","bedroll"]:
 		label("Assigned to "+ColonyChronicle.display_name(world,station.user) if station.user>0 else "Unassigned sleeping place",sheet_body)
-		label("Rest %d/hour. Assignment reserves the bed; residents walk here to sleep. A roofed bed earns its morale memory after four hours of actual sleep." % (150 if station.definition=="bed" else 120),sheet_body)
+		label(ColonyText.text("ui.help.beds.recovery_rate",{"rate":ColonyRest.recovery_rate(station.definition)}),sheet_body)
 		if station.user>0: button(ColonyText.text("ui.action.unassign_bed"),func()->void:show_bed_choice(station.user,0),sheet_body)
 		else:
 			for person in world.citizens:

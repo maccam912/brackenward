@@ -140,7 +140,7 @@ static func bed_assignment(game: GameSession, check: Callable) -> void:
 		var unassign: Array = game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Unassign bed")
 		unassign[0].pressed.emit()
 		var clear: Array = game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Unassign")
-		check.call("BED/UI_unassign_explains_ground_rate_before_order_%d" % viewport_size.x,clear.size()==1 and game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("80 rest/hour")) and world.pending_commands.is_empty())
+		check.call("BED/UI_unassign_explains_ground_rate_before_order_%d" % viewport_size.x,clear.size()==1 and game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("45 rest/hour")) and world.pending_commands.is_empty())
 		clear[0].pressed.emit();game.set_speed(1);game.runner.advance_frame(0.1);game.runner.pause();game._process(0.0)
 		check.call("BED/UI_unassign_releases_real_bed_%d" % viewport_size.x,world.citizens[0].bed==0 and bed.user==0)
 	game._replace_world(ColonyTests.world());game.close_sheet();game.close_inspector();game._tutorial_dismiss()

@@ -454,8 +454,8 @@ Unless specified, structures have 200 health; stone walls, cellar, smelter, and 
 | door | 1 × 1 | W3 | 8 | Initial | Room boundary, friendly passage |
 | wood_floor | 1 × 1 | W1 | 2 | Initial | Cosmetic floor; no morale bonus or required room classification |
 | stone_path | 1 × 1 | S1 | 1 | Masonry | Movement takes 8 ticks per tile |
-| bedroll | 2 × 1 | F2 | 5 | Initial | Sleep rate 120/hour; four start built |
-| bed | 2 × 1 | W6 F2 | 15 | Initial | Sleep rate 150/hour; assigned-bed morale |
+| bedroll | 2 × 1 | F2 | 5 | Initial | Sleep rate 60/hour; four start built |
+| bed | 2 × 1 | W6 F2 | 15 | Initial | Sleep rate 75/hour; assigned-bed morale |
 | table | 2 × 1 | W8 | 20 | Initial | Includes benches; 4 leisure/eating positions on adjacent tiles |
 | hearth | 2 × 2 | W8 S10 | 40 | Initial | Cook meals/rations; room heat; one starts built |
 | rack | 2 × 2 | W8 | 15 | Initial | 200-unit store; normal spoilage |
@@ -1154,6 +1154,8 @@ The trusted tick-stage admission path may skip inspecting unchanged order record
 Food-aging storage rates may be memoized only within one Living advance call, including painted stores without matching building records. Every positive perishable still ages with its exact retained remainder, spoilage, reservation release and held-input cancellation. Moving food, destroying storage or changing a world before the next call must immediately use the new rate. Keep the full earlier advance path as an exact-state test reference.
 
 The HUD calendar/stock line refreshes on complete logical tick, world instance or requested-speed change. Paused or repeated display frames reuse its text rather than rescan accessible stock; adoption at an equal tick must still refresh. Calendar names, named clock fields and traveler counts use the English message catalog and plural rules. Caches affect presentation only and are absent from saves.
+
+Recovery-bed selection uses one breadth-first distance search per resident instead of a separate A* route to every bed. Preserve shortest distance then immutable bed ID, occupied/destroyed-bed exclusions, the original first record when already on a bed, and the first reachable cart-perimeter fallback with its exact distance. Use the same passability, authored bridge and elevation-step rules. A navigation change invalidates results; changed resident position or occupied beds invalidates its entry. Keep the original per-bed A* implementation as an independent test oracle, including complete-tick and save/reload comparisons. Only derived search data changes; no campaign/content migration is required.
 
 A single reservation attempt may aggregate held quantities by item once before its atomic input commit. Include the same escrow, carry, outstanding reservation and furniture-bundle terms as the full per-item scans, even when multiple terms apply to one stack. Group eligible source records by item only within that attempt in trusted ticks; retain original source ordering and direct-call behavior. Food replacement may collect escrow totals and candidate records in one read pass while preserving filters, exact age/distance/item/ID selection, partial work and the last complete blocked-input contract. Never reuse these temporary views after a reservation/transfer, and retain full old reservation/food paths as the independent reference.
 

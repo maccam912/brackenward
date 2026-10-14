@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.29-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.30-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.29-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `ffdce48` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-ffdce480994a); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,402 checks, zero failures, including 602 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns for 0.7.29; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,418 checks, zero failures, including 604 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.30; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2089,3 +2089,69 @@ The ffdce48 frozen v6 long campaigns remain running: two Charter and eight Winte
 cases have completed successfully so far; daily/interim reports are not passes.
 The heavy-save assignment spike and physical-phone freeze diagnosis remain open.
 Weekly remaining last observed 69%; authorized work continues.
+
+
+## 0.7.30 recovery-bed search and accurate sleep cards
+
+The retained failed stress-soak save reproduces a large assignment stall at tick
+19,500: several residents cross below 50 health together, and each independently
+runs A* to every available recovery bed. The original 240-tick assignment trace
+spends 1,208.311 ms in thirteen destination queries. An 18-second foreground
+trace reaches a 1,310.760 ms simulation batch / 1,314.416 ms session callback at
+that tick. This local reproduction is separate from the user's smaller CPH2655
+colony and does not establish that every phone stall has the same cause.
+
+Recovery selection now runs one breadth-first distance search per resident,
+retaining exact passability/elevation/bridge rules, occupancy, lowest-ID distance
+ties, first-record behavior when already at a bed and original cart-perimeter
+fallback. Derived caches retain their previous position/occupancy/navigation
+invalidation. No saved field, rate, ID, resource or content/schema value changes.
+The original per-bed A* implementation is retained independently in
+care_read_tests.gd. Fourteen new checks cover legacy/all generated sites, map
+corners, occupied/departed residents, navigation changes, tie ordering, blocked
+beds, cart fallback, complete-tick equality and save/reload.
+
+The same thirteen queries take 7.695 ms in the new 240-tick trace, with exactly
+the original final canonical hash
+e5d422c8cebc73a575724a1e18852151a81f40d5e3cbc7d8baa4987367fe549e.
+Four alternating full-tick pairs against the retained original all match hashes
+and clean invariants; median full/fast elapsed times are 4,593,212.5 / 3,099,060.5
+microseconds (about 32.5% lower). Both snapshot and complete declared source hashes
+stay unchanged. Earlier runs and the exact source/oracle evidence are retained
+under assignment-v30-* and care-search-v30-*.
+
+The foreground 1x comparison reduces the problem tick's simulation phase to
+144.939 ms, including 7.394 ms for recovery destinations; maximum session is
+148.647 ms and frame gap 162.274 ms. The later 18.008-second 4x run advances
+19,368 to 20,085 with the selected speed retained, no background/storage/error/
+quiet-speed fallback/reduction, clean invariants and unchanged source. Its maximum
+simulation batch is still 209.071 ms (session 210.883, frame gap 226.036), with
+p95 bounds 100/100/250 ms respectively. Hauling storage queries and periodic work
+creation remain material. These are short Apple M5 Pro/macOS 26.6.2 CPU profiles,
+concurrent with other headless validation, not an uncontended performance budget,
+thirty-minute soak pass or physical Android certificate.
+
+Bed/bedroll station cards and the unassignment confirmation still contained old
+hardcoded rates despite the corrected person/assignment descriptions. They now
+read the same policy constants: 75/60/45 per hour. Two new station-card UI checks
+and both existing orientation-specific unassignment checks assert these actual
+rates. The design's building table also now agrees with the rest section; frozen
+older catalogs remain untouched. The current catalog validates 440 UI keys.
+
+Care 55, scheduler 355, persistence 321, colony 42 and isolated native UI 604 pass;
+the maintained 28-suite total is 2,418. The initial final-UI attempt was invalidated
+by overlapping graphical focus checks and stopped early with seven failures and
+an array-access error; that raw log remains. The corrected isolated UI run passes
+all 604 checks. The separately sequenced native sixty-frame/audio-drain smoke
+passes. Independent current replay passes all 62 commands, both unchanged v6
+72,000-tick goldens, 234 invariants, old acknowledged migrations and foreign-save
+continuation in 101.301 seconds. Android code/name metadata was initially stale
+in a local export; the corrected final export passes, and aapt explicitly verifies
+0.7.30-m7 / code 69. The earlier export is retained as a metadata failure.
+
+Frozen v6 campaign checks continue independently on ffdce48: twelve completed
+Winter cases retain health 100, and the two completed 96-day Standard Charters
+retain eight residents, all stages and Continue with zero zero-fullness or
+starvation-grace ticks. Meadow/Pine minimum health is 82/87; those are scenario
+results, not zero-damage claims. Remaining cases and independent completion
+audits are still pending. Weekly remaining last observed 69%; work continues.

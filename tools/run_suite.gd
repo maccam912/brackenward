@@ -53,7 +53,9 @@ func run() -> void:
 		"production":
 			ProductionReadTests.run(check)
 			ProductionTests.run(check)
-		"care": CareTests.run(check)
+		"care":
+			CareReadTests.run(check)
+			CareTests.run(check)
 		"generation": GenerationTests.run(check)
 		"nature": NatureTests.run(check)
 		"wildlife": WildlifeTests.run(check)

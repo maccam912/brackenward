@@ -1,10 +1,12 @@
 extends SceneTree
 ## CPU timings for actual foreground callbacks; not a GPU/device release gate.
-const CampaignProfile = preload("res://tools/profile_campaign.gd")
-class TraceWorld extends CampaignProfile.ProfileWorld:
+const AssignmentProfile = preload("res://tools/profile_assignment.gd")
+class TraceWorld extends AssignmentProfile.AssignmentWorld:
 	var phases: Dictionary = {}
 	var slow_jobs: Array[Dictionary] = []
 	var tick_us: Array[int] = []
+	func note(label: String, started: int) -> void:
+		elapsed("assignment/"+label,started)
 	func _profile(label: String, action: Callable) -> void:
 		var started: int = Time.get_ticks_usec();action.call();elapsed(label,started)
 	func elapsed(label: String, started: int) -> void:
@@ -254,7 +256,7 @@ func stats(values: Array[int]) -> Dictionary:
 func source_evidence() -> Dictionary:
 	var files: Dictionary = {}
 	for directory in ["src","data","scenes","assets/exported"]: source_directory(directory,files)
-	for path in ["project.godot","tools/profile_foreground.gd","tools/profile_campaign.gd","tools/stress_fixture.gd"]:
+	for path in ["project.godot","tools/profile_foreground.gd","tools/profile_assignment.gd","tools/profile_campaign.gd","tools/stress_fixture.gd"]:
 		files[path]=FileAccess.get_sha256("res://"+path)
 	files["executed_profile_script"]=FileAccess.get_sha256(get_script().resource_path)
 	return {"sha256":JSON.stringify(files,"",true).sha256_text(),"files":files.size(),"scope":"src, data, scenes, exported media, project settings, profiling/fixture sources and exact executed profiler bytes"}

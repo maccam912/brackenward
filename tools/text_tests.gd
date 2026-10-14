@@ -71,4 +71,10 @@ static func ui(game: GameSession, check: Callable) -> void:
 	var before_person: String=game.world.canonical_hash();game.show_person(person.id)
 	check.call("TEXT/UI_low_food_and_rest_explains_work_priority_without_state_changes",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("instead of restarting it") and n.text.contains("rest 100")) and game.world.canonical_hash()==before_person)
 	check.call("TEXT/UI_rest_card_exposes_tired_wake_and_actual_recovery_rates",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("tired at 300") and n.text.contains("Wake at 900/1000") and n.text.contains("bed 75, bedroll 60, ground 45")) and game.world.canonical_hash()==before_person)
+	var bedroll: Dictionary=game.world.structures.filter(func(s:Dictionary)->bool:return s.definition=="bedroll")[0]
+	game.show_station(bedroll)
+	check.call("TEXT/UI_bedroll_station_reports_current_recovery_rate",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.begins_with("Rest 60/hour.")) and game.world.canonical_hash()==before_person)
+	var bed: Dictionary=game.world._structure("bed",Vector2i(90,80),0)
+	var before_bed: String=game.world.canonical_hash();game.show_station(bed)
+	check.call("TEXT/UI_bed_station_reports_current_recovery_rate",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.begins_with("Rest 75/hour.")) and game.world.canonical_hash()==before_bed)
 	game.close_sheet()

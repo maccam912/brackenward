@@ -8,6 +8,8 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 		counts[key]=counts.get(key,0)+1
 	func _assignment_check(label: String, action: Callable) -> bool:
 		var started: int=Time.get_ticks_usec();var result: bool=action.call();note(label,started);return result
+	func _care_destination(citizen: Dictionary) -> Dictionary:
+		var started: int=Time.get_ticks_usec();var result: Dictionary=ColonyCare.destination(self,citizen);note("care_destination",started);return result
 	func _food(citizen: Dictionary, releasing: Dictionary = {}) -> Dictionary:
 		if not assigning_work: return super(citizen,releasing)
 		var started: int=Time.get_ticks_usec();var result: Dictionary=super(citizen,releasing);note("food",started);return result
@@ -103,7 +105,7 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 			citizen.job = sleep_job.id
 			return
 		if citizen.health < 50:
-			var destination: Dictionary = ColonyCare.destination(self,citizen)
+			var destination: Dictionary = _care_destination(citizen)
 			var recovery: Dictionary = _job("recover","","",destination.id,destination.point,0)
 			recovery.worker = citizen.id; recovery.state = "Moving"
 			citizen.job = recovery.id

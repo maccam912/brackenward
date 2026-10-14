@@ -872,7 +872,7 @@ func _assign_search(citizen: Dictionary) -> void:
 		citizen.job = sleep_job.id
 		return
 	if citizen.health < 50:
-		var destination: Dictionary = ColonyCare.destination(self,citizen)
+		var destination: Dictionary = _care_destination(citizen)
 		var recovery: Dictionary = _job("recover","","",destination.id,destination.point,0)
 		recovery.worker = citizen.id; recovery.state = "Moving"
 		citizen.job = recovery.id
@@ -924,6 +924,9 @@ func _assign_search(citizen: Dictionary) -> void:
 			return
 	if citizen.fullness > 350:
 		citizen.activity = "Idle: designate resources or place a blueprint"
+
+func _care_destination(citizen: Dictionary) -> Dictionary:
+	return ColonyCare.destination(self,citizen)
 
 func _score(job: Dictionary, citizen: Dictionary) -> Array:
 	return [mini(3, job.priority + (tick - job.created) / 7200), citizen.preferences.get(job.category, 0),
