@@ -29,6 +29,7 @@ var inspector: PanelContainer
 var selected: int = 0
 var work_orders_page: int = 0
 var sheet_name: String = ""
+var sheet_title_key: String = ""
 var sheet_camera_center: Vector2 = Vector2.ZERO
 var text_scale: float = 1.0
 var left_handed: bool = false
@@ -153,7 +154,7 @@ func _ready() -> void:
 	_build_guidance()
 	resized.connect(_resize)
 	_layout()
-	show_sheet("Welcome")
+	show_sheet("Welcome","ui.sheet.welcome")
 	if recovery_failed:
 		show_recovery_problem()
 	elif store is ColonyStore and store.root_directory == ColonyStore.CAMPAIGN_ROOT and not ColonyStore.occupied(store.slot):
@@ -256,7 +257,7 @@ func _build_status() -> void:
 	var row: HBoxContainer = HBoxContainer.new()
 	rows.add_child(row)
 	clock_label = label("", row)
-	var menu_button: Button = button(ColonyText.text("ui.action.menu"), func() -> void: show_sheet("Menu"), row, 64)
+	var menu_button: Button = button(ColonyText.text("ui.action.menu"), func() -> void: show_sheet("Menu","ui.sheet.menu"), row, 64)
 	menu_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	notice_label = label(notice, rows)
 	notice_label.max_lines_visible = 2
@@ -268,9 +269,11 @@ func _build_navigation() -> void:
 	nav.add_theme_constant_override("v_separation", 0)
 	content.add_child(nav)
 	for title in ["Build", "Work", "People", "Valley", "Journal"]:
-		var entry: Button = button(title, func() -> void: show_sheet(title), nav)
+		var title_key: String=ColonyText.sheet_key(title)
+		var display_title: String=ColonyText.text(title_key)
+		var entry: Button = button(display_title, func() -> void: show_sheet(title,title_key), nav)
 		entry.text = ""
-		entry.tooltip_text = title
+		entry.tooltip_text = display_title
 		entry.custom_minimum_size.y = 64
 		var art: VBoxContainer = VBoxContainer.new()
 		art.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -287,7 +290,7 @@ func _build_navigation() -> void:
 		icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		art.add_child(icon)
 		var caption: Label = Label.new()
-		caption.text = title
+		caption.text = display_title
 		caption.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		caption.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		caption.add_theme_font_size_override("font_size", int(16 * text_scale))
@@ -453,7 +456,7 @@ func _advance_frame(delta: float) -> void:
 			forecast_elapsed = 0.0
 			var warning: int = 3 if forecast.ticks < 3600 else (2 if forecast.ticks < 7200 else (1 if forecast.ticks < 14400 else 0))
 			if warning > food_warning_level:
-				notice = forecast.label + ". Gather food, plant turnips, and keep Cooking enabled. Ration policy is in Menu."
+				notice = ColonyText.text("ui.forecast.warning",{"runway":ColonyText.food_runway(forecast)})
 				if is_instance_valid(soundscape): soundscape.cue("cue_warning",2,"",0.9)
 				if warning==3 and settings.values.auto_pauses.low_food: runner.pause()
 			food_warning_level = warning
@@ -489,7 +492,7 @@ func _refresh_clock() -> void:
 	clock_world_id=identity;clock_tick=world.tick;clock_speed=runner.speed
 	var season_name: String = ColonyText.text(["ui.clock.spring","ui.clock.summer","ui.clock.autumn","ui.clock.winter"][ColonyAgriculture.season(world.tick)])
 	var stock: String = ColonyText.text("ui.clock.stock",{"meals":world.available("meal"),"wood":world.available("wood")}) if world is ColonyWorld else ColonyText.plural("ui.clock.travelers",world.citizens.size())
-	var speed_name: String = ColonyText.text("ui.clock.paused") if runner.speed==0 else ColonyText.text("ui.clock.speed",{"speed":runner.speed})
+	var speed_name: String = ColonyText.speed_label(runner.speed)
 	clock_label.text=ColonyText.text("ui.clock.status",{"season":season_name,"day":(world.tick/7200)%8+1,"year":world.tick/230400+1,"hour":"%02d" % ((world.tick%7200)/300),"minute":"%02d" % ((world.tick%300)/5),"stock":stock,"speed":speed_name})
 
 func _start_background_save(full_snapshot: bool) -> void:
@@ -688,7 +691,7 @@ func _map_intent(action: Dictionary) -> void:
 		if a.distance!=b.distance: return a.distance<b.distance
 		return a.object.id<b.object.id)
 	if action.kind=="chooser" or candidates.size()>1:
-		show_sheet("Select object")
+		show_sheet("Select object","ui.sheet.select_object")
 		for candidate in candidates:
 			var title: String = candidate.object.get("name",("Ruins: " if candidate.kind=="station" and candidate.object.health<=0 else candidate.kind+": ")+candidate.object.get("definition",candidate.object.get("crop","")))
 			if candidate.kind=="merchant": title=candidate.object.community.capitalize()+" merchant"
@@ -700,7 +703,7 @@ func _map_intent(action: Dictionary) -> void:
 			for pen in world.domestic_state.pens:
 				if pen.tiles.has(action.tile): show_pen(pen);return
 		if view.rejected_build_tiles.has(action.tile):
-			show_sheet("Unsubmitted building cell");label(view.rejected_build_tiles[action.tile],sheet_body);return
+			show_sheet("Unsubmitted building cell","ui.sheet.unsubmitted_building_cell");label(view.rejected_build_tiles[action.tile],sheet_body);return
 		notice="Terrain (%d, %d). Use Build to place a blueprint." % [action.tile.x,action.tile.y]
 
 func _select_map_object(candidate: Dictionary) -> void:
@@ -719,7 +722,7 @@ func _select_map_object(candidate: Dictionary) -> void:
 		"resource": _resource_sheet(object)
 		"field": _field_sheet(object)
 		"carcass":
-			show_sheet("Carcass")
+			show_sheet("Carcass","ui.sheet.carcass")
 			label("%s: %.1f game hours until spoilage. Gathering workers butcher it; outputs need hauling." % [_catalog_name(object.definition),(object.expires-world.tick)/300.0],sheet_body)
 	view.inspected_object=object.id
 	if candidate.kind in ["station","job"]: view.inspected_tiles=world.footprint(object)
@@ -763,7 +766,7 @@ func close_inspector() -> void:
 	view.selected_id = 0
 	view.inspected_tiles.clear();view.inspected_object=0
 
-func show_sheet(title: String) -> void:
+func show_sheet(title: String, title_key: String = "") -> void:
 	listening_binding=""
 	text_entry_error=""
 	if sheet==null: sheet_camera_center=view.camera_center()
@@ -773,20 +776,22 @@ func show_sheet(title: String) -> void:
 		sheet.queue_free()
 	close_inspector()
 	sheet_name = title
+	sheet_title_key=title_key
+	var display_title: String=ColonyText.text(title_key) if not title_key.is_empty() else title
 	sheet = PanelContainer.new()
 	content.add_child(sheet)
 	var rows: VBoxContainer = VBoxContainer.new()
 	sheet.add_child(rows)
 	var top: HBoxContainer = HBoxContainer.new()
 	rows.add_child(top)
-	var heading: Label = label(title, top)
+	var heading: Label = label(display_title, top)
 	sheet_heading=heading
 	heading.name="SheetHeading"
 	heading.autowrap_mode=TextServer.AUTOWRAP_OFF
 	heading.clip_text=true
 	heading.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
-	heading.tooltip_text=ColonyFonts.display(title)
-	if not ColonyFonts.warning(title).is_empty(): heading.tooltip_text+="\n"+ColonyFonts.warning(title)
+	heading.tooltip_text=ColonyFonts.display(display_title)
+	if not ColonyFonts.warning(display_title).is_empty(): heading.tooltip_text+="\n"+ColonyFonts.warning(display_title)
 	heading.add_theme_font_override("font", ColonyFonts.heading())
 	heading.add_theme_font_size_override("font_size", int(16 * text_scale))
 	var close_button: Button = button(ColonyText.text("ui.action.close"), close_sheet, top, 64)
@@ -800,7 +805,7 @@ func show_sheet(title: String) -> void:
 	sheet_body = VBoxContainer.new()
 	sheet_body.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	scroll.add_child(sheet_body)
-	sheet_full_heading=label(title,sheet_body)
+	sheet_full_heading=label(display_title,sheet_body)
 	sheet_full_heading.name="FullSheetHeading"
 	sheet_full_heading.add_theme_font_override("font",ColonyFonts.heading())
 	sheet_full_heading.add_theme_font_size_override("font_size",int(16*text_scale))
@@ -864,18 +869,18 @@ func show_sheet(title: String) -> void:
 				text_scale = 1.25 if text_scale == 1.0 else (1.5 if text_scale == 1.25 else 1.0)
 				_save_settings()
 				_build_theme()
-				show_sheet("Menu"), sheet_body)
+				show_sheet("Menu","ui.sheet.menu"), sheet_body)
 			button("Handedness: " + ("Left" if left_handed else "Right"), func() -> void:
 				left_handed = not left_handed
 				_save_settings()
-				show_sheet("Menu"), sheet_body)
+				show_sheet("Menu","ui.sheet.menu"), sheet_body)
 			if world is ColonyWorld:
 				button(ColonyText.text("ui.action.campaign_slots"),show_campaigns,sheet_body)
 				button(ColonyText.text("ui.action.named_snapshots"),show_named_snapshots,sheet_body)
 				button(ColonyText.text("ui.action.weather_forecast"),show_weather,sheet_body)
 				label("Travel rations are expedition reserves. Home use is " + ("on" if world.use_rations else "off") + ".",sheet_body)
 				button("Keep rations for expeditions" if world.use_rations else "Use rations at home",func() -> void: _submit("food_policy", {"enabled":not world.use_rations}),sheet_body)
-			button(ColonyText.text("ui.action.introduction"), func() -> void: show_sheet("Welcome"), sheet_body)
+			button(ColonyText.text("ui.action.introduction"), func() -> void: show_sheet("Welcome","ui.sheet.welcome"), sheet_body)
 	_layout()
 	get_viewport().gui_release_focus()
 	call_deferred("_layout")
@@ -886,9 +891,10 @@ func _adapt_sheet_heading() -> void:
 	var available: float = top.size.x-top.get_theme_constant("separation")*2
 	for child in top.get_children():
 		if child is Button: available-=child.get_combined_minimum_size().x
-	var title: String = ColonyFonts.display(sheet_name)
+	var raw_title: String = ColonyText.text(sheet_title_key) if not sheet_title_key.is_empty() else sheet_name
+	var title: String = ColonyFonts.display(raw_title)
 	var width: float = sheet_heading.get_theme_font("font").get_string_size(title,HORIZONTAL_ALIGNMENT_LEFT,-1,sheet_heading.get_theme_font_size("font_size")).x
-	var fits: bool = width<=available and ColonyFonts.warning(sheet_name).is_empty()
+	var fits: bool = width<=available and ColonyFonts.warning(raw_title).is_empty()
 	sheet_heading.text=title if fits else ""
 	sheet_full_heading.visible=not fits
 
@@ -900,6 +906,7 @@ func close_sheet() -> void:
 		sheet.queue_free()
 		sheet = null
 	sheet_name = ""
+	sheet_title_key=""
 	notice = "Paused. Choose 1x, 2x, or 4x to resume."
 	_layout()
 
@@ -1173,7 +1180,7 @@ func resume_from_background() -> void:
 	if not storage_error.is_empty() and not saving_disabled:
 		_storage_failed(storage_error)
 		return
-	show_sheet("Welcome back")
+	show_sheet("Welcome back","ui.sheet.welcome_back")
 	label(notice, sheet_body)
 
 func _notification(what: int) -> void:
@@ -1209,7 +1216,7 @@ func back() -> void:
 	elif inspector != null:
 		close_inspector()
 	else:
-		show_sheet("Menu")
+		show_sheet("Menu","ui.sheet.menu")
 
 func _unhandled_key_input(event: InputEvent) -> void:
 	if quitting: return
@@ -1247,7 +1254,7 @@ func _shortcut(action: String) -> bool:
 		"speed_1": set_speed(1)
 		"speed_2": set_speed(2)
 		"speed_4": set_speed(4)
-		"build","work","people","valley","journal": show_sheet(action.capitalize())
+		"build","work","people","valley","journal": show_sheet(action.capitalize(),ColonyText.sheet_key(action.capitalize()))
 		"pan_up","pan_down","pan_left","pan_right":
 			if sheet!=null: return false
 			view.follow_id=0
@@ -1365,7 +1372,7 @@ func _resource_sheet(resource: Dictionary) -> void:
 			view.camera_tile = Vector2(resource.x, resource.y), sheet_body)
 
 func _job_sheet(job: Dictionary) -> void:
-	show_sheet("Work order")
+	show_sheet("Work order","ui.sheet.work_order")
 	label("%s: %s\nWork %d/%d WU\n%s" % [job.kind.capitalize(), job.state, job.work / 1000, job.required / 1000, job.reason], sheet_body)
 	if job.state=="Queued": label(ColonyText.text("ui.help.job_sheet.waiting_for_work_capacity_the_order_keeps"),sheet_body).name="QueuedOrderExplanation"
 	if not job.inputs.is_empty():
@@ -1416,7 +1423,7 @@ func _work_sheet() -> void:
 		if not job.reason.is_empty(): label(job.reason,sheet_body)
 
 func _show_work_page(page: int) -> void:
-	work_orders_page=page;show_sheet("Work")
+	work_orders_page=page;show_sheet("Work","ui.sheet.work")
 	_scroll_work_orders.call_deferred()
 
 func _scroll_work_orders() -> void:
@@ -1465,7 +1472,7 @@ func _tutorial_dismiss() -> void:
 	ColonyTutorial.dismiss(_tutorial_state());_save_settings()
 
 func show_tutorials() -> void:
-	show_sheet("Lessons")
+	show_sheet("Lessons","ui.sheet.lessons")
 	_tutorial_sheet()
 
 func _tutorial_show_me() -> void:
@@ -1501,19 +1508,19 @@ func _tutorial_show_me() -> void:
 func tutorial_forecast_text() -> String:
 	if not world is ColonyWorld: return ""
 	var residents: int = ColonyCharter.living(world,true).size()
-	return "%s | %d meal portions/day\n%s" % [FoodForecast.calculate(world).label,residents*2,_tutorial_harvest_text()]
+	return ColonyText.text("ui.forecast.summary",{"runway":ColonyText.food_runway(FoodForecast.calculate(world)),"demand":ColonyText.plural("ui.forecast.daily_demand",residents*2),"harvest":_tutorial_harvest_text()})
 
 func _tutorial_harvest_text() -> String:
 	var soonest: int = 2147483647
 	var quantity: int = 0
-	var reason: String = "No planted crops: plant seasonal food and keep Growing enabled."
+	var reason: String = ColonyText.text("ui.forecast.harvest.none")
 	for field in world.fields:
 		if not field.planted: continue
 		var definition: Dictionary = world.definitions.crops[field.crop]
 		if world.definitions.items[definition.item].fullness<=0 and definition.item not in world.definitions.recipes.cook_meals.alternatives: continue
-		if field.ripe_tick>0: return "Ripe crops are ready now; workers still need to harvest and haul them."
+		if field.ripe_tick>0: return ColonyText.text("ui.forecast.harvest.ready")
 		if ColonyAgriculture.season(world.tick) not in definition.seasons or world.roofed(Vector2i(field.x,field.y))!=definition.roof or world.is_flooded(Vector2i(field.x,field.y)):
-			reason="Planted crops are paused: "+field.reason;continue
+			reason=ColonyText.text("ui.forecast.harvest.paused",{"reason":field.reason});continue
 		var watered: bool = world.structures.any(func(s:Dictionary)->bool:return s.health>0 and s.definition=="well" and absi(s.x-field.x)+absi(s.y-field.y)<=8)
 		var rate: int = field.fertility*(500 if world.weather=="drought" and not watered else 1000)/1000
 		if rate<=0: continue
@@ -1522,7 +1529,7 @@ func _tutorial_harvest_text() -> String:
 		elif remaining==soonest: quantity+=field.yield_count
 	if soonest==2147483647: return reason
 	var hours: int = (soonest+299)/300
-	return "Next crop maturity: about %d days %d hours, %d raw food units, if current growing conditions continue." % [hours/24,hours%24,quantity]
+	return ColonyText.text("ui.forecast.harvest.maturity",{"days":ColonyText.plural("ui.forecast.days",hours/24),"hours":ColonyText.plural("ui.forecast.hours",hours%24),"food":ColonyText.plural("ui.forecast.raw_food",quantity)})
 
 func begin_field() -> void:
 	begin_placement()
@@ -1548,7 +1555,7 @@ func _field_sheet(field: Dictionary) -> void:
 		close_sheet(),sheet_body)
 
 func _storage_sheet(storage: Dictionary) -> void:
-	show_sheet("Storage")
+	show_sheet("Storage","ui.sheet.storage")
 	var count: int = 0
 	for stack in world.stacks:
 		if stack.location == "store" and stack.owner == storage.id:
@@ -1576,7 +1583,7 @@ func _storage_failed(error: String) -> void:
 	runner.pause()
 	view.cancel_gesture()
 	notice = error
-	show_sheet("Save problem")
+	show_sheet("Save problem","ui.sheet.save_problem")
 	label(error + "\nCurrent progress remains in memory. No earlier valid save was replaced.",sheet_body)
 	button(ColonyText.text("ui.action.retry_save"),save_local,sheet_body)
 	button(ColonyText.text("ui.action.export_current_colony"),func() -> void: choose_document(true),sheet_body)
@@ -1588,7 +1595,7 @@ func _storage_failed(error: String) -> void:
 
 func show_recovery_problem() -> void:
 	runner.pause()
-	show_sheet("Recovery stopped")
+	show_sheet("Recovery stopped","ui.sheet.recovery_stopped")
 	label(storage_error + "\nOriginal campaign files are retained. Choose another campaign or import a verified snapshot. This preview will not overwrite the failed campaign.",sheet_body)
 	button(ColonyText.text("ui.action.campaign_slots"),show_campaigns,sheet_body)
 	button(ColonyText.text("ui.action.import_verified_save"),func() -> void: choose_document(false),sheet_body)
@@ -1598,7 +1605,7 @@ func show_campaigns() -> void:
 		return
 	if not recovery_failed and not saving_disabled and not save_local().is_empty():
 		return
-	show_sheet("Campaigns")
+	show_sheet("Campaigns","ui.sheet.campaigns")
 	label(ColonyText.text("ui.help.campaigns.five_independent_campaign_slots_switching_first_saves"),sheet_body)
 	for number in range(1,6):
 		var exists: bool = ColonyStore.occupied(number,store.root_directory)
@@ -1633,13 +1640,13 @@ func _switch_campaign(number: int, exists: bool) -> void:
 func show_import_slots() -> void:
 	if pending_import_world == null:
 		return
-	show_sheet("Import campaign")
+	show_sheet("Import campaign","ui.sheet.import_campaign")
 	label(ColonyText.text("ui.help.import_slots.the_complete_snapshot_is_verified_select_an"),sheet_body)
 	for number in range(1,6):
 		var exists: bool = ColonyStore.occupied(number,store.root_directory)
 		button(("Replace" if exists else "Import into")+" campaign %d" % number,func() -> void:
 			if exists:
-				show_sheet("Confirm replacement")
+				show_sheet("Confirm replacement","ui.sheet.confirm_replacement")
 				label("Replace campaign %d with the verified import? The previous campaign is archived before adoption. Every other campaign stays intact." % number,sheet_body)
 				button("Replace campaign %d" % number,func() -> void: _adopt_import(number,true),sheet_body)
 				button(ColonyText.text("ui.action.choose_another_slot"),show_import_slots,sheet_body)
@@ -1672,7 +1679,7 @@ func _adopt_import(number: int, replace: bool) -> void:
 func show_named_snapshots() -> void:
 	if not store is ColonyStore or recovery_failed:
 		return
-	show_sheet("Named snapshots")
+	show_sheet("Named snapshots","ui.sheet.named_snapshots")
 	label(ColonyText.text("ui.help.named_snapshots.ten_named_snapshots_per_campaign_autosaves_use"),sheet_body)
 	for row in store.named_snapshots():
 		label("%d: %s" % [row.index,row.name],sheet_body)
@@ -1681,7 +1688,7 @@ func show_named_snapshots() -> void:
 		button(("Replace" if row.exists else "Save")+" snapshot %d" % row.index,func() -> void: _name_snapshot(row.index,row.exists,row.name),sheet_body)
 
 func _name_snapshot(index: int, exists: bool, previous_name: String) -> void:
-	show_sheet("Name snapshot")
+	show_sheet("Name snapshot","ui.sheet.name_snapshot")
 	label("Replacing %s requires confirmation." % previous_name if exists else "Name this paused snapshot.",sheet_body)
 	label(ColonyText.text("ui.help.name_snapshot.use_1_64_printable_basic_latin_characters"),sheet_body)
 	var entry: LineEdit = LineEdit.new()
@@ -1697,7 +1704,7 @@ func _name_snapshot(index: int, exists: bool, previous_name: String) -> void:
 			_text_entry_error("Snapshot names require 1-64 printable Basic Latin characters.")
 			return
 		if exists:
-			show_sheet("Confirm snapshot replacement")
+			show_sheet("Confirm snapshot replacement","ui.sheet.confirm_snapshot_replacement")
 			label("Replace %s with %s? Only snapshot slot %d changes." % [previous_name,snapshot_name,index],sheet_body)
 			button(ColonyText.text("ui.action.replace_snapshot"),func() -> void: _save_named(index,snapshot_name,true),sheet_body)
 		else:
@@ -1766,30 +1773,29 @@ func _performance_report() -> Dictionary:
 	return diagnostics.report(metadata)
 
 func show_diagnostics(refresh: bool = true) -> void:
-	show_sheet("Performance report")
+	show_sheet("Performance report","ui.sheet.performance_report")
 	if refresh or diagnostic_preview.is_empty(): diagnostic_preview=_performance_report()
 	label(ColonyText.text("ui.help.diagnostics.device_seed_and_timing_measurements_review_before"),sheet_body)
 	button(ColonyText.text("ui.action.view_included_report"),func()->void:
-		show_sheet("Included report");label(JSON.stringify(diagnostic_preview,"  ",true),sheet_body)
+		show_sheet("Included report","ui.sheet.included_report");label(JSON.stringify(diagnostic_preview,"  ",true),sheet_body)
 		button(ColonyText.text("ui.action.back_to_report"),func()->void:show_diagnostics(false),sheet_body),sheet_body).name="PreviewDiagnostics"
 	button(ColonyText.text("ui.action.export_this_report"),choose_diagnostics,sheet_body).name="ExportDiagnostics"
 	button(ColonyText.text("ui.action.copy_this_report"),func()->void:
 		var bytes: PackedByteArray = _diagnostic_bytes()
 		if bytes.is_empty(): return
-		DisplayServer.clipboard_set(bytes.get_string_from_utf8());notice="Performance report copied.",sheet_body).name="CopyDiagnostics"
+		DisplayServer.clipboard_set(bytes.get_string_from_utf8());notice=ColonyText.text("ui.notice.performance_copied"),sheet_body).name="CopyDiagnostics"
 	button(ColonyText.text("ui.action.reset_measurements"),func()->void:diagnostics.reset();show_diagnostics(),sheet_body).name="ResetDiagnostics"
-	label("%s | %s | %s" % [diagnostic_preview.metadata.build,diagnostic_preview.metadata.platform,diagnostic_preview.metadata.device_model],sheet_body)
+	label(ColonyText.text("ui.performance.device",{"build":diagnostic_preview.metadata.build,"platform":diagnostic_preview.metadata.platform,"model":diagnostic_preview.metadata.device_model}),sheet_body)
 	label(ColonyText.text("ui.help.diagnostics.includes_device_os_gpu_map_seed_tick"),sheet_body)
 	if diagnostic_preview.timings.is_empty(): label(ColonyText.text("ui.help.diagnostics.no_samples_yet_close_this_panel_play"),sheet_body)
 	for entry in diagnostic_preview.timings:
-		var upper: String = ">1000" if entry.p95_bucket_upper_ms==null else str(entry.p95_bucket_upper_ms)
-		label("%s / %s: %d samples, max %.1f ms, %d over 50 ms; p95 bucket upper %s ms." % [entry.stage.replace("_"," "),"Paused" if entry.speed==0 else "%dx" % entry.speed,entry.count,entry.max_ms,entry.over_50ms,upper],sheet_body)
+		label(ColonyText.performance_timing(entry),sheet_body)
 	label(ColonyText.text("ui.help.diagnostics.nested_callback_times_overlap_do_not_add"),sheet_body)
 
 func _diagnostic_bytes() -> PackedByteArray:
 	var bytes: PackedByteArray = JSON.stringify(diagnostic_preview,"\t",true).to_utf8_buffer()
 	if diagnostic_preview.get("format")!="brackenward-performance" or bytes.size()>FrameDiagnostics.MAX_EXPORT_BYTES:
-		notice="Performance report is unavailable or exceeds its 64 KiB limit.";return PackedByteArray()
+		notice=ColonyText.text("ui.notice.performance_unavailable");return PackedByteArray()
 	return bytes
 
 func choose_diagnostics() -> void:
@@ -1808,7 +1814,7 @@ func choose_diagnostics() -> void:
 	file_dialog.popup_centered(Vector2i(720,480))
 
 func show_accessibility() -> void:
-	show_sheet("Settings")
+	show_sheet("Settings","ui.sheet.settings")
 	button("Text size: %d%%" % int(text_scale*100),func()->void:
 		text_scale=1.25 if text_scale==1.0 else (1.5 if text_scale==1.25 else 1.0)
 		_save_settings();_build_theme();show_accessibility(),sheet_body)
@@ -1831,7 +1837,7 @@ func show_accessibility() -> void:
 	button(ColonyText.text("ui.action.keyboard_controls"),show_controls,sheet_body)
 
 func show_audio_settings() -> void:
-	show_sheet("Sound")
+	show_sheet("Sound","ui.sheet.sound")
 	label(ColonyText.text("ui.help.audio_settings.warnings_stay_visible_when_sound_is_muted"),sheet_body)
 	for channel in settings.values.audio:
 		var name: String = {"master":"Master","music":"Music","effects":"Effects","ui":"Interface"}[channel]
@@ -1851,7 +1857,7 @@ func show_audio_settings() -> void:
 	button(ColonyText.text("ui.action.back_to_settings"),show_accessibility,sheet_body)
 
 func show_auto_pauses() -> void:
-	show_sheet("Auto pauses")
+	show_sheet("Auto pauses","ui.sheet.auto_pauses")
 	label(ColonyText.text("ui.help.auto_pauses.each_event_pauses_once_turning_a_pause"),sheet_body)
 	for key in settings.values.auto_pauses:
 		var title: String = {"downed":"Downed resident","hostile":"Hostile arrival","fire":"New building fire","expedition":"Expedition decision","departure":"Departure ultimatum","low_food":"Food below half a day"}[key]
@@ -1862,7 +1868,7 @@ func show_auto_pauses() -> void:
 	button(ColonyText.text("ui.action.back_to_settings"),show_accessibility,sheet_body)
 
 func show_controls() -> void:
-	show_sheet("Keys")
+	show_sheet("Keys","ui.sheet.keys")
 	label(ColonyText.text("ui.help.controls.choose_an_action_then_press_a_key"),sheet_body)
 	for action in ControlBindings.DEFAULTS:
 		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
@@ -1873,14 +1879,14 @@ func show_controls() -> void:
 	button(ColonyText.text("ui.action.back_to_settings"),show_accessibility,sheet_body)
 
 func show_key_capture(action: String) -> void:
-	show_sheet("Choose key")
+	show_sheet("Choose key","ui.sheet.choose_key")
 	label(ControlBindings.LABELS[action]+"\nCurrent: "+ControlBindings.describe(settings.values.bindings[action])+"\nPress a key or shortcut. Escape cancels this choice.",sheet_body)
 	button(ColonyText.text("ui.action.cancel"),show_controls,sheet_body)
 	listening_binding=action
 
 func show_weather() -> void:
 	_tutorial_action("weather")
-	show_sheet("Weather forecast")
+	show_sheet("Weather forecast","ui.sheet.weather_forecast")
 	label("Today: %s, %d C\n%s" % [world.weather.replace("_"," "),ColonyLiving.temperature(world),ColonyWeather.describe(world.weather)],sheet_body)
 	for entry in world.weather_state.days:
 		if entry.day <= world.tick / 7200: continue
@@ -1917,7 +1923,7 @@ func show_work_preferences(id: int) -> void:
 			var value: int = (_queued_preference(id,category)+1)%4
 			_submit("preference",{"citizen":id,"category":category,"value":value})
 			entry.text = category+": "+["Off","Last","Normal","First"][value]+" (pending)")
-	button(ColonyText.text("ui.action.all_work_orders"),func() -> void:show_sheet("Work"),sheet_body)
+	button(ColonyText.text("ui.action.all_work_orders"),func() -> void:show_sheet("Work","ui.sheet.work"),sheet_body)
 
 func _queued_preference(id: int,category: String) -> int:
 	var value: int = world.find(world.citizens,id).preferences[category]
@@ -1956,7 +1962,7 @@ func show_appearance(id: int, draft: Dictionary = {}) -> void:
 	var person: Dictionary = world.find(world.citizens,id)
 	if person.is_empty() or person.death_recorded or person.departed: return
 	var choices: Dictionary = person.appearance.duplicate() if draft.is_empty() else draft.duplicate()
-	show_sheet("Style")
+	show_sheet("Style","ui.sheet.style")
 	sheet_feedback.visible=false
 	var preview_row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(preview_row)
 	preview_row.add_child(CitizenArt.portrait(choices,64))
@@ -2030,7 +2036,7 @@ func show_person(id: int) -> void:
 
 func show_research() -> void:
 	_tutorial_action("research")
-	show_sheet("Research")
+	show_sheet("Research","ui.sheet.research")
 	label(ColonyText.text("ui.help.research.one_active_project_up_to_two_desks"),sheet_body)
 	label("Active: "+("None" if world.production_state.project.is_empty() else _catalog_name(world.production_state.project))+"\nQueue: "+", ".join(world.production_state.queue.map(_catalog_name))+"\nBanked insight: %d" % world.production_state.insight,sheet_body)
 	for id in world.definitions.research:
@@ -2117,7 +2123,7 @@ func _catalog_name(id: String) -> String:
 	return catalog_strings.get(key+".name",key.replace("_"," ").capitalize())
 
 func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
-	show_sheet("Production policy")
+	show_sheet("Production policy","ui.sheet.production_policy")
 	label(_catalog_name(recipe.id)+" at "+_catalog_name(station.definition),sheet_body)
 	label(ColonyText.text("ui.help.recipe_policy.repeat_counts_completed_batches_maintain_counts_available"),sheet_body)
 	var mode: CycleChoiceButton = CycleChoiceButton.new()
@@ -2149,7 +2155,7 @@ func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
 		close_sheet(),sheet_body)
 
 func show_mode() -> void:
-	show_sheet("Colony mode")
+	show_sheet("Colony mode","ui.sheet.colony_mode")
 	label(ColonyText.text("ui.help.mode.standard_allows_sustained_hunger_and_untreated_injuries"),sheet_body)
 	for mode in ["Standard","Hearthside"]:
 		button("Choose "+mode,func()->void:
@@ -2158,7 +2164,7 @@ func show_mode() -> void:
 
 func show_care() -> void:
 	_tutorial_action("care")
-	show_sheet("Injuries and care")
+	show_sheet("Injuries and care","ui.sheet.injuries_and_care")
 	label(ColonyText.text("ui.help.care.rescue_carries_a_downed_person_to_the"),sheet_body)
 	for patient in world.citizens:
 		if patient.death_recorded or patient.departed or patient.health >= 100: continue
@@ -2187,24 +2193,24 @@ func show_care() -> void:
 			close_sheet(),sheet_body)
 	if world.citizens.all(func(c:Dictionary)->bool:return c.downed or c.death_recorded or c.departed):
 		label(ColonyText.text("ui.help.care.everyone_at_home_is_downed_available_recovery"),sheet_body)
-	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_sheet("Work"),sheet_body)
+	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_sheet("Work","ui.sheet.work"),sheet_body)
 
 func show_epilogue() -> void:
 	runner.pause()
-	show_sheet("Colony epilogue")
+	show_sheet("Colony epilogue","ui.sheet.colony_epilogue")
 	label(ColonyText.text("ui.help.epilogue.no_living_residents_remain_in_this_colony"),sheet_body)
 	button(ColonyText.text("ui.action.load_save"),show_named_snapshots,sheet_body)
 	button(ColonyText.text("ui.action.new_colony_with_this_seed"),show_seed_restart,sheet_body)
-	button(ColonyText.text("ui.action.return_to_menu"),func()->void: show_sheet("Menu"),sheet_body)
+	button(ColonyText.text("ui.action.return_to_menu"),func()->void: show_sheet("Menu","ui.sheet.menu"),sheet_body)
 
 func show_seed_restart() -> void:
-	show_sheet("New colony with this seed")
+	show_sheet("New colony with this seed","ui.sheet.new_colony_with_this_seed")
 	label("Seed %d. Choose a campaign slot; an occupied slot is archived only after confirmation. Other campaigns stay intact." % world.seed,sheet_body)
 	for number in range(1,6):
 		var exists: bool = ColonyStore.occupied(number,store.root_directory)
 		button(("Replace" if exists else "New")+" campaign %d" % number,func()->void:
 			if exists:
-				show_sheet("Confirm new colony")
+				show_sheet("Confirm new colony","ui.sheet.confirm_new_colony")
 				label("Archive campaign %d and start again with seed %d?" % [number,world.seed],sheet_body)
 				button(ColonyText.text("ui.action.archive_and_restart"),func()->void:_restart_seed(number,true),sheet_body)
 			else: _restart_seed(number,false),sheet_body)
@@ -2213,7 +2219,7 @@ func _restart_seed(number: int, replace: bool) -> void:
 	_create_new_colony(number,world.seed,world.site_id,world.care_state.mode,replace)
 
 func show_new_colony(number: int) -> void:
-	show_sheet("New colony")
+	show_sheet("New colony","ui.sheet.new_colony")
 	label("Campaign %d | Mira, Oren, Tavi, Sela\nSafe home, 8 x 8 field, nearby food/deposits.\nFirst days: Clear, Rain, Clear." % number,sheet_body)
 	var site: CycleChoiceButton = CycleChoiceButton.new()
 	for name in ["Meadow Reach","Pine Shelf","Reed Bend"]: site.add_item(name)
@@ -2251,7 +2257,7 @@ func show_new_colony(number: int) -> void:
 func _create_new_colony(number: int, seed_value: int, site: String, mode: String, replace: bool) -> void:
 	if creation_thread != null and creation_thread.is_started(): return
 	if not recovery_failed and not saving_disabled and not save_local().is_empty(): return
-	show_sheet("Growing the valley")
+	show_sheet("Growing the valley","ui.sheet.growing_the_valley")
 	label("Preparing and checking seed %d at %s. Time stays paused." % [seed_value,_catalog_name(site)],sheet_body)
 	var definitions: Dictionary = world.definitions.duplicate(true)
 	var campaign_id: String = Crypto.new().generate_random_bytes(16).hex_encode()
@@ -2270,7 +2276,7 @@ func _create_new_colony(number: int, seed_value: int, site: String, mode: String
 	var result: Dictionary = creation_thread.wait_to_finish()
 	creation_thread = null
 	if result.has("error"):
-		show_sheet("Generation problem")
+		show_sheet("Generation problem","ui.sheet.generation_problem")
 		label(result.error,sheet_body)
 		button(ColonyText.text("ui.action.choose_another_seed"),func()->void:show_new_colony(number),sheet_body)
 		return
@@ -2285,7 +2291,7 @@ func _create_new_colony(number: int, seed_value: int, site: String, mode: String
 	var cart: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition == "supply_cart")[0]
 	view.camera_tile = Vector2(cart.x+1,cart.y+1)
 	_save_settings()
-	show_sheet("Welcome")
+	show_sheet("Welcome","ui.sheet.welcome")
 	if world.terrain_state.fallback: notice = "This seed uses the verified fallback layout. See generation details in Menu."
 
 func _exit_tree() -> void:
@@ -2296,7 +2302,7 @@ func _home_tile(point: Vector2i) -> Vector2i:
 	return ColonyGeneration.transformed(point,world.terrain_state.transform) if world is ColonyWorld and world.generator_version > 0 else point
 
 func show_map_details() -> void:
-	show_sheet("Map and seed")
+	show_sheet("Map and seed","ui.sheet.map_and_seed")
 	label("%s | Seed %d" % [_catalog_name(world.site_id),world.seed],sheet_body)
 	if world.generator_version == 0:
 		label(ColonyText.text("ui.help.map_details.this_campaign_keeps_its_original_starter_map"),sheet_body)
@@ -2317,7 +2323,7 @@ func begin_forest() -> void:
 	notice = "Drag around trees. The forest keeps 75% mature and replants cut cells; individual cuts can go below that reserve."
 
 func show_forest(zone: Dictionary) -> void:
-	show_sheet("Forest zone")
+	show_sheet("Forest zone","ui.sheet.forest_zone")
 	var trees: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition == "tree" and zone.tiles.has(Vector2i(r.x,r.y)))
 	var mature: int = trees.filter(func(r:Dictionary)->bool:return r.remaining > 0).size()
 	label("%d mature / %d tree sites. Automatic cutting keeps at least %d mature, rounded up. Explicit cuts may go below the reserve. Replanting costs 4 WU; maturity takes eight non-winter days." % [mature,trees.size(),(trees.size()*zone.reserve+99)/100],sheet_body)
@@ -2329,7 +2335,7 @@ func show_forest(zone: Dictionary) -> void:
 		close_sheet(),sheet_body)
 
 func show_wildlife() -> void:
-	show_sheet("Wildlife")
+	show_sheet("Wildlife","ui.sheet.wildlife")
 	label(ColonyText.text("ui.help.wildlife.wild_animals_forage_and_flee_mark_a"),sheet_body)
 	for animal in world.wildlife_state.animals:
 		if animal.health<=0: continue
@@ -2361,7 +2367,7 @@ func _wildlife_sheet(animal: Dictionary) -> void:
 	if animal.definition == "boar":
 		button(ColonyText.text("ui.action.solo_hunt_risk"),func()->void:
 			var chosen: int = hunter_ids[hunter.selected]
-			show_sheet("Solo boar hunt")
+			show_sheet("Solo boar hunt","ui.sheet.solo_boar_hunt")
 			label(ColonyText.text("ui.help.wildlife_sheet.a_wounded_boar_deals_12_damage_every"),sheet_body)
 			button(ColonyText.text("ui.action.confirm_solo_hunt"),func()->void:_submit("hunt",{"target":animal.id,"solo":true,"citizen":chosen});close_sheet(),sheet_body),sheet_body)
 
@@ -2370,7 +2376,7 @@ func begin_pen() -> void:
 	notice="Paint inside completed fences or walls. A gate permits handlers to lead animals. Each animal needs four free tiles and one barn shelter slot."
 
 func show_pens() -> void:
-	show_sheet("Livestock pens")
+	show_sheet("Livestock pens","ui.sheet.livestock_pens")
 	label(ColonyText.text("ui.help.pens.husbandry_unlocks_pens_and_animal_acquisition_build"),sheet_body)
 	button(ColonyText.text("ui.action.paint_pen"),begin_pen,sheet_body)
 	for pen in world.domestic_state.pens:
@@ -2378,7 +2384,7 @@ func show_pens() -> void:
 		button("Pen %d · %d/%d animals" % [pen.id,info.count,info.capacity],func()->void:show_pen(pen),sheet_body)
 
 func show_pen(pen: Dictionary) -> void:
-	show_sheet("Livestock pen")
+	show_sheet("Livestock pen","ui.sheet.livestock_pen")
 	var info: Dictionary = ColonyDomestic.status(world,pen)
 	var animals: Array = ColonyDomestic.occupants(world,pen.id)
 	var daily: int = 0
@@ -2462,7 +2468,7 @@ func begin_cart_move(cart: Dictionary) -> void:
 	notice="Move the supply cart for 20 WU, then push it along a clear two-by-two route. Stored goods keep their age and remain aboard. Canceling a push stops at the current position."
 
 func show_newcomers() -> void:
-	show_sheet("Newcomer offers")
+	show_sheet("Newcomer offers","ui.sheet.newcomer_offers")
 	label(ColonyText.text("ui.help.newcomers.adult_travelers_offer_to_join_every_four"),sheet_body)
 	var waiting: Array = world.population_state.offers.filter(func(o:Dictionary)->bool:return o.state in ["Offered","Accepted"])
 	if waiting.is_empty(): label(ColonyText.text("ui.help.newcomers.no_traveler_is_waiting_the_next_offers"),sheet_body)
@@ -2479,11 +2485,11 @@ func show_newcomers() -> void:
 		if check.error.is_empty(): button("Accept "+person.name,func()->void:_submit("newcomer",{"target":request.id,"accept":true});close_sheet(),sheet_body)
 		else:
 			button(ColonyText.text("ui.action.build_sleeping_place"),func()->void:begin_build("bedroll"),sheet_body)
-			button(ColonyText.text("ui.action.food_forecast"),func()->void:show_sheet("Journal"),sheet_body)
+			button(ColonyText.text("ui.action.food_forecast"),func()->void:show_sheet("Journal","ui.sheet.journal"),sheet_body)
 		button("Decline "+person.name,func()->void:_submit("newcomer",{"target":request.id,"accept":false});close_sheet(),sheet_body)
 
 func show_valley() -> void:
-	show_sheet("Valley and neighbors")
+	show_sheet("Valley and neighbors","ui.sheet.valley_and_neighbors")
 	button(ColonyText.text("ui.action.incident_forecast_and_pressure"),show_incidents,sheet_body)
 	button(ColonyText.text("ui.action.visitor_opportunities"),show_opportunities,sheet_body)
 	button(ColonyText.text("ui.action.regional_map"),show_region,sheet_body)
@@ -2539,7 +2545,7 @@ func show_trade(merchant: Dictionary) -> void:
 
 func _preview_trade(merchant: Dictionary, buy: Dictionary, pay: Dictionary, pen: int, delivery: bool) -> void:
 	var quote: Dictionary = ColonyTrade.preview(world,merchant,buy,pay,pen,delivery)
-	show_sheet("Delivery preview" if delivery else "Exchange preview")
+	show_sheet("Delivery preview" if delivery else "Exchange preview","ui.sheet.delivery_preview" if delivery else "ui.sheet.exchange_preview")
 	label("Pay: %s\nReceive: %s" % [_cost_text(pay),"Ten reputation; no deadline after acceptance" if delivery else _cost_text(buy)],sheet_body)
 	if not quote.error.is_empty():
 		label(quote.error,sheet_body);button(ColonyText.text("ui.action.back_to_trade"),func()->void:show_trade(merchant),sheet_body);return
@@ -2548,7 +2554,7 @@ func _preview_trade(merchant: Dictionary, buy: Dictionary, pay: Dictionary, pen:
 	button(ColonyText.text("ui.action.cancel_preview"),show_valley,sheet_body)
 
 func show_region() -> void:
-	show_sheet("Regional map")
+	show_sheet("Regional map","ui.sheet.regional_map")
 	label(ColonyText.text("ui.help.region.known_9_x_9_valley_h_is"),sheet_body)
 	var scroll: ScrollContainer = TouchScrollContainer.new();scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO;scroll.vertical_scroll_mode=ScrollContainer.SCROLL_MODE_AUTO;scroll.custom_minimum_size=Vector2(0,420);sheet_body.add_child(scroll)
 	var grid: GridContainer = GridContainer.new();grid.columns=9;scroll.add_child(grid)
@@ -2611,9 +2617,9 @@ func show_expedition_prepare(definition: String, pickup: bool) -> void:
 
 func show_expedition_preview(plan: Dictionary) -> void:
 	var quote: Dictionary = ColonyRegion.preview(world,plan)
-	show_sheet("Expedition packing preview")
+	show_sheet("Expedition packing preview","ui.sheet.expedition_packing_preview")
 	if not quote.error.is_empty(): label(quote.error,sheet_body);button(ColonyText.text("ui.action.change_party_or_cargo"),func()->void:show_expedition_prepare(plan.definition,plan.pickup),sheet_body);return
-	label("%s · %d hours · readiness %d / challenge %d\nPack: %s\nDeparture capacity %d; return capacity %d\nExpected items: %s; insight %d\nHome forecast without travelers: %s" % [plan.definition.capitalize(),quote.hours,quote.readiness,quote.challenge,_cost_text(quote.inputs),quote.capacity,quote.return_capacity,_cost_text(quote.rewards),quote.insight,quote.home_forecast.label],sheet_body)
+	label("%s · %d hours · readiness %d / challenge %d\nPack: %s\nDeparture capacity %d; return capacity %d\nExpected items: %s; insight %d\nHome forecast without travelers: %s" % [plan.definition.capitalize(),quote.hours,quote.readiness,quote.challenge,_cost_text(quote.inputs),quote.capacity,quote.return_capacity,_cost_text(quote.rewards),quote.insight,ColonyText.food_runway(quote.home_forecast)],sheet_body)
 	var removed: Array[String] = []
 	for id in plan.party:
 		var person: Dictionary = world.find(world.citizens,id);removed.append(person.name+" · "+str(person.skills))
@@ -2624,7 +2630,7 @@ func show_expedition_preview(plan: Dictionary) -> void:
 
 func show_expeditions() -> void:
 	_tutorial_action("expedition")
-	show_sheet("Expedition")
+	show_sheet("Expedition","ui.sheet.expedition")
 	var trip: Dictionary = ColonyRegion.active(world)
 	if trip.is_empty(): label(ColonyText.text("ui.help.expeditions.no_expedition_is_active_choose_a_known"),sheet_body);button(ColonyText.text("ui.action.regional_map"),show_region,sheet_body);return
 	label(trip.args.definition.capitalize()+" · "+trip.state+"\n"+trip.note,sheet_body)
@@ -2636,7 +2642,7 @@ func show_expeditions() -> void:
 		if error.is_empty():
 			if trip.quote.shortfall>2:
 				button(ColonyText.text("ui.action.review_attempt_unprepared"),func()->void:
-					show_sheet("Attempt unprepared?");label(ColonyText.text("ui.help.expeditions.no_item_reward_half_insight_twenty_health"),sheet_body)
+					show_sheet("Attempt unprepared?","ui.sheet.attempt_unprepared");label(ColonyText.text("ui.help.expeditions.no_item_reward_half_insight_twenty_health"),sheet_body)
 					button(ColonyText.text("ui.action.attempt_unprepared"),func()->void:_submit("expedition_depart",{"target":trip.id,"unprepared":true});close_sheet(),sheet_body),sheet_body)
 			else: button(ColonyText.text("ui.action.depart"),func()->void:_submit("expedition_depart",{"target":trip.id,"unprepared":false});close_sheet(),sheet_body)
 		button(ColonyText.text("ui.action.cancel_packing"),func()->void:_submit("expedition_cancel",{"target":trip.id});close_sheet(),sheet_body)
@@ -2662,17 +2668,17 @@ func show_expeditions() -> void:
 	if trip.state not in ["Preparing","Ready","Returning","Walking in","Unloading"]: button(ColonyText.text("ui.action.recall_without_committing_new_site_rewards"),func()->void:_submit("expedition_recall",{"target":trip.id});close_sheet();runner.set_speed(runner.previous_speed),sheet_body)
 
 func show_fires() -> void:
-	show_sheet("Fire and water")
+	show_sheet("Fire and water","ui.sheet.fire_and_water")
 	label(ColonyText.text("ui.help.fires.emergency_crews_override_ordinary_care_off_and"),sheet_body)
 	for fire in ColonyFire.active(world):
 		var object: Dictionary = world.find(world.structures if fire.kind=="structure" else world.stacks,fire.target)
 		label("%s at (%d, %d) · %.1f/8 WU applied\n%s" % [object.get("definition",object.get("item","")),object.x,object.y,fire.work/1000.0,"Two health/sec; touching wood can ignite every thirty seconds" if fire.kind=="structure" else "One item/sec; food and the cart itself do not propagate fire"],sheet_body)
 		button("Look at fire "+str(fire.id),func()->void:view.camera_tile=Vector2(object.x,object.y);view.follow_id=0;view._update_transform();close_sheet(),sheet_body)
-	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_sheet("Work"),sheet_body)
+	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_sheet("Work","ui.sheet.work"),sheet_body)
 	button(ColonyText.text("ui.action.build_a_well"),func()->void:begin_build("well"),sheet_body)
 
 func show_incidents() -> void:
-	show_sheet("Incident forecast")
+	show_sheet("Incident forecast","ui.sheet.incident_forecast")
 	var pressure: Dictionary = ColonyDirector.pressure(world)
 	label("Pressure %d/100. No new major at fifty or more, with a downed resident, or while an incident remains unresolved." % pressure.score,sheet_body)
 	for cause in pressure.terms: label(cause+": +"+str(pressure.terms[cause]),sheet_body)
@@ -2688,7 +2694,7 @@ func show_incidents() -> void:
 		button(ColonyText.text("ui.action.inspect_fixed_target"),func()->void:show_station(station),sheet_body)
 
 func show_defense() -> void:
-	show_sheet("Defense")
+	show_sheet("Defense","ui.sheet.defense")
 	var raid: Dictionary = ColonyDefense.active(world)
 	if raid.is_empty(): label(ColonyText.text("ui.help.defense.no_road_party_is_active_choose_a"),sheet_body)
 	else:
@@ -2704,7 +2710,7 @@ func show_defense() -> void:
 		if enemy.state!="Gone": button(enemy.definition.capitalize()+" · "+enemy.state+" · "+str(enemy.health)+" health",func()->void:show_enemy(enemy),sheet_body)
 
 func show_squad(initial: Array) -> void:
-	show_sheet("Defending squad")
+	show_sheet("Defending squad","ui.sheet.defending_squad")
 	var people: Dictionary = {}
 	for person in ColonyRegion.home(world):
 		if person.downed: continue
@@ -2721,7 +2727,7 @@ func show_squad(initial: Array) -> void:
 		for id in people:
 			if people[id].button_pressed: selected.append(id)
 		if selected.is_empty(): notice="Choose at least one resident";return
-		show_sheet("Stand fast warning")
+		show_sheet("Stand fast warning","ui.sheet.stand_fast_warning")
 		label(ColonyText.text("ui.help.squad.automatic_retreat_at_forty_health_will_be"),sheet_body)
 		button(ColonyText.text("ui.action.confirm_stand_fast_and_choose_rally"),func()->void:begin_defend_rally(selected,true),sheet_body),sheet_body)
 	button(ColonyText.text("ui.action.undraft_selected"),func()->void:
@@ -2747,7 +2753,7 @@ func show_enemy(enemy: Dictionary) -> void:
 		if not squad.is_empty(): button(ColonyText.text("ui.action.focus_with_drafted_squad"),func()->void:_submit("focus",{"citizens":squad,"target":enemy.id});close_sheet(),sheet_body)
 
 func show_raid_offer(raid: Dictionary) -> void:
-	show_sheet("Offer supplies")
+	show_sheet("Offer supplies","ui.sheet.offer_supplies")
 	label("Need %d barter value at the marked meeting spot. Workers deliver it in eight-unit loads. The party waits six hours without attacks during payment; a failed delivery gives one warning hour. The absolute six-hour raid limit still prevents renewed attacks once elapsed. Payment gives no later budget increase. Retreating parties cannot be restarted." % (raid.budget*8),sheet_body)
 	var choices: Dictionary = {}
 	for item in ColonyTrade.accessible_goods(world):
@@ -2759,13 +2765,13 @@ func show_raid_offer(raid: Dictionary) -> void:
 		var pay: Dictionary = {};var value: int = 0
 		for item in choices:
 			if choices[item].value>0: pay[item]=int(choices[item].value);value+=pay[item]*world.definitions.items[item].barter_value
-		show_sheet("Supply preview")
+		show_sheet("Supply preview","ui.sheet.supply_preview")
 		label("Pay "+_cost_text(pay)+"\nOffer value %d / needed %d\nMeeting (%d,%d). Surplus %d is a gift." % [value,raid.budget*8,raid.meeting.x,raid.meeting.y,maxi(0,value-raid.budget*8)],sheet_body)
 		if value<raid.budget*8: label("Add "+str(raid.budget*8-value)+" value before accepting",sheet_body)
 		else: button(ColonyText.text("ui.action.accept_and_deliver_supplies"),func()->void:_submit("raid_offer",{"target":raid.id,"pay":pay});close_sheet(),sheet_body),sheet_body)
 
 func show_opportunities() -> void:
-	show_sheet("Visitor offers")
+	show_sheet("Visitor offers","ui.sheet.visitor_offers")
 	label(ColonyText.text("ui.help.opportunities.every_second_day_from_day_four_one"),sheet_body)
 	var active: Array = world.opportunity_state.offers.filter(func(e:Dictionary)->bool:return e.state in ["Offered","Accepted","Hosted"])
 	if active.is_empty(): label(ColonyText.text("ui.help.opportunities.no_offer_is_waiting_tables_friendships_and"),sheet_body)
@@ -2786,7 +2792,7 @@ func show_opportunities() -> void:
 		if event.state not in ["Offered","Accepted","Hosted"]: label("%s · %s · %s" % [event.definition.replace("_"," ").capitalize(),event.state,event.reason],sheet_body)
 
 func show_charter() -> void:
-	show_sheet("Charter")
+	show_sheet("Charter","ui.sheet.charter")
 	label(ColonyChronicle.display_name(world,0)+" - a refuge worth staying in",sheet_body)
 	label(ColonyText.text("ui.help.charter.stages_complete_in_order_and_remain_recorded"),sheet_body)
 	button(ColonyText.text("ui.action.communal_supper"),show_supper,sheet_body)
@@ -2810,7 +2816,7 @@ func show_charter() -> void:
 	button(ColonyText.text("ui.action.research"),show_research,sheet_body)
 
 func show_supper() -> void:
-	show_sheet("Communal supper")
+	show_sheet("Communal supper","ui.sheet.communal_supper")
 	label(ColonyText.text("ui.help.supper.commonlife_and_eight_healthy_home_residents_60"),sheet_body)
 	label(ColonyText.text("ui.help.supper.eight_distinct_attendees_complete_the_supper_unused"),sheet_body)
 	var status: Dictionary = ColonyCharter.supper_status(world)
@@ -2829,7 +2835,7 @@ func show_supper() -> void:
 	button(ColonyText.text("ui.action.food_forecast"),show_food_forecast,sheet_body)
 
 func show_charter_appearance() -> void:
-	show_sheet("Cart appearance")
+	show_sheet("Cart appearance","ui.sheet.cart_appearance")
 	label(ColonyText.text("ui.help.charter_appearance.charter_rewards_change_the_cart_s_appearance"),sheet_body)
 	for stage in ColonyCharter.STAGES.slice(0,4):
 		var title: String = {"shelter":"Settlement banner","provision":"Courtyard palette","connection":"Route plaque","refuge":"Refuge sign"}[stage]
@@ -2840,18 +2846,18 @@ func show_charter_appearance() -> void:
 
 func show_charter_ending() -> void:
 	runner.pause()
-	show_sheet("Brackenward restored")
+	show_sheet("Brackenward restored","ui.sheet.brackenward_restored")
 	label(ColonyChronicle.display_name(world,0)+" has completed its charter. The beacon watches over a living settlement. These moments come from the colony's recorded history.",sheet_body)
 	for fact in ColonyChronicle.epilogue(world):
 		button("Day %d: %s" % [fact.tick/7200+1,fact.text],func()->void:show_fact(fact.id),sheet_body)
 	button(ColonyText.text("ui.action.continue_settlement"),func()->void:_submit("continue_settlement",{});close_sheet(),sheet_body)
 	button(ColonyText.text("ui.action.save_and_leave"),func()->void:
-		if save_local().is_empty(): show_sheet("Menu"),sheet_body)
+		if save_local().is_empty(): show_sheet("Menu","ui.sheet.menu"),sheet_body)
 	button(ColonyText.text("ui.action.new_seed"),show_campaigns,sheet_body)
 	button(ColonyText.text("ui.action.view_settlement"),func()->void:close_sheet();view.camera_tile=Vector2(ColonyTrade.cart(world).x,ColonyTrade.cart(world).y),sheet_body)
 
 func show_chronicle() -> void:
-	show_sheet("Chronicle")
+	show_sheet("Chronicle","ui.sheet.chronicle")
 	button(ColonyText.text("ui.action.pin_a_moment"),show_pin_moment,sheet_body)
 	button(ColonyText.text("ui.action.charter"),show_charter,sheet_body)
 	button(ColonyText.text("ui.action.full_event_ledger"),show_ledger,sheet_body)
@@ -2866,7 +2872,7 @@ func show_chronicle() -> void:
 			button("Details of event "+str(id),func()->void:show_fact(id),sheet_body)
 
 func show_ledger(before: int = 0) -> void:
-	show_sheet("Event ledger")
+	show_sheet("Event ledger","ui.sheet.event_ledger")
 	label(ColonyText.text("ui.help.ledger.exact_simulation_facts_including_routine_work_recent"),sheet_body)
 	var records: Array = world.chronicle_state.facts.filter(func(f:Dictionary)->bool:return before==0 or f.id<before)
 	var page: Array = records.slice(maxi(0,records.size()-40))
@@ -2878,7 +2884,7 @@ func show_ledger(before: int = 0) -> void:
 
 func show_fact(id: int, expanded: bool = false) -> void:
 	var fact: Dictionary = ColonyChronicle.fact(world.chronicle_state,id)
-	show_sheet("Event details")
+	show_sheet("Event details","ui.sheet.event_details")
 	if fact.is_empty(): label(ColonyText.text("ui.help.fact.this_routine_event_is_outside_retained_history"),sheet_body);return
 	label("Day %d %02d:%02d\n%s" % [fact.tick/7200+1,(fact.tick%7200)/300,(fact.tick%300)/5,fact.text],sheet_body)
 	if not fact.names.is_empty(): label("Names at the time: "+", ".join(fact.names.values()),sheet_body)
@@ -2895,7 +2901,7 @@ func show_fact(id: int, expanded: bool = false) -> void:
 	button(ColonyText.text("ui.action.back_to_chronicle"),show_chronicle,sheet_body)
 
 func show_pin_moment() -> void:
-	show_sheet("Pin a moment")
+	show_sheet("Pin a moment","ui.sheet.pin_a_moment")
 	label(ColonyText.text("ui.help.pin_moment.optional_personal_note_up_to_256_printable"),sheet_body)
 	var entry: LineEdit = LineEdit.new();entry.max_length=256;entry.placeholder_text="A moment to remember";entry.custom_minimum_size.y=48;sheet_body.add_child(entry)
 	entry.text_changed.connect(_clear_text_entry_error)
@@ -2905,7 +2911,7 @@ func show_pin_moment() -> void:
 		_submit("pin_moment",{"text":entry.text});close_sheet(),sheet_body)
 
 func show_rename(id: int) -> void:
-	show_sheet("Name this place" if id==0 else "Rename")
+	show_sheet("Name this place" if id==0 else "Rename","ui.sheet.name_this_place" if id==0 else "ui.sheet.rename")
 	label(ColonyText.text("ui.help.rename.names_are_cosmetic_use_1_32_printable"),sheet_body)
 	var entry: LineEdit = LineEdit.new();entry.max_length=32;entry.text=ColonyChronicle.display_name(world,id);entry.custom_minimum_size.y=48;sheet_body.add_child(entry)
 	entry.text_changed.connect(_clear_text_entry_error)
@@ -2925,7 +2931,7 @@ func _clear_text_entry_error(_text: String) -> void:
 		sheet_feedback.visible=not notice.is_empty() and not notice.begins_with("Paused. Choose")
 
 func show_person_history(id: int) -> void:
-	show_sheet("Remembered moments")
+	show_sheet("Remembered moments","ui.sheet.remembered_moments")
 	label(ColonyChronicle.display_name(world,id),sheet_body)
 	var person: Dictionary = world.find(world.citizens,id)
 	var memories: Array = ColonyChronicle.active_memories(world,person)
@@ -2939,12 +2945,12 @@ func show_person_history(id: int) -> void:
 		button("Details of event "+str(fact.id),func()->void:show_fact(fact.id),sheet_body)
 
 func show_food_forecast() -> void:
-	show_sheet("Food forecast")
+	show_sheet("Food forecast","ui.sheet.food_forecast")
 	_tutorial_action("forecast")
 	label(tutorial_forecast_text(),sheet_body)
 	label(ColonyText.text("ui.help.food_forecast.this_uses_accessible_unreserved_food_already_at"),sheet_body)
 	var state: Dictionary = _tutorial_state()
-	button("Unpin forecast" if state.forecast_pinned else "Pin forecast on map",func()->void:
+	button(ColonyText.text("ui.action.unpin_forecast") if state.forecast_pinned else ColonyText.text("ui.action.pin_forecast_on_map"),func()->void:
 		if state.forecast_pinned: state.forecast_pinned=false;_save_settings()
 		else: _tutorial_action("pin_forecast")
 		close_sheet(),sheet_body)
@@ -2953,14 +2959,14 @@ func show_food_forecast() -> void:
 	var raw: int = 0
 	for item in world.definitions.recipes.cook_meals.alternatives: raw+=world.available(item)
 	var bottlenecks: Array[String] = []
-	if not cooking: bottlenecks.append("Enable Cooking for a home resident.")
-	if not hearth: bottlenecks.append("Build or enable a usable hearth.")
-	if raw<4: bottlenecks.append("Gather or harvest four raw food units for the next batch.")
-	if world.available("wood")<1: bottlenecks.append("Gather one wood for cooking fuel.")
-	label("Cooking: "+("Inputs and a cook are available; work priority, travel and output storage still affect timing." if bottlenecks.is_empty() else " ".join(bottlenecks)),sheet_body)
+	if not cooking: bottlenecks.append(ColonyText.text("ui.help.food_forecast.enable_cooking"))
+	if not hearth: bottlenecks.append(ColonyText.text("ui.help.food_forecast.usable_hearth"))
+	if raw<4: bottlenecks.append(ColonyText.text("ui.help.food_forecast.raw_batch"))
+	if world.available("wood")<1: bottlenecks.append(ColonyText.text("ui.help.food_forecast.cooking_fuel"))
+	label(ColonyText.text("ui.forecast.cooking",{"status":ColonyText.text("ui.help.food_forecast.inputs_available") if bottlenecks.is_empty() else " ".join(bottlenecks)}),sheet_body)
 	button(ColonyText.text("ui.action.gather_berries"),func()->void:begin_gather("berry_bush"),sheet_body)
 	button(ColonyText.text("ui.action.plant_turnips"),begin_field,sheet_body)
-	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_sheet("Work"),sheet_body)
+	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_sheet("Work","ui.sheet.work"),sheet_body)
 	button(ColonyText.text("ui.action.weather_forecast"),show_weather,sheet_body)
 
 func _build_guidance() -> void:

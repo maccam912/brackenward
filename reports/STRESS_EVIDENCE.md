@@ -634,3 +634,44 @@ Fresh/cold/late differences are near neutral; crowded improves slightly. Inputs
 and canonical endpoints are unchanged from the preceding sections. These runs
 share a host with two Charter workers, native soak and headless tests; they do
 not certify Android, rendering, memory or the 4 ms simulation p95 gate.
+
+## Frozen cc84275 native soak failure
+
+The 0.7.21 source run stops at 819.098966 measured seconds when the real durable-
+progress guard pauses it. It advances 16,366 of 16,381 nominal ticks at 2x,
+retains twenty residents, clean invariants/storage and verifies its final save.
+Diagnostics report exactly one slow-storage pause, zero backgrounds, reductions
+or storage alerts, with the disk writer busy. Simulation-batch/session maxima
+are 175.540/177.279 ms; their histogram p95 upper bounds are 50 ms and frame-gap
+p95 upper is 100 ms. These overlapping CPU callbacks are not single-tick/GPU or
+physical-device certification. The run overlaps two Charter workers plus assorted
+headless benchmarks/tests/build imports; it is contended evidence.
+
+The initial measurement is tick 3,002; the endpoint is 19,368, with 483 intact
+structures, 1,355 positive stacks, 192 crops, 1,426 Chronicle entries, twenty
+residents, twelve domestic animals and 32 wildlife. Hostiles/neutral visitors
+reach zero; targets/jobs evolve naturally. There are 1,785 unfinished tasks,
+496 executable and 1,108 queued, so the 512-executable cap still holds. The
+synthetic fixture's incomplete storage-service geometry remains a limitation.
+Do not count this evolving, declining-load case as the all-alert release scene.
+
+Warmed engine heap is 128,265,877 bytes. A 60-second sample peaks at 178,261,805
+then returns to 131,060,141 at 120 seconds; the drained endpoint is 149,689,717.
+Final growth is 21,423,840 bytes and peak growth 49,995,928. The conservative
+peak-heap proxy and independent audit fail, along with incomplete duration and
+paused/missing logical time. This reports the observed transient and endpoint
+separately; neither substitutes for Android PSS/sustained-growth/thermal gates.
+
+| Retained evidence | SHA-256 |
+| --- | --- |
+| source.json | `65950b26cc5c2ccabae0acea647b91d25a6768ee828aa9b84312eb0983faddc1` |
+| completion.json | `e63834fbc673c0c39783ede478dee705ed1548c1b4539e57069818935fb9aea4` |
+| independent audit.json | `8ee7b3adebaae82efc90b165cefde6b99a359176f420f8fb0fdfe77ceff478f6` |
+| probe.json | `1c0f8f6d1f265754440bce12ee9ceb7c7e0a51a7384920f11ce7343aef4d9315` |
+| final snapshot | `61964911706fb6c9efecd189da87825a51073928de2ac5a5bb9fdf9632476326` |
+
+The failed source/input provenance stays in ignored native-soak-v4-cc84275/.
+A current-code 120-tick continuation is exact against its instrumented twin:
+2.477394 uninstrumented / 2.544576 instrumented CPU seconds. Assignment totals
+1.410467 seconds in 240 calls, making it the next concrete profiling target.
+The failure is retained rather than rerun unchanged or counted as thirty minutes.
