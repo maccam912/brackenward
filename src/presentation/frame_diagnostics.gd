@@ -24,10 +24,11 @@ func break_frame_clock() -> void:
 func count(key: String) -> void:
 	if counters.has(key): counters[key]+=1
 
-func record(stage: String, microseconds: int) -> void:
-	if not foreground or stage not in STAGES or microseconds<0 or speed not in [0,1,2,4]: return
-	var key: String = "%s:%d" % [stage,speed]
-	if not samples.has(key): samples[key]={"stage":stage,"speed":speed,"count":0,"sum_us":0,"max_us":0,"over_50ms":0,"buckets":Array(LIMITS_US).map(func(_limit:int)->int:return 0)+[0]}
+func record(stage: String, microseconds: int, measured_tick: int = -1, measured_speed: int = -1) -> void:
+	var at_speed: int = speed if measured_speed<0 else measured_speed
+	if not foreground or stage not in STAGES or microseconds<0 or at_speed not in [0,1,2,4]: return
+	var key: String = "%s:%d" % [stage,at_speed]
+	if not samples.has(key): samples[key]={"stage":stage,"speed":at_speed,"count":0,"sum_us":0,"max_us":0,"over_50ms":0,"buckets":Array(LIMITS_US).map(func(_limit:int)->int:return 0)+[0]}
 	var entry: Dictionary = samples[key]
 	entry.count+=1;entry.sum_us+=microseconds;entry.max_us=maxi(entry.max_us,microseconds)
 	var bucket: int = 0
@@ -35,7 +36,7 @@ func record(stage: String, microseconds: int) -> void:
 	entry.buckets[bucket]+=1
 	if microseconds>50000:
 		entry.over_50ms+=1
-		slow_events.append({"stage":stage,"speed":speed,"tick":str(tick),"duration_ms":float(microseconds)/1000.0})
+		slow_events.append({"stage":stage,"speed":at_speed,"tick":str(tick if measured_tick<0 else measured_tick),"duration_ms":float(microseconds)/1000.0})
 		if slow_events.size()>MAX_EVENTS: slow_events.pop_front()
 
 func reset() -> void:

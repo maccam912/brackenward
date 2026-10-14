@@ -1,0 +1,1711 @@
+{
+  "version": 1,
+  "rectangles": {
+    "ground/grass/0": [
+      0,
+      0,
+      16,
+      16
+    ],
+    "ground/grass/1": [
+      18,
+      0,
+      16,
+      16
+    ],
+    "ground/grass/2": [
+      36,
+      0,
+      16,
+      16
+    ],
+    "ground/poor/0": [
+      54,
+      0,
+      16,
+      16
+    ],
+    "ground/poor/1": [
+      72,
+      0,
+      16,
+      16
+    ],
+    "ground/poor/2": [
+      90,
+      0,
+      16,
+      16
+    ],
+    "ground/rich/0": [
+      108,
+      0,
+      16,
+      16
+    ],
+    "ground/rich/1": [
+      126,
+      0,
+      16,
+      16
+    ],
+    "ground/rich/2": [
+      144,
+      0,
+      16,
+      16
+    ],
+    "ground/water/0": [
+      162,
+      0,
+      16,
+      16
+    ],
+    "ground/water/1": [
+      180,
+      0,
+      16,
+      16
+    ],
+    "ground/path/0": [
+      198,
+      0,
+      16,
+      16
+    ],
+    "ground/path/1": [
+      216,
+      0,
+      16,
+      16
+    ],
+    "ground/path/2": [
+      234,
+      0,
+      16,
+      16
+    ],
+    "ground/soil/0": [
+      252,
+      0,
+      16,
+      16
+    ],
+    "ground/soil/1": [
+      270,
+      0,
+      16,
+      16
+    ],
+    "ground/soil/2": [
+      288,
+      0,
+      16,
+      16
+    ],
+    "building/supply_cart/0": [
+      306,
+      0,
+      32,
+      44
+    ],
+    "building/supply_cart/1": [
+      340,
+      0,
+      32,
+      44
+    ],
+    "building/supply_cart/2": [
+      374,
+      0,
+      32,
+      44
+    ],
+    "building/supply_cart/3": [
+      408,
+      0,
+      32,
+      44
+    ],
+    "building/wood_wall/0": [
+      442,
+      0,
+      16,
+      28
+    ],
+    "building/wood_wall/1": [
+      460,
+      0,
+      16,
+      28
+    ],
+    "building/wood_wall/2": [
+      478,
+      0,
+      16,
+      28
+    ],
+    "building/wood_wall/3": [
+      496,
+      0,
+      16,
+      28
+    ],
+    "building/stone_wall/0": [
+      514,
+      0,
+      16,
+      28
+    ],
+    "building/stone_wall/1": [
+      532,
+      0,
+      16,
+      28
+    ],
+    "building/stone_wall/2": [
+      550,
+      0,
+      16,
+      28
+    ],
+    "building/stone_wall/3": [
+      568,
+      0,
+      16,
+      28
+    ],
+    "building/door/0": [
+      586,
+      0,
+      16,
+      28
+    ],
+    "building/door/1": [
+      604,
+      0,
+      16,
+      28
+    ],
+    "building/door/2": [
+      622,
+      0,
+      16,
+      28
+    ],
+    "building/door/3": [
+      640,
+      0,
+      16,
+      28
+    ],
+    "building/wood_floor/0": [
+      658,
+      0,
+      16,
+      28
+    ],
+    "building/wood_floor/1": [
+      676,
+      0,
+      16,
+      28
+    ],
+    "building/wood_floor/2": [
+      694,
+      0,
+      16,
+      28
+    ],
+    "building/wood_floor/3": [
+      712,
+      0,
+      16,
+      28
+    ],
+    "building/stone_path/0": [
+      730,
+      0,
+      16,
+      28
+    ],
+    "building/stone_path/1": [
+      748,
+      0,
+      16,
+      28
+    ],
+    "building/stone_path/2": [
+      766,
+      0,
+      16,
+      28
+    ],
+    "building/stone_path/3": [
+      784,
+      0,
+      16,
+      28
+    ],
+    "building/bedroll/0": [
+      802,
+      0,
+      32,
+      28
+    ],
+    "building/bedroll/1": [
+      836,
+      0,
+      16,
+      44
+    ],
+    "building/bedroll/2": [
+      854,
+      0,
+      32,
+      28
+    ],
+    "building/bedroll/3": [
+      888,
+      0,
+      16,
+      44
+    ],
+    "building/bed/0": [
+      906,
+      0,
+      32,
+      28
+    ],
+    "building/bed/1": [
+      940,
+      0,
+      16,
+      44
+    ],
+    "building/bed/2": [
+      958,
+      0,
+      32,
+      28
+    ],
+    "building/bed/3": [
+      992,
+      0,
+      16,
+      44
+    ],
+    "building/table/0": [
+      0,
+      46,
+      32,
+      28
+    ],
+    "building/table/1": [
+      34,
+      46,
+      16,
+      44
+    ],
+    "building/table/2": [
+      52,
+      46,
+      32,
+      28
+    ],
+    "building/table/3": [
+      86,
+      46,
+      16,
+      44
+    ],
+    "building/hearth/0": [
+      104,
+      46,
+      32,
+      44
+    ],
+    "building/hearth/1": [
+      138,
+      46,
+      32,
+      44
+    ],
+    "building/hearth/2": [
+      172,
+      46,
+      32,
+      44
+    ],
+    "building/hearth/3": [
+      206,
+      46,
+      32,
+      44
+    ],
+    "building/rack/0": [
+      240,
+      46,
+      32,
+      44
+    ],
+    "building/rack/1": [
+      274,
+      46,
+      32,
+      44
+    ],
+    "building/rack/2": [
+      308,
+      46,
+      32,
+      44
+    ],
+    "building/rack/3": [
+      342,
+      46,
+      32,
+      44
+    ],
+    "building/granary/0": [
+      376,
+      46,
+      48,
+      60
+    ],
+    "building/granary/1": [
+      426,
+      46,
+      48,
+      60
+    ],
+    "building/granary/2": [
+      476,
+      46,
+      48,
+      60
+    ],
+    "building/granary/3": [
+      526,
+      46,
+      48,
+      60
+    ],
+    "building/cellar/0": [
+      576,
+      46,
+      48,
+      60
+    ],
+    "building/cellar/1": [
+      626,
+      46,
+      48,
+      60
+    ],
+    "building/cellar/2": [
+      676,
+      46,
+      48,
+      60
+    ],
+    "building/cellar/3": [
+      726,
+      46,
+      48,
+      60
+    ],
+    "building/well/0": [
+      776,
+      46,
+      32,
+      44
+    ],
+    "building/well/1": [
+      810,
+      46,
+      32,
+      44
+    ],
+    "building/well/2": [
+      844,
+      46,
+      32,
+      44
+    ],
+    "building/well/3": [
+      878,
+      46,
+      32,
+      44
+    ],
+    "building/fishing_pier/0": [
+      912,
+      46,
+      32,
+      44
+    ],
+    "building/fishing_pier/1": [
+      946,
+      46,
+      32,
+      44
+    ],
+    "building/fishing_pier/2": [
+      980,
+      46,
+      32,
+      44
+    ],
+    "building/fishing_pier/3": [
+      0,
+      108,
+      32,
+      44
+    ],
+    "building/workbench/0": [
+      34,
+      108,
+      32,
+      44
+    ],
+    "building/workbench/1": [
+      68,
+      108,
+      32,
+      44
+    ],
+    "building/workbench/2": [
+      102,
+      108,
+      32,
+      44
+    ],
+    "building/workbench/3": [
+      136,
+      108,
+      32,
+      44
+    ],
+    "building/charcoal_kiln/0": [
+      170,
+      108,
+      32,
+      44
+    ],
+    "building/charcoal_kiln/1": [
+      204,
+      108,
+      32,
+      44
+    ],
+    "building/charcoal_kiln/2": [
+      238,
+      108,
+      32,
+      44
+    ],
+    "building/charcoal_kiln/3": [
+      272,
+      108,
+      32,
+      44
+    ],
+    "building/brick_kiln/0": [
+      306,
+      108,
+      48,
+      44
+    ],
+    "building/brick_kiln/1": [
+      356,
+      108,
+      32,
+      60
+    ],
+    "building/brick_kiln/2": [
+      390,
+      108,
+      48,
+      44
+    ],
+    "building/brick_kiln/3": [
+      440,
+      108,
+      32,
+      60
+    ],
+    "building/smelter/0": [
+      474,
+      108,
+      32,
+      60
+    ],
+    "building/smelter/1": [
+      508,
+      108,
+      48,
+      44
+    ],
+    "building/smelter/2": [
+      558,
+      108,
+      32,
+      60
+    ],
+    "building/smelter/3": [
+      592,
+      108,
+      48,
+      44
+    ],
+    "building/smithy/0": [
+      642,
+      108,
+      48,
+      44
+    ],
+    "building/smithy/1": [
+      692,
+      108,
+      32,
+      60
+    ],
+    "building/smithy/2": [
+      726,
+      108,
+      48,
+      44
+    ],
+    "building/smithy/3": [
+      776,
+      108,
+      32,
+      60
+    ],
+    "building/loom/0": [
+      810,
+      108,
+      32,
+      44
+    ],
+    "building/loom/1": [
+      844,
+      108,
+      32,
+      44
+    ],
+    "building/loom/2": [
+      878,
+      108,
+      32,
+      44
+    ],
+    "building/loom/3": [
+      912,
+      108,
+      32,
+      44
+    ],
+    "building/herbal_bench/0": [
+      946,
+      108,
+      32,
+      28
+    ],
+    "building/herbal_bench/1": [
+      980,
+      108,
+      16,
+      44
+    ],
+    "building/herbal_bench/2": [
+      0,
+      170,
+      32,
+      28
+    ],
+    "building/herbal_bench/3": [
+      34,
+      170,
+      16,
+      44
+    ],
+    "building/research_desk/0": [
+      52,
+      170,
+      32,
+      28
+    ],
+    "building/research_desk/1": [
+      86,
+      170,
+      16,
+      44
+    ],
+    "building/research_desk/2": [
+      104,
+      170,
+      32,
+      28
+    ],
+    "building/research_desk/3": [
+      138,
+      170,
+      16,
+      44
+    ],
+    "building/barn/0": [
+      156,
+      170,
+      64,
+      60
+    ],
+    "roof/barn/0": [
+      222,
+      170,
+      64,
+      60
+    ],
+    "building/barn/1": [
+      288,
+      170,
+      48,
+      76
+    ],
+    "roof/barn/1": [
+      338,
+      170,
+      48,
+      76
+    ],
+    "building/barn/2": [
+      388,
+      170,
+      64,
+      60
+    ],
+    "roof/barn/2": [
+      454,
+      170,
+      64,
+      60
+    ],
+    "building/barn/3": [
+      520,
+      170,
+      48,
+      76
+    ],
+    "roof/barn/3": [
+      570,
+      170,
+      48,
+      76
+    ],
+    "building/fence/0": [
+      620,
+      170,
+      16,
+      28
+    ],
+    "building/fence/1": [
+      638,
+      170,
+      16,
+      28
+    ],
+    "building/fence/2": [
+      656,
+      170,
+      16,
+      28
+    ],
+    "building/fence/3": [
+      674,
+      170,
+      16,
+      28
+    ],
+    "building/pen_gate/0": [
+      692,
+      170,
+      16,
+      28
+    ],
+    "building/pen_gate/1": [
+      710,
+      170,
+      16,
+      28
+    ],
+    "building/pen_gate/2": [
+      728,
+      170,
+      16,
+      28
+    ],
+    "building/pen_gate/3": [
+      746,
+      170,
+      16,
+      28
+    ],
+    "building/watchpost/0": [
+      764,
+      170,
+      32,
+      44
+    ],
+    "building/watchpost/1": [
+      798,
+      170,
+      32,
+      44
+    ],
+    "building/watchpost/2": [
+      832,
+      170,
+      32,
+      44
+    ],
+    "building/watchpost/3": [
+      866,
+      170,
+      32,
+      44
+    ],
+    "building/palisade/0": [
+      900,
+      170,
+      16,
+      28
+    ],
+    "building/palisade/1": [
+      918,
+      170,
+      16,
+      28
+    ],
+    "building/palisade/2": [
+      936,
+      170,
+      16,
+      28
+    ],
+    "building/palisade/3": [
+      954,
+      170,
+      16,
+      28
+    ],
+    "building/reinforced_gate/0": [
+      972,
+      170,
+      32,
+      28
+    ],
+    "building/reinforced_gate/1": [
+      1006,
+      170,
+      16,
+      44
+    ],
+    "building/reinforced_gate/2": [
+      0,
+      248,
+      32,
+      28
+    ],
+    "building/reinforced_gate/3": [
+      34,
+      248,
+      16,
+      44
+    ],
+    "building/bell/0": [
+      52,
+      248,
+      16,
+      28
+    ],
+    "building/bell/1": [
+      70,
+      248,
+      16,
+      28
+    ],
+    "building/bell/2": [
+      88,
+      248,
+      16,
+      28
+    ],
+    "building/bell/3": [
+      106,
+      248,
+      16,
+      28
+    ],
+    "building/garden_bench/0": [
+      124,
+      248,
+      32,
+      28
+    ],
+    "building/garden_bench/1": [
+      158,
+      248,
+      16,
+      44
+    ],
+    "building/garden_bench/2": [
+      176,
+      248,
+      32,
+      28
+    ],
+    "building/garden_bench/3": [
+      210,
+      248,
+      16,
+      44
+    ],
+    "building/memorial/0": [
+      228,
+      248,
+      16,
+      28
+    ],
+    "building/memorial/1": [
+      246,
+      248,
+      16,
+      28
+    ],
+    "building/memorial/2": [
+      264,
+      248,
+      16,
+      28
+    ],
+    "building/memorial/3": [
+      282,
+      248,
+      16,
+      28
+    ],
+    "building/bridge/0": [
+      300,
+      248,
+      16,
+      28
+    ],
+    "building/bridge/1": [
+      318,
+      248,
+      16,
+      28
+    ],
+    "building/bridge/2": [
+      336,
+      248,
+      16,
+      28
+    ],
+    "building/bridge/3": [
+      354,
+      248,
+      16,
+      28
+    ],
+    "building/beacon/0": [
+      372,
+      248,
+      48,
+      60
+    ],
+    "building/beacon/1": [
+      422,
+      248,
+      48,
+      60
+    ],
+    "building/beacon/2": [
+      472,
+      248,
+      48,
+      60
+    ],
+    "building/beacon/3": [
+      522,
+      248,
+      48,
+      60
+    ],
+    "resource/tree/0": [
+      572,
+      248,
+      32,
+      40
+    ],
+    "resource/tree/1": [
+      606,
+      248,
+      32,
+      40
+    ],
+    "resource/tree/2": [
+      640,
+      248,
+      32,
+      40
+    ],
+    "resource/berry_bush/0": [
+      674,
+      248,
+      24,
+      24
+    ],
+    "resource/mushroom_patch/0": [
+      700,
+      248,
+      24,
+      24
+    ],
+    "resource/herb_patch/0": [
+      726,
+      248,
+      24,
+      24
+    ],
+    "resource/stone_node/0": [
+      752,
+      248,
+      24,
+      24
+    ],
+    "resource/clay_bank/0": [
+      778,
+      248,
+      24,
+      24
+    ],
+    "resource/iron_seam/0": [
+      804,
+      248,
+      24,
+      24
+    ],
+    "resource/sapling/0": [
+      830,
+      248,
+      24,
+      24
+    ],
+    "resource/stump/0": [
+      856,
+      248,
+      24,
+      24
+    ],
+    "crop/turnip/0": [
+      882,
+      248,
+      16,
+      16
+    ],
+    "crop/turnip/1": [
+      900,
+      248,
+      16,
+      16
+    ],
+    "crop/turnip/2": [
+      918,
+      248,
+      16,
+      16
+    ],
+    "crop/turnip/3": [
+      936,
+      248,
+      16,
+      16
+    ],
+    "crop/turnip/4": [
+      954,
+      248,
+      16,
+      16
+    ],
+    "crop/barley/0": [
+      972,
+      248,
+      16,
+      16
+    ],
+    "crop/barley/1": [
+      990,
+      248,
+      16,
+      16
+    ],
+    "crop/barley/2": [
+      0,
+      310,
+      16,
+      16
+    ],
+    "crop/barley/3": [
+      18,
+      310,
+      16,
+      16
+    ],
+    "crop/barley/4": [
+      36,
+      310,
+      16,
+      16
+    ],
+    "crop/squash/0": [
+      54,
+      310,
+      16,
+      16
+    ],
+    "crop/squash/1": [
+      72,
+      310,
+      16,
+      16
+    ],
+    "crop/squash/2": [
+      90,
+      310,
+      16,
+      16
+    ],
+    "crop/squash/3": [
+      108,
+      310,
+      16,
+      16
+    ],
+    "crop/squash/4": [
+      126,
+      310,
+      16,
+      16
+    ],
+    "crop/flax/0": [
+      144,
+      310,
+      16,
+      16
+    ],
+    "crop/flax/1": [
+      162,
+      310,
+      16,
+      16
+    ],
+    "crop/flax/2": [
+      180,
+      310,
+      16,
+      16
+    ],
+    "crop/flax/3": [
+      198,
+      310,
+      16,
+      16
+    ],
+    "crop/flax/4": [
+      216,
+      310,
+      16,
+      16
+    ],
+    "crop/healing_leaf/0": [
+      234,
+      310,
+      16,
+      16
+    ],
+    "crop/healing_leaf/1": [
+      252,
+      310,
+      16,
+      16
+    ],
+    "crop/healing_leaf/2": [
+      270,
+      310,
+      16,
+      16
+    ],
+    "crop/healing_leaf/3": [
+      288,
+      310,
+      16,
+      16
+    ],
+    "crop/healing_leaf/4": [
+      306,
+      310,
+      16,
+      16
+    ],
+    "crop/cavecap/0": [
+      324,
+      310,
+      16,
+      16
+    ],
+    "crop/cavecap/1": [
+      342,
+      310,
+      16,
+      16
+    ],
+    "crop/cavecap/2": [
+      360,
+      310,
+      16,
+      16
+    ],
+    "crop/cavecap/3": [
+      378,
+      310,
+      16,
+      16
+    ],
+    "crop/cavecap/4": [
+      396,
+      310,
+      16,
+      16
+    ],
+    "item/wood/0": [
+      414,
+      310,
+      16,
+      24
+    ],
+    "item/wood/1": [
+      432,
+      310,
+      16,
+      24
+    ],
+    "item/wood/2": [
+      450,
+      310,
+      16,
+      24
+    ],
+    "item/stone/0": [
+      468,
+      310,
+      16,
+      24
+    ],
+    "item/stone/1": [
+      486,
+      310,
+      16,
+      24
+    ],
+    "item/stone/2": [
+      504,
+      310,
+      16,
+      24
+    ],
+    "item/clay/0": [
+      522,
+      310,
+      16,
+      24
+    ],
+    "item/clay/1": [
+      540,
+      310,
+      16,
+      24
+    ],
+    "item/clay/2": [
+      558,
+      310,
+      16,
+      24
+    ],
+    "item/iron_ore/0": [
+      576,
+      310,
+      16,
+      24
+    ],
+    "item/iron_ore/1": [
+      594,
+      310,
+      16,
+      24
+    ],
+    "item/iron_ore/2": [
+      612,
+      310,
+      16,
+      24
+    ],
+    "item/fiber/0": [
+      630,
+      310,
+      16,
+      24
+    ],
+    "item/fiber/1": [
+      648,
+      310,
+      16,
+      24
+    ],
+    "item/fiber/2": [
+      666,
+      310,
+      16,
+      24
+    ],
+    "item/charcoal/0": [
+      684,
+      310,
+      16,
+      24
+    ],
+    "item/charcoal/1": [
+      702,
+      310,
+      16,
+      24
+    ],
+    "item/charcoal/2": [
+      720,
+      310,
+      16,
+      24
+    ],
+    "item/iron/0": [
+      738,
+      310,
+      16,
+      24
+    ],
+    "item/iron/1": [
+      756,
+      310,
+      16,
+      24
+    ],
+    "item/iron/2": [
+      774,
+      310,
+      16,
+      24
+    ],
+    "item/brick/0": [
+      792,
+      310,
+      16,
+      24
+    ],
+    "item/brick/1": [
+      810,
+      310,
+      16,
+      24
+    ],
+    "item/brick/2": [
+      828,
+      310,
+      16,
+      24
+    ],
+    "item/cloth/0": [
+      846,
+      310,
+      16,
+      24
+    ],
+    "item/cloth/1": [
+      864,
+      310,
+      16,
+      24
+    ],
+    "item/cloth/2": [
+      882,
+      310,
+      16,
+      24
+    ],
+    "item/leather/0": [
+      900,
+      310,
+      16,
+      24
+    ],
+    "item/leather/1": [
+      918,
+      310,
+      16,
+      24
+    ],
+    "item/leather/2": [
+      936,
+      310,
+      16,
+      24
+    ],
+    "item/herb/0": [
+      954,
+      310,
+      16,
+      24
+    ],
+    "item/herb/1": [
+      972,
+      310,
+      16,
+      24
+    ],
+    "item/herb/2": [
+      990,
+      310,
+      16,
+      24
+    ],
+    "item/vegetable/0": [
+      0,
+      336,
+      16,
+      24
+    ],
+    "item/vegetable/1": [
+      18,
+      336,
+      16,
+      24
+    ],
+    "item/vegetable/2": [
+      36,
+      336,
+      16,
+      24
+    ],
+    "item/grain/0": [
+      54,
+      336,
+      16,
+      24
+    ],
+    "item/grain/1": [
+      72,
+      336,
+      16,
+      24
+    ],
+    "item/grain/2": [
+      90,
+      336,
+      16,
+      24
+    ],
+    "item/berry/0": [
+      108,
+      336,
+      16,
+      24
+    ],
+    "item/berry/1": [
+      126,
+      336,
+      16,
+      24
+    ],
+    "item/berry/2": [
+      144,
+      336,
+      16,
+      24
+    ],
+    "item/mushroom/0": [
+      162,
+      336,
+      16,
+      24
+    ],
+    "item/mushroom/1": [
+      180,
+      336,
+      16,
+      24
+    ],
+    "item/mushroom/2": [
+      198,
+      336,
+      16,
+      24
+    ],
+    "item/meat/0": [
+      216,
+      336,
+      16,
+      24
+    ],
+    "item/meat/1": [
+      234,
+      336,
+      16,
+      24
+    ],
+    "item/meat/2": [
+      252,
+      336,
+      16,
+      24
+    ],
+    "item/fish/0": [
+      270,
+      336,
+      16,
+      24
+    ],
+    "item/fish/1": [
+      288,
+      336,
+      16,
+      24
+    ],
+    "item/fish/2": [
+      306,
+      336,
+      16,
+      24
+    ],
+    "item/milk/0": [
+      324,
+      336,
+      16,
+      24
+    ],
+    "item/milk/1": [
+      342,
+      336,
+      16,
+      24
+    ],
+    "item/milk/2": [
+      360,
+      336,
+      16,
+      24
+    ],
+    "item/egg/0": [
+      378,
+      336,
+      16,
+      24
+    ],
+    "item/egg/1": [
+      396,
+      336,
+      16,
+      24
+    ],
+    "item/egg/2": [
+      414,
+      336,
+      16,
+      24
+    ],
+    "item/meal/0": [
+      432,
+      336,
+      16,
+      24
+    ],
+    "item/meal/1": [
+      450,
+      336,
+      16,
+      24
+    ],
+    "item/meal/2": [
+      468,
+      336,
+      16,
+      24
+    ],
+    "item/travel_ration/0": [
+      486,
+      336,
+      16,
+      24
+    ],
+    "item/travel_ration/1": [
+      504,
+      336,
+      16,
+      24
+    ],
+    "item/travel_ration/2": [
+      522,
+      336,
+      16,
+      24
+    ],
+    "item/medicine/0": [
+      540,
+      336,
+      16,
+      24
+    ],
+    "item/medicine/1": [
+      558,
+      336,
+      16,
+      24
+    ],
+    "item/medicine/2": [
+      576,
+      336,
+      16,
+      24
+    ],
+    "item/toolkit/0": [
+      594,
+      336,
+      16,
+      24
+    ],
+    "item/toolkit/1": [
+      612,
+      336,
+      16,
+      24
+    ],
+    "item/toolkit/2": [
+      630,
+      336,
+      16,
+      24
+    ],
+    "item/forged_toolkit/0": [
+      648,
+      336,
+      16,
+      24
+    ],
+    "item/forged_toolkit/1": [
+      666,
+      336,
+      16,
+      24
+    ],
+    "item/forged_toolkit/2": [
+      684,
+      336,
+      16,
+      24
+    ],
+    "item/bow/0": [
+      702,
+      336,
+      16,
+      24
+    ],
+    "item/bow/1": [
+      720,
+      336,
+      16,
+      24
+    ],
+    "item/bow/2": [
+      738,
+      336,
+      16,
+      24
+    ],
+    "item/spear/0": [
+      756,
+      336,
+      16,
+      24
+    ],
+    "item/spear/1": [
+      774,
+      336,
+      16,
+      24
+    ],
+    "item/spear/2": [
+      792,
+      336,
+      16,
+      24
+    ],
+    "item/cloak/0": [
+      810,
+      336,
+      16,
+      24
+    ],
+    "item/cloak/1": [
+      828,
+      336,
+      16,
+      24
+    ],
+    "item/cloak/2": [
+      846,
+      336,
+      16,
+      24
+    ],
+    "item/vest/0": [
+      864,
+      336,
+      16,
+      24
+    ],
+    "item/vest/1": [
+      882,
+      336,
+      16,
+      24
+    ],
+    "item/vest/2": [
+      900,
+      336,
+      16,
+      24
+    ],
+    "effect/flame/0": [
+      918,
+      336,
+      16,
+      24
+    ],
+    "effect/flame/1": [
+      936,
+      336,
+      16,
+      24
+    ]
+  },
+  "source_components": "data/environment_sources.json",
+  "foot_anchor": "bottom center; source footprint is 16 pixels per logical tile"
+}

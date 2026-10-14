@@ -32,3 +32,5 @@ __pycache__/
 reports/animals-validation/
 reports/diagnostics-validation/
 reports/diagnostics-flows/
+reports/environment-validation/
+reports/environment-flows/

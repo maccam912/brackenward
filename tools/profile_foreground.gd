@@ -36,9 +36,8 @@ class ProfileView extends WorldView:
 	var update_us: Array[int] = []
 	var draw_us: Array[int] = []
 	func _process(delta: float) -> void:
+		if draw_command_us>0: draw_us.append(draw_command_us)
 		var started: int = Time.get_ticks_usec();super(delta);update_us.append(Time.get_ticks_usec()-started)
-	func _draw() -> void:
-		var started: int = Time.get_ticks_usec();super();draw_us.append(Time.get_ticks_usec()-started)
 
 class ProfileSession extends GameSession:
 	func _make_soundscape() -> ColonyAudio:

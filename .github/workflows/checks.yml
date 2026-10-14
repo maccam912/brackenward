@@ -39,7 +39,7 @@ jobs:
       - name: Install Linux UI test dependencies
         run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
       - name: Import project
-        run: tools/godot.sh --headless --editor --import
+        run: python3 tools/checked_godot.py -- --headless --editor --import
       - name: Unit and deterministic integration checks
         run: |
           python3 tools/check_suite.py unit
@@ -101,10 +101,11 @@ jobs:
           if-no-files-found: error
       - name: Export desktop prototypes
         run: |
-          tools/godot.sh --headless --export-debug Windows build/brackenward.exe
-          tools/godot.sh --headless --export-debug macOS build/brackenward-macos.zip
-          tools/godot.sh --headless --export-debug Linux build/brackenward-linux
-          xvfb-run -a build/brackenward-linux --audio-driver Dummy --quit-after 60
+          python3 tools/checked_godot.py -- --headless --export-debug Windows build/brackenward.exe
+          python3 tools/checked_godot.py -- --headless --export-debug macOS build/brackenward-macos.zip
+          python3 tools/checked_godot.py -- --headless --export-debug Linux build/brackenward-linux
+          mkdir -p "$RUNNER_TEMP/brackenward-exported-smoke"
+          xvfb-run -a python3 tools/checked_godot.py --executable build/brackenward-linux --working-directory "$RUNNER_TEMP/brackenward-exported-smoke" --require-smoke-exit -- --audio-driver Dummy --quit-after 1200 -- --native-smoke-frames 60
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -149,6 +150,8 @@ jobs:
         run: |
           python tools/test_bootstrap.py
           python tools/test_native_smoke.py
+          python tools/test_checked_godot.py
+          python tools/test_stamp_build.py
       - name: Install checksum-verified native editor only
         run: python tools/bootstrap.py --editor-only
       - name: Compare canonical replay and imported-save continuation

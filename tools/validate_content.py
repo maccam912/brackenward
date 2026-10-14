@@ -25,6 +25,31 @@ for media in (root / "assets/exported").rglob("*"):
     if media.is_file() and not media.name.endswith(".import"):
         assert str(media.relative_to(root)) in paths, "unmanifested media: " + str(media)
 
+environment_sources = root / "data/environment_sources.json"
+if any(asset["id"] == "woodland_environment" for asset in manifest):
+    sources = json.loads(environment_sources.read_text())
+    assert sources["pack"] == "Tiny Town 1.1" and len(sources["components"]) == 19
+    assert sources["license_sha256"] == "c483c167cc3bdfe17c15f957ff847d409f64d81b410b28783636cf3b2b7814c5"
+    for semantic, component in sources["components"].items():
+        assert component["author"] == "Kenney" and component["license"] == "CC0-1.0" and component["edited"] is False
+        assert component["path"].startswith("assets/source/tiny-town/") and ".." not in Path(component["path"]).parts
+        content = (root / component["path"]).read_bytes()
+        assert hashlib.sha256(content).hexdigest() == component["sha256"], semantic
+        assert struct.unpack_from(">II", content, 16) == (16, 16), semantic
+        rectangle = component["packed_atlas_rectangle"]
+        assert len(rectangle) == 4 and rectangle[2:] == [16,16] and rectangle[0] % 16 == 0 and rectangle[1] % 16 == 0
+        assert 0 <= rectangle[0] < 192 and 0 <= rectangle[1] < 176
+        assert hashlib.sha256((root / component["evidence"]).read_bytes()).hexdigest() == sources["license_sha256"]
+    artwork = json.loads((root / "data/environment_art.json").read_text())
+    media = next(asset for asset in manifest if asset["id"] == "woodland_environment")
+    assert media["semantic_layout"] == "data/environment_art.json"
+    width, height = struct.unpack_from(">II", (root / media["path"]).read_bytes(), 16)
+    assert width <= 2048 and height <= 2048
+    for semantic, (x,y,w,h) in artwork["rectangles"].items():
+        assert all(type(n) is int for n in (x,y,w,h)) and min(x,y) >= 0 and min(w,h) > 0
+        assert x+w <= width and y+h <= height, semantic
+    print(f"Validated 19 retained CC0 component files/licenses and {len(artwork['rectangles'])} environment atlas rectangles.")
+
 # TrueType cmap format 4, validating Basic Latin actually present in both licensed fonts.
 for name in ("kenney_mini.ttf", "kenney_bold.ttf"):
     data = (root / "assets/exported/fonts" / name).read_bytes()

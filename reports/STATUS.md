@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.4-m7` in progress (campaign schema 22, device settings schema 4), content `colony-v2`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.5-m7` in progress (campaign schema 22, device settings schema 4), content `colony-v2`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -11,22 +11,22 @@ Checkpoint: `0.7.4-m7` in progress (campaign schema 22, device settings schema 4
 | Prototype save recovery | Pass, local subset | Checksum/schema/bounds rejection, pending command and movement round trip, three verified immutable generations, interrupted temp ignored, damaged latest falls back |
 | Background / return | Pass, local subset | Simulation stops, gestures canceled, resume paused; Android 35 emulator also preserved the 4x2 unconfirmed preview across rotation; physical task battery still Not run |
 | Android storage plugin | Pass, build/unit/emulator subset | Original Kotlin v2 plugin; 4 JUnit bounded-stream tests; source builds debug/release AARs; Android 35 arm64 emulator picker export/import passed: checksum verified, tick 1861 restored to exported tick 1800; Home froze the imported state; export and import cancellations left state unchanged; same-identity APK update preserved three private saves |
-| Android arm64 APK | Pass, debug/emulator subset | 96 MiB current debug package; min SDK 29 / target 36; arm64-v8a only; merged manifest requests only optional-feature VIBRATE; installed and launched on Android 35 emulator (SwiftShader/ANGLE), not a physical phone |
+| Android arm64 APK | Pass, debug/emulator subset | Current debug export passes; min SDK 29 / target 36; arm64-v8a only; merged manifest requests only optional-feature VIBRATE; earlier revisions installed and launched on Android 35 emulator (SwiftShader/ANGLE), not a physical phone |
 | macOS native launch | Pass | macOS 26.6.2, Apple Silicon, Apple M5 Pro, OpenGL 4.1 Compatibility via Metal 90.5; native scene/UI runner launched |
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | Requires exact phone model, OS, GPU, brightness and measured battery/memory |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `f62049a`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38541311146) passed the full suite, all four desktop replay/startup targets, exports and publication. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
+| Remote CI | Pass at `0cff9fe`; newer revisions separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38543321695) passed the full suite, all four desktop replay/startup targets, exports and publication. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
 | M3–M6 gameplay and progression | Pass, automated campaign/native subset | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. All three Standard-site and Pine Shelf Hearthside vegetarian Charters pass, including ceremony, Continue and later play. The pinned 30-run Winter matrix also passes; M7 and physical/human gates remain. |
-| M7 release quality | In progress | Original animated citizens/animals/guests, matching portraits, editable cosmetics, audio, accessibility and rebinding are implemented. Environment art, balance, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `f62049a` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-f62049acad5e); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
+| M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
+| Development APK publication | Pass at `0cff9fe` | [Checked workflow and publication](https://github.com/maccam912/brackenward/actions/runs/38543321695); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 1,815 checks, zero failures, including 466 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 1,847 checks, zero failures, including 485 native UI checks. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -696,3 +696,72 @@ slow callbacks/counters, wall-clock frame-gap maximum 43.287 ms, zero over 50 ms
 The coarse p95/p99 frame-gap bucket upper is 50 ms; it is not an exact percentile
 or an Android performance certificate. APK export passes; `aapt` verifies build 43
 / `0.7.4-m7`, min SDK 29, target 36, arm64 only and VIBRATE as its sole permission.
+
+## M7 woodland environment and checked exports — 14 October 2026
+
+Version `0.7.5-m7`, local Android build 44, replaces the colony's primitive world
+art with a shared 1024x360 atlas containing 284 semantic regions. It covers all 34
+structures in four rotations, four barn roofs, seventeen ground variants, eleven
+trees/resources/nature views, six crops in five distinct stages, 28 items in three
+pile tiers and two fire frames. Nineteen inspected Tiny Town 1.1 components retain
+their exact source bytes and pinned CC0 license; missing artwork, composition and
+a separate additive warmth gradient have editable original sources. The manifest
+now has 51 media entries. Contact sheets and source/license evidence are retained;
+the original M0 touch fixture remains unchanged.
+
+Ground uses shared TileMapLayers plus visible cached drawing chunks, with no node
+per crop tile or stack. Resource rows batch by camera chunk and immutable global-ID
+interval, preserving shared foot-y/ID depth order with citizens, guests, animals
+and structure props. Actual world data chooses crop stages, supply-pile heights,
+station output piles, nature regrowth and fuel/work-dependent flames. Cold stations
+do not burn. Carried goods now recognize the actual `carry` stack location, fixing
+the missing carry pose during real fetching. Quantities remain exact in selection
+cards and only show on selected world piles.
+
+Enclosed room and barn roofs fade to 20% for inspected occupants/interior objects
+and Map and seed > Rooms overlay. Trees covering the selected resident fade to 40%.
+Native sampled pixels confirm night world luminance stays at least 70% of day.
+Selection, blueprint progress/delivered-material badges, danger and actual fire
+feedback draw above roofs at full brightness. Battery/reduced motion stop decorative
+water and rain/snow animation; balanced/smooth water has two frames and weather
+marks are capped at forty-eight. Warm sprites use actual heat sources and a maximum
+of sixteen visible emitters. No dynamic shadows or simulation-field/RNG writes.
+
+World adoption clears every pooled environment reference even when terrain refresh
+is explicitly called first. Native tests cover this prior stale-world path, actual
+public construction/fetched carry poses, room reveal, selected-tree fading, water
+quality, night pixels and unchanged authoritative hashes. Drawing diagnostics now
+aggregate all custom drawing callbacks once per frame, retaining the original
+tick/speed context; the number excludes engine-native sprite/GPU work.
+
+Final validation passes 27 headless suites / 1,362 checks and native UI / 485,
+total 1,847 checks across 28 suites. Persistence contributes 232. Three actual
+tutorial flows pass 22 each. The independent frozen replay passes 62 commands and
+234 invariants in 75.393 seconds with the unchanged schema-22 golden hashes and
+foreign-save continuation. The warm 65-second fresh-colony profile advances 650
+ticks with no storage pauses, errors or invariant failures. Main CPU callback max
+21.743 ms, zero above 50 ms; map update max 3.403 ms / p95 0.922 ms; aggregate
+custom drawing max 0.382 ms / p95 0.235 ms; audio max 0.461 ms. Save capture max
+1.776 ms, preparation capture 0.799 ms, finish 0.848 ms. Wall-clock frame gap max
+43.25 ms, zero over 50 ms. These are macOS CPU observations with Dummy audio,
+not physical Android, GPU, audio-thread, thermal or PSS certification.
+
+An intermediate local export exposed Godot returning zero after a GDScript parse
+error. The unpublished invalid APK was quarantined and never published; retained
+logs show the failed run. `checked_godot.py` now rejects script/engine errors for
+imports, exports and exported runtime startup even with exit zero. Eight subprocess
+boundary tests and an actual invalid-script run verify that behavior. Five existing
+native evidence parser tests also pass. Exported runtime checks require a positive
+OpenGL renderer and sixty-frame isolated, audio-drained application exit, and run
+from an empty directory so source files cannot conceal missing packaged resources.
+
+The final guarded Android export and four Kotlin tests pass; `aapt` confirms
+`0.7.5-m7` / 44, min SDK 29, target 36, arm64 only and VIBRATE as the sole permission.
+Both source and actual exported macOS application start cleanly on Apple M5 Pro /
+OpenGL 4.1. The macOS bundle previously defaulted to version 1.0.0; package stamping
+now synchronizes its short/build versions and Windows numeric versions with the
+project/Android build. Local synchronization preserves CI commit suffixes and exact
+provenance. Four disposable-checkout stamping tests pass, and the rebuilt macOS
+plist reports 0.7.5 / 44. Remote checks/publication for this revision remain separate
+until observed. Physical Android stutter, human art/audio/comprehension, localization
+and the final stress/release gates remain. Weekly remaining is 86%; work continues.

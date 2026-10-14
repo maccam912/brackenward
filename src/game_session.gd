@@ -702,6 +702,9 @@ func _select_map_object(candidate: Dictionary) -> void:
 		"carcass":
 			show_sheet("Carcass")
 			label("%s: %.1f game hours until spoilage. Gathering workers butcher it; outputs need hauling." % [_catalog_name(object.definition),(object.expires-world.tick)/300.0],sheet_body)
+	view.inspected_object=object.id
+	if candidate.kind in ["station","job"]: view.inspected_tiles=world.footprint(object)
+	elif object.has("x") and object.has("y"): view.inspected_tiles.assign([Vector2i(object.x,object.y)])
 
 func select_citizen(id: int) -> void:
 	if settings.values.inspector_pause: runner.pause()
@@ -739,6 +742,7 @@ func close_inspector() -> void:
 		inspector = null
 	selected = 0
 	view.selected_id = 0
+	view.inspected_tiles.clear();view.inspected_object=0
 
 func show_sheet(title: String) -> void:
 	listening_binding=""
@@ -868,6 +872,7 @@ func _adapt_sheet_heading() -> void:
 
 func close_sheet() -> void:
 	listening_binding=""
+	if is_instance_valid(view): view.inspected_tiles.clear();view.inspected_object=0
 	if sheet != null:
 		sheet.queue_free()
 		sheet = null
@@ -1699,6 +1704,7 @@ func _apply_device_settings() -> void:
 	if is_instance_valid(view):
 		view.reduced_motion=settings.values.reduced_motion
 		view.high_contrast=settings.values.high_contrast
+		view.quality=settings.values.quality
 	if is_instance_valid(soundscape): soundscape.apply_settings(settings.values.audio,settings.values.haptics)
 
 func _performance_report() -> Dictionary:
@@ -2249,6 +2255,9 @@ func show_map_details() -> void:
 		label("Generated terrain is stored with the campaign and retained across updates. All starter resources, safe home ground and habitat checks passed.",sheet_body)
 		label("Generation attempt %d" % world.terrain_state.attempt,sheet_body)
 	button("Show weather",show_weather,sheet_body)
+	button("Rooms overlay: "+("On" if view.rooms_overlay else "Off"),func()->void:
+		view.rooms_overlay=not view.rooms_overlay;close_sheet()
+		notice="Room roofs are faded. Enclose 1-64 tiles with walls and doors." if view.rooms_overlay else "Rooms overlay off.",sheet_body).name="RoomsOverlay"
 
 func begin_forest() -> void:
 	begin_placement()

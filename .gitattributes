@@ -17,3 +17,4 @@ tests/fixtures/schema21-delta.brackenward -text
 tests/fixtures/schema21-delta.frames -text
 assets/licenses/kenney_interface_sounds.txt -text
 assets/licenses/kenney_rpg_audio.txt -text
+assets/licenses/kenney_tiny_town.txt -text

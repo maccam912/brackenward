@@ -44,6 +44,14 @@ var simulation_speed: int = 0
 var reduced_motion: bool = false
 var high_contrast: bool = false
 var diagnostics: FrameDiagnostics
+var environment: ColonyEnvironment
+var quality: String = "Balanced"
+var rooms_overlay: bool = false
+var inspected_tiles: Array[Vector2i] = []
+var inspected_object: int = 0
+var draw_command_us: int = 0
+var draw_command_tick: int = 0
+var draw_command_speed: int = 0
 
 func setup(state: RefCounted) -> void:
 	world = state
@@ -71,6 +79,7 @@ func setup(state: RefCounted) -> void:
 	carried_overlay = Node2D.new()
 	add_child(carried_overlay)
 	carried_overlay.draw.connect(_draw_carried_items)
+	if world is ColonyWorld: environment=ColonyEnvironment.new(self)
 	refresh_terrain()
 	for index in range(4): _add_actor(index)
 	resized.connect(_update_transform)
@@ -78,6 +87,9 @@ func setup(state: RefCounted) -> void:
 
 func _process(delta: float) -> void:
 	var started: int = Time.get_ticks_usec()
+	if draw_command_us>0:
+		if diagnostics!=null: diagnostics.record("map_draw_commands",draw_command_us,draw_command_tick,draw_command_speed)
+		draw_command_us=0
 	_update_frame(delta)
 	if diagnostics!=null and is_visible_in_tree(): diagnostics.record("map_update",Time.get_ticks_usec()-started)
 
@@ -93,7 +105,7 @@ func _update_frame(delta: float) -> void:
 	var cargo: Dictionary = {}
 	if world is ColonyWorld:
 		for stack in world.nonempty_stacks():
-			if stack.location=="carried": cargo[stack.owner]=true
+			if stack.location=="carry": cargo[stack.owner]=true
 	for i in range(actors.size()):
 		if i>=world.citizens.size(): actors[i].visible=false;continue
 		var citizen: Dictionary = world.citizens[i]
@@ -116,6 +128,8 @@ func _update_frame(delta: float) -> void:
 			if actor is AnimalSprite: actor.animate(world,delta,simulation_speed,reduced_motion)
 			else: actor.animate_guest(world,delta,simulation_speed,reduced_motion)
 			actor.visible=Rect2(Vector2.ZERO,size).grow(tile_size*2).has_point(tile_to_screen(actor.position/16.0))
+		if environment!=null: environment.update(delta)
+		if extra_order_changed: _sort_world_nodes()
 	_update_transform()
 	queue_redraw()
 	carried_overlay.queue_redraw()
@@ -150,12 +164,15 @@ func _refresh_extra_actors() -> void:
 	for key in extra_actors.keys():
 		if not extra_wanted.has(key): extra_actors[key].queue_free();extra_actors.erase(key);extra_order_changed=true
 	if extra_order_changed:
-		# Godot resolves equal-y ties by tree order. Restore stable global IDs
-		# after pooling rather than depending on which actor appeared first.
-		var ordered: Array = actor_layer.get_children().filter(func(child:Node)->bool:return not child.is_queued_for_deletion())
-		ordered.sort_custom(func(a:Node,b:Node)->bool:return a.get_meta("world_id",0)<b.get_meta("world_id",0) if a.get_meta("world_id",0)!=b.get_meta("world_id",0) else str(a.get_meta("role","resident"))<str(b.get_meta("role","resident")))
-		for index in range(ordered.size()): actor_layer.move_child(ordered[index],index)
-		extra_order_changed=false
+		_sort_world_nodes()
+
+func _sort_world_nodes() -> void:
+	# Equal-y ties follow global IDs across actors, interactive props and
+	# resource batches partitioned around those IDs.
+	var ordered: Array = actor_layer.get_children().filter(func(child:Node)->bool:return not child.is_queued_for_deletion())
+	ordered.sort_custom(func(a:Node,b:Node)->bool:return a.get_meta("world_id",0)<b.get_meta("world_id",0) if a.get_meta("world_id",0)!=b.get_meta("world_id",0) else str(a.get_meta("role","resident"))<str(b.get_meta("role","resident")))
+	for index in range(ordered.size()): actor_layer.move_child(ordered[index],index)
+	extra_order_changed=false
 
 func _want_extra(key: String, kind: String, record: Dictionary, role: String) -> void:
 	extra_wanted[key]=true
@@ -279,72 +296,77 @@ func _update_transform() -> void:
 func _draw() -> void:
 	var started: int = Time.get_ticks_usec()
 	_draw_frame()
-	if diagnostics!=null: diagnostics.record("map_draw_commands",Time.get_ticks_usec()-started)
+	account_draw(Time.get_ticks_usec()-started)
+
+func account_draw(microseconds: int) -> void:
+	if draw_command_us==0:
+		draw_command_tick=world.tick if world!=null else 0;draw_command_speed=simulation_speed
+	draw_command_us+=microseconds
 
 func _draw_frame() -> void:
-	if world == null:
-		return
-	# Fixture landmarks are retained only for the M0 regression scene.
-	if world is ColonyWorld:
-		_draw_colony()
-	else:
-		_draw_fixture()
+	if world==null: return
+	if not world is ColonyWorld:
+		_draw_fixture();_draw_feedback(self)
+
+func _draw_feedback(painter: CanvasItem) -> void:
+	if world==null: return
 	var flooded: Array = world.weather_state.flooded if world is ColonyWorld else []
 	for tile in flooded + forecast_mask:
 		var point: Vector2 = tile_to_screen(Vector2(tile))
 		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): continue
-		draw_rect(Rect2(point,Vector2.ONE*tile_size),Color(0.25,0.52,0.65,0.35))
-		draw_line(point+Vector2(0,tile_size),point+Vector2(tile_size,0),Color("D8E8DC"),2)
+		painter.draw_rect(Rect2(point,Vector2.ONE*tile_size),Color(0.25,0.52,0.65,0.35))
+		painter.draw_line(point+Vector2(0,tile_size),point+Vector2(tile_size,0),Color("D8E8DC"),2)
 	for tile in rejected_build_tiles:
-		draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size),Color(0.7,0.3,0.3,0.35))
-		draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size),Color("B44F4A"),false,2)
+		painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size),Color(0.7,0.3,0.3,0.35))
+		painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size),Color("B44F4A"),false,2)
 	for tile in world.designations:
-		draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color(0.91, 0.73, 0.4, 0.35))
-		draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color("F3E8CC"), false, 2)
+		painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color(0.91, 0.73, 0.4, 0.35))
+		painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color("F3E8CC"), false, 2)
 	if preview_visible:
 		for tile in preview_tiles():
 			var water: bool = world.is_water(tile) if world is ColonyWorld else PrototypeWorld.is_water(tile)
 			var color: Color = Color("B44F4A") if rejected_build_tiles.has(tile) or (preview_resource.is_empty() and not preview_line and water) else Color("E9BA67")
 			color.a = 0.3
 			var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size)
-			draw_rect(rectangle, color)
-			draw_rect(rectangle, Color("263C3B"), false, 2)
+			painter.draw_rect(rectangle, color)
+			painter.draw_rect(rectangle, Color("263C3B"), false, 2)
 			if high_contrast:
-				draw_rect(rectangle.grow(-2),Color.WHITE,false,2)
+				painter.draw_rect(rectangle.grow(-2),Color.WHITE,false,2)
 				if rejected_build_tiles.has(tile):
-					draw_line(rectangle.position,rectangle.end,Color.BLACK,4);draw_line(rectangle.position+Vector2(rectangle.size.x,0),rectangle.position+Vector2(0,rectangle.size.y),Color.BLACK,4)
+					painter.draw_line(rectangle.position,rectangle.end,Color.BLACK,4);painter.draw_line(rectangle.position+Vector2(rectangle.size.x,0),rectangle.position+Vector2(0,rectangle.size.y),Color.BLACK,4)
 	if preview_visible and preview_lodge and world is ColonyWorld:
 		for blueprint in ColonyConstruction.lodge(preview_start):
-			for tile in world.footprint(blueprint): draw_rect(Rect2(tile_to_screen(Vector2(tile))+Vector2.ONE*2,Vector2.ONE*(tile_size-4)),Color("F3E8CC"),false,2)
+			for tile in world.footprint(blueprint): painter.draw_rect(Rect2(tile_to_screen(Vector2(tile))+Vector2.ONE*2,Vector2.ONE*(tile_size-4)),Color("F3E8CC"),false,2)
 	if preview_visible and not preview_resource.is_empty() and world is ColonyWorld:
 		for resource in world.gather_targets(preview_resource,preview_tiles()):
-			_draw_gather_mark(Vector2i(resource.x,resource.y),Color("F3E8CC"))
+			_draw_gather_mark(Vector2(resource.x,resource.y),Color("F3E8CC"),painter)
 	for citizen in world.citizens:
 		if citizen.id == selected_id:
 			var point: Vector2 = tile_to_screen(citizen_point(citizen))
-			if high_contrast: draw_arc(point,maxf(12.0,tile_size*0.55),0,TAU,24,Color.BLACK,7.0)
-			draw_arc(point, maxf(12.0, tile_size * 0.55), 0, TAU, 24, Color("F3E8CC"), 2.0)
+			if high_contrast: painter.draw_arc(point,maxf(12.0,tile_size*0.55),0,TAU,24,Color.BLACK,7.0)
+			painter.draw_arc(point, maxf(12.0, tile_size * 0.55), 0, TAU, 24, Color("F3E8CC"), 2.0)
 	if tutorial_highlight_visible and tutorial_target.size()==2:
 		var center: Vector2 = tile_to_screen(Vector2(tutorial_target[0]+0.5,tutorial_target[1]+0.5))
 		var phase: float = tutorial_animation/1.4
-		draw_arc(center,tile_size*(0.58+phase*0.28),0,TAU,32,Color(0.91,0.73,0.4,1.0-phase*0.7),3)
+		painter.draw_arc(center,tile_size*(0.58+phase*0.28),0,TAU,32,Color(0.91,0.73,0.4,1.0-phase*0.7),3)
 		var hand: Vector2 = center+Vector2(0,-tile_size*(0.9+0.12*sin(phase*TAU)))
-		draw_circle(hand,5,Color("F3E8CC"))
-		draw_line(hand,hand+Vector2(0,10),Color("263C3B"),3)
+		painter.draw_circle(hand,5,Color("F3E8CC"))
+		painter.draw_line(hand,hand+Vector2(0,10),Color("263C3B"),3)
 		if tutorial_gesture.begins_with("Drag"):
-			draw_line(center-Vector2(tile_size*0.4,0),center+Vector2(tile_size*(phase-0.4),0),Color("F3E8CC"),3)
+			painter.draw_line(center-Vector2(tile_size*0.4,0),center+Vector2(tile_size*(phase-0.4),0),Color("F3E8CC"),3)
 	if magnifier.x >= 0:
 		var position_above: Vector2 = magnifier - Vector2(0, 72)
-		draw_circle(position_above, 28, Color("263C3B"))
-		draw_rect(Rect2(position_above - Vector2(16, 16), Vector2(32, 32)), Color("E9BA67"), false, 2)
+		painter.draw_circle(position_above, 28, Color("263C3B"))
+		painter.draw_rect(Rect2(position_above - Vector2(16, 16), Vector2(32, 32)), Color("E9BA67"), false, 2)
 
-func _draw_gather_mark(tile: Vector2i,color: Color) -> void:
+func _draw_gather_mark(tile: Vector2,color: Color,painter: CanvasItem = null) -> void:
+	if painter==null: painter=self
 	var point: Vector2 = tile_to_screen(Vector2(tile)+Vector2(0.5,0.5))
-	draw_rect(Rect2(point-Vector2.ONE*tile_size*0.45,Vector2.ONE*tile_size*0.9),color,false,2)
+	painter.draw_rect(Rect2(point-Vector2.ONE*tile_size*0.45,Vector2.ONE*tile_size*0.9),color,false,2)
 	var badge: Vector2 = point+Vector2(tile_size*0.25,-tile_size*0.35)
-	draw_circle(badge,7,Color("263C3B"))
-	draw_line(badge-Vector2(3,0),badge+Vector2(-1,3),color,2)
-	draw_line(badge+Vector2(-1,3),badge+Vector2(4,-3),color,2)
+	painter.draw_circle(badge,7,Color("263C3B"))
+	painter.draw_line(badge-Vector2(3,0),badge+Vector2(-1,3),color,2)
+	painter.draw_line(badge+Vector2(-1,3),badge+Vector2(4,-3),color,2)
 
 func _bed_style() -> StyleBoxFlat:
 	var box: StyleBoxFlat = StyleBoxFlat.new()
@@ -381,119 +403,10 @@ func citizen_point(citizen: Dictionary) -> Vector2:
 		point.x += float(citizen.progress) / 10000.0 * citizen.direction
 	return point
 
-func _draw_colony() -> void:
-	for person in world.citizens:
-		var task: Dictionary = world.find(world.jobs,person.job)
-		if task.get("kind")=="extinguish" and task.memo.phase in ["carry","apply"]:
-			var point: Vector2 = tile_to_screen(citizen_point(person))
-			draw_rect(Rect2(point+Vector2(0.2,0.1)*tile_size,Vector2(0.2,0.25)*tile_size),Color("7096B4"))
-	for pen in world.domestic_state.pens:
-		for tile in pen.tiles:
-			var point: Vector2 = tile_to_screen(Vector2(tile))
-			if Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): draw_rect(Rect2(point,Vector2.ONE*tile_size),Color(0.7,0.7,0.45,0.12))
-	for source in ColonyDanger.sources(world):
-		var center: Vector2 = tile_to_screen(Vector2(source)+Vector2(0.5,0.5))
-		var radius: float = tile_size*8
-		draw_polyline(PackedVector2Array([center+Vector2(0,-radius),center+Vector2(radius,0),center+Vector2(0,radius),center+Vector2(-radius,0),center+Vector2(0,-radius)]),Color("E9BA67"),2)
-	for task in world.unfinished_jobs():
-		if task.kind=="hunt":
-			var animal: Dictionary = world.find(world.wildlife_state.animals,task.target)
-			if not animal.is_empty() and animal.health>0: _draw_gather_mark(Vector2i(animal.x,animal.y),Color("E9BA67"))
-	for field in world.fields:
-		var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(field.x,field.y)),Vector2.ONE*tile_size)
-		draw_rect(rectangle.grow(-1),Color("B96C50") if field.prepared else Color(0.72,0.42,0.31,0.25))
-		if field.planted:
-			var radius: float = tile_size * (0.08+0.22*float(field.growth)/world.definitions.crops[field.crop].growth)
-			for offset in [Vector2(0.25,0.25),Vector2(0.75,0.25),Vector2(0.25,0.75),Vector2(0.75,0.75)]:
-				draw_circle(rectangle.position+offset*tile_size,radius,Color("E9BA67") if field.ripe_tick>0 else Color("375749"))
-	for resource in world.resources:
-		var point: Vector2 = tile_to_screen(Vector2(resource.x+0.5,resource.y+0.5))
-		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): continue
-		if resource.remaining == 0:
-			if resource.definition == "tree":
-				var state: Dictionary = ColonyNature.tree(world,resource.id)
-				draw_circle(point,tile_size*0.12,Color("B96C50"))
-				if state.planted:
-					draw_line(point,point-Vector2(0,tile_size*0.4),Color("375749"),3)
-					draw_circle(point-Vector2(0,tile_size*0.35),tile_size*0.15,Color("77915A"))
-			continue
-		if resource.definition == "tree":
-			draw_rect(Rect2(point + Vector2(-tile_size * 0.1, 0), Vector2(tile_size * 0.2, tile_size * 0.4)), Color("B96C50"))
-			draw_colored_polygon(PackedVector2Array([point + Vector2(-tile_size * 0.4, tile_size * 0.1), point + Vector2(0, -tile_size * 0.7), point + Vector2(tile_size * 0.4, tile_size * 0.1)]), Color("263C3B"))
-		elif resource.definition in ["stone_node","clay_bank","iron_seam"]:
-			draw_circle(point, tile_size * 0.4, Color("B96C50") if resource.definition == "clay_bank" else (Color("263C3B") if resource.definition == "iron_seam" else Color("716D88")))
-			draw_line(point - Vector2(8, 2), point + Vector2(4, -8), Color("F3E8CC"), 2)
-		else:
-			draw_circle(point, tile_size * 0.32, Color("375749"))
-			var color: Color = Color("B96C50") if resource.definition == "berry_bush" else Color("F3E8CC")
-			for offset in [Vector2(-6, -2), Vector2(4, -4), Vector2(0, 5)]:
-				draw_circle(point + offset * tile_size / 32, tile_size * 0.07, color)
-	for structure in world.structures:
-		if structure.health<=0:
-			var ruin: Vector2 = tile_to_screen(Vector2(structure.x+0.5,structure.y+0.5))
-			draw_rect(Rect2(ruin-Vector2(tile_size*0.3,tile_size*0.1),Vector2(tile_size*0.6,tile_size*0.2)),Color("716D88"));continue
-		var tiles: Array[Vector2i] = world.footprint(structure)
-		var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tiles[0])), Vector2(tiles[-1] - tiles[0] + Vector2i.ONE) * tile_size)
-		if structure.definition=="supply_cart":
-			for task in world.jobs:
-				if task.kind=="cart_move" and task.target==structure.id and task.worker>0 and task.memo.phase=="push" and task.state=="Working":
-					var worker: Dictionary = world.find(world.citizens,task.worker)
-					rectangle.position += Vector2(worker.edge_x-worker.x,worker.edge_y-worker.y)*tile_size*float(worker.progress)/10000.0
-		if not rectangle.intersects(Rect2(Vector2.ZERO, size)):
-			continue
-		var color: Color = Color("B96C50")
-		if structure.definition in ["bed", "bedroll"]:
-			draw_style_box(_bed_style(), rectangle.grow(-tile_size * 0.12))
-			draw_rect(Rect2(rectangle.position + Vector2.ONE * tile_size * 0.15, Vector2.ONE * tile_size * 0.45), Color("F3E8CC"))
-		elif structure.definition == "supply_cart":
-			_draw_cart(rectangle)
-		elif structure.definition == "hearth":
-			var center: Vector2 = rectangle.get_center()
-			draw_circle(center, tile_size * 0.6, Color("716D88"))
-			draw_colored_polygon(PackedVector2Array([center + Vector2(-10, 8), center + Vector2(0, -16), center + Vector2(10, 8)]), Color("E9BA67"))
-		else:
-			draw_rect(rectangle.grow(-tile_size * 0.1), color)
-			draw_rect(rectangle.grow(-tile_size * 0.1), Color("263C3B"), false, 3)
-	for job in world.unfinished_jobs():
-		if job.state in ["Complete", "Canceled"]:
-			continue
-		if job.kind == "gather":
-			_draw_gather_mark(Vector2i(job.x,job.y),Color("E9BA67"))
-		if job.kind == "build":
-			for tile in world.footprint(job):
-				var rectangle: Rect2 = Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size)
-				draw_rect(rectangle, Color(0.91, 0.73, 0.4, 0.25))
-				draw_rect(rectangle.grow(-2), Color("E9BA67"), false, 2)
-			var point: Vector2 = tile_to_screen(Vector2(job.x, job.y))
-			draw_rect(Rect2(point, Vector2(tile_size * float(job.work) / job.required, 4)), Color("F3E8CC"))
-	for job in world.unfinished_jobs():
-		if job.kind=="move_furniture" and job.state not in ["Complete","Canceled"]:
-			for tile in ColonyMaintenance.move_footprint(world,job): draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size).grow(-1),Color("E9BA67"),false,2)
-	for stack in world.nonempty_stacks():
-		if stack.count <= 0:
-			continue
-		if stack.location == "expedition_cargo" and world.find(world.region_state.trips,stack.owner).get("state") not in ["Preparing","Ready","Unloading"]: continue
-		if stack.location == "carry":
-			continue
-		var point: Vector2 = tile_to_screen(Vector2(stack.x + 0.5, stack.y + 0.5))
-		if stack.location == "store":
-			continue # Totals remain inspectable; loose/carried/escrow stacks are visible.
-		if not Rect2(Vector2.ZERO, size).grow(tile_size).has_point(point):
-			continue
-		var color: Color = Color("B96C50") if stack.item == "wood" else (Color("E9BA67") if stack.item == "meal" else Color("716D88"))
-		draw_rect(Rect2(point - Vector2(8, 8), Vector2(16, 16)), color)
-		draw_rect(Rect2(point - Vector2(8, 8), Vector2(16, 16)), Color("263C3B"), false, 2)
-		draw_string(get_theme_default_font(), point + Vector2(9, 5), str(stack.count), HORIZONTAL_ALIGNMENT_LEFT, -1, 16, Color("F3E8CC"))
-
-	for fire in ColonyFire.active(world):
-		for tile in ColonyFire.footprint(world,fire):
-			var center: Vector2 = tile_to_screen(Vector2(tile)+Vector2(0.5,0.5))
-			draw_colored_polygon(PackedVector2Array([center+Vector2(-0.3,0.3)*tile_size,center+Vector2(0,-0.45)*tile_size,center+Vector2(0.3,0.3)*tile_size]),Color("E9BA67"))
-
-
 func _draw_carried_items() -> void:
 	if not world is ColonyWorld:
 		return
+	var started: int = Time.get_ticks_usec()
 	for citizen in world.citizens:
 		if citizen.carrying_patient > 0:
 			var point: Vector2 = tile_to_screen(citizen_point(citizen))+Vector2(0,-tile_size*0.7)
@@ -510,13 +423,16 @@ func _draw_carried_items() -> void:
 		var point: Vector2 = tile_to_screen(citizen_point(citizen))+Vector2(tile_size*0.48,-tile_size*0.25)
 		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point):
 			continue
-		var color: Color = Color("B96C50") if stack.item == "wood" else (Color("E9BA67") if stack.item == "meal" else Color("716D88"))
-		carried_overlay.draw_rect(Rect2(point-Vector2(8,8),Vector2(16,16)),color)
-		carried_overlay.draw_rect(Rect2(point-Vector2(8,8),Vector2(16,16)),Color("263C3B"),false,2)
-		carried_overlay.draw_string(get_theme_default_font(),point+Vector2(9,5),str(stack.count),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("F3E8CC"))
+		var tier: int = EnvironmentArt.pile_tier(stack.count,world.definitions.items[stack.item].stack_limit)
+		var scale: float = tile_size/32.0
+		carried_overlay.draw_texture_rect_region(EnvironmentArt.ATLAS,Rect2(point-Vector2(8,16)*scale,Vector2(16,24)*scale),EnvironmentArt.rectangle("item/%s/%d" % [stack.item,tier]))
+		if citizen.id==selected_id: carried_overlay.draw_string(get_theme_default_font(),point+Vector2(9,5),str(stack.count),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("F3E8CC"))
+	account_draw(Time.get_ticks_usec()-started)
 
 func refresh_terrain() -> void:
 	if terrain == null: return
+	if environment!=null:
+		environment.refresh_terrain();return
 	for y in range(128):
 		for x in range(128):
 			var point: Vector2i = Vector2i(x,y)
@@ -531,32 +447,3 @@ func refresh_terrain() -> void:
 				elif x == 66 or y in [63,64]: cell = 4
 				if x in range(74,82) and y in range(54,62): cell = 0
 			terrain.set_cell(point,0,Vector2i(cell,0))
-
-func _draw_cart(rectangle: Rect2) -> void:
-	var body: Rect2 = rectangle.grow(-tile_size*0.12)
-	var rewards: Array = world.charter_state.appearances
-	if rewards.has("provision"):
-		draw_rect(rectangle.grow(tile_size*0.18),Color("716D88"),false,maxf(1,tile_size*0.09))
-		for offset in [Vector2(-0.25,-0.25),Vector2(1.05,-0.25),Vector2(-0.25,1.05),Vector2(1.05,1.05)]:
-			draw_circle(rectangle.position+rectangle.size*offset,tile_size*0.12,Color("E9BA67"))
-	draw_rect(body,Color("B96C50"))
-	draw_rect(body,Color("263C3B"),false,maxf(1,tile_size*0.08))
-	for x in [body.position.x,body.end.x]:
-		draw_circle(Vector2(x,body.end.y-tile_size*0.12),tile_size*0.17,Color("263C3B"))
-	if rewards.has("shelter"):
-		var pole: Vector2 = body.position+Vector2(tile_size*0.15,0)
-		draw_line(pole,pole-Vector2(0,tile_size*0.9),Color("263C3B"),maxf(1,tile_size*0.06))
-		var banner: Rect2 = Rect2(pole-Vector2(0,tile_size*0.85),Vector2(tile_size*1.6,tile_size*0.48))
-		draw_rect(banner,Color("F3E8CC"))
-		draw_string(ThemeDB.fallback_font,banner.position+Vector2(3,banner.size.y*0.76),ColonyChronicle.display_name(world,0),HORIZONTAL_ALIGNMENT_LEFT,banner.size.x-6,maxi(8,int(tile_size*0.25)),Color("263C3B"))
-	if rewards.has("connection"):
-		var plaque: Rect2 = Rect2(body.get_center()-Vector2(tile_size*0.35,tile_size*0.22),Vector2(tile_size*0.7,tile_size*0.44))
-		draw_rect(plaque,Color("F3E8CC"))
-		draw_line(plaque.position+plaque.size*Vector2(0.15,0.75),plaque.position+plaque.size*Vector2(0.85,0.25),Color("5F98AC"),maxf(1,tile_size*0.07))
-		for end in [Vector2(0.15,0.75),Vector2(0.85,0.25)]: draw_circle(plaque.position+plaque.size*end,tile_size*0.06,Color("375749"))
-	if rewards.has("refuge"):
-		var sign: Rect2 = Rect2(body.end-Vector2(tile_size*0.4,tile_size*0.4),Vector2(tile_size*0.55,tile_size*0.5))
-		draw_rect(sign,Color("77915A"))
-		var center: Vector2 = sign.get_center()
-		draw_colored_polygon(PackedVector2Array([center+Vector2(-0.2,0)*tile_size,center+Vector2(0,-0.18)*tile_size,center+Vector2(0.2,0)*tile_size]),Color("F3E8CC"))
-		draw_rect(Rect2(center,Vector2(tile_size*0.13,tile_size*0.16)).grow(-0.5),Color("F3E8CC"))

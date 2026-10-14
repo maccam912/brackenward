@@ -33,3 +33,5 @@ static func run(check: Callable) -> void:
 	check.call("PERF/preview_owns_its_data_without_mutating_collection",data.slow_events.size()==32 and data.samples.values()[0].buckets.size()==11)
 	data.reset()
 	check.call("PERF/reset_discards_only_measurements",data.samples.is_empty() and data.slow_events.is_empty() and data.previous_frame_us==0 and data.counters.values().all(func(n:int)->bool:return n==0))
+	data.tick=1901;data.speed=0;data.record("map_draw_commands",60000,1900,4)
+	check.call("PERF/deferred_draw_totals_keep_their_original_tick_and_speed",data.slow_events[0].tick=="1900" and data.slow_events[0].speed==4 and data.tick==1901 and data.speed==0)

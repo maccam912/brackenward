@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.4-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.5-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -18,7 +18,7 @@ Begin opens a paused map. Tap a traveler, use Follow, drag to pan, or use the ca
 Desktop shortcuts: WASD/arrows pan; Space toggles pause; 1/2/3 select speeds; B/J/P/V/L open Build/Work/People/Valley/Journal; Escape closes the top interaction, then opens Menu. Zoom uses the wheel or buttons. Menu > Settings offers keyboard rebinding, accessibility preferences and independent sound controls.
 
 ```sh
-tools/godot.sh --headless --editor --import
+python3 tools/checked_godot.py -- --headless --editor --import
 python3 tools/validate_content.py
 python3 tools/check_suite.py unit
 python3 tools/check_suite.py integration
@@ -55,7 +55,7 @@ python3 tools/replay_campaign.py --report reports/replay-local.json
 
 The scenario harness saves verified daily checkpoints, original/final snapshots and its public command trace. Add `--resume reports/charter-latest.json` with a different output report to continue that exact save; `--days` then means additional days. Policy success is measured separately from simulation invariants. Replay uses frozen commands, canonical hashes at ticks 7,200 and 72,000, and continuation from a committed foreign-host save. CI runs it on Windows, Linux, Apple Silicon and Intel Mac; a workflow configuration alone is not a passing platform result.
 
-The first M7 art checkpoint adds original animated adult citizens, matching portraits, independent cosmetic choices in People > Appearance, and labeled trait pictograms. The indexed art uses one shared atlas and per-citizen palette materials. Original authoring sources and inspected contact sheets are retained; environment art and other release gates remain in progress.
+The first M7 art checkpoint adds original animated adult citizens, matching portraits, independent cosmetic choices in People > Appearance, and labeled trait pictograms. The indexed art uses one shared atlas and per-citizen palette materials. Original authoring sources and inspected contact sheets are retained.
 
 Menu > Settings contains reduced motion, high-contrast selection, pause-on-inspect, 30/60 FPS graphics presets, individual automatic pauses and keyboard rebinding (including modifier shortcuts). Device preferences upgrade separately from campaign saves. Automatic warnings remain visible when their pause is disabled; a departure card shows its remaining game time and recovery threshold.
 
@@ -64,3 +64,7 @@ Original day/night/tension music and environmental loops now accompany licensed 
 Wildlife and livestock now use an original shared atlas with four facings, idle/walk/eat/downed states and boar charge. Visitors, merchants and attackers reuse the adult character system; weapons, travel gear and threat/neutral markers distinguish them. Taps follow their visible movement positions.
 
 Menu > Performance report previews local CPU timings and frame gaps by play speed. After a stutter, open it to view, copy or export a bounded JSON report. Reports include device/build and map seed, omit names/saves/document paths, and stay local until you choose to share them. Reset starts a fresh measurement; background time and earlier campaigns are excluded.
+
+The woodland environment uses a shared atlas for all 34 structures in four rotations, crop stages, deposits, trees and visibly taller supply piles. Actual jobs, fuel and seasons drive the visible states. Map and seed > Rooms overlay reveals enclosed interiors; selecting an occupant also fades its roof and overlapping trees. Battery and reduced motion stop decorative water/weather animation. These effects do not change simulation rules. Source components, original authoring code and exact license evidence are retained.
+
+Build imports and exports reject Godot script/engine errors even if the engine returns zero. Native desktop package metadata follows the project version and Android build number; CI adds exact commit provenance. Exported startup checks run from an empty directory and require the application's graceful, audio-drained exit marker.

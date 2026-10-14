@@ -31,6 +31,7 @@ func run() -> void:
 		"colony": ColonyTests.run(check)
 		"survival": SurvivalTests.run(check)
 		"persistence":
+			EnvironmentTests.run(check)
 			DiagnosticsTests.run(check)
 			AnimalArtTests.run(check)
 			AudioTests.run(check)
@@ -926,6 +927,7 @@ func ui() -> void:
 	await AudioUITests.run(colony_game,check)
 	await AnimalUITests.run(colony_game,check)
 	await DiagnosticsUITests.run(colony_game,check)
+	await EnvironmentUITests.run(colony_game,check)
 	TutorialUITests.run(colony_game,check)
 	colony_game._tutorial_state().forecast_pinned=false
 	ColonyTutorial.replay(colony_game._tutorial_state(),"follow")

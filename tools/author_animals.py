@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Editable original pixel animals, using Pillow. No borrowed or generated art.
+"""Editable original pixel animals, using Pillow. No borrowed animal sprites.
 
 24x24 frames, anchored at bottom center. Each species owns a 16x4 frame block;
 four directions and mirrored sides keep all states on the same shared texture.
