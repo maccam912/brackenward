@@ -673,8 +673,11 @@ func _assign(citizen: Dictionary) -> void:
 	if ColonyConstruction.step_aside(self,citizen): return
 	if ColonyCharter.assign(self,citizen): return
 	var arrival: Dictionary = jobs.filter(func(j:Dictionary)->bool:return j.kind=="arrival" and j.target==citizen.id and j.state not in ["Complete","Canceled"]).front() if jobs.any(func(j:Dictionary)->bool:return j.kind=="arrival" and j.target==citizen.id and j.state not in ["Complete","Canceled"]) else {}
+	var preparing: bool = ColonyRegion.preparing(self,citizen)
+	var food_threshold: int = 500 if preparing else 350
+	var rest_threshold: int = 500 if preparing else 300
 	var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
-	var needs_sleep: bool = citizen.rest <= 300 or ((hour >= 22 or hour < 6) and citizen.rest < 900)
+	var needs_sleep: bool = citizen.rest <= rest_threshold or ((hour >= 22 or hour < 6) and citizen.rest < 900)
 	var current: Dictionary = find(jobs, citizen.job)
 	var taking_break: bool = citizen.break_until > tick
 	var draft_ready: bool = citizen.drafted and not taking_break and citizen.fullness > 0 and citizen.rest > 100 and (citizen.health > 40 or citizen.stand_fast)
@@ -689,7 +692,7 @@ func _assign(citizen: Dictionary) -> void:
 		var change_to_defense: bool = draft_ready and not current.emergency and current.kind != "defend"
 		# Hunger still drains during sleep. Wake for ordinary food before reaching
 		# zero, while protecting life-critical rest until it exceeds 100.
-		var needs_food: bool = citizen.fullness <= 350 and current.kind != "eat" and (current.kind != "sleep" or citizen.rest > 100)
+		var needs_food: bool = citizen.fullness <= food_threshold and current.kind != "eat" and (current.kind != "sleep" or citizen.rest > 100)
 		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or (needs_sleep and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
 		if urgent_self_care or break_interrupt or (emergency and not current.emergency) or change_to_defense or ordinary_needs:
@@ -702,7 +705,7 @@ func _assign(citizen: Dictionary) -> void:
 		for emergency in emergencies:
 			if _reserve(emergency,citizen): citizen.job = emergency.id; return
 	if draft_ready and ColonyDefense.assign(self,citizen): return
-	if citizen.fullness <= 350:
+	if citizen.fullness <= food_threshold:
 		var food: Dictionary = _food(citizen)
 		if not food.is_empty():
 			var eat_job: Dictionary = _job("eat", "", "", citizen.id, Vector2i(citizen.x, citizen.y), 2000)

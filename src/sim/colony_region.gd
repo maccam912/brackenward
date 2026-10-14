@@ -157,10 +157,15 @@ static func assign(world: ColonyWorld, person: Dictionary) -> bool:
 	var trip: Dictionary = world.find(world.region_state.trips,person.expedition)
 	if trip.is_empty() or trip.state not in ["Preparing","Ready"]: return false
 	var wagon: Dictionary = ColonyTrade.cart(world)
-	if Vector2i(person.x,person.y)==Vector2i(wagon.x,wagon.y): person.activity="At the cart: waiting for Depart or Cancel";return true
+	if Vector2i(person.x,person.y)==Vector2i(wagon.x,wagon.y):
+		person.activity="Preparing: needs food to reach fullness 500" if person.fullness<500 else "At the cart: waiting for Depart or Cancel"
+		return true
 	var job: Dictionary = world._job("expedition_meet","","",person.id,Vector2i(wagon.x,wagon.y),0)
 	job.order=trip.id;job.worker=person.id;job.state="Moving";person.job=job.id
 	return true
+
+static func preparing(world: ColonyWorld, person: Dictionary) -> bool:
+	return person.expedition>0 and world.find(world.region_state.trips,person.expedition).get("state") in ["Preparing","Ready"]
 
 static func pack_complete(world: ColonyWorld, job: Dictionary) -> void:
 	for stack in world.stacks:

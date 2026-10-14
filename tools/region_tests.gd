@@ -5,6 +5,7 @@ static func args(definition: String = "berry_hollow", party: Array = [2,3]) -> D
 	return {"definition":definition,"party":party,"goats":[],"cargo":{},"feed":"grain","pen":0,"variant":0,"pickup":false}
 
 static func run(check: Callable) -> void:
+	preparation_needs(check)
 	var world: ColonyWorld = ColonyTests.world();var twin: ColonyWorld = ColonyTests.world()
 	check.call("REGION/seeded_81_nodes_and_topology",world.region_state==twin.region_state and world.region_state.nodes.size()==81 and world.region_state.nodes.filter(func(n:Dictionary)->bool:return n.definition!="transit").size()==12)
 	var plan: Dictionary = args();var quote: Dictionary = ColonyRegion.preview(world,plan)
@@ -184,6 +185,37 @@ static func expanded() -> ColonyWorld:
 		for x in range(85,93): tiles.append(Vector2i(x,y))
 	world.queue_designation(tiles);world.step()
 	return world
+
+static func preparation_needs(check: Callable) -> void:
+	var world: ColonyWorld = ColonyTests.world()
+	var wagon: Dictionary = ColonyTrade.cart(world)
+	for id in [2,3]:
+		var person: Dictionary = world.find(world.citizens,id)
+		person.x=wagon.x;person.y=wagon.y;person.edge_x=wagon.x;person.edge_y=wagon.y
+		person.fullness=600;person.rest=600
+	var accepted: String = ColonyRegion.prepare(world,args())
+	var trip: Dictionary = ColonyRegion.active(world)
+	check.call("EXP/preparation_needs_fixture_uses_normal_dispatch",accepted=="accepted" and trip.state=="Preparing")
+	for id in [2,3]:
+		var person: Dictionary = world.find(world.citizens,id)
+		person.fullness=480;person.rest=480
+		world._assign(person)
+	check.call("EXP/preparing_travelers_eat_before_departure_threshold",[2,3].all(func(id:int)->bool:return world.find(world.jobs,world.find(world.citizens,id).job).get("kind")=="eat"))
+	world.citizens[0].fullness=480;world.citizens[0].rest=480
+	world._assign(world.citizens[0])
+	check.call("EXP/home_workers_keep_ordinary_need_thresholds",world.find(world.jobs,world.citizens[0].job).get("kind") not in ["eat","sleep"])
+	for index in range(30): world.step()
+	var saved: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
+	check.call("SAVE/preparing_needs_roundtrip",saved.has("world") and saved.world.canonical_hash()==world.canonical_hash(),str(saved.get("error","")))
+	var saw_sleep: bool = false
+	for index in range(3570):
+		world.step()
+		saw_sleep=saw_sleep or [2,3].any(func(id:int)->bool:return world.find(world.jobs,world.find(world.citizens,id).job).get("kind")=="sleep")
+		if trip.state=="Ready": break
+	check.call("EXP/preparing_travelers_really_rest_and_reach_departure",saw_sleep and trip.state=="Ready" and ColonyRegion.ready(world,trip).is_empty(),trip.note)
+	check.call("EXP/preparation_consumes_real_food_without_auto_departure",world.ledger.consumed.get("meal",0)>=2 and world.citizens.all(func(c:Dictionary)->bool:return not c.away) and world.invariant_errors().is_empty(),str(world.invariant_errors()))
+	ColonyRegion.cancel(world,trip)
+	check.call("EXP/cancel_restores_normal_need_thresholds",not ColonyRegion.preparing(world,world.citizens[1]) and world.citizens[1].expedition==0)
 
 static func depart(world: ColonyWorld, plan: Dictionary, allow_unprepared: bool = true) -> Dictionary:
 	if ColonyRegion.prepare(world,plan)!="accepted": return {}

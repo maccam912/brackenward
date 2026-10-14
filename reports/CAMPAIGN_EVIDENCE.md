@@ -144,3 +144,11 @@ old process was stopped; `needs-checkpoint-preservation.json` records the exact
 source and frozen copy. These are still in-progress scenarios. The phone
 performance report triggered separate periodic-save and reachability fixes;
 none of this campaign evidence certifies physical-device smoothness or M7.
+
+
+The preparation correction raises only selected Preparing/Ready travelers'
+eating/rest triggers to the existing hard departure minimum of 500, using
+normal physical needs tasks. It grants no supplies or need points. The three
+new continuations use `charter-prepared-20261013-*`, from exact frozen sources
+listed in `preparation-checkpoint-preservation.json`. Earlier `charter-verified-*`
+processes were stopped after copying a complete matching daily checkpoint.

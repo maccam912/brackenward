@@ -2190,6 +2190,7 @@ func show_expeditions() -> void:
 	label(trip.args.definition.capitalize()+" · "+trip.state+"\n"+trip.note,sheet_body)
 	label("Party: "+", ".join(trip.args.party.map(func(id:int)->String:return world.find(world.citizens,id).name))+"\nCargo: "+_cost_text(ColonyRegion.cargo(world,trip))+"\nReadiness %d / %d · remaining phase %.1f hours" % [trip.readiness,trip.quote.challenge,trip.remaining/300.0],sheet_body)
 	if trip.state in ["Preparing","Ready"]:
+		label("Travelers eat at fullness 500 and sleep at rest 500 while preparing, then return to the cart. Food, work and rest are real; departure requirements still apply.",sheet_body)
 		var error: String = ColonyRegion.ready(world,trip)
 		label("Ready for Depart" if error.is_empty() else error,sheet_body)
 		if error.is_empty():

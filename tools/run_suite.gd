@@ -793,6 +793,7 @@ func ui() -> void:
 	check("EXP/UI_packing_confirmation_submits_once",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="expedition_prepare")
 	colony_game.world.step();colony_game.submitted_command=0;colony_game.show_expeditions()
 	check("EXP/UI_depart_waits_for_real_party_and_cargo",not colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Depart"))
+	check("EXP/UI_preparing_explains_real_food_and_rest",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("Travelers eat at fullness 500") and n.text.contains("Food, work and rest are real")))
 	var ui_trip: Dictionary = ColonyRegion.active(colony_game.world)
 	RegionTests.until(colony_game.world,ui_trip,"Ready");colony_game.show_expeditions()
 	var depart_expedition: Button = colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text=="Depart")[0]
