@@ -6,6 +6,7 @@ import tempfile
 import unittest
 
 from push_checkpoint import CheckpointError, git, publish
+from stamp_build import development_build, development_tag
 
 
 class CheckpointTests(unittest.TestCase):
@@ -38,9 +39,31 @@ class CheckpointTests(unittest.TestCase):
         commit = self.commit("ready")
         result = publish(self.root)
         self.assertEqual(result["commit"], commit)
+        self.assertEqual(result["tag"], "v0.0.102-dev")
         self.assertEqual(git(self.remote, "rev-parse", "refs/heads/main"), commit)
         self.assertEqual(git(self.remote, "rev-parse", "refs/tags/" + result["tag"]), commit)
         self.assertEqual(publish(self.root), result)
+
+    def test_next_commit_increments_the_reserved_build(self):
+        first = publish(self.root)
+        self.commit("next build")
+        second = publish(self.root)
+        self.assertEqual(first["tag"], "v0.0.101-dev")
+        self.assertEqual(second["tag"], "v0.0.102-dev")
+        self.assertEqual(git(self.remote, "rev-parse", first["tag"]), first["commit"])
+        self.assertEqual(development_build(self.root, first["commit"]), 101)
+
+    def test_shallow_clone_cannot_reserve_reused_build_numbers(self):
+        self.commit("history")
+        publish(self.root)
+        shallow = self.parent / "shallow"
+        subprocess.run(["git", "clone", "--depth", "1", self.remote.as_uri(), str(shallow)],
+                       check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        self.identity(shallow)
+        self.commit("new shallow checkpoint", shallow)
+        with self.assertRaisesRegex(CheckpointError, "full Git history"):
+            publish(shallow)
+        self.assertEqual(git(self.remote, "rev-parse", "main"), git(self.root, "rev-parse", "HEAD"))
 
     def test_dirty_work_does_not_publish(self):
         original = git(self.remote, "rev-parse", "main")
@@ -65,7 +88,7 @@ class CheckpointTests(unittest.TestCase):
     def test_wrong_existing_tag_cannot_be_overwritten(self):
         old = git(self.root, "rev-parse", "HEAD")
         commit = self.commit("new checkpoint")
-        tag = "dev-" + commit[:12]
+        tag = development_tag(development_build(self.root, commit))
         git(self.root, "tag", tag, old);git(self.root, "push", "origin", "refs/tags/" + tag)
         with self.assertRaises(CheckpointError): publish(self.root)
         self.assertEqual(git(self.remote, "rev-parse", "main"), old)

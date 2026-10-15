@@ -4,6 +4,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from stamp_build import development_build, development_tag
+
 
 class CheckpointError(RuntimeError):
     pass
@@ -20,7 +22,10 @@ def publish(root):
     if git(root, "branch", "--show-current") != "main": raise CheckpointError("Publish from main after committing the reviewed checkpoint")
     if git(root, "status", "--porcelain"): raise CheckpointError("Commit or preserve unfinished work before publishing the checkpoint")
     commit = git(root, "rev-parse", "HEAD")
-    tag = "dev-" + commit[:12]
+    try:
+        tag = development_tag(development_build(root, commit))
+    except ValueError as error:
+        raise CheckpointError(str(error)) from error
     git(root, "fetch", "--no-tags", "origin", "main")
     ancestor = subprocess.run(["git", "merge-base", "--is-ancestor", "origin/main", commit], cwd=root, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if ancestor.returncode: raise CheckpointError("Remote main has new work; integrate it before publishing. Nothing was forced")

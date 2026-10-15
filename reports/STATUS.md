@@ -1,5 +1,24 @@
 # Implementation evidence
 
+Development release numbering (15 October 2026): checked APK releases now use
+`Build N (development)`, semantic tags `v0.0.N-dev`, and sortable download names
+`brackenward-build-000NNN.apk`. N is 100 plus the full Git commit count, shared
+with Android's version code and its visible build suffix. The next checkpoint
+is build 239, above the latest published APK's code 234. Main advances without
+force; new commits increase N and retries retain the same tag/release. CI fetches
+full history, and shallow publishers fail before reserving a number. The atomic
+checkpoint helper reserves the numbered tag and retains its exact-source,
+conflicting-tag, and divergent-main protections. Existing hash-tagged release
+links remain available. No gameplay or save format changed.
+
+Local validation: seven package-stamping and seven isolated-Git publication
+tests pass, including increasing numbers, repeatable retries, filename sorting
+across 999/1000, shallow-history refusal, and conflict preservation. Actionlint
+and diff checks pass. A disposable full-history clone verifies the stamped
+package/provenance fields and renamed-asset checksum handling; it uses fixture
+APK bytes, not an Android export. Remote CI/APK publication for this checkpoint
+will be checked after pushing; physical-device validation is separate.
+
 Checkpoint: `0.7.80-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |

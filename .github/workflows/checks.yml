@@ -18,6 +18,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           lfs: true
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
@@ -44,6 +45,7 @@ jobs:
           python3 tools/test_merchant_sweep.py
           python3 tools/test_defense_sweep.py
           python3 tools/test_push_checkpoint.py
+          python3 tools/test_stamp_build.py
           python3 tools/test_validate_raw_map.py
           python3 tools/test_map_sweep.py
           python3 tools/test_check_suite.py
@@ -115,9 +117,10 @@ jobs:
           python3 tools/stamp_build.py
           tools/build_android.sh
           mkdir -p build/download
-          cp build/brackenward-debug.apk build/download/
+          APK_FILENAME=$(python3 -c 'import json; print(json.load(open("data/build.json"))["apk_filename"])')
+          cp build/brackenward-debug.apk "build/download/$APK_FILENAME"
           cp data/build.json build/download/build.json
-          (cd build/download && sha256sum brackenward-debug.apk > SHA256SUMS.txt)
+          (cd build/download && sha256sum "$APK_FILENAME" > SHA256SUMS.txt)
       - uses: actions/upload-artifact@v4
         with:
           name: development-apk
@@ -252,11 +255,18 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
-          TAG="dev-${GITHUB_SHA:0:12}"
+          TAG=$(jq -r '.release_tag' download/build.json)
+          BUILD_NUMBER=$(jq -r '.version_code' download/build.json)
+          APK_FILENAME=$(jq -r '.apk_filename' download/build.json)
+          BUILD_COMMIT=$(jq -r '.commit' download/build.json)
+          if [ "$BUILD_COMMIT" != "$GITHUB_SHA" ] || [ "$TAG" != "v0.0.$BUILD_NUMBER-dev" ]; then
+            echo "APK build metadata differs from the checked source or release version." >&2
+            exit 1
+          fi
           cat > "$RUNNER_TEMP/release-notes.md" <<EOF
-          Development APK from commit $GITHUB_SHA.
+          Development build $BUILD_NUMBER from commit $GITHUB_SHA.
 
-          Download brackenward-debug.apk below and sideload it on an Android 10+ arm64 phone. These development APKs share a signing identity and can update one another while preserving app data. Saves from development milestones remain explicitly versioned; do not uninstall the app to update it.
+          Higher build numbers are newer. Download $APK_FILENAME below and sideload it on an Android 10+ arm64 phone. These development APKs share a signing identity and can update one another while preserving app data. Saves from development milestones remain explicitly versioned; do not uninstall the app to update it.
 
           Automated simulation, UI, Kotlin, APK and desktop-export checks passed in [this run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID). Physical-phone testing remains pending. This is a debug build, not the finished game or a production-signed release.
 
@@ -276,7 +286,7 @@ jobs:
             exit 1
           fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --verify-tag --title "Development ${GITHUB_SHA:0:7}" --draft --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
+            gh release create "$TAG" --verify-tag --title "Build $BUILD_NUMBER (development)" --draft --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
           fi
-          gh release upload "$TAG" download/brackenward-debug.apk download/SHA256SUMS.txt download/build.json --clobber
+          gh release upload "$TAG" "download/$APK_FILENAME" download/SHA256SUMS.txt download/build.json --clobber
           gh release edit "$TAG" --draft=false
