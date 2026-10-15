@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.42-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.43-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -2705,3 +2705,37 @@ starvation. The 0.7.41 soak remains alive with twenty residents and clean
 invariants/storage so far. Full outcomes remain pending; physical Android and
 human gates remain open. Remote 0.7.40 CI passes; current-revision publication
 is separate. Weekly remaining last observed 63%; authorized work continues.
+
+
+## 0.7.43 complete v6 Winter gate and explicit post-Charter continuation
+
+The clean revised-policy first-Winter matrix at 7059064/0.7.35 completes 30/30
+and passes independent audit, retaining unchanged source. Every case keeps eight
+residents and records zero zero-fullness/beyond-grace ticks; all 23,760 invariant
+checks, full-save checksums and round trips pass. There are 215 actual recorded
+major incidents. Minimum health is 100 except Reed seeds 1 and 73 at 92, reported
+without a zero-damage claim. The former Pine73 blockage case now has health 100
+and no hunger/grace failures. Its original failed run and causal-repair evidence
+remain retained. WINTER_MATRIX.md records all exact source/completion/audit
+digests. Current 0.7.42 pure-loading audit passes all thirty endpoints, every
+field/input byte and round trip without advancing time.
+
+post_charter_sweep.py now requires the complete independently audited four-case
+Charter origins before continuing each for ninety-six additional ordinary days.
+It hashes twenty original evidence files, preserves initial bytes and the full
+command prefix, links each endpoint canonically, requires another 2,304 invariant
+checks, eight living residents without replacements/departures, no accumulated
+beyond-grace starvation and one day's final edible reserve. A four-hour per-case
+bound retains partial outcomes; outputs use a new directory and source stays
+frozen. Six Python fault-injection tests reject short runs, missing invariants,
+wrong source links/removed history, shortages, dead replacements, modified initial
+bytes, failed processes and wrong snapshot digests. All four real origin reports
+also pass the new input verification without modification. Full continuation
+outcomes are not assumed. No runtime gameplay/UI changes from 0.7.42. Content/media validation and local Android export pass; aapt verifies 0.7.43-m7 / local code 82. The maintained GDScript total remains 2,586; graphical checks remain deferred during the isolated soak and current CI validates them separately.
+
+The ordinary twenty-person run has sixteen residents around day 49, no beyond-
+grace ticks and a substantial food reserve at last observation. The isolated
+0.7.41 memory soak continues with twenty residents and clean invariants/storage.
+M7 remains open for those outcomes, remaining economy/recovery scenarios, full
+performance/physical-platform and human gates. Weekly remaining last observed
+63%; authorized work continues.

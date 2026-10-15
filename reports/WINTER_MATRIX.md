@@ -1,6 +1,43 @@
 # Frozen first-Winter matrix
 
-## Content v6 diagnostic run — unresolved failure
+
+## Clean revised-policy v6 release matrix — pass
+
+All **30/30 fresh first-Winter cases pass** at clean, unchanged source
+705906424c0a1252b5286cc9b847b4f398c8620d (0.7.35-m7, content v6/schema 23).
+Ten seeds on each of the three sites run Standard from tick 1,800 to 239,400.
+All thirty retain eight living residents, with zero zero-fullness and
+starvation-grace-exceeded ticks. Minimum health is 100 except Reed seeds 1/73
+at 92; no zero-damage claim is made. There are 215 recorded major incidents
+and 23,760 successful invariant checks. Every process exit, clean log, unique
+case, full endpoint checksum and codec round trip passes the independent audit;
+source and completion prove the checkout remained unchanged.
+
+The policy protects existing/planned door approaches from replanting and repairs
+obstructing trees through real gather/clear work. Pine 73 now passes the full
+33-day run with minimum health 100 and no zero-fullness/beyond-grace ticks. The
+old failed run, exact causal replay and real public-command repair remain below.
+This new clean matrix supersedes its pending gate without changing old evidence.
+
+Current 0.7.42 separately loads all thirty final saves, preserves every field,
+input byte and canonical state, passes invariants and round trips without advancing
+time. This is a loading audit, not another matrix of simulated Winters.
+
+Raw directory: reports/winter-release-v6-7059064/. SHA-256:
+
+| Evidence | SHA-256 |
+| --- | --- |
+| source.json | `bffd01df82d0617403e42ac27bc71aee57bed8b20c421dfb256da2eede165b2e` |
+| completion.json | `05ba32015547f1fadb08486e7c81d9c449b1ae5ba71d7b7fec094fc8a72b532c` |
+| audit.json | `a3d29e55556bfdafedb84e7615e1040d528436fb502dae151828774a334be0eb` |
+| Current42 loading audit | `d3cc558d0c04c7121ba6dfeb88f0d4343ad561fcc3c63d97e89ccbfbcd366c0f` |
+
+The last report is winter-v6-current42-audit.json. These are balance/save
+results; physical Android, human comprehension, performance budgets and the
+other long scenarios remain separate gates.
+
+
+## Earlier v6 diagnostic run — retained failure
 
 The 30-case first-Winter sweep at ffdce480994ad43c46dee84c5b1ba34d3f17e330
 (0.7.28-m7) completes **29/30**. Pine Shelf seed 73 retains eight living residents
@@ -27,7 +64,7 @@ in `reports/winter-release-v6-ffdce48/`.
 | Pine 73 report | `4e7c573fbac04ea73718db989c27a5c08ad38e858f93c68d6c0932cde24402dc` |
 | Pine 73 final snapshot | `25edf7a2519f88918fbfff8724667fbcd13b4cabb1c6dd554fd4968a6fe5198b` |
 
-### Pine 73 causal replay and repair under validation
+### Pine 73 causal replay and repair evidence
 
 Current 0.7.34 replays 264 retained public commands from the original initial save
 to tick 134,159. All eighteen original daily canonical checkpoints match exactly;

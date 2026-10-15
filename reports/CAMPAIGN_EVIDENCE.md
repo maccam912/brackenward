@@ -23,7 +23,7 @@ The current 0.7.32 loading audit preserves all four complete payloads, source
 bytes, invariants and round trips without advancing time. It is a loading audit,
 not a claim that a new 96-day campaign ran on 0.7.32. Frozen raw evidence remains
 in `reports/charter-release-v6-ffdce48/`; every exit/log/snapshot and unchanged
-source is checked. The current content-v6 Winter matrix is still running.
+source is checked. The revised-policy content-v6 Winter matrix now passes all thirty cases; see WINTER_MATRIX.md.
 
 | Evidence | SHA-256 |
 | --- | --- |
