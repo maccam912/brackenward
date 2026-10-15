@@ -45,7 +45,7 @@ static func configure(world: ColonyWorld, entered_seed: int, site: String, revis
    var point: Vector2i = transformed(Vector2i(stack.x,stack.y),transform)
    stack.x = point.x; stack.y = point.y
   for store in world.stores: store.tiles = store.tiles.map(func(p:Vector2i)->Vector2i:return transformed(p,transform))
-  world.record_indexes.clear(); world.navigation_dirty = true; world.rooms_dirty = true
+  world.record_indexes.clear(); world.reset_resource_queries(); world.navigation_dirty = true; world.rooms_dirty = true
   world.flood_cache.clear(); world.flood_cache_valid = false
   ColonyWeather.initialize(world)
   ColonyWildlife.initialize(world)

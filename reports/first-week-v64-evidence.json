@@ -1,0 +1,116 @@
+{
+  "passed": true,
+  "audit": {
+    "passed": true,
+    "source_commit": "702b20bb1f479cf4df28c02b8fb853ff52b089c0",
+    "rows": [
+      {
+        "site": "meadow_reach",
+        "mode": "Standard",
+        "passed": true,
+        "checks": {
+          "complete_initial_boundary": true,
+          "exact_requested_campaign": true,
+          "ordinary_verified_scenario": true,
+          "stated_first_week_goals": true,
+          "clean_log": true
+        },
+        "minimum_health": 100,
+        "zero_fullness_ticks": 0,
+        "end_tick": 59400,
+        "canonical_hash": "e5e458ec134866d40d1645a220e6937a8a8dad32423c4ea95f96dfdd7d47af96",
+        "final_snapshot_sha256": "f81532816b85b452d4bdb805b99b231dd80d8ad6cbbfcebf6c5b94af8c3af17f"
+      },
+      {
+        "site": "pine_shelf",
+        "mode": "Standard",
+        "passed": true,
+        "checks": {
+          "complete_initial_boundary": true,
+          "exact_requested_campaign": true,
+          "ordinary_verified_scenario": true,
+          "stated_first_week_goals": true,
+          "clean_log": true
+        },
+        "minimum_health": 100,
+        "zero_fullness_ticks": 0,
+        "end_tick": 59400,
+        "canonical_hash": "60a70368a2ca81b318b55687a3531af51d1893200c58d99594272b19891eabfe",
+        "final_snapshot_sha256": "b1e346ca4adb8b92e2ae9424ace30f2d98a163fa93c0c379614adb358465f0e8"
+      },
+      {
+        "site": "reed_bend",
+        "mode": "Standard",
+        "passed": true,
+        "checks": {
+          "complete_initial_boundary": true,
+          "exact_requested_campaign": true,
+          "ordinary_verified_scenario": true,
+          "stated_first_week_goals": true,
+          "clean_log": true
+        },
+        "minimum_health": 100,
+        "zero_fullness_ticks": 0,
+        "end_tick": 59400,
+        "canonical_hash": "a3996aa3968acb42fce31b5525d6ef6b71b6f40ae857b16693ed9493d549ab26",
+        "final_snapshot_sha256": "b280c1c23cfe8a164d66bdcbb29e8c3d53b4d06f6e0665a9a84dc4ea6450393c"
+      },
+      {
+        "site": "pine_shelf",
+        "mode": "Hearthside",
+        "passed": true,
+        "checks": {
+          "complete_initial_boundary": true,
+          "exact_requested_campaign": true,
+          "ordinary_verified_scenario": true,
+          "stated_first_week_goals": true,
+          "clean_log": true
+        },
+        "minimum_health": 100,
+        "zero_fullness_ticks": 0,
+        "end_tick": 59400,
+        "canonical_hash": "8b9f79e4bfba77c249afe52afdfc12b7955e908a6ea1038a904c54e2f0e0cf28",
+        "final_snapshot_sha256": "b51a828ff2129e954fb2e49db734bca9c67cc090369faf46ec1da21c91b1002a"
+      }
+    ],
+    "harness_sha256": "e04f34851b19d1ada71aa82c60644a5274fc44f2dd0dd57a7c7d406ede9df951",
+    "scope": "Four current-v7 generator2 first8day ordinary policies,4residents,exact inspected initial boundaries and original scenario goals. Physical and human gates separate."
+  },
+  "files_sha256": {
+    "audit.json": "149581b8c213470b86d2d1ea4992277b0e5b2f9bb51a92cb532de19de2aeffca",
+    "completion.json": "57b3bce73242d5f5b5b8d06aad11eecc12ebf61fbe0638f6cc9e20ec49d11afa",
+    "harness.py": "e04f34851b19d1ada71aa82c60644a5274fc44f2dd0dd57a7c7d406ede9df951",
+    "meadow_reach-standard-final.brackenward": "f81532816b85b452d4bdb805b99b231dd80d8ad6cbbfcebf6c5b94af8c3af17f",
+    "meadow_reach-standard-initial.brackenward": "c462f7ab82d2aa12374d08a5778fcdec5a15abaedc65d0ad60bfe2b6963f00bf",
+    "meadow_reach-standard-latest-final.brackenward": "f574ea9eb8a5d50f9f6a40bd23adf5bc8bdc6a9f6f05663c71f3c5a2509a9859",
+    "meadow_reach-standard-latest-initial.brackenward": "c462f7ab82d2aa12374d08a5778fcdec5a15abaedc65d0ad60bfe2b6963f00bf",
+    "meadow_reach-standard-latest.json": "b2a8c8e2fcff68db26324cd6ce9dedf9bb745ee35d92ac8269bbe3866cd21bc0",
+    "meadow_reach-standard.json": "367d46fe0c443055da8d5f0fb2eeace31f420371f4c5ef1aff6c0dfba984fb65",
+    "meadow_reach-standard.log": "e770d957b8d00a8dc43cc3fe79f7b61a593267ca209a46062e02ff0e60afa44f",
+    "pine_shelf-hearthside-final.brackenward": "b51a828ff2129e954fb2e49db734bca9c67cc090369faf46ec1da21c91b1002a",
+    "pine_shelf-hearthside-initial.brackenward": "0690dbfde8615b80a158c4c64cb2793a2e7b49d966dd1a04a333c8f3a35c36d7",
+    "pine_shelf-hearthside-latest-final.brackenward": "e2064ecfbe19dc2b4e5fc6f0a4d34a5d9ac42aca82771c51cc98fb9f48bf8115",
+    "pine_shelf-hearthside-latest-initial.brackenward": "0690dbfde8615b80a158c4c64cb2793a2e7b49d966dd1a04a333c8f3a35c36d7",
+    "pine_shelf-hearthside-latest.json": "9d32b403131b853e59cd1d9210321c444c0400a1e20de07697e97905eb28b0a2",
+    "pine_shelf-hearthside.json": "1965c150d96b0f05c61445e8234013fea03f31580548634e98b98a8c3393c2ff",
+    "pine_shelf-hearthside.log": "107d662de1c356f67c4f5891f0b3a0b86174eee3d7a3e3979bbe2fb7c9d97e87",
+    "pine_shelf-standard-final.brackenward": "b1e346ca4adb8b92e2ae9424ace30f2d98a163fa93c0c379614adb358465f0e8",
+    "pine_shelf-standard-initial.brackenward": "3c3e0154a98e7f2f9a985d908dcf00172eb4871498f8d2a9cf1ad15579822aa7",
+    "pine_shelf-standard-latest-final.brackenward": "2af076109a40fe57e1a7fd570123a929b97d364aab51144a9bffaa0b6b328b7c",
+    "pine_shelf-standard-latest-initial.brackenward": "3c3e0154a98e7f2f9a985d908dcf00172eb4871498f8d2a9cf1ad15579822aa7",
+    "pine_shelf-standard-latest.json": "7f9ff80d1acb0d3fc094a9d2defb4bda35c6a86297cf1fb5f89414d4cf07a6cd",
+    "pine_shelf-standard.json": "41b65affa2bffae7348c82e5e097075a8756ad6292ee320e869e8aff6cb1ca9c",
+    "pine_shelf-standard.log": "3199afcd94b0c2fdbf0087552acd389729ac5461208f7a0a1993355db053bfea",
+    "reed_bend-standard-final.brackenward": "b280c1c23cfe8a164d66bdcbb29e8c3d53b4d06f6e0665a9a84dc4ea6450393c",
+    "reed_bend-standard-initial.brackenward": "0a1817d57a2396b567c887fce8f369e907586124525471d8dcb419a3e2a5ab2f",
+    "reed_bend-standard-latest-final.brackenward": "9802a1766b2ad0f663860769cd7812507e9759a6d80c89eb36d3eced5862c1ef",
+    "reed_bend-standard-latest-initial.brackenward": "0a1817d57a2396b567c887fce8f369e907586124525471d8dcb419a3e2a5ab2f",
+    "reed_bend-standard-latest.json": "920abcd3faa403106b6f87a1e7bdc2d333d9c3df0e5604a2044a5da24af7832d",
+    "reed_bend-standard.json": "7604681f0738ff13532785a443fc49ef73f49173e7a6b1f94dcfa7b883b1fd81",
+    "reed_bend-standard.log": "a7cd2c694a205f2f305d21639ae936ae172f4cf021e75cd272e06ea549df3bdf",
+    "second-audit.json": "149581b8c213470b86d2d1ea4992277b0e5b2f9bb51a92cb532de19de2aeffca",
+    "source.json": "9796e245cacc238bd22832f71018891b2ad6c2a689a5764d7dddfeb679d23465"
+  },
+  "second_audit_log_sha256": "360dfeaf713af87ec6cd506fc586d7f4dfded7c0448aff0025bf5020fea9d9b8",
+  "scope": "Four frozen current-v7 generator2 first8day public-command policies,exact inspected starting payloads,4living,no starvation-grace overrun,at least3improvements/final food day,full source/snapshots/roundtrip and separate second audit. No physical/human certification."
+}

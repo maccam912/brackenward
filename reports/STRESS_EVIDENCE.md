@@ -5,6 +5,23 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## Frozen 0.7.63 run fails after a protective save pause
+
+The requested1800-second2x run stops at1576.563294seconds, tick34533,
+with one slow-storage pause. The unchanged1.75-second undurable-progress guard
+pauses simulation, so completion and the separate second audit fail. This stays
+a failure. The valid subsets include31531ticks matching floor nominal,20living,
+16536832-byte sampled peak growth, lowest one-second FPS28.434, full roundtrip,
+unchanged source/input and audio drain. No storage error or saving-disabled flag
+appears. Save capture/finish callbacks do not measure actual worker wall latency,
+so the report cannot attribute the cause to host load or the diagnostics change.
+
+Native63 shares the host with ordinary20/merchant work, headless suites/probes
+and editor/export work, including three failed reference-compilation probes.
+[native-soak-v63-failure-evidence.json](native-soak-v63-failure-evidence.json)
+retains every source/report/save hash and the failed second audit. Earlier passing
+native62 stays a separate pinned result. Physical release gates remain open.
+
 ## 0.7.64 share repeated keys in privately decoded worlds
 
 Fresh external JSON conversion now shares equal String dictionary keys through

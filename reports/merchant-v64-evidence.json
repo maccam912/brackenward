@@ -1,0 +1,300 @@
+{
+  "passed": true,
+  "source_commit": "702b20bb1f479cf4df28c02b8fb853ff52b089c0",
+  "audit": {
+    "passed": true,
+    "source_commit": "702b20bb1f479cf4df28c02b8fb853ff52b089c0",
+    "rows": [
+      {
+        "site": "meadow_reach",
+        "mode": "Standard",
+        "seed": 104729,
+        "exit_code": 0,
+        "pass": true,
+        "checks": {
+          "initial_cloth_absent": true,
+          "two_distinct_riverward_purchases": true,
+          "one_road_cloak_delivery": true,
+          "all_payments_physically_committed": true,
+          "purchases_within_actual_cart_stay": true,
+          "imported_cloth_is_only_source": true,
+          "cloth_conservation_and_real_sewing": true,
+          "exact_payment_and_reputation": true,
+          "no_local_weaving_or_expedition_substitute": true,
+          "three_accepted_public_trade_commands": true,
+          "planner_decisions_match_all_public_commands": true,
+          "only_requested_care_mode": true,
+          "eight_living_equipped_residents": true,
+          "no_starvation_and_final_food_day": true,
+          "complete_initial_payload_matches_inspected_boundary": true,
+          "complete_ordinary_scenario": true
+        },
+        "canonical_hash": "cf1c91d8d506d320b766a24b0e0de8f5b9ec7aaf162f34b5a3c699b0c7b574da",
+        "minimum_health": 100,
+        "final_food_ticks": 94699,
+        "economy": {
+          "cloth_consumed": 14,
+          "cloth_imported": 16,
+          "cloth_produced": 0,
+          "completed_cloak_deliveries": 1,
+          "completed_purchases": [
+            {
+              "buy": {
+                "cloth": 8
+              },
+              "community": "riverward",
+              "merchant": 5007,
+              "pay": {
+                "wood": 40
+              },
+              "receipt": 61903
+            },
+            {
+              "buy": {
+                "cloth": 8
+              },
+              "community": "riverward",
+              "merchant": 8286,
+              "pay": {
+                "wood": 40
+              },
+              "receipt": 148458
+            }
+          ],
+          "completed_sewing_jobs": 7,
+          "distinct_merchants": 2,
+          "flax_fields": 0,
+          "road_reputation": 30
+        },
+        "final_snapshot_sha256": "8744ea76c24ef74d7a784140d265ceabef2d36cba4514e928e7d6263e940de78"
+      },
+      {
+        "site": "pine_shelf",
+        "mode": "Standard",
+        "seed": 104729,
+        "exit_code": 0,
+        "pass": true,
+        "checks": {
+          "initial_cloth_absent": true,
+          "two_distinct_riverward_purchases": true,
+          "one_road_cloak_delivery": true,
+          "all_payments_physically_committed": true,
+          "purchases_within_actual_cart_stay": true,
+          "imported_cloth_is_only_source": true,
+          "cloth_conservation_and_real_sewing": true,
+          "exact_payment_and_reputation": true,
+          "no_local_weaving_or_expedition_substitute": true,
+          "three_accepted_public_trade_commands": true,
+          "planner_decisions_match_all_public_commands": true,
+          "only_requested_care_mode": true,
+          "eight_living_equipped_residents": true,
+          "no_starvation_and_final_food_day": true,
+          "complete_initial_payload_matches_inspected_boundary": true,
+          "complete_ordinary_scenario": true
+        },
+        "canonical_hash": "c62bdf013f1767323e49ce4c189d2d5444378d31c13b0eea4d721becc65f5880",
+        "minimum_health": 100,
+        "final_food_ticks": 96587,
+        "economy": {
+          "cloth_consumed": 14,
+          "cloth_imported": 16,
+          "cloth_produced": 0,
+          "completed_cloak_deliveries": 1,
+          "completed_purchases": [
+            {
+              "buy": {
+                "cloth": 8
+              },
+              "community": "riverward",
+              "merchant": 6073,
+              "pay": {
+                "wood": 40
+              },
+              "receipt": 61915
+            },
+            {
+              "buy": {
+                "cloth": 8
+              },
+              "community": "riverward",
+              "merchant": 9629,
+              "pay": {
+                "wood": 40
+              },
+              "receipt": 147915
+            }
+          ],
+          "completed_sewing_jobs": 7,
+          "distinct_merchants": 2,
+          "flax_fields": 0,
+          "road_reputation": 30
+        },
+        "final_snapshot_sha256": "98d1cb8486abf775d6f8a8a1831b4338ebfff1d295be191586b1872aa62f58ed"
+      },
+      {
+        "site": "reed_bend",
+        "mode": "Standard",
+        "seed": 104729,
+        "exit_code": 0,
+        "pass": true,
+        "checks": {
+          "initial_cloth_absent": true,
+          "two_distinct_riverward_purchases": true,
+          "one_road_cloak_delivery": true,
+          "all_payments_physically_committed": true,
+          "purchases_within_actual_cart_stay": true,
+          "imported_cloth_is_only_source": true,
+          "cloth_conservation_and_real_sewing": true,
+          "exact_payment_and_reputation": true,
+          "no_local_weaving_or_expedition_substitute": true,
+          "three_accepted_public_trade_commands": true,
+          "planner_decisions_match_all_public_commands": true,
+          "only_requested_care_mode": true,
+          "eight_living_equipped_residents": true,
+          "no_starvation_and_final_food_day": true,
+          "complete_initial_payload_matches_inspected_boundary": true,
+          "complete_ordinary_scenario": true
+        },
+        "canonical_hash": "3d1bc5e011c07656a3547dd9dedfac1fdc38f4bfcab374e17bb50220d5dea969",
+        "minimum_health": 100,
+        "final_food_ticks": 77659,
+        "economy": {
+          "cloth_consumed": 14,
+          "cloth_imported": 16,
+          "cloth_produced": 0,
+          "completed_cloak_deliveries": 1,
+          "completed_purchases": [
+            {
+              "buy": {
+                "cloth": 8
+              },
+              "community": "riverward",
+              "merchant": 4463,
+              "pay": {
+                "wood": 40
+              },
+              "receipt": 63206
+            },
+            {
+              "buy": {
+                "cloth": 8
+              },
+              "community": "riverward",
+              "merchant": 7970,
+              "pay": {
+                "wood": 40
+              },
+              "receipt": 148246
+            }
+          ],
+          "completed_sewing_jobs": 7,
+          "distinct_merchants": 2,
+          "flax_fields": 0,
+          "road_reputation": 30
+        },
+        "final_snapshot_sha256": "960e0b4943c1d758de5c7a78061dfc3ec7e089c37c20d514405f71c1809ffef1"
+      },
+      {
+        "site": "pine_shelf",
+        "mode": "Hearthside",
+        "seed": 104729,
+        "exit_code": 0,
+        "pass": true,
+        "checks": {
+          "initial_cloth_absent": true,
+          "two_distinct_riverward_purchases": true,
+          "one_road_cloak_delivery": true,
+          "all_payments_physically_committed": true,
+          "purchases_within_actual_cart_stay": true,
+          "imported_cloth_is_only_source": true,
+          "cloth_conservation_and_real_sewing": true,
+          "exact_payment_and_reputation": true,
+          "no_local_weaving_or_expedition_substitute": true,
+          "three_accepted_public_trade_commands": true,
+          "planner_decisions_match_all_public_commands": true,
+          "only_requested_care_mode": true,
+          "eight_living_equipped_residents": true,
+          "no_starvation_and_final_food_day": true,
+          "complete_initial_payload_matches_inspected_boundary": true,
+          "complete_ordinary_scenario": true
+        },
+        "canonical_hash": "65c5413d72dc9f3558da7ecc4838131223713afedebe82761ea3e55981e194ab",
+        "minimum_health": 100,
+        "final_food_ticks": 86754,
+        "economy": {
+          "cloth_consumed": 14,
+          "cloth_imported": 16,
+          "cloth_produced": 0,
+          "completed_cloak_deliveries": 1,
+          "completed_purchases": [
+            {
+              "buy": {
+                "cloth": 8
+              },
+              "community": "riverward",
+              "merchant": 6076,
+              "pay": {
+                "wood": 40
+              },
+              "receipt": 61859
+            },
+            {
+              "buy": {
+                "cloth": 8
+              },
+              "community": "riverward",
+              "merchant": 9482,
+              "pay": {
+                "wood": 40
+              },
+              "receipt": 147867
+            }
+          ],
+          "completed_sewing_jobs": 7,
+          "distinct_merchants": 2,
+          "flax_fields": 0,
+          "road_reputation": 30
+        },
+        "final_snapshot_sha256": "5a8430267ad556a5434091d498e2195ef3a6a9e2472b958872b93d20e1b0aa93"
+      }
+    ],
+    "audit_tool_sha256": "ba3800e7e8b04f70954d09f5b866b320af7b96b0248a290b797b9deac1d79a8d",
+    "scope": "24-day ordinary imported-cloth economies on fresh generator-2 maps. Synthetic unit setups and physical/human gates are separate."
+  },
+  "files_sha256": {
+    "audit.json": "fc1a900db6c2f0bd2eec6feb0f91c09bf2dd03bdfca109b275fd56fb79094e08",
+    "completion.json": "809ed0eaf8fbe82a54a5904b0ef0c68fc8be98100125368486eb2f34e2652722",
+    "meadow_reach-standard-final.brackenward": "8744ea76c24ef74d7a784140d265ceabef2d36cba4514e928e7d6263e940de78",
+    "meadow_reach-standard-initial.brackenward": "9b7a56021cc3d0ac49fcf056918ec2ba08a99f47b9e0d5834fd3feca497ab7dd",
+    "meadow_reach-standard-latest-final.brackenward": "97aaf6eec9b52a2075bc8a244e3b37118d4505790d6da3b57be154569398dbce",
+    "meadow_reach-standard-latest-initial.brackenward": "9b7a56021cc3d0ac49fcf056918ec2ba08a99f47b9e0d5834fd3feca497ab7dd",
+    "meadow_reach-standard-latest.json": "49b8173f272838e6ab7adf5b27ecc09789e2c05f5fe2e0cc6a604f04d2064d84",
+    "meadow_reach-standard.json": "6ea64046b9d15fa120b32ab9f91d0ccee10f3db9586ce8e72635515c3e9edf64",
+    "meadow_reach-standard.log": "0a37093397d4e34f94d3b9fe243a5d1a8278e6d9322f84c1670b0f88e36f3254",
+    "pine_shelf-hearthside-final.brackenward": "5a8430267ad556a5434091d498e2195ef3a6a9e2472b958872b93d20e1b0aa93",
+    "pine_shelf-hearthside-initial.brackenward": "6b9386f5408ffb6edd8b05d85e6d42ab721b136baabb6724847a07a240976c3a",
+    "pine_shelf-hearthside-latest-final.brackenward": "a07d4f2f478cb62a9e651c4f889f97147c3f71f367c954884f25e37f8c08e593",
+    "pine_shelf-hearthside-latest-initial.brackenward": "6b9386f5408ffb6edd8b05d85e6d42ab721b136baabb6724847a07a240976c3a",
+    "pine_shelf-hearthside-latest.json": "4ca898f710aa8eccba61ff4f8a3ffcd953a37adea2b2b8b909fe3de4c3765951",
+    "pine_shelf-hearthside.json": "a5a5668ca77e03198c0fb7fa112d8672abde8ab6b10b0c8246c836dee0780a3d",
+    "pine_shelf-hearthside.log": "30c5eee6a4ca772598fbc9bef42dd1ece37b7a17deab16127878a27d89745458",
+    "pine_shelf-standard-final.brackenward": "98d1cb8486abf775d6f8a8a1831b4338ebfff1d295be191586b1872aa62f58ed",
+    "pine_shelf-standard-initial.brackenward": "fa828e8691e578e99beac5113a436bcc7db27150f52968e7a91d84faad717f66",
+    "pine_shelf-standard-latest-final.brackenward": "722d7fc91668ed2fc454858086c5ded68f3c5dfc8049107cd88ba1a6d0ffa9ed",
+    "pine_shelf-standard-latest-initial.brackenward": "fa828e8691e578e99beac5113a436bcc7db27150f52968e7a91d84faad717f66",
+    "pine_shelf-standard-latest.json": "174556d7a822be9a0246abc7822ab467270985d529f1c421d88c9bac1ea62947",
+    "pine_shelf-standard.json": "1b97790b80940003b3122a550ad1fe091e7f8fe62ae665b6ca46742669ae2e39",
+    "pine_shelf-standard.log": "d4b744fb53cacd6a55b93522a45c6d644bc3a58703bcf60de5bab99f7fc79700",
+    "reed_bend-standard-final.brackenward": "960e0b4943c1d758de5c7a78061dfc3ec7e089c37c20d514405f71c1809ffef1",
+    "reed_bend-standard-initial.brackenward": "bf4a6f0f2afb5bbf61750fb8d99302e5fa4817ed18d28a79130db2619749961d",
+    "reed_bend-standard-latest-final.brackenward": "07d0255a44ade4e2a4acaf740a31e3bcc219e5408a1857153aa97bc96a3de453",
+    "reed_bend-standard-latest-initial.brackenward": "bf4a6f0f2afb5bbf61750fb8d99302e5fa4817ed18d28a79130db2619749961d",
+    "reed_bend-standard-latest.json": "b47ce8fab0bd95cd2e6539f5364f198a31a191aa826f5e7ca5fc5c031696cc2c",
+    "reed_bend-standard.json": "1a493a99966456ea1a7e6c86e75ce69fb27d4a93b91461882065a0e8f390cec9",
+    "reed_bend-standard.log": "351282960ef94cc71ac765ae6623c508216234238be31741e520654d1f02d4e2",
+    "source.json": "090f12b4c8f7350a8d00ebd06c96fd1e975e8424d7dab03cf0c2819985b98c92",
+    "summary.json": "d5e9aa0e49589cdbfa6db640e61e1a5ee85ebe525b75579f8dc0e53cb5b115ee"
+  },
+  "second_audit_sha256": "95ca4c551e8803ed2bbfd1cbe851f909afc26a168fc18169c7d2b3a48658691c",
+  "scope": "Four fresh current-v7 generator2 ordinary imported-cloth campaigns pass24days and separate second audit. Two actual8cloth purchases for40wood each,seven sewing jobs,fourteen cloth consumed and one actual3cloak delivery;no local weaving/expedition substitute. All eight residents health100,final food day and exact initial geometry/material conservation. Physical/human gates separate."
+}

@@ -1,0 +1,142 @@
+{
+  "passed": true,
+  "build": "0.7.65-m7",
+  "local_android_code": 104,
+  "content": "colony-v7",
+  "schema": 23,
+  "envelope": 5,
+  "generator": 2,
+  "maintained_gdscript_assertions": 2816,
+  "rows": [
+    {
+      "case": "fresh",
+      "ticks": 7200,
+      "input_sha256": "",
+      "initial_canonical_hash": "3481e8eb99dce4b6323e2873e03cc21fdd34c3f4b1d311ca046a3314b52d5578",
+      "final_canonical_hash": "c6532f0d1f37122ffe2274e559d843f2d7249958cc08d237b6210ab24bf6cfa6",
+      "original_median_us": 2172799.5,
+      "candidate_median_us": 1229035.0,
+      "report_sha256": "a1c5820f29a7b957bd62967d935586d001a360e9c5b613fc25b2776e7f915209",
+      "log_sha256": "2986e1ad59248b7286e4fe2939ed8bcffc505bacfe78602c4a2ab2992c8de9f8"
+    },
+    {
+      "case": "ordinary20",
+      "ticks": 720,
+      "input_sha256": "e93bff9ebfe59ef1557003a15ab8ff7c4422c8e2b7ccc5f4a6e799c9e31c5b9f",
+      "initial_canonical_hash": "89347c8bc3c7ff1d4325168212d9875beeabfd0a7746a2393fe7c27a3660408b",
+      "final_canonical_hash": "4cd91d82d1855e27e326970754b48056dab8cbd5687cd7e3a1730e01c2ec07aa",
+      "original_median_us": 3523698.5,
+      "candidate_median_us": 3370859.0,
+      "report_sha256": "1f52c6d3a8b8a270050b1956184472f8190f9d510139fa23648326273ff58a1a",
+      "log_sha256": "dcf8f1d5ab50922d202975dec73e9059573f88c9248eb378107bb933839ba7ff"
+    },
+    {
+      "case": "stress-rations",
+      "ticks": 720,
+      "input_sha256": "6a3d3c4636802ca2374e48c5d423bfd6d939c82e4cd3e179583b21324c76c774",
+      "initial_canonical_hash": "16bafc8950ed9a4e98688e4be9e75afdf3b97c81ebfc3ad8c8fde80a16c31c87",
+      "final_canonical_hash": "bfc2d6717182c118e4e77a37a90102a09d7badbd7ce318768ea4deb5634eace2",
+      "original_median_us": 3772261.0,
+      "candidate_median_us": 3766852.0,
+      "report_sha256": "3d5dc3eee05376335da270c1cea3aa95f21d68c51e6cffbbea105ff2cb6b0c68",
+      "log_sha256": "413398aac66055daa2138c037a139e77c5c6ac1f4406c374ed484485c705fce3"
+    }
+  ],
+  "reference_proof": {
+    "passed": true,
+    "prior_commit": "702b20bb1f479cf4df28c02b8fb853ff52b089c0",
+    "full_original_advance_exact_after_name_season_qualification_and_outer_blank_separators": true,
+    "agriculture_changes_only_iteration_source_and_two_derived_invalidations": true,
+    "generator_changes_only_derived_reset": true,
+    "prior_agriculture_sha256": "592a06dffcbd0c6eb111ee20854bf9ec6f6eb509899fe4337c90b241337b1c41"
+  },
+  "fresh_checks": {
+    "nature": 23,
+    "persistence": 465,
+    "generation": 169,
+    "survival": 83,
+    "seasons": 26,
+    "ui": 669,
+    "replay_commands": 62,
+    "kotlin": 4,
+    "ui_messages": 528
+  },
+  "scope": "Positive regrowth-timer candidates inside trusted complete ticks, with remaining quantity checked live, including dormant positive legacy timers. Full history/order/live references, exact winter/maturity/legacy rules, save schemas and canonical expectations preserved. Five regressions pass; the fifth first reproduced the zero-remaining-only-filter bug, retained and corrected. Four alternating complete-tick pairs preserve every unsorted payload and invariant with unchanged sources/inputs. Final fresh CPU43.44% lower, ordinary20 4.34% lower, stress/rations0.14% lower. Desktop CPU comparisons with local suites and paused Android emulator sharing host, no physical Android/frame certification. Earlier failed compilation logs and earlier measurements retained separately.",
+  "validation_sha256": {
+    "regrowth-v65-reference-proof.json": "cf96036a0ba405cc50d3fb6fe511b42eb527733da44d5daf3b4cd8ffe241ba44",
+    "regrowth-v65-nature-first.log": "bf153bd622d0e58a44c826fd78a51b1954cd86ab37340f4feb800c196383395c",
+    "regrowth-v65-nature-fixed.log": "4f74696423bddb8a0f54b9d7a8ce768a3931df88ec01569244f80de2c3bc41eb",
+    "regrowth-v65-persistence.log": "4ef8b18ba953eb6aded32727c2efbdd8644cd0df1c9806014928dc5f2e95e743",
+    "regrowth-v65-persistence-fixed.log": "a6b240b0d2467eafdb79e7b2cd0e22c69ee665146e6112361c02a1f2a8dc2a38",
+    "regrowth-v65-generation.log": "66ed61f069f73aff00d81834eda6aa5f61546c6be18430ef7ab660a989a9e06c",
+    "regrowth-v65-generation-fixed.log": "41d71c45cd28aa4e6cc9c28842f5ecd9a83faa1e6ae62363fd78d135cb31fcf0",
+    "regrowth-v65-survival.log": "af4646074eb591e56f68720068cdc16fc8f6a464333e5b06ee373001d2e8476a",
+    "regrowth-v65-seasons.log": "5eba712f311a47504d0fb2457a325bf47c96355bcf32d86f6d3082a93123bbd2",
+    "regrowth-v65-first-profile-termination.json": "39053e4d5531c0e2c9a24c5e54260a14b17854063afc10112063ed8891a01047",
+    "regrowth-v65-ui.log": "27c018eb5fd83a5eb252d604be293d4bf56ac904e7eac444a2ef2164a72b4f76",
+    "regrowth-v65-replay.json": "3d1bbc4cee3c7ff9a80c30b4b0281542d8bc8f60690193eacb05a39a07c9f76f",
+    "regrowth-v65-replay.log": "7ab6e1ca4d525194083e2cccf86b853231bb338f4b859ba66b2f4dabad10c516",
+    "regrowth-v65-android.log": "27ac02a276eee8be631fa0f943f5160cdcb6587c4d870c1d6f327b483d289f9a",
+    "regrowth-v65-content.log": "96ddcf4951223ce5a21eb24f7b9b97cf99d2e0573349ca3e7bd94d43be582d86",
+    "regrowth-v65-nature-final.log": "512d96186c9aaceda33868a15604732581bbc98e3b12c84074d4bc2433f5a454",
+    "regrowth-v65-persistence-final.log": "bd3a8ae96b740e4964309a161d921ec51b1ff546e091a17c874a743ee78834a5",
+    "regrowth-v65-generation-final.log": "ab242025bc19fa701f44a28b19fda157705f147ee1e5b117e9cb337b3b36055a",
+    "regrowth-v65-survival-final.log": "751e667d03029bd803eb1ba52d9a80947b5193d191e690bde3dc9cdf7af20f12",
+    "regrowth-v65-seasons-final.log": "bf90596eeab0790785d8d3eef62f0396d4580e4af3f150c0efd327787f204d84",
+    "regrowth-v65-ui-final.log": "8b7f42ade20f886340aca7a8d9b5a4eb89e498d0ed2961e9a2828462a4c0e5b4",
+    "regrowth-v65-replay-final.json": "32f64e4cf0989c78e3e8cc9352a76ff197482f743aad29538090ec46b4a39d33",
+    "regrowth-v65-replay-final.log": "b2434404cfc8a05b0687e2ebfd17e8dae0ab3a86da9652ebaafcb34641b71d29",
+    "regrowth-v65-content-final.log": "96ddcf4951223ce5a21eb24f7b9b97cf99d2e0573349ca3e7bd94d43be582d86",
+    "regrowth-v65-final-stress.json": "d7c35fa21385e327af9c43e2296d893e5c4805113fc8c46df10d417b896890ad",
+    "regrowth-v65-final-stress.log": "be48d89ca0ff94e7662c5fce720d5bed1a29289ed0fecc97ff84bb77351af698",
+    "regrowth-v65-android-final.log": "f8c9bc20db0bba5d7a93181ff21f2e1aaa295605f5960cf1d2c0777216c22acf",
+    "regrowth-v65-final-check-status.json": "d020928b16446981c1a8716b7a38aa50ba946d448bd34bac754f3da6ace6eb17",
+    "regrowth-v65-final-profile-status.json": "d4bdf7b14fabf47011abf2b11176e1a75b2dadb32850a970f2ab2160edac398d"
+  },
+  "local_apk_sha256": "cb4eb147c9d2d933c1fa095b6c01dc32c340f4e32f9469497f98427f81258e4e",
+  "kotlin_xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+  "first_failed_profile_logs": {
+    "regrowth-v65-ordinary20.log": "4748f947a60c83c61b2b2dc528e3e854b20057e2c2cb6915e31e3029ed78732a",
+    "regrowth-v65-fresh.log": "4748f947a60c83c61b2b2dc528e3e854b20057e2c2cb6915e31e3029ed78732a",
+    "regrowth-v65-stress.log": "4748f947a60c83c61b2b2dc528e3e854b20057e2c2cb6915e31e3029ed78732a"
+  },
+  "status": "Final source suites/profiles/replay/content and final APK/Kotlin export pass. Android sandbox checks complete,all45 original files restored exactly,emulator stopped. Remote65CI/publication remains separate.",
+  "dormant_regression_before_fix_log_sha256": "3b5b59bf365ecd35a84b5561b3676580583db4d9f7c7200025d10f7a8fe6db32",
+  "earlier_component_rows": [
+    {
+      "case": "ordinary20",
+      "ticks": 720,
+      "input_sha256": "e93bff9ebfe59ef1557003a15ab8ff7c4422c8e2b7ccc5f4a6e799c9e31c5b9f",
+      "initial_canonical_hash": "89347c8bc3c7ff1d4325168212d9875beeabfd0a7746a2393fe7c27a3660408b",
+      "final_canonical_hash": "4cd91d82d1855e27e326970754b48056dab8cbd5687cd7e3a1730e01c2ec07aa",
+      "original_median_us": 3408521.5,
+      "candidate_median_us": 3203878.5,
+      "report_sha256": "9a4f430314d794d5a8e5ce919e8f0d2f2e2c240fd4c0bb5415ee33df96a7b2ec",
+      "log_sha256": "3c56d530735e063c8640734050b05603cc06aba0a2977c323316f5ef99134c84"
+    },
+    {
+      "case": "fresh",
+      "ticks": 7200,
+      "input_sha256": "",
+      "initial_canonical_hash": "3481e8eb99dce4b6323e2873e03cc21fdd34c3f4b1d311ca046a3314b52d5578",
+      "final_canonical_hash": "c6532f0d1f37122ffe2274e559d843f2d7249958cc08d237b6210ab24bf6cfa6",
+      "original_median_us": 2060704.5,
+      "candidate_median_us": 1161154.0,
+      "report_sha256": "12a9df9ecc7fceb40809dd450e8dc6d268ba353bb925675de94b574c940faca5",
+      "log_sha256": "a0d618d2d5bf5f39170fd0338b391093e2be6a5ba4abe9d9f6ae889f4c4840fe"
+    },
+    {
+      "case": "stress",
+      "ticks": 720,
+      "input_sha256": "6a3d3c4636802ca2374e48c5d423bfd6d939c82e4cd3e179583b21324c76c774",
+      "initial_canonical_hash": "16bafc8950ed9a4e98688e4be9e75afdf3b97c81ebfc3ad8c8fde80a16c31c87",
+      "final_canonical_hash": "bfc2d6717182c118e4e77a37a90102a09d7badbd7ce318768ea4deb5634eace2",
+      "original_median_us": 3462827.5,
+      "candidate_median_us": 3463223.5,
+      "report_sha256": "7c323eb93001679b6ac60050fb3cc7e3e5448f2726ace68234d0071bfeefc166",
+      "log_sha256": "bed2069d6612f42b0f753bb89deec95165a9e8e6cd3a252acee5271ee036cbd9"
+    }
+  ],
+  "earlier_component_apk_sha256": "254c2e4f662453e82fb3bd95b5c5b7f49f1443b9805040a3ae73217faf48aaa2",
+  "android_touch_evidence_sha256": "72443c4306414a921340571a5f57ff0c0df605e93a23a89d00656bc035cb6ba2"
+}

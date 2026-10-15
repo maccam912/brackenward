@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "audit": {
+    "passed": true,
+    "source_commit": "424f897de1327a25bb03fefe6d5ad1ff92e8da6a",
+    "windows_pass": true,
+    "accepted_newcomers": 16,
+    "living": 20,
+    "minimum_health": 72,
+    "starvation_grace_exceeded_ticks": 0,
+    "large_colony": {
+      "summer_home_ticks": 57600,
+      "summer_minimum_health": 100,
+      "summer_zero_fullness_ticks": 0,
+      "winter_home_ticks": 57600,
+      "winter_minimum_health": 100,
+      "winter_zero_fullness_ticks": 0
+    },
+    "canonical_hash": "89347c8bc3c7ff1d4325168212d9875beeabfd0a7746a2393fe7c27a3660408b",
+    "final_snapshot_sha256": "802819eaebbd9a0b51af7ba1486eeeeab9d536d4960e6d84be9bea30bb994d49",
+    "audit_tool_sha256": "66ed851cffe32791702b9bcb758c9df89f3d9e04b4b38de3871fcf14e45d1cd5",
+    "scope": "One ordinary campaign; twenty home residents for every tick of year-three summer and winter. Separate from stress, physical-device and human gates."
+  },
+  "files_sha256": {
+    "audit.json": "fccab2b0e7c13dc9c528db802984d7134e8bcbd6748cede5232f6491b06fd1e4",
+    "campaign-final.brackenward": "802819eaebbd9a0b51af7ba1486eeeeab9d536d4960e6d84be9bea30bb994d49",
+    "campaign-initial.brackenward": "54a6f9cab7d82036b1046407af0446c35af65bc599b8741832e29423de8d17b0",
+    "campaign-latest-final.brackenward": "80361ded504f2ba8050c892528e2a7f1ac0cbd250dd1bbc85ec92257a7fe8ba6",
+    "campaign-latest-initial.brackenward": "54a6f9cab7d82036b1046407af0446c35af65bc599b8741832e29423de8d17b0",
+    "campaign-latest.json": "78f739d3e5fffac866be678aa432678e94bed937cffe9650a4f928c011e8abe1",
+    "campaign.json": "236f894c3a7d70bdf0cc2875b328822430875231e395414db27e8ae17b8593a8",
+    "campaign.log": "93e9f747d7e62e3a2aa445cd270f8e31092ea707bc0269619811617011448a15",
+    "completion.json": "51601958a36b8eabf7b9e4b440dfbcf6d708af996e408f642986efc9bb2385a6",
+    "source.json": "62fa8b9088a8c9cf6295a8797b178492cbbcf0453dc78b436f61a6368bd2182b"
+  },
+  "second_audit_sha256": "fdf191906368904dfd08b578e0058d5dc6b097b6b87b54f1722d67e480aca67c",
+  "scope": "Fresh current-v7 generator2 Meadow104729 Standard96-day ordinary campaign;16 actual accepted newcomers reach20living. Full57600 home ticks with20 for both year-three Summer and Winter,no zero fullness in windows or starvation grace overrun; exact full snapshots/source/invariants/food-end gates and separate second audit pass. Physical/human gates remain separate."
+}

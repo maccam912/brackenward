@@ -1,0 +1,51 @@
+{
+  "passed": false,
+  "source_commit": "357fa04e42323ce93b684fa601a7accb3a14cbc6",
+  "audit": {
+    "passed": false,
+    "source_commit": "357fa04e42323ce93b684fa601a7accb3a14cbc6",
+    "standard_30min_2x_case": true,
+    "scope": "Native source probe and sampled engine-heap proxy; physical release gates remain open",
+    "measured_wall_seconds": 1576.563294,
+    "logical_ticks": 31531,
+    "peak_sampled_engine_heap_growth_bytes": 16536832,
+    "final_residents": 20,
+    "final_snapshot_sha256": "a20305a6378e9ffe867e6b05f5b608aa8b317d96a12f99be8aa1e1ca64030a2f",
+    "audit_tool_sha256": "662d00cb6505d9b2eddce8f001ac7f60e0d750cfdffc0050a712452cafd35862"
+  },
+  "requested_seconds": 1800,
+  "actual_seconds": 1576.563294,
+  "initial_tick": 3002,
+  "final_tick": 34533,
+  "logical_ticks": 31531,
+  "stop_reason": "Simulation paused or changed speed",
+  "diagnostic_counters": {
+    "backgrounds": 0,
+    "quiet_sleep_limits": 0,
+    "slow_storage_pauses": 1,
+    "speed_reductions": 0,
+    "storage_alerts": 0
+  },
+  "other_proxies": {
+    "logical_time_kept_up": true,
+    "engine_heap_within_bound": true,
+    "peak_sampled_engine_heap_growth_bytes": 16536832,
+    "fps_floor_pass": true,
+    "lowest_window_fps": 28.4336026355008,
+    "population_kept": true,
+    "full_roundtrip_verified": true,
+    "audio_drained": true,
+    "source_unchanged": true
+  },
+  "scope": "Requested30-minute2x source case stops at1576.563294s/tick34533 after one protective undurable-progress pause; fails unchanged gates, including separate second audit. Twenty residents/full codec/memory/FPS remain valid subsets, not a pass. Concurrent ordinary20/merchant work, headless suites, profile processes including three failed-compilation probes and editor/export work share host. Save callback times do not measure actual worker wall latency, so no causal attribution to host or diagnostics change; retain failed run and 1.75s guard. Physical Android remains separate.",
+  "files_sha256": {
+    "audit.json": "bf22f35dc2ae951e66d52faf888fe24eb794a137ee86f7f9c09f66940341eb12",
+    "completion.json": "af5fee15f7689ca0d1812f0126e6e861188341bb23d9f6a45685b35b8f4f4caa",
+    "probe-final.brackenward": "a20305a6378e9ffe867e6b05f5b608aa8b317d96a12f99be8aa1e1ca64030a2f",
+    "probe-latest.json": "f1ebcb35a57d2bb81e3cad4d4527f709e388400f408328ee8f2bdfcc38da5c98",
+    "probe.json": "acf0a4d4b8ba9fb7b661f3030dddb2f9d9cccc0aeecdb2386e7477180d7564bd",
+    "probe.log": "8ad3af75df9f35533f609b7e30bd3cce6b63859796a523efd3ba0dd91827d215",
+    "source.json": "54a0299f80d91cc6d06923b914968490350f8752b29e42638bedd85803ef08ed"
+  },
+  "second_audit_log_sha256": "d5d14fc4378f0216b8c602142f0b1fb40ef641ee6d23e00074d8a37066e1573b"
+}

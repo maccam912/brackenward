@@ -52,13 +52,14 @@ static func advance(world: ColonyWorld) -> void:
 	# Irrigation only affects drought. Build this local view once so destroyed or
 	# moved wells are observed on the next tick without a persisted cache.
 	var wells: Array = world.structures.filter(func(s:Dictionary)->bool:return s.health>0 and s.definition=="well") if world.weather=="drought" else []
-	for resource in world.resources:
+	for resource in world._regrowth_resources():
 		if resource.remaining == 0 and resource.regrow_at > 0:
 			if current_season == 3 and resource.definition in ["berry_bush", "herb_patch", "tree"]:
 				resource.regrow_at += 1
 			elif world.tick >= resource.regrow_at:
 				resource.remaining = world.definitions.resources[resource.definition].yield_count
 				resource.regrow_at = 0
+				world.resource_query_dirty=true
 				world.navigation_dirty = true
 	for field in world.fields:
 		if not field.planted:
@@ -112,6 +113,7 @@ static func complete(world: ColonyWorld, _citizen: Dictionary, job: Dictionary) 
 	if job.kind == "replant":
 		var resource: Dictionary = world.find(world.resources, job.target)
 		resource.regrow_at = world.tick + 57600
+		world.resource_query_dirty=true
 		return
 	var field: Dictionary = world.find(world.fields, job.target)
 	var definition: Dictionary = world.definitions.crops[field.crop]

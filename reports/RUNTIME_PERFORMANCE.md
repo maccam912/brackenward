@@ -7,6 +7,57 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.65 resource regrowth view
+
+The agriculture loop now visits only resources with positive regrowth timers during
+trusted ticks. It retains the original row order and predicates, every tick of
+winter delay and all historical records. Commands, gathering depletion, legacy
+replant completion, regrowth completion, generation and resource-array changes
+invalidate the view. Direct calls use the full scan. The complete original702b20b
+agriculture loop and a full-scan world remain independent references. Dormant legacy
+timers remain candidates while resources are positive; quantity is checked live
+so a later gathering job cannot hide an existing timer.
+
+Four alternating complete-tick pairs preserve complete unsorted state, canonical
+hashes and invariants, with unchanged sources and inputs:
+
+| Case | Ticks per run | Original median CPU us | Derived median CPU us | Result |
+| --- | ---: | ---: | ---: | --- |
+| Fresh revision2 Meadow104729 | 7200 | 2172799.5 | 1229035 | 43.44% lower |
+| Ordinary20 retained endpoint | 720 | 3523698.5 | 3370859 | 4.34% lower |
+| Retained stress/rations input | 720 | 3772261 | 3766852 | 0.14% lower |
+
+These are desktop simulation CPU comparisons, with local suites and a paused Android emulator sharing
+the host. They do not establish Android frame-time or thermal behavior. The
+small-resource stress result shows no material change. Five new regressions
+cover winter/boundary timers, actual gather and legacy replant, array/direct-call
+boundaries, complete future state/reload and dormant positive legacy timers;
+nature23, persistence465,
+generation169,survival83,seasons26 and graphical UI669 pass. Earlier copied-oracle
+compilation failures are retained and were rejected by the fail-closed runners.
+The fifth regression first reproduced the dormant-timer bug in the initial
+zero-remaining-only filter; the corrected candidate set passes. Earlier source
+measurements remain retained separately.
+[regrowth-v65-evidence.json](regrowth-v65-evidence.json) records exact evidence.
+
+## 0.7.64 read-only complete-tick and work breakdown
+
+The retained ordinary20 generator2 endpoint has3079 resource records, none
+regrowing, and21 planted saplings. A720-tick instrumented twin matches all
+canonical state. One base trace takes3388441us (4.706ms/tick); its nested work,
+assignment,living,agriculture and nature phases total768691,454133,385808,
+307548 and242439us respectively. These are stage attribution, not a paired
+speedup or physical-device result.
+
+A second complete-work twin also matches, baseline3645218us over720ticks.
+Its nested work/walk phase takes348379us/6850calls; release313824us/27calls;
+finish190460us/22calls. This identifies historical inventory cleanup as a later
+spike target. The full scans update historical zero-count metadata, so replacing
+them with a positive-only inventory list would change saved state and is not an
+acceptable shortcut. Raw logs retain the complete rankings and harness hashes.
+Meanwhile the resource regrowth loop checks every resource on every tick even
+when none has a timer, providing a separate simpler CPU target.
+
 ## 0.7.47 repeated storage association reads
 
 The completed ordinary twenty-colony endpoint has 232 structures, 26,871 job
@@ -67,3 +118,13 @@ pass without golden changes; report SHA-256 is
 `efe5adabbf54233a7f3f7e64d6d6784c4e710f831ae52203de1262b15fc54140`.
 The unchanged strict memory proxy remains failed as documented in
 [STRESS_EVIDENCE.md](STRESS_EVIDENCE.md).
+
+
+The Android65 whole-map interaction test records the first-night CPU fallback
+notice with selected4x retained. The runner's existing policy requires sustained
+bonus backlog for three seconds before suppressing the boost until a resident
+wakes; this was not merely a single slow tick. The explicit morning save has
+four sleeping residents below900 rest. These observations preserve the fallback
+scope and do not constitute a sustained12x emulator pass. A possible later
+presentation improvement is to retain12x where feasible but try8x/6x before
+falling back to manual speed; that tiered behavior is not implemented here.

@@ -96,6 +96,10 @@ var stack_query_count: int = 0
 var stack_query_source: Array = []
 var stack_query_live: Array = []
 var stack_query_perishable: Array = []
+var resource_query_source: Array = []
+var resource_query_count: int = -1
+var resource_query_dirty: bool = true
+var resource_query_regrowing: Array = []
 
 func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 	definitions = catalog.duplicate(true)
@@ -447,6 +451,7 @@ func gather_targets(definition: String, tiles: Array) -> Array[Dictionary]:
 	return targets
 
 func _command(command: Dictionary) -> String:
+	resource_query_dirty=true
 	var args: Dictionary = command.args
 	match command.kind:
 		"citizen_appearance": return ColonyAppearance.command(self,args)
@@ -670,6 +675,20 @@ func _refresh_stack_queries() -> void:
 
 func reset_stack_queries() -> void:
 	stack_query_tick=-1;stack_query_count=0;stack_query_source=[];stack_query_live=[];stack_query_perishable=[]
+
+func reset_resource_queries() -> void:
+	resource_query_source=[];resource_query_count=-1;resource_query_dirty=true;resource_query_regrowing=[]
+
+## Borrowed timer candidates for complete ticks; remaining quantity stays live.
+## Legacy timers may be dormant on positive resources until later gathering.
+func _regrowth_resources() -> Array:
+	if not in_tick:
+		reset_resource_queries()
+		return resources
+	if resource_query_dirty or not is_same(resource_query_source,resources) or resource_query_count!=resources.size():
+		resource_query_regrowing=resources.filter(func(r:Dictionary)->bool:return r.regrow_at>0)
+		resource_query_source=resources;resource_query_count=resources.size();resource_query_dirty=false
+	return resource_query_regrowing
 
 func _work_inventory() -> Array:
 	# Borrowed read-only container, only in a trusted tick. The shared records
@@ -1406,6 +1425,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 			_make_stack(definition.item, quantity, "ground", 0, point, true)
 			if resource.remaining == 0 and definition.regrow_ticks > 0:
 				resource.regrow_at = tick + definition.regrow_ticks
+				resource_query_dirty=true
 			elif definition.per_unit and resource.remaining > 0 and job.definition == resource.definition:
 				var continuation: Dictionary = _job("gather", "Gathering", "Field", resource.id, Vector2i(resource.x,resource.y), definition.work_milli)
 				continuation.definition = resource.definition

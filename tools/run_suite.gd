@@ -69,7 +69,9 @@ func run() -> void:
 		"generation":
 			GenerationTests.run(check)
 			GenerationRevisionTests.run(check)
-		"nature": NatureTests.run(check)
+		"nature":
+			RegrowthReadTests.run(check)
+			NatureTests.run(check)
 		"wildlife": WildlifeTests.run(check)
 		"domestic":
 			DomesticReadTests.run(check)
