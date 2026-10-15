@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.47-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.48-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -2867,3 +2867,22 @@ This is a measured late-game source improvement; current Android remains
 unmeasured. Content v6/schema 23/generator 2 are unchanged.
 Catalog/media checks and local Android debug export pass; aapt verifies
 0.7.47-m7 / local code 86. Remote CI/publication is checked separately.
+
+## 0.7.48 generation expectations on every native CI host
+
+The native Windows, Linux, Apple Silicon and Intel Mac matrix now checks the
+167-case generation suite in addition to unchanged historical replay/save
+continuation. Per-host artifacts include the generation log and JUnit results.
+The runner directly launches the checksum-installed, version-verified native
+editor and supports bounded longer native timeouts. Ten Python tests exercise
+portable paths, invocation and missing/zero/duplicate/error/timeout rejection.
+Actual local generation 167, UI 663 and Reed tutorial flow 22 pass through this
+runner; media/content and Android export pass (local code 87 / 0.7.48-m7).
+Maintained GDScript total stays 2,649. New native CI results remain pending;
+configuration alone does not certify them. Runtime simulation and hashes are
+unchanged. The full map, fresh Winter/Charter and old post-Charter runs continue.
+
+Remote 0.7.46 completes all CI jobs and publishes its three checked assets.
+[Its APK](https://github.com/maccam912/brackenward/releases/tag/dev-8c0e060bd8b2)
+SHA-256 is `8d7ac800c3484a6317f44192234c3e049faa529fbb08d118609f6f62a512fc41`.
+This older native matrix retains the historical-replay scope described above.

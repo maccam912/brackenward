@@ -114,3 +114,24 @@ The full 30,000-map release sweep and thirty-case fresh revision-2 Winter matrix
 are running from separate clean d870381 checkouts. They are not yet passing
 release results. The existing revision-1 Charter/Winter/twenty-colony evidence
 keeps its original scope and bytes.
+
+## 0.7.48 native platform coverage
+
+Before this checkpoint, the Linux prototype job checked the new golden maps,
+while native Windows/Mac jobs exercised the explicitly retained revision-1
+historical replay. The native matrix now also runs all 167 generation checks,
+including eighteen inspected revision-2 canonical worlds and the complete old
+generator compatibility comparisons. Its generation log and JUnit report are
+retained with each platform's replay artifacts. Publication depends on the whole
+native matrix; adding a step is not evidence that a platform passed it.
+
+`check_suite.py` now verifies and directly executes the pinned host editor,
+including the Windows console executable, without a POSIX shell dependency.
+It keeps the same project/arguments, supports a bounded explicit timeout, and
+rejects missing/zero/duplicate summaries, nonzero failures/exits and colored or
+indented script/engine errors. Ten Python tests cover command paths with spaces,
+UI/audio options, seed zero, version verification, timeout and fail-closed output.
+Local direct-native generation 167, graphical UI 663 and Reed tutorial flow 22
+pass; catalog/media and Android export pass (0.7.48-m7 / local code 87).
+Remote new native-generation coverage is pending at this checkpoint. Runtime
+gameplay/generation code and all pinned expectations are unchanged from 0.7.47.
