@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.48-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content/generator versions. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.49-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content/generator versions. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -108,3 +108,13 @@ battery, all-alert or human checks.
 `tools/profile_creation.gd` compares repeated creation reads with retained full
 scans at one fixed tick. It is a microbenchmark, separate from actual campaign
 continuation and foreground-frame measurements.
+
+
+Exported Android touch evidence, the fresh-campaign paused autosave repair and
+save-update/deletion checks are recorded in
+[reports/ANDROID_TOUCH_EVIDENCE.md](reports/ANDROID_TOUCH_EVIDENCE.md).
+For a private initial revision-2 boundary save, compare the entire decoded world
+with its inspected expectation without advancing play or rewriting the save:
+`tools/godot.sh --headless --script tools/check_initial_golden_save.gd -- INITIAL_SNAPSHOT NEW_REPORT`.
+Only the random campaign ID is normalized in the private decoded copy. A failed
+comparison leaves existing expectations and input bytes intact.

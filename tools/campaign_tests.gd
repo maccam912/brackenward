@@ -78,7 +78,27 @@ static func run(check: Callable) -> void:
 	loaded.load_local()
 	check.call("SETTINGS/corrupt_preferences_use_defaults_preserve_evidence",loaded.values.last_slot == 1 and FileAccess.get_file_as_string(preferences.path) == "{truncated")
 	journal_bounds(check, root)
+	adoption_baseline(check,root.path_join("adoption-baseline"))
 	remove_tree(root)
+
+static func adoption_baseline(check: Callable, root: String) -> void:
+	var world: ColonyWorld=ColonyTests.world()
+	var error: String=ColonyGeneration.configure(world,104729,"meadow_reach")
+	var store: ColonyStore=ColonyStore.new();store.root_directory=root
+	if error.is_empty():error=store.adopt(world,1)
+	check.call("SAVE/adoption_keeps_independent_verified_payload_base",error.is_empty() and store.journal_payload==world.payload() and not is_same(store.journal_payload.citizens,world.citizens),error)
+	if not error.is_empty():return
+	var path: String=store.directory.path_join("snapshot-0000000001.brackenward")
+	var bytes: PackedByteArray=FileAccess.get_file_as_bytes(path)
+	var envelope: Dictionary=JSON.parse_string(bytes.get_string_from_utf8())
+	check.call("SAVE/adoption_rebases_verified_path_and_complete_snapshot_metadata",store.verified_generations.get(path,"")==FileAccess.get_sha256(path) and store.journal_parent_hash==envelope.sha256 and store.journal_size_bound==bytes.size() and store.snapshot_tick==world.tick and store.journal_tick==world.tick and store.journal_sequence==0 and store.journal_length==0 and store.journal_digest.is_empty())
+	world.queue_command("preference",{"citizen":1,"category":"Cooking","value":3})
+	check.call("SAVE/adopted_base_does_not_alias_new_paused_commands",store.journal_payload.get("next_command_id",0)==1 and store.journal_payload.get("pending_commands",[]).is_empty() and world.next_command_id==2)
+	world.step();error=store.checkpoint(world)
+	check.call("SAVE/first_adopted_tick_appends_verified_delta_instead_of_replacing_base",error.is_empty() and store.sequence==1 and store.journal_sequence>0 and store.journal_tick==world.tick and FileAccess.get_file_as_bytes(path)==bytes,error)
+	var loaded: ColonyStore=ColonyStore.new();loaded.directory=store.directory
+	var recovered: Dictionary=loaded.load_latest()
+	check.call("SAVE/adopted_first_delta_recovers_exact_state",recovered.has("world") and recovered.world.canonical_hash()==world.canonical_hash(),str(recovered.get("error","")))
 
 static func history_fixture(count: int) -> ColonyWorld:
 	var world: ColonyWorld = ColonyTests.world()

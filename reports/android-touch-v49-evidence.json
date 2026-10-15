@@ -1,0 +1,87 @@
+{
+  "scope": "Local exported 0.7.49-m7 / code 88 debug APK on Android 35 arm64 emulator, SwiftShader/ANGLE. No physical-phone performance certification. Local private originals remain ignored.",
+  "checks": {
+    "before_first_launch_35_files_identical": true,
+    "camera_static_cart_pixels_identical": true,
+    "delete_only_task_created_campaign_5": true,
+    "initial_boundary_matches_inspected_golden": true,
+    "initial_checker_rejects_synthetic_mutations": true,
+    "periodic_same_tick_save_without_manual_save": true,
+    "minimum_zoom_persists": true,
+    "night_endpoint_full_codec": true
+  },
+  "local_evidence_sha256": {
+    "v49-installed-preservation.json": "d0b4cb07b2540afbf9f0371b6690b41d85587fdb55223d3a83887ccd602f8215",
+    "camera-pixel-comparison.json": "fbbb8581724856f2cbca9de28b6069284a76cb27e0a7185a6d20215a2f2bd7c6",
+    "campaign5-ui-deletion-audit.json": "d00159451098570f3b3d7ffafefa0cc7538c22e4db7fe81177ec182754a0c057",
+    "named-save-cancel-audit.json": "fe45c540920563dddfe34f311036a49ccb6b7c502f9bfd2a49b47d70f576285f",
+    "initial-check-negative-audit.json": "cc4e895b999f0590232fa2b36f0ad879066ce968f74edd2a1ce109bee78a5766",
+    "v49-initial-golden-audit.json": "8b2226a5eb11f27d9a4dc915bc03ed61598c3e8768eadb1f8609fef1d029cb5c",
+    "v49-periodic-paused-door-audit.json": "019b3247d2f8423621c5d8508babfc988f258fe897d0971b933aeaf0c1d45e84",
+    "v49-confirm-resumes4.png": "13b23c131a145072a40a68b69b578725b23219de5d9a9a0e939e4352edae21cd",
+    "v49-max-zoom-out.png": "cb44b28a8c37facb1316b401b3087826ccd21d5de8cfd53a25124931970c3e7c",
+    "v49-periodic-paused-door.brackenward": "a6fb12f26e36eac57f2d99a6748e428cb40b9c0a16985215d04509f6610e0962",
+    "actions.json": "7efaafe64fca2826611086ca432069f8d384c43abf9733b5f60ff77110e9a224",
+    "v49-night-final-audit.json": "7f1bb736212d1f64f0f8d39da595ecafed52a400e365c3e69112b0421ea728b4",
+    "v49-night-final.brackenward": "4b7f477cbc7b304c37cdf8323047bede958e02ea30d7fe5eab59797a1ff7664c",
+    "v49-night2-manifest.json": "4f0e9505d87a55ef56d60937d730215d3680fea0ca698b9a658011f9b6978947",
+    "v49-night2-end-paused.png": "37280c603603fc4532392f24c8a290e0555d76f08c3b6e5736647b2f844102c2",
+    "v49-touch-final-private.tar": "22204dc0a9449df3f970bd8d99ff97ccc64acd291a8988a0aba1627f80f13561",
+    "v49-night2-frames/frame-067.png": "f4a7eaf47cc0ce9a9fbad8430773282c64e92cddcf7dede29160308d1e6c7158",
+    "v49-night2-frames/frame-070.png": "e0872a44a9c2d76ec0587339e97a1525bbefbd01df0c00b6c2a147b6154918ca",
+    "v49-night2-frames/frame-071.png": "c9a03b17322cd0fb4148dfe1acf498ee2d560470f3b9d33d6609b6551132933b",
+    "v49-night2-frames/frame-120.png": "87939e1b1ba9ded8ed543fbb74cdd7d32901dbbda4ed6a34023cb942643d332b",
+    "v49-night2-frames/frame-122.png": "53c08f4b1c37fdc75b4e3f16db93fcd8299eac854581f6d73396583461e4137c",
+    "v49-night2-frames/frame-123.png": "de5a61629174d3ea9a625417fc449def1fe8b39053de8c54713b98f7961eb29c",
+    "v49-night2-frames/frame-138.png": "ef87b41b3da597ebeb4d2b410aac4030d2117e994abf6446b1a231d2c4034b68",
+    "v49-night2-frames/frame-180.png": "7a777af92add6820d1f1f711941aa644d546e7dccff1cc05b6bf25a5fb8cc58c"
+  },
+  "local_validation_sha256": {
+    "adoption-v49-before-fix-persistence.log": "d7c73417fd9e05014057b9778df30545840a5050d8b1f43feefc956ad96085bd",
+    "adoption-v49-before-fix-ui.log": "81ed8d389e108662a941baea972afa493f409d9bbee31cd08151e9d55a1b98a4",
+    "adoption-v49-fixed-persistence.log": "baddc6639fd3559732de354a34eaad30398fc66175d53bcba79f9a65dbb64d92",
+    "adoption-v49-fixed-ui.log": "4579a37f5a9adf5bef1581687399429d033fdec407fa2d02429d767fb089eb35",
+    "adoption-v49-replay.json": "8f82119e091becf2f0b2959c3a1f35dc28c01644bbc9ea74c8bba14fa5c507ed",
+    "adoption-v49-runner-tests-corrected.log": "69d3092e799b33eb7dca64bf94a3536ab4fa9fc5969f0629675edb863629b707"
+  },
+  "night_observation": {
+    "selected_speed": 4,
+    "captured_frames": 181,
+    "capture_complete": true,
+    "visible_12x_sleep_intervals": [
+      "Spring 1 22:17-22:47 (sampled)",
+      "Spring 2 04:37-04:57 (sampled)"
+    ],
+    "fallback_notice_observed": true,
+    "scope": "Emulated CPU load triggered the bounded sleep fallback. This is not a physical speed/frame-rate or exact wake-tick test; automated runner tests cover the latter.",
+    "endpoint_tick": 10734,
+    "endpoint_canonical_hash": "be3ab6e1f31c7966ee77e26157aa5590c6c96d7ca7f6be3ab5e868eed7592f0c",
+    "endpoint_residents": [
+      {
+        "health": 100,
+        "id": 1,
+        "job": 0,
+        "rest": 817
+      },
+      {
+        "health": 100,
+        "id": 2,
+        "job": 0,
+        "rest": 819
+      },
+      {
+        "health": 100,
+        "id": 3,
+        "job": 0,
+        "rest": 809
+      },
+      {
+        "health": 100,
+        "id": 4,
+        "job": 0,
+        "rest": 806
+      }
+    ]
+  },
+  "local_debug_apk_sha256": "963f1a07d8a3c806eb2fb7e3c29ae9db7edc79dc3de4a48903d165192f07f410"
+}

@@ -441,6 +441,13 @@ func adopt(world: ColonyWorld, number: int, replace: bool = false) -> String:
 		return "Could not adopt import; previous campaign and verified staging retained"
 	select_slot(number)
 	sequence = staging.sequence
-	journal_tick = world.tick
+	# The verified staged save is already this campaign's durable baseline.
+	# Keep its payload/metadata through the move so same-tick queued commands
+	# are detected and the first advanced tick can append a verified delta.
+	for field in ["journal_tick","journal_sequence","journal_length","journal_digest","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick"]:
+		set(field,staging.get(field))
+	verified_generations={}
+	for path: String in staging.verified_generations:
+		verified_generations[directory.path_join(path.get_file())]=staging.verified_generations[path]
 	world.command_trace.clear()
 	return ""

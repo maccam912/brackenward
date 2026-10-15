@@ -189,6 +189,7 @@ static func load_saved(store: ColonyStore) -> Dictionary:
 	return reader.load_latest()
 
 static func ui(game: GameSession, check: Callable) -> void:
+	adopted_paused_ui(game,check)
 	game._replace_world(ColonyTests.world());game.close_inspector();game.close_sheet();game._tutorial_dismiss()
 	game.save_local()
 	var queue: GatedQueue = GatedQueue.new()
@@ -228,6 +229,28 @@ static func ui(game: GameSession, check: Callable) -> void:
 	game.begin_placement();game.view.preview_start=Vector2i(93,80);game.view.preview_end=Vector2i(94,80);game.confirm_placement()
 	queued_hash=game.world.canonical_hash();game.journal_elapsed=1.0;game._process(0.0);game._finish_background_save(true);recovered=load_saved(game.store)
 	check.call("SAVE/UI_second_paused_order_also_recovers_without_running",recovered.has("world") and recovered.world.canonical_hash()==queued_hash and recovered.world.pending_commands.size()==2 and game.world.tick==paused_tick)
+
+static func adopted_paused_ui(game: GameSession, check: Callable) -> void:
+	game._finish_background_save(true)
+	var previous_world: ColonyWorld=game.world;var previous_store: ColonyStore=game.store
+	var root: String="user://adopted-paused-ui-%d" % Time.get_ticks_usec()
+	var fresh: ColonyWorld=ColonyTests.world();var candidate: ColonyStore=ColonyStore.new();candidate.root_directory=root
+	var error: String=candidate.adopt(fresh,1)
+	if not error.is_empty():check.call("SAVE/UI_adoption_setup",false,error);CampaignTests.remove_tree(root);return
+	game.store=candidate;game._replace_world(fresh);game.close_inspector();game.close_sheet();game._tutorial_dismiss()
+	game.begin_field();game.view.preview_start=Vector2i(90,80);game.view.preview_end=Vector2i(91,80);game.confirm_placement()
+	var queued_hash: String=fresh.canonical_hash()
+	check.call("SAVE/UI_newly_adopted_paused_order_is_undurable_until_saved",game._has_undurable_progress() and fresh.tick==1800 and fresh.pending_commands.size()==1)
+	game.journal_elapsed=1.0;game._process(0.0)
+	check.call("SAVE/UI_newly_adopted_paused_order_starts_periodic_capture",game.save_queue.busy() and fresh.tick==1800)
+	game._finish_background_save(true)
+	var recovered: Dictionary=load_saved(candidate)
+	check.call("SAVE/UI_newly_adopted_paused_order_recovers_without_manual_save",recovered.has("world") and recovered.world.canonical_hash()==queued_hash and recovered.world.pending_commands.size()==1 and fresh.tick==1800)
+	game.begin_placement();game.view.preview_start=Vector2i(93,80);game.view.preview_end=Vector2i(94,80);game.confirm_placement()
+	queued_hash=fresh.canonical_hash();game.journal_elapsed=1.0;game._process(0.0);game._finish_background_save(true);recovered=load_saved(candidate)
+	check.call("SAVE/UI_newly_adopted_second_paused_order_also_recovers",recovered.has("world") and recovered.world.canonical_hash()==queued_hash and recovered.world.pending_commands.size()==2 and fresh.tick==1800)
+	game.store=previous_store;game._replace_world(previous_world);game.close_sheet()
+	CampaignTests.remove_tree(root)
 
 static func content4_upgrade(root: String, check: Callable) -> void:
 	var audit: Dictionary=Content4Migration.audit()

@@ -61,7 +61,7 @@ jobs:
           python3 tools/check_suite.py people
           python3 tools/check_suite.py production
           python3 tools/check_suite.py care
-          python3 tools/check_suite.py generation
+          python3 tools/check_suite.py generation --timeout 360
           python3 tools/check_suite.py nature
           python3 tools/check_suite.py wildlife
           python3 tools/check_suite.py domestic
@@ -77,7 +77,7 @@ jobs:
           python3 tools/check_suite.py opportunity
           python3 tools/check_suite.py charter
           python3 tools/check_suite.py chronicle
-          python3 tools/check_suite.py scheduler
+          python3 tools/check_suite.py scheduler --timeout 240
           python3 tools/check_suite.py tutorial
           python3 tools/check_suite.py tutorial_flow --site meadow_reach
           python3 tools/check_suite.py tutorial_flow --site pine_shelf
