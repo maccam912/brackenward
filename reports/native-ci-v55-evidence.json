@@ -1,0 +1,141 @@
+{
+  "passed": true,
+  "source_commit": "6685958cc27e85dd0a5ab6ef836e939ed160a2b6",
+  "run_id": 38694536713,
+  "run_url": "https://github.com/maccam912/brackenward/actions/runs/38694536713",
+  "hosts": [
+    {
+      "host": "linux-x64",
+      "passed": true,
+      "counts": {
+        "generation": 167,
+        "persistence": 404
+      },
+      "software_renderer": true,
+      "renderer": [
+        "OpenGL API 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 20.1.2, 256 bits)"
+      ],
+      "files_sha256": {
+        "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+        "persistence.xml": "de3db5ed5828c7f8403416f111bf36588c825955396a4b9be8ebd904d6ec9c25",
+        "replay-linux-x64-7200.brackenward": "9bff9dc040419b02110ac0c496a00fe1476dabd3e557e2500f7c89d455532019",
+        "replay-linux-x64-72000.brackenward": "3e445c99e34debed9b31f9df69cc5703bce79307d82a38f1c8c7a3e8aea4bf3a",
+        "replay-linux-x64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+        "replay-linux-x64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f",
+        "replay-linux-x64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+        "replay-linux-x64-generation.log": "be8698f80b9e6f6e1176a07628c6ec543782580877819f34bedcb3464c6ff877",
+        "replay-linux-x64-native-smoke.json": "7aa0e580c8baa3ce42b73c82f529959d933cbd9fdd15ed9ed281e0d6e10bac59",
+        "replay-linux-x64-native-smoke.log": "00a3eb90a60cc68650fabdcac1466a1b065780323d0c850325e696ee99cf3773",
+        "replay-linux-x64-persistence.log": "dbd065bec23ae5b6ffb9e1a03d22e546645194feab3b70da589d697fafc1770b",
+        "replay-linux-x64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+        "replay-linux-x64.json": "1d06293939885fa6cefac052447c5d99352825e1f430b137cf20b0799c545566",
+        "replay-linux-x64.log": "13bae3915c66e91013f69fbcb72bea6cb45b85a75d165f1c8938596d11bcdfca"
+      }
+    },
+    {
+      "host": "windows-x64",
+      "passed": true,
+      "counts": {
+        "generation": 167,
+        "persistence": 403
+      },
+      "software_renderer": true,
+      "renderer": [
+        "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.20348.5386)"
+      ],
+      "files_sha256": {
+        "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+        "persistence.xml": "a2ef24bb968668e707ff73cb4493eb0b62215d707a69443988659537f2192cf3",
+        "replay-windows-x64-7200.brackenward": "53dddcb5c2bd6573e835755ac024e0a1a041f3d3a1b2202be20409ed9f0d2323",
+        "replay-windows-x64-72000.brackenward": "f666b0f6ba612119358ee63fab0243adb137a05748c71dd9acaf07c8babfb754",
+        "replay-windows-x64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+        "replay-windows-x64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f",
+        "replay-windows-x64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+        "replay-windows-x64-generation.log": "be1f428bd76ecc6cb166f7f3f17ee2eea39ebf71983e22ba36db02e9c0202a81",
+        "replay-windows-x64-native-smoke.json": "22f43c6f624da5044753ddafced54c78e7182c508529cefbe4a9b0c397993bef",
+        "replay-windows-x64-native-smoke.log": "fc8b1857c0287280c5a862fc726693386d04e58a0bd62c8b4e069e6b2040ec06",
+        "replay-windows-x64-persistence.log": "f80f56b53f2f47f8365a434c6669fad8f903ef250e4dc72071c8d82ff99967ef",
+        "replay-windows-x64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+        "replay-windows-x64.json": "896be9d2d78ecfbe9cc448544c4da76e39156d693172e99d27c55e7bd9c3a54d",
+        "replay-windows-x64.log": "11f54ff88974c178bcc4220a7509130811cc52552a77b18d76a5c7e7ed142d04"
+      }
+    },
+    {
+      "host": "macos-arm64",
+      "passed": true,
+      "counts": {
+        "generation": 167,
+        "persistence": 404
+      },
+      "software_renderer": false,
+      "renderer": [
+        "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Apple) - ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.7.9 (Build 24G830))"
+      ],
+      "files_sha256": {
+        "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+        "persistence.xml": "de3db5ed5828c7f8403416f111bf36588c825955396a4b9be8ebd904d6ec9c25",
+        "replay-macos-arm64-7200.brackenward": "b161884918f7f9c8820d8d8179219227b37e564303dfe9354b7d47e8192685de",
+        "replay-macos-arm64-72000.brackenward": "01b582de251db454cc4d7467b937723ba6369c3d3cc113469e621ca298bfe5c6",
+        "replay-macos-arm64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+        "replay-macos-arm64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f",
+        "replay-macos-arm64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+        "replay-macos-arm64-generation.log": "c240a1e9b1a2d0dcf5ea6decf717a551c1bcff7fce79ce3a97049bd4f329daf0",
+        "replay-macos-arm64-native-smoke.json": "89a700c6b35c8976f445c1d55fe2c5fdc555db42692c4e7c1a74fa310694d8f8",
+        "replay-macos-arm64-native-smoke.log": "34d87da446c00b235514e1e89da2bd15ca864c2c04865a859887e754eb41c921",
+        "replay-macos-arm64-persistence.log": "9d05564d47b77d333bd3d5246b1c8695d832d4569f2577edb881f45b7d85259a",
+        "replay-macos-arm64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+        "replay-macos-arm64.json": "8ea8eebc162c1b5305ae0d42f7f5d6b66f930a39cc093eba69918a8a227f6141",
+        "replay-macos-arm64.log": "14b81bda715ddfdaaa6b68c731c23627d1e0541ad184101ac4663cd4e43a720a"
+      }
+    },
+    {
+      "host": "macos-x64",
+      "passed": true,
+      "counts": {
+        "generation": 167,
+        "persistence": 404
+      },
+      "software_renderer": true,
+      "renderer": [
+        "OpenGL API 4.1 APPLE-21.1.1 - Compatibility - Using Device: Apple Inc. - Apple Software Renderer"
+      ],
+      "files_sha256": {
+        "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+        "persistence.xml": "de3db5ed5828c7f8403416f111bf36588c825955396a4b9be8ebd904d6ec9c25",
+        "replay-macos-x64-7200.brackenward": "88a0eda0077bcf42f0b4a8ef47b6d50329380b1b1b4f3f4098b46a8fe2cc9d53",
+        "replay-macos-x64-72000.brackenward": "3d823987ad6c3f9dd79acb2b99c77163c441b5f02103fa60a7184c33f807078f",
+        "replay-macos-x64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+        "replay-macos-x64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f",
+        "replay-macos-x64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+        "replay-macos-x64-generation.log": "f65bbbdb4efa1f9acbc6769ef0583f44072196dbcfaa44b83a1731244a1dbdaa",
+        "replay-macos-x64-native-smoke.json": "426ab7ed7ede2122bdd4ff9a3b4a8992061cd61f457b82b69c989df6cf72e5a5",
+        "replay-macos-x64-native-smoke.log": "abcbabc311e053404703ef9a447c54bfbbea6a8259d0567d570ed56f5c170a4c",
+        "replay-macos-x64-persistence.log": "55c01c7fa9a91b728c0a2fa67caac42b433b61fc261747ff507797fb6e0d32e9",
+        "replay-macos-x64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+        "replay-macos-x64.json": "865db863be371f5d92dc5ee688a9198c33e8dedf80136206b67500351b148c43",
+        "replay-macos-x64.log": "1900abb49696769f7d54de75606ea69073fdc812d5ce3336673f279241c0216a"
+      }
+    }
+  ],
+  "paired_raid_ci_step_passed": true,
+  "apk": {
+    "passed": true,
+    "tag": "dev-6685958cc27e",
+    "sha256": "f2ad5838ace1b09a5d3d286fc348c7da10675e46a18ea8be3c35fd02dd31c63a",
+    "build": {
+      "commit": "6685958cc27e85dd0a5ab6ef836e939ed160a2b6",
+      "run_number": 108,
+      "version_code": 208,
+      "run_id": "38694536713",
+      "kind": "development_debug"
+    },
+    "package_badging": "package: name='dev.brackenward.game' versionCode='208' versionName='0.7.55-m7+6685958' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "files_sha256": {
+      "brackenward-debug.apk": "f2ad5838ace1b09a5d3d286fc348c7da10675e46a18ea8be3c35fd02dd31c63a",
+      "build.json": "2da3ff3617dd2ecc7ae06ae7385bbbbecd69d0a3579818e1128835d099daac23",
+      "SHA256SUMS.txt": "34d88a24c9c66951b55bf7179916efa49975bf90447b3fef30e443820fc8612c",
+      "release.json": "0e71d0d1dada9cdb3bbb046250b3b9a7f4368fc1a387e65a2d617814ca918a27"
+    }
+  },
+  "scope": "Downloaded native source replay, generation, persistence and startup evidence; all twelve rotation-selection checks pass on all four hosts. Windows omits the Unix symlink case. APK provenance, all three uploaded asset digests and package metadata independently verified. Exported interaction and physical Android certification remain separate."
+}

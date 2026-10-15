@@ -1,0 +1,1610 @@
+{
+  "passed": true,
+  "source_commit": "6685958cc27e85dd0a5ab6ef836e939ed160a2b6",
+  "maps": 30,
+  "defend_passed": 30,
+  "ransom_passed": 30,
+  "distinct_maps": 30,
+  "distinct_entries": 30,
+  "all_sixty_branches_four_residents_health_100_no_zero_fullness_or_theft": true,
+  "original_artifact_manifest_unchanged": true,
+  "independent_second_audit_passed": true,
+  "evidence_sha256": {
+    "source.json": "ef53dd02179ab98726d118aaf9dd2ec368a77d83632fed26d971440f7c47676d",
+    "completion.json": "df82309fb0eae75116df8a9403dd08ebbb00ce8992621a958dac85dab77cb0e5",
+    "audit.json": "b87fbc27ab18d8c8323968c589f27abf7d0157e3b11bb1c2e6ba35122cfe9404"
+  },
+  "rows": [
+    {
+      "site": "meadow_reach",
+      "seed": 0,
+      "entry": {
+        "$tile": [
+          0,
+          18
+        ]
+      },
+      "normal_canonical_hash": "a1f86627435e6636c8d32ee2b214a375b465717657047e87335018b817c92ad3",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "79c408879c1dbba8381fcc4302f1d0e3fff9e6e80d3bb137e727b25c8ca435d2",
+        "minimum_health": 100,
+        "retreat_tick": "9994",
+        "end_tick": "10114"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "59b9472b7bec0d443991ad3ee54bb2aa8c6bfd08a826b312f6e6d2ebe86dfdd7",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 1,
+      "entry": {
+        "$tile": [
+          0,
+          13
+        ]
+      },
+      "normal_canonical_hash": "80de0cade8588f7e1b1150919ee23cf028455c07c7414daf2ca5f9e6da82a710",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "71be47b41303bd1e3321f98e01f1cf8a43035c37e48ec1b9812b4b5bb776bb45",
+        "minimum_health": 100,
+        "retreat_tick": "9976",
+        "end_tick": "10096"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "e9ef8fc537bb654e537fc830eefdbe341c8d9edcffdd260abae29f3154f02992",
+        "minimum_health": 100,
+        "retreat_tick": "10442",
+        "end_tick": "10538"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 42,
+      "entry": {
+        "$tile": [
+          34,
+          127
+        ]
+      },
+      "normal_canonical_hash": "0994d663745a68f8b5289ace5ec9e1bdd593209e448c9aab63f5ea75f54931a4",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "0b3c715dcf31fc22d1e10803c0f064cddfb86dfb726ae521eeb37177fba6c028",
+        "minimum_health": 100,
+        "retreat_tick": "9958",
+        "end_tick": "10078"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "e6a47f990093b7ef9003dd6eb13df32d3d2391e0aa4fb29955cd671cf917cd5e",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 104729,
+      "entry": {
+        "$tile": [
+          127,
+          117
+        ]
+      },
+      "normal_canonical_hash": "0ecd4b3675fe4b910d4003cd51f599b9b0bb8d9612c42a3fa9c28b63d105bf26",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "0db9010ed72209faf34b70f43c44e8139e125eda504f55f021b2454594fac275",
+        "minimum_health": 100,
+        "retreat_tick": "10067",
+        "end_tick": "10187"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "4e098166641d140b53b282b55b6a9ea016183f8dc522dcb700919e6d14af601f",
+        "minimum_health": 100,
+        "retreat_tick": "10297",
+        "end_tick": "10393"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 2147483647,
+      "entry": {
+        "$tile": [
+          127,
+          5
+        ]
+      },
+      "normal_canonical_hash": "0eecce69e43e31551a91881c0269aa708c8de5d656055bdcacdb177e80e83b9e",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "bdd6c10aa4d4a3ec0677a36769a09f223eb68094f28f4422e96270558c7ad87c",
+        "minimum_health": 100,
+        "retreat_tick": "10049",
+        "end_tick": "10169"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "58e3a871178919da4d39b2ee6b28c9fa8d956f2fd75ca3b850c46cd46a54de5c",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 4294967295,
+      "entry": {
+        "$tile": [
+          126,
+          127
+        ]
+      },
+      "normal_canonical_hash": "3755d4b296be1a0ae3eeaf08c1321f3d4237a0b7831aa6c6944a6d57a7266c74",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "909c334d9fa14b64cad8bbf18456e54dc89006ddcf60df9f503fdeb2d8a143b6",
+        "minimum_health": 100,
+        "retreat_tick": "10103",
+        "end_tick": "10223"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "98457544a595da7631b1e17b2af59d5b1eef975f8bdb0987bf02596b66780a0b",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 73,
+      "entry": {
+        "$tile": [
+          0,
+          36
+        ]
+      },
+      "normal_canonical_hash": "3d17a1162d622ab5c97d3e9fd28fc9788835a98ca0511d9564e8def3c765fd26",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "9616e8006b9ff798461a214cc72669357840d04e5d2da9c6e70dec63ecc7842c",
+        "minimum_health": 100,
+        "retreat_tick": "9812",
+        "end_tick": "9932"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "191ad800d6c6c3b325cc39c9a32d78baf1147a1270565d711d81f1e1e8e11727",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 4567,
+      "entry": {
+        "$tile": [
+          99,
+          127
+        ]
+      },
+      "normal_canonical_hash": "914ac5abe44dafa5bde64cefadf8a702bc8cbfbea0d92a5f8790d99f505b2549",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "aad1c4a60fc489c013367423516bc5ab866cd1fbded920a5676798e9fef4c584",
+        "minimum_health": 100,
+        "retreat_tick": "9849",
+        "end_tick": "9969"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "be3ea3094cf85ea13dd2e14bdfc33209cefed5c7d8dab87d65acf68feac4d332",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 1357911,
+      "entry": {
+        "$tile": [
+          0,
+          25
+        ]
+      },
+      "normal_canonical_hash": "f6c8d710c57353237aaeb183dc55a84feb20809c79852f2ae0274100dcd0141f",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "bf7901857d6aac9a757c6ce6745ed38b23fa1ef901b081399ef55334733fd63f",
+        "minimum_health": 100,
+        "retreat_tick": "9958",
+        "end_tick": "10078"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "af67e741bb5722fe17b14a8f9825a93802df7339522c179c7943a047e3961280",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 3000000001,
+      "entry": {
+        "$tile": [
+          29,
+          127
+        ]
+      },
+      "normal_canonical_hash": "5145df23dbe5201d448d0d061ec081521bbc8370b3f48d4119372b2cef2591a2",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "3f2ea2541723e15db70d461b60f8942382f74e5cc426fc51fba019a297084115",
+        "minimum_health": 100,
+        "retreat_tick": "10049",
+        "end_tick": "10169"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "4c1afc683c2e4a4fb386839791b34b552ae5b5527284c624819ebacc1f426a7d",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 0,
+      "entry": {
+        "$tile": [
+          31,
+          127
+        ]
+      },
+      "normal_canonical_hash": "83fa08d115f8470205786bace40c893406f632ed5a45be256dc2f777822b223d",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "2ac998ad07eec5682df8141a570d6c5153b007f994ba0587fe8b05c7442b1ed4",
+        "minimum_health": 100,
+        "retreat_tick": "9958",
+        "end_tick": "10078"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "1385b86d0a424fc13eafbb72a5e6c764f001f01e56d5681d38833a4009f37516",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 1,
+      "entry": {
+        "$tile": [
+          68,
+          0
+        ]
+      },
+      "normal_canonical_hash": "aa3f21960ab712742034effdd579b493abaf6af5debca9f849008fea75bcb4c4",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "63e959f288dd2d288f8c872d6150f810790fe9085563238be08479ed4e73511b",
+        "minimum_health": 100,
+        "retreat_tick": "9378",
+        "end_tick": "9834"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "b31d4978f5706522eb0beabee2f992ff311cc317f8af164c7e7d6f14d6d1cfd2",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10477"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 42,
+      "entry": {
+        "$tile": [
+          127,
+          35
+        ]
+      },
+      "normal_canonical_hash": "d110fe709ae7ae17e0600cd6537c4845f299a31b114db9fa3f1241da18ee3f0e",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "e46b10d18b7354696185ac952032d9b3a619092478ddfa384ffac7ef5449c3c6",
+        "minimum_health": 100,
+        "retreat_tick": "9776",
+        "end_tick": "9896"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "0b311d55ec883f6393f109ae0cce700ac819d61e28d328ea6b853307ca3026f4",
+        "minimum_health": 100,
+        "retreat_tick": "10327",
+        "end_tick": "10423"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 104729,
+      "entry": {
+        "$tile": [
+          127,
+          124
+        ]
+      },
+      "normal_canonical_hash": "19df7b531e71d2bdf1f84d6ef039a92ab2407527fbfa31e51c1fd7fbb5df6a1b",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "3c57e82346d3b532f906d97e74798c07be4b4b169ecfe0e2ecbfbd7b06f0a566",
+        "minimum_health": 100,
+        "retreat_tick": "10158",
+        "end_tick": "10278"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "9dbe52b6e6a0bce4643a3ab01909644fdb3cc685672e03109147685504a4ef7b",
+        "minimum_health": 100,
+        "retreat_tick": "10297",
+        "end_tick": "10393"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 2147483647,
+      "entry": {
+        "$tile": [
+          59,
+          0
+        ]
+      },
+      "normal_canonical_hash": "bf5787201e51d9f054801ecf70b181f3c16437e8bc7f685094fb2f645ca75290",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "865c51ddf6ffc72de03a092ccf2a3cc450012a9f66156dc7ea41858f9e75297b",
+        "minimum_health": 100,
+        "retreat_tick": "9452",
+        "end_tick": "9980"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "40494264a09bf38ab2b456c8b733224289eb20d6ddae9dee994cd40d4f244e26",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 4294967295,
+      "entry": {
+        "$tile": [
+          127,
+          1
+        ]
+      },
+      "normal_canonical_hash": "a43d8cf18dd794808d04d8f3c44eb1d74f4831c2dc8bcd2c5e3977f3660a8189",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "2ba38dfb507c01df54b71bf77942eb1fad04fd090ae04f629910c69874f0f109",
+        "minimum_health": 100,
+        "retreat_tick": "10158",
+        "end_tick": "10278"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "5259a184a7b54d3ab53b311c8e90b988040e736e026bdea19ad625627f6bc59a",
+        "minimum_health": 100,
+        "retreat_tick": "10297",
+        "end_tick": "10393"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 73,
+      "entry": {
+        "$tile": [
+          0,
+          51
+        ]
+      },
+      "normal_canonical_hash": "42d8dc19dcba976c8b1ed12d123431d0b76d7360c0fe32af8f12ecc1302cb6cd",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "7cb302ce336c9f03399e3bdf024949f54833dd9465d71b7f7caa70fac97033ce",
+        "minimum_health": 100,
+        "retreat_tick": "9703",
+        "end_tick": "9823"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "d139ba5812211518da981dcf084ec3a4829bfca6a3c2eff1360aa5baec4de387",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 4567,
+      "entry": {
+        "$tile": [
+          66,
+          0
+        ]
+      },
+      "normal_canonical_hash": "3824490db3decc8972dc04e161dca0d419c93e4e707742935ec68d7dc3890d8b",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "5305ef6490d7a992d359b727c605e93fe2d6f46c9302409df517a9c544958e08",
+        "minimum_health": 100,
+        "retreat_tick": "9366",
+        "end_tick": "9803"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "f8dfcce9bd4beaf450bdf8e3052af8acee6fb099dd25dcb4001f0518ccfd80c6",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10400"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 1357911,
+      "entry": {
+        "$tile": [
+          0,
+          109
+        ]
+      },
+      "normal_canonical_hash": "bc6f1709fda818f329b50106c69524fe751543773d3566239b1b72c461960acb",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "3499d316fb2d09037828817bd96847b807c1109316a342fcdbdf7360a07c912c",
+        "minimum_health": 100,
+        "retreat_tick": "9940",
+        "end_tick": "10950"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "ec304c558fcbaaf61b20fd594c8d40ce2dc4968a31a86dbba4a6bd961c1f4fbe",
+        "minimum_health": 100,
+        "retreat_tick": "10357",
+        "end_tick": "10453"
+      }
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 3000000001,
+      "entry": {
+        "$tile": [
+          127,
+          83
+        ]
+      },
+      "normal_canonical_hash": "1793aa33f8a282d4364b1df7c846acfcb030de92c2bf05e6701cf41077d8443b",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "179ef5569cbeed4647822c4671616586618fb812caac64640b140f668116f4dd",
+        "minimum_health": 100,
+        "retreat_tick": "9604",
+        "end_tick": "10285"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "7c4c2495681cc6267dbb95d78e5cda2ab56d5ca481f2efc3d79fe90069ebdf46",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 0,
+      "entry": {
+        "$tile": [
+          60,
+          0
+        ]
+      },
+      "normal_canonical_hash": "08930a88c6a1ad2629b350f77df3f4d1410c9a917cb0f77d4dff2c7a1ada3fa2",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "0b569d7877496e530c88d9dc5003b4f3eb2a47b710e8b86d284d38a84bcc7f3a",
+        "minimum_health": 100,
+        "retreat_tick": "9452",
+        "end_tick": "9981"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "477cbb69c325cf9c847213836f5f54c4a1e937480893f91b5ca01b088f006254",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 1,
+      "entry": {
+        "$tile": [
+          0,
+          101
+        ]
+      },
+      "normal_canonical_hash": "48d75a54104cdad8c6e156781c59f1a42725cb5ce66c1924c49b2ac241a4a040",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "de95c9c936863dba86a74bf48c6be42b7fbfd9438c1f21b6d3016fe094d01673",
+        "minimum_health": 100,
+        "retreat_tick": "9921",
+        "end_tick": "10041"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "229b83d89150f3434487b1117157c5ca31ad4cb4063807b3f1eaf2c3aef5cb07",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 42,
+      "entry": {
+        "$tile": [
+          107,
+          0
+        ]
+      },
+      "normal_canonical_hash": "3f3901c77d0d77963dfe06d82c918010d3d8aea4e4f8c871ef3fdbe250d25050",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "f89c1e8c23bd32d688ea05bdd74f6170f3becf82b0221c0ec82e824d62531f83",
+        "minimum_health": 100,
+        "retreat_tick": "9897",
+        "end_tick": "10870"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "6fc555172adbb9ac7c3b1e647f1b5167125cc5e45cbe178d1b452ba62d303a7c",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 104729,
+      "entry": {
+        "$tile": [
+          102,
+          127
+        ]
+      },
+      "normal_canonical_hash": "328aaeeda39fad8b4029a0402472795079a90ed6d89135c4f6bb9268e82d6572",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "c829e8b331464d50504cbe7fc6fd04a5e1f7f62fb7eea70bdc730de5dfc7588c",
+        "minimum_health": 100,
+        "retreat_tick": "9885",
+        "end_tick": "10005"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "c9d419bd2672233bb4e5746ba94c089cfcb77b001989e8d3e2b3e088bd0f3633",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 2147483647,
+      "entry": {
+        "$tile": [
+          49,
+          127
+        ]
+      },
+      "normal_canonical_hash": "c34d3ea36c6271f13caaf54d34323dd74b44e8d87ffb0fe7313a86a51228a6b9",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "2fd0b713f5084b4b0e6b7e34a4c964389347f412c098049273858b46b7d1a596",
+        "minimum_health": 100,
+        "retreat_tick": "9703",
+        "end_tick": "9823"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "caa936b4288c4e1a1ffc359366592510b296fe5695077c4e4a7822f038e590e9",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 4294967295,
+      "entry": {
+        "$tile": [
+          123,
+          0
+        ]
+      },
+      "normal_canonical_hash": "08d01c213998f74b25e189b656d8e4588ced4ad2269b842929b2192497c5af6c",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "d402b1c18b6c0f885da28900106e44d001d0d6316fbfa6ec0732cec3aa4ae901",
+        "minimum_health": 100,
+        "retreat_tick": "10067",
+        "end_tick": "10187"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "9971d82fdd9e4fdba08069c34273a12242884a8c0fdbb6dcecd9cd8cdee98b00",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 73,
+      "entry": {
+        "$tile": [
+          37,
+          0
+        ]
+      },
+      "normal_canonical_hash": "4286c94422281c655ead5848a791d241bede96748d6f433e30f245196a045fc7",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "6008fc9e578b385cf52d258d1c33e880c5db7b68917fd4eaae9040a91d506f95",
+        "minimum_health": 100,
+        "retreat_tick": "9665",
+        "end_tick": "10407"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "2c7e36d8d67fb60b1781ea1fdc8067a735992a16461680d7b2429080f33137fe",
+        "minimum_health": 100,
+        "retreat_tick": "10357",
+        "end_tick": "10453"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 4567,
+      "entry": {
+        "$tile": [
+          118,
+          0
+        ]
+      },
+      "normal_canonical_hash": "8714a89b5277696d8f82a92258c2698d2bf25f8ad631090aae143c57125dccb6",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "48d8f7a2d5ec74f5da0cbfb848b0fe603dc4a18dbafeb4c7bad55fa6d8b260ce",
+        "minimum_health": 100,
+        "retreat_tick": "10012",
+        "end_tick": "10132"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "2516b058b608451858cb4620bbadc9c9162f2cd8f23903fe12d4b3b746598fdb",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 1357911,
+      "entry": {
+        "$tile": [
+          0,
+          14
+        ]
+      },
+      "normal_canonical_hash": "698c36dc548c6c7c7577601a898f8bed5dbfaae91abfedc272f6efaa7a990b25",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "005cf2412d698b42d05910cefff7ec41678e3ab249ccd36f6dbb857a63c3e569",
+        "minimum_health": 100,
+        "retreat_tick": "10012",
+        "end_tick": "10132"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "4c76a2b4fb0ba0c56f29edb8a9e59a75c785dc104755896826d3c888ed6f4d60",
+        "minimum_health": 100,
+        "retreat_tick": "10387",
+        "end_tick": "10483"
+      }
+    },
+    {
+      "site": "reed_bend",
+      "seed": 3000000001,
+      "entry": {
+        "$tile": [
+          3,
+          127
+        ]
+      },
+      "normal_canonical_hash": "fafc72071db137c3bb0e64bde9377f332df985c9756d82a3075b63ce7e0dfbed",
+      "defend": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "armed_defense_and_real_civilian_shelter": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "9fa4f80a19579ffcafcb478bb592eaf6e68535898f559fb373a7666cec313a95",
+        "minimum_health": 100,
+        "retreat_tick": "10176",
+        "end_tick": "10296"
+      },
+      "ransom": {
+        "passed": true,
+        "checks": {
+          "same_announced_input": true,
+          "resolved_same_party_after_normal_boundary_arrival": true,
+          "four_living_undrafted_home_residents_with_starting_weapons": true,
+          "only_exact_accepted_public_orders": true,
+          "normal_time_no_starvation_or_theft": true,
+          "active_incident_snapshot_fully_validated_and_continued": true,
+          "retreated_before_theft_quota_or_time_limit": true,
+          "no_resource_grants_equipment_swaps_or_other_incidents": true,
+          "exact_listed_ransom_physically_delivered": true,
+          "interception_is_midpoint_of_real_shortest_approach": true,
+          "announced_identity_and_route_unchanged": true,
+          "exact_written_snapshot_identity": true
+        },
+        "canonical_hash": "a6230e47993ced5f8e98007bd1dbb1a6d5d0d4e8cd37eab25d34f18d2f39bc3d",
+        "minimum_health": 100,
+        "retreat_tick": "10317",
+        "end_tick": "10413"
+      }
+    }
+  ],
+  "scope": "Prepared four-person starting-weapon solutions, with only one initial announcement setup exception; normal movement/needs/combat/physical supplies thereafter. Every setup delta, initial geometry, eighteen inspected goldens, shortest approach/midpoint, orders/receipts, active-incident reloads and final bytes independently checked. Ordinary incident frequency and physical/human gates remain separate. All original cart-plan failures remain intact."
+}

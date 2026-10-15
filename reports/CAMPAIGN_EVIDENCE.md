@@ -447,3 +447,23 @@ Source/completion/audit SHA-256:
 `287e1a52380ce476fcebac9418a4e737867fd0279eb89eacc27f909e21f119be`.
 This closes both ordinary twenty-resident seasonal scenarios for this new-map
 case, separately from synthetic performance, physical memory and human gates.
+
+
+## Fresh generator-2 post-Charter continuation completed
+
+All four ordinary no-trade/vegetarian cases complete another 96 days at clean
+frozen `f0e36da64d602619f132f998cbbf094f5a5ec53a`, reaching tick 1384200
+(192 total campaign days). A separate second audit checks the original audited
+96-day Charter endpoints, exact initial saves and command prefixes, 691200 new
+ticks per case, all eight residents alive with no departures, zero zero-fullness
+or starvation-grace-exceeded ticks, and at least one final food day. Each report
+contains 4608 total invariant checks and an exact complete final save round trip.
+Minimum health is 72/90/84/100 for Meadow/Pine/Reed/Pine Hearthside; this is not
+a zero-damage claim. Final food runway is 41924/51975/49031/35748 ticks.
+
+Raw evidence is `post-charter-gen2-v6-f0e36da/`. The compact
+[post-charter-gen2-v52-evidence.json](post-charter-gen2-v52-evidence.json)
+retains all four canonical hashes, saved-byte hashes, original endpoint links,
+commands-preserved results and every source/completion/report/log/save/audit
+fingerprint. Native-soak worker pauses are included in wall time and do not add
+logical catch-up ticks. Physical performance and human playability remain separate.

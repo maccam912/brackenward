@@ -1,0 +1,50 @@
+{
+  "passed": false,
+  "source_commit": "6685958cc27e85dd0a5ab6ef836e939ed160a2b6",
+  "input_sha256": "6a3d3c4636802ca2374e48c5d423bfd6d939c82e4cd3e179583b21324c76c774",
+  "duration_seconds": 1800.001313,
+  "logical_ticks": 36001,
+  "nominal_ticks": 36000,
+  "final_residents": 20,
+  "minimum_one_second_fps": 28.9034624354655,
+  "engine_heap_peak_growth_bytes": 31719296,
+  "engine_heap_ending_growth_bytes": 15317808,
+  "strict_peak_limit_bytes": 20971520,
+  "checks": {
+    "audio_drained": true,
+    "completed": true,
+    "engine_heap_proxy_within_20_mib": false,
+    "fps_floor_proxy_pass": true,
+    "logical_time_kept_up": true,
+    "population_kept": true,
+    "probe_pass": false,
+    "release_gate_pass": false,
+    "roundtrip_verified": true,
+    "source_unchanged": true,
+    "standard_30min_2x_case": true
+  },
+  "all_diagnostic_counters": {
+    "backgrounds": 0,
+    "quiet_sleep_limits": 0,
+    "slow_storage_pauses": 0,
+    "speed_reductions": 0,
+    "storage_alerts": 0
+  },
+  "same_complete_final_payload_as_frozen_44": true,
+  "final_canonical_hash": "4a8fee28b0a01de385fc3bb8bfe48f7df5706c1b291760e7dca36c530303f881",
+  "files_sha256": {
+    "source.json": "7d40a810aec547e4f2065dcb835f22a61dba05e2d282fe1982922c56ee8d096b",
+    "completion.json": "1125a3b5a3693a6ea25ac708d4c43c7fe6f42731eae6fdc247ef6a3657987276",
+    "probe.json": "34d9d8bdcdf6f072d8c26c06161add8503f92d2f2d115c86bf95534d489af067",
+    "audit.json": "61c90716645d3ecdac3e10214e3eeb97af128ab57e95b9db53226fc622de1929",
+    "probe.log": "afa385715ab10ff8b4b228f98d1d84ba141de464c86a8cde4f0145cd3bdcaa36",
+    "probe-final.brackenward": "88fef79261487c34e8e28c2ff2d17b6b612c689d1c0b8ab52ed09405d944299c"
+  },
+  "scheduling_sha256": "d40c7728f190d8291d404c07bd4546870e43ad2a03ad675ab40cbe3e44c23986",
+  "scheduling_tool_sha256": "a92a35e1618b7cd2f95c56cddf8ece5e5d56b6c31ba1582acdd921b6f35a2d5f",
+  "campaign_workers_resumed": [
+    96037,
+    96046
+  ],
+  "scope": "Completed and independently audited native synthetic 30-minute 2x case. Strict sampled peak-engine-heap proxy FAIL; duration/population/invariants/storage/fps/roundtrip/source checks pass. No other graphical Godot ran; this task's two ordinary campaign workers were paused and resumed by the recorded supervisor. Old/new 60-second samples do not align worker allocation phases, so peak differences are not a causal benchmark. Not physical Android PSS/battery/thermals."
+}

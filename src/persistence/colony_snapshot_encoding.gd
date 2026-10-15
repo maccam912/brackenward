@@ -8,22 +8,23 @@ static func prepare(captured: Dictionary, catalog: Dictionary) -> Dictionary:
 	if not captured.is_read_only():return {"error":"Snapshot preparation needs an owned immutable capture"}
 	if captured.get("content_hash")!=catalog.get("content_hash"):return {"error":"Snapshot preparation catalog differs from immutable capture"}
 	if not captured.get("session_id") is String or not captured.get("generator_version") is int:return {"error":"Invalid snapshot identity metadata"}
-	var encoded: Dictionary=encode(captured)
-	if encoded.has("error"):return encoded
-	var decoded: Dictionary=decode_owned(encoded.bytes,encoded.fields)
-	if decoded.has("error"):return decoded
-	var verified: Dictionary=ColonyCodec.restore(decoded.data)
+	# Full validation can read the owned immutable capture directly. Proving
+	# every serialized value equals this validated state avoids retaining a
+	# second complete decoded world; external decoding is unchanged.
+	var verified: Dictionary=ColonyCodec.restore(captured)
 	if not verified.has("world") or verified.world.payload()!=captured:return {"error":"Snapshot preparation failed full validation: "+str(verified.get("error","state mismatch"))}
-	# Release the complete private validation tree before materializing the full
-	# UTF-32 payload/envelope. Each serialized component and punctuation byte
-	# has already been read from the actual encoded buffer and checked above.
-	verified={};decoded={};encoded.fields=[]
+	verified={}
+	var encoded: Dictionary=ColonySnapshotTree.encode(captured)
+	if encoded.has("error"):return encoded
+	var compared: Dictionary=ColonySnapshotTree.matches(encoded.bytes,encoded.tree,captured)
+	if compared.has("error"):return compared
+	encoded.tree={}
 	var result: ColonyPreparedSnapshot=ColonyPreparedSnapshot.new()
 	result.payload=captured;result.text=encoded.bytes.get_string_from_utf8();encoded={}
 	result.digest=result.text.sha256_text()
 	var identity: ColonyWorld=ColonyWorld.new(catalog)
 	identity.session_id=captured.session_id;identity.generator_version=captured.generator_version
-	var bytes: PackedByteArray=ColonyCodec.wrap_payload(identity,result.text)
+	var bytes: PackedByteArray=ColonySnapshotEnvelope.wrap(identity,result.text)
 	if bytes.is_empty() or bytes.size()>ColonyCodec.MAX_BYTES:return {"error":"Colony snapshot is empty or exceeds 64 MiB"}
 	result.validated=true
 	return {"snapshot":result}

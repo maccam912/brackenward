@@ -1,0 +1,25 @@
+{
+  "passed": true,
+  "version": "0.7.56-m7",
+  "local_android_code": 95,
+  "local_apk_sha256": "32a0960f40e39e7de5313df57bc5f848176fd1b51f78a40b68fbcba8def1b1fa",
+  "local_apk_badging": "package: name='dev.brackenward.game' versionCode='95' versionName='0.7.56-m7' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "persistence": 431,
+  "native_ui": 667,
+  "maintained_total": 2753,
+  "recorded_suites": 28,
+  "kotlin_checks": 4,
+  "replay_pass": true,
+  "source_comparison_unchanged": true,
+  "files_sha256": {
+    "reports/snapshot-capture-v56-envelope-persistence-2.log": "c563e41ad1c75d8308fc875058b86a61d89c2ae363bb29a201664129a8899b02",
+    "reports/snapshot-capture-v56-ui.log": "731a7616152291c5ca22cb68da773965c9b818f874ad33dd453aa66a3061557d",
+    "reports/snapshot-capture-v56-replay.log": "495306a421336d43a6cfe88db206e637711b62443543ce825fef6cbb566082d4",
+    "reports/snapshot-capture-v56-final-import.log": "51713da346b2601b891f835dc170d83d2525640cafa662e87543045a8dee9c53",
+    "reports/snapshot-capture-v56-content.log": "fe04fd56d29d4ed475bfee81e0cde755ebb8d962414a56a266771f4d2cbbb4ac",
+    "reports/snapshot-capture-v56-android.log": "aaa6df89e6f57532ec720d43fab44c2656a329927535afacdbbf8eb10409c648",
+    "reports/snapshot-capture-v56-replay.json": "0f6add36cdb2cacd4e53d7e334ae13a327403c751156f011c1aa7d50fe4f62ae",
+    "reports/snapshot-capture-v56-evidence.json": "41f65e6c46605b02a9449e2e40db89358d43a549f556bd56a22cae603d735d0c"
+  },
+  "scope": "Local targeted persistence, real UI, fixed historical replay/migration/foreign-save continuation, content validation and Android export. Full other-suite/native CI, published asset verification, new frozen native soak and physical Android/human release gates remain separate."
+}

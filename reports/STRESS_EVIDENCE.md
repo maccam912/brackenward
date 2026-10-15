@@ -5,6 +5,81 @@ campaign evidence and physical Android release requirements. The full release
 stress gate, all-alert variant, thirty-minute soak, PSS/battery/thermal measurements
 and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.56 bounded snapshot verification and envelope escaping
+
+Preparation first fully validates its recursively immutable capture, requires
+an equal restored payload, and releases that private validation world. It then
+encodes sorted nested string dictionaries and array blocks of at most 256
+records, including terrain habitat lists. A checker rereads every actual byte,
+key/punctuation/span, value and complete field/array coverage using the original
+root-relative integer/map/tile/depth rules. Each decoded block must equal its
+validated capture counterpart. Integer-key maps and tagged dictionaries retain
+native state semantics. This avoids a second complete decoded validation tree.
+
+A phase probe found that the final envelope still created a complete escaped
+UTF-32 copy. Preparation and prepared publication now assemble that same normal
+envelope in UTF-8 with at most 4096 Unicode code points per native JSON string
+escape. Metadata/digests/escaping match the independent unchanged native encoder
+byte for byte at a fixed timestamp; every published byte is still read back.
+External full decoding and ordinary direct saves retain their original paths.
+The 64 MiB cap, durability guard, schema/content/generator and reviewed fixtures
+remain unchanged. No partial oversized envelope can be published.
+
+Twenty-seven new persistence checks cover array boundaries, nested habitats,
+complete grammar/coverage, empty/incomplete/oversized hostile blocks, wrong
+values/counts/types, original depth/integer/map/tile rejection, immutable ownership,
+full schema/reference/conservation and migration rejection, literal header strings,
+control/Unicode escaping and chunk boundaries, the output cap, all 32 historical
+save fixtures and the complete external codec. Persistence 431 and native UI 667
+pass. The complete 6685958 factory/decoder, legacy encoder and unchanged external
+codec are independently source-checked references.
+
+| Retained input | Reference CPU ms | Candidate CPU ms | Reference sampled heap MiB | Candidate MiB |
+| --- | ---: | ---: | ---: | ---: |
+| Native-44 synthetic endpoint | 252.183 | 256.897 | 29.490 | 11.381 |
+| Fresh-generator-2 ordinary twenty endpoint | 4252.551 | 4176.367 | 448.025 | 172.492 |
+
+Four alternating background pairs per input reproduce complete payload text,
+digest, validation and capture identity. All 32 immutable historical saves match
+in each run. Final temporary preparation peaks fall about 61.4% / 61.5%; CPU is
+about 1.9% higher / 1.8% lower. The ordinary returned payload text alone retains
+about 125 MiB; this is not a claim that all large-save memory has been removed.
+Roughly 1-ms sampling observes process engine heap, with the reference text
+already retained in each baseline. All long campaign workers had finished and
+no other Godot ran during final pairs. The old 0.7.53 ordinary comparison used a
+different earlier endpoint; its numbers are not a same-input improvement ratio.
+
+Exact final source/input/report/log fingerprints and medians are in
+[snapshot-capture-v56-evidence.json](snapshot-capture-v56-evidence.json).
+Intermediate capture-only/tree-only/earlier-envelope runs remain intact. Separate
+phase attribution is diagnostic, not a substitute for these complete pairs or
+for the next frozen thirty-minute native soak. The failed 0.7.55 result below
+remains failed. Physical Android PSS/frame-time/battery/thermal gates remain open.
+
+## Frozen 0.7.55 thirty-minute result: memory failure retained
+
+Clean unchanged `6685958cc27e85dd0a5ab6ef836e939ed160a2b6` completes
+1800.001313 measured seconds after sixty seconds of warmup at selected 2x,
+advancing 36001 ticks against 36000 nominal. All twenty residents remain;
+invariants/storage/logical time, complete final round trip, source identity and
+audio drain pass. All five diagnostic counters are zero. Lowest one-second
+FPS is 28.903, without a below-24 streak.
+
+The **strict 20 MiB sampled peak proxy fails**: peak growth 31719296 bytes
+(30.25 MiB), ending 15317808 (14.6 MiB). Both the original probe and independent
+second audit stay Fail. The final complete payload is byte-identical to the
+frozen native-44 endpoint, canonical
+`4a8fee28b0a01de385fc3bb8bfe48f7df5706c1b291760e7dca36c530303f881`.
+Native-53's earlier 68.6 MiB failure also stays intact; sixty-second samples do
+not align allocation phases, so the difference is not a causal improvement ratio.
+
+No second graphical Godot ran. The task's two ordinary campaign workers were
+paused/resumed by exact process identity, and then completed their independent
+campaign audits. Raw evidence is `native-soak-v6-6685958-quiet-host/`; source,
+completion, probe, audit, save and supervisor fingerprints are retained in
+[native-soak-v55-evidence.json](native-soak-v55-evidence.json).
+This does not certify physical Android PSS/frame times/battery/thermals.
+
 ## 0.7.55 bounded retention while rebasing journals
 
 Prepared rotation previously parsed and retained every decoded historical tick

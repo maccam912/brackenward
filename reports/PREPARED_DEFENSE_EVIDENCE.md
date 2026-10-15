@@ -70,9 +70,26 @@ audit hashes and all thirty endpoint hashes in
 The revised plan above intercepts the advertised approach. Its Pine/0 pilot
 (previously a timer failure) and independent route/raw-save audit now pass:
 defense retreats at 9958 with all four residents at health 100; ransom commits
-at 10317. This mutable-source pilot is **not** a frozen thirty-map pass. The
-25 Python audit checks pass, including six independent route counterexamples.
-The complete revised sweep must earn its own result after source publication.
+at 10317. This mutable-source pilot alone did not certify thirty maps; the complete
+frozen result follows below. The 25 Python audit checks pass, including six
+independent route counterexamples.
+
+## Revised frozen result: all thirty paired solutions pass
+
+Clean unchanged source `6685958cc27e85dd0a5ab6ef836e939ed160a2b6`
+passes **30/30 defense and 30/30 ransom** cases, including a separate second
+audit. All thirty maps and entries are distinct. Every branch retains the four
+original residents at health 100, no zero-fullness ticks, no theft, accepted
+orders, active-incident reload and exact final snapshot/roundtrip. Defenses first
+retreat at ticks 9366–10176, before the 10800 limit; physical ransom commits at
+10297–10442. All normal geometry, eighteen inspected initial goldens and thirty
+real shortest-route midpoint rallies independently verify. No combat rule,
+clock, supplies, damage, equipment or actor position was edited for the new plan.
+
+Raw evidence remains `defense-release-gen2-v6-6685958/`; the complete original
+artifact manifest is unchanged. Source/completion/audit hashes and every endpoint
+are tracked in [prepared-defense-v55-evidence.json](prepared-defense-v55-evidence.json).
+The first frozen 21/30 cart-plan failure above is preserved separately.
 
 Run and independently audit from the same frozen checkout, using a new empty
 report directory:

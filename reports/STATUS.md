@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.55-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.56-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -16,18 +16,18 @@ Checkpoint: `0.7.55-m7` (campaign schema 23, device settings schema 6), content 
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | The user supplied a CPH2655/Adreno 830/Android 36 CPU/frame-gap report from 0.7.24, retained in ANDROID_DEVICE_EVIDENCE.md. Android PSS, brightness-controlled battery and thermal measurements remain Not run. |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `a230331`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38691591666) passed the full suite, all four desktop replay/startup targets, exports and publication, including actual exported Linux startup from an empty directory. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
+| Remote CI | Pass at `6685958`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38694536713) passed the full suite, all four desktop replay/startup targets, exports and publication, including actual exported Linux startup from an empty directory. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
-| M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Fresh v6 Standard-site and Pine Hearthside vegetarian Charters pass all four 96-day cases with eight residents, all stages, Continue and zero zero-fullness/grace-exceeded ticks; independent completion and current 0.7.32 loading audits pass. The earlier v6 29/30 failure is traced to a replanted tree blocking the lodge. The complete clean revised-policy matrix at 7059064 now passes all 30/30 cases, keeping eight residents with zero zero-fullness/grace ticks and passing 23,760 invariant checks; a current 0.7.42 pure-loading audit preserves all thirty endpoints. The revision-1 ordinary twenty-resident campaign passes both full seasonal windows with all twenty alive, zero window starvation and no campaign grace violations. The separate ninety-six additional post-Charter days now pass all four generator-1 cases with preserved origins/commands, eight survivors, no starvation/grace ticks and a final food day. Fresh revision-2 Charters now pass all four 96-day cases, including independent no-trade/vegetarian audits; revision-2 Winter now passes 30/30; the new-map ordinary twenty-resident campaign also passes both full year-three seasonal windows with twenty home residents and health 100 throughout each window. Merchant-material economies pass all four 24-day cases. Fresh post-Charter continuation is running separately. The earlier v4 matrix is 30/30. M7 and physical/human gates remain; older v2/v3/v4 results retain their pinned scopes. |
+| M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Fresh v6 Standard-site and Pine Hearthside vegetarian Charters pass all four 96-day cases with eight residents, all stages, Continue and zero zero-fullness/grace-exceeded ticks; independent completion and current 0.7.32 loading audits pass. The earlier v6 29/30 failure is traced to a replanted tree blocking the lodge. The complete clean revised-policy matrix at 7059064 now passes all 30/30 cases, keeping eight residents with zero zero-fullness/grace ticks and passing 23,760 invariant checks; a current 0.7.42 pure-loading audit preserves all thirty endpoints. The revision-1 ordinary twenty-resident campaign passes both full seasonal windows with all twenty alive, zero window starvation and no campaign grace violations. The separate ninety-six additional post-Charter days now pass all four generator-1 cases with preserved origins/commands, eight survivors, no starvation/grace ticks and a final food day. Fresh revision-2 Charters now pass all four 96-day cases, including independent no-trade/vegetarian audits; revision-2 Winter now passes 30/30; the new-map ordinary twenty-resident campaign also passes both full year-three seasonal windows with twenty home residents and health 100 throughout each window. Merchant-material economies pass all four 24-day cases. Fresh revision-2 post-Charter continuation now passes all four additional 96-day cases with eight survivors, exact original command prefixes, no starvation/grace violations and a final food day. The earlier v4 matrix is 30/30. M7 and physical/human gates remain; older v2/v3/v4 results retain their pinned scopes. |
 | Revision-2 release map sweep | Pass | All 30,000/30,000 independently audited maps (10,000 per site), zero retries/fallbacks; source `d870381`. Inspected boundary goldens and separate actual native/Android initial-map checks retain their scopes. Campaign balance remains separate. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `a230331` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-a23033150de2); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
+| Development APK publication | Pass at `6685958` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-6685958cc27e); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,726 checks, zero failures in their recorded runs, including 667 native UI checks. Trade/economy passes 41 in 0.7.50, adding fourteen policy/physical-transaction checks; charter passes 106. Persistence 404 and UI 667 were freshly verified in 0.7.55 after bounded journal retention; the unchanged reconstruction/complete-reader references remain pinned. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained; the expanded generation suite passes 167 in 0.7.46 and scheduler passes 403 in 0.7.47. Persistence, colony, production and native UI were rerun for the storage-read optimization. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,753 checks, zero failures in their recorded runs, including 667 native UI checks. Trade/economy passes 41 in 0.7.50, adding fourteen policy/physical-transaction checks; charter passes 106. Persistence 431 and UI 667 were freshly verified in 0.7.56 after bounded snapshot verification and envelope escaping; unchanged full validation/encoding/complete-reader references remain pinned. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained; the expanded generation suite passes 167 in 0.7.46 and scheduler passes 403 in 0.7.47. Persistence, colony, production and native UI were rerun for the storage-read optimization. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -3207,11 +3207,13 @@ assets and native evidence are checked separately from that workflow status.
 
 The weekly meter changed from 54% remaining to 99% remaining with a new reset
 window while this checkpoint was being finished. No reset was requested/redeemed
-by the agent. The user has been asked whether to stop at this checkpoint or use
-the renewed allowance to its 50% boundary, following the saved explicit-resume
-preference. Finish current validation/publication and its planned frozen raid/native
-verification; do not begin another development batch without that budget clarification. Fire behavior also remains
-unchanged while the separate overheating preference is pending.
+by the agent. A budget question was raised after applying an older quota-stop
+note too broadly: that note governed resuming an already stopped run. This goal
+remains active under the current user's standing instruction to continue until
+live weekly remaining is below 50%, so that cutoff continues through this reset.
+The question is optional steering; an explicit Stop answer supersedes continued
+work. No answer or preselected option is inferred as a new authorization. Fire
+behavior remains unchanged while its separate design preference is pending.
 
 
 Build 54's downloaded native artifacts independently verify all four source
@@ -3225,3 +3227,77 @@ CI code 207 / `0.7.54-m7+a230331`. Local build 55 exports as code 94 with
 four passing Kotlin tests. `release-polish-v55-evidence.json` records exact
 local validation/APK hashes and confirms every final comparison source remains
 unchanged. New remote CI and full revised matrix/soak are observed separately.
+
+
+The frozen revised interception matrix at `6685958` now passes all thirty
+defense and thirty physical ransom cases, with a separate second audit. Every
+branch keeps the original four residents at health 100, without zero-fullness
+or theft. Thirty distinct maps/entries, all independent geometry, eighteen
+inspected initial goldens, real shortest-route midpoint rallies, exact orders/
+receipts, active-incident reloads and all saved bytes verify. Defense retreats
+9366–10176; ransom commits 10297–10442, both before the 10800 timer. The earlier
+21/30 cart-plan failure stays intact. `prepared-defense-v55-evidence.json` and
+the dedicated report retain all sources and hashes. The final frozen native
+soak has completed with a separate second Fail audit: 30.25 MiB peak exceeds
+the strict 20 MiB proxy; all other duration/population/invariant/storage/fps/
+roundtrip/source checks pass. Its original failed result is retained.
+
+
+Build 55's downloaded native artifacts independently verify all four targets:
+167 generation checks each, 404 persistence on Unix / 403 on Windows, all twelve
+new journal-selection checks, the unchanged 62-command replay/checkpoints,
+foreign-save continuation, schema-22/content-3/4/5 preservation and native startup.
+Intel correctly reports Apple Software Renderer. All three uploaded release
+assets match exact provenance/digests; APK
+`f2ad5838ace1b09a5d3d286fc348c7da10675e46a18ea8be3c35fd02dd31c63a`
+is CI code 208 / `0.7.55-m7+6685958`. Exact evidence is
+`native-ci-v55-evidence.json`.
+
+All four fresh generator-2 post-Charter continuations now pass their separate
+second audit: another 96 days each, eight survivors, exact original initial saves
+and command prefixes, no zero-fullness/grace violations, and a final food day.
+Each reaches 1384200 with 4608 total invariant checks. Exact endpoints, retained
+inputs and file hashes are in `post-charter-gen2-v52-evidence.json` and
+[CAMPAIGN_EVIDENCE.md](CAMPAIGN_EVIDENCE.md). This completes that simulation gate;
+physical performance and human playtesting remain separate.
+
+
+## 0.7.56 bounded snapshot verification and envelope escaping
+
+Full immutable-capture schema/reference/conservation validation now runs before
+serialization and must restore an identical payload without migration/mutation.
+Actual serialized nested fields and at-most-256-record blocks are then parsed
+with the native JSON parser and matched completely against that validated capture,
+retaining all original state/depth/integer/map/tile and byte-coverage rules.
+Private blocks are released rather than retaining a second complete decoded world.
+
+A diagnostic phase probe isolated the remaining full escaped UTF-32 envelope
+copy. Preparation and prepared publication now escape at most 4096 Unicode code
+points per native string block and assemble the same normal UTF-8 envelope.
+Fixed-time reference comparisons cover exact metadata/payload/digests/escaping,
+Unicode/control/chunk boundaries and the unchanged 64 MiB bound. External loading
+and direct saves keep their original codec; publication still reads back exact
+bytes. Twenty-seven added persistence checks pass, including all 32 historical
+saves, full validation rejections and external decoding; persistence is 431,
+native UI 667, maintained total 2753 across 28 suites.
+
+Four alternating final-source pairs reduce sampled temporary preparation heap
+from 29.490 to 11.381 MiB on the retained synthetic endpoint, and from 448.025 to
+172.492 MiB on the fresh-generator-2 ordinary twenty endpoint (about 61% each).
+CPU is about 1.9% higher / 1.8% lower. Complete payload text/digest/ownership and
+all 32 historical fixtures agree with the independently retained 6685958 factory
+and decoder. Final source/input/report fingerprints and caveats are retained in
+`snapshot-capture-v56-evidence.json` and [STRESS_EVIDENCE.md](STRESS_EVIDENCE.md).
+The returned large ordinary payload text itself remains substantial. These are
+component comparisons; a fresh frozen native soak and physical Android tests are
+separate gates. All earlier failed memory evidence remains unchanged.
+
+
+Local 0.7.56 Android export passes as code 95; all four Kotlin storage checks
+pass. Historical replay retains all 62 commands, both reviewed checkpoints,
+foreign-host save continuation and content-3/4/5/schema-22 preservation.
+Content validation and native import pass without script errors. Exact local
+APK/log/replay/source-comparison fingerprints are in
+`release-polish-v56-evidence.json`. Publication and the fresh frozen native soak
+are observed separately. Standing work continues against the live weekly
+remaining threshold; the meter most recently showed 97% remaining after reset.
