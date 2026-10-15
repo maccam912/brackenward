@@ -1,0 +1,1446 @@
+{
+  "passed": true,
+  "build": "0.7.79-m7",
+  "local_android_code": 118,
+  "maintained_gdscript_assertions": 2897,
+  "change": "Lazy trusted-tick edible-definition view keyed by tick and borrowed inventory identity; appended-prefix tracking,shrink/replacement/reset invalidation. Includes all locations,rations and zero rows remaining in the borrowed source. The complete original selector retains every live policy,quantity,reservation,release prediction,ordering,safety and route rule. No serialized field/catalog/rule/wire change.",
+  "fresh_suites": [
+    {
+      "suite": "unit",
+      "assertions": 24,
+      "xml_sha256": "ad3950ae55174291e3a84924266526fbd4b402e54db6b83f8b0c631db33de658",
+      "log_sha256": "798d19a4638e2a36740175fefb818f9fa3e543d96e10763ac2c2ae99225cdbbb"
+    },
+    {
+      "suite": "integration",
+      "assertions": 6,
+      "xml_sha256": "d7e2aa917c24b1702a453f6a8672dc7a6b9d8d68a77e1fbf6e7e8e7f017e1e10",
+      "log_sha256": "f8c661023d28dcb6d730f251d0c893c430f513a03a8689c3e06a1c96a9b26a61"
+    },
+    {
+      "suite": "colony",
+      "assertions": 42,
+      "xml_sha256": "d28c5aaf7e84c68036590092ad798673d43a474a8445e425649623fe4cc3142d",
+      "log_sha256": "6beeef8f855eaaca3d8e3c61b81dd204239a2c41c9679b79268c000bea7a9330"
+    },
+    {
+      "suite": "survival",
+      "assertions": 83,
+      "xml_sha256": "87c4cf42ba315fa4bcb6fb477852cbb932e0d4382b11b176c41f05a946e3e1dc",
+      "log_sha256": "5cd8cdc7a5501bedbfb22e9c479c42da91d4d447a3adbcf11bfffa0508f2ae66"
+    },
+    {
+      "suite": "persistence",
+      "assertions": 502,
+      "xml_sha256": "062bfe87d79cf14cd69041c4865198f016c8013db2bfa30168a52c1ee8b8e894",
+      "log_sha256": "1e6e8ac8702879998bc625e61e85ca87df245b8e6bfcfbe44b388ee6e00a47b9"
+    },
+    {
+      "suite": "seasons",
+      "assertions": 26,
+      "xml_sha256": "a55515d746805620e87086c4d8447fcb694b5bed619553af0533259d21b11fb7",
+      "log_sha256": "b6828abec8cb618b8850b6e0dab9030c5a149b86647f47d88cabf86d6e75cce4"
+    },
+    {
+      "suite": "people",
+      "assertions": 33,
+      "xml_sha256": "5e86f7c738ace4aeba469b9eea9478ca487c91d2f2eaac4ecf01bd76b56ca55e",
+      "log_sha256": "ed7014f5a34abe1140603ff3950255440782f4029229ae0ffcea32dbe1126e47"
+    },
+    {
+      "suite": "production",
+      "assertions": 52,
+      "xml_sha256": "8bb24f0f18fa8a10dfe1d106ac460c4988826ab6284d3612f457c37acee9c22f",
+      "log_sha256": "e22e48d2c362c0a6b7da8054551b43d432646ba4a552887c8d06fc22de910139"
+    },
+    {
+      "suite": "care",
+      "assertions": 55,
+      "xml_sha256": "cc52ef30c03780c7a8917fda9c050c15e68d4133f67a16c8bca26949db5e8c66",
+      "log_sha256": "dedd4278c4d40af6ceada2f12b95f7c0e1834bd2519d3d66c06e45d4e9bd5ff2"
+    },
+    {
+      "suite": "generation",
+      "assertions": 169,
+      "xml_sha256": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+      "log_sha256": "f816b3c03b89a11d8b11a2d285c89a4bcd89d2647368a38268716a825f079e7e"
+    },
+    {
+      "suite": "nature",
+      "assertions": 23,
+      "xml_sha256": "8287a4c7591d164afef805b48a0dce57c66bafa7b7984740ef340203efa2dbf0",
+      "log_sha256": "85c262f04960452729d07fedab9ca41987c6509566fd01ee31a98f9f552f23b8"
+    },
+    {
+      "suite": "wildlife",
+      "assertions": 63,
+      "xml_sha256": "f072cf3923d402297a640fb5390dcac357ba8f8ffb82d462230b6a5cd3bfaf30",
+      "log_sha256": "ffa4f1da4ce9c9e0a8fefd19239a3b1b24cdfc5cf3be5a8b5cbe5d1aa6ddc45a"
+    },
+    {
+      "suite": "domestic",
+      "assertions": 40,
+      "xml_sha256": "9d92f6f3c40b3ba5eb74e4508bd7d7ab58aab4f1bda6933b47a71bb22c326c03",
+      "log_sha256": "179574fdbac223ee599306418f0065d70ee4aab8c790191546b347f6c4ea22c6"
+    },
+    {
+      "suite": "construction",
+      "assertions": 21,
+      "xml_sha256": "5c3a8e938ee274e259c50d4abe7bd26d9b0f1d8f78c16c724e9f270b47a105cc",
+      "log_sha256": "ed244dcf5a39ece06df8a206051e31ad5cdd891d36d1d341f4fefd51212049e1"
+    },
+    {
+      "suite": "equipment",
+      "assertions": 17,
+      "xml_sha256": "a0fe1d26cc74c75688029b87354998b87650eed7624e4794ec6ae1e67a123c07",
+      "log_sha256": "03b18a1d20a1abeeff7f7aada26493e589fb6ad4d3f557eecca2d576f4168dd5"
+    },
+    {
+      "suite": "maintenance",
+      "assertions": 32,
+      "xml_sha256": "0e5f59e929dffef03bebd6b3bd1ba49f8db5a9f311d12c192f92739abbfda605",
+      "log_sha256": "0e702bc53ec1788fe5c612dafb26f9abbfdcc81a47408e7304ff82d8106aad07"
+    },
+    {
+      "suite": "population",
+      "assertions": 57,
+      "xml_sha256": "7f28299353e4f87dd706948546c1a2a8c353798a820e1cac5217fb5626d659bb",
+      "log_sha256": "74730223f0137c452c8dd452ac229bca583a7a9f03db724b91d75bec8ca520a5"
+    },
+    {
+      "suite": "trade",
+      "assertions": 41,
+      "xml_sha256": "cfe7d1743b5ea6314397bbf5954d4b3f6963e12a9cf4b8eca6f8b0507ef4e7a4",
+      "log_sha256": "0c272c36b1201787aa0f4cbdd24890e0b94edd7ea4fb0cd194f6be5702324738"
+    },
+    {
+      "suite": "region",
+      "assertions": 107,
+      "xml_sha256": "d213642423afaf96e9933d5beeb19f5964cbdd0030be00f480474b076e7328fb",
+      "log_sha256": "fdd1a0208363b185cd45edc53af0376c873f091b1580ae332b8806719a18298b"
+    },
+    {
+      "suite": "fire",
+      "assertions": 23,
+      "xml_sha256": "521bee2de7a6e1bb07b3b7db38b75a0e74bab6f68747a3a9c06a4bf688aa139f",
+      "log_sha256": "939ed5bf9acfe8fb61cf66b6a2971dc6aa6f7b8e7000c80370f7932032b64ca9"
+    },
+    {
+      "suite": "defense",
+      "assertions": 81,
+      "xml_sha256": "568ceba0ff61deb8c155f75555a34b42085b0d07597848d7303b71bca50c8342",
+      "log_sha256": "409f469301112de0d7befe6657b88c9a736a3b52f8a48dbbf2794a550cf65551"
+    },
+    {
+      "suite": "director",
+      "assertions": 27,
+      "xml_sha256": "2233f7e4d11970925f71422b882d5fd5222eacbe2c9d7738e99308ac867d655c",
+      "log_sha256": "568cf3232ce24e4fcb9edb5c18d3483e5ff382f45d13a11399cd428753dad256"
+    },
+    {
+      "suite": "opportunity",
+      "assertions": 57,
+      "xml_sha256": "53eeb9fbf405438642fbb92932df37fd1b064e894153e946e07eccf29197ffe3",
+      "log_sha256": "7498ee6875eaf1a7b1bec8ed82fa493226f50544a75d2c99f4d43e1077dbdd64"
+    },
+    {
+      "suite": "charter",
+      "assertions": 106,
+      "xml_sha256": "170a5ff7c4f42870bec75447328db9ce5e05288419562411652bd2e010a09ae4",
+      "log_sha256": "09f676c95ebd32d7dc489f01cdfb368f4a188bec231706094249586774ff8c79"
+    },
+    {
+      "suite": "chronicle",
+      "assertions": 52,
+      "xml_sha256": "24988d3a82071394b0c39875c7b65a91c73b09e9bb0d07b7cd33e386a974398b",
+      "log_sha256": "79bf6491be4026511a3fba86654d2407bd2ca6ebd0a2aabcda2d22a73fba2cd7"
+    },
+    {
+      "suite": "scheduler",
+      "assertions": 433,
+      "xml_sha256": "cbc001290a92ce2358d3e4c5ff9f3057244e34719571600dbb9131b62719e9be",
+      "log_sha256": "896988c057272505d300211e22f1af56a89a2d128f6d97817c9218a2e9ccae73"
+    },
+    {
+      "suite": "tutorial",
+      "assertions": 46,
+      "xml_sha256": "313ba038280b9e6c4f7cba38fceecbd076f26e64ff1b0e6d0daaa382d392ac6b",
+      "log_sha256": "6893b48368189de8f7c0fbb316db465751e166cbf0e37ef11f75e6f29d4ffd0b"
+    },
+    {
+      "suite": "ui",
+      "assertions": 679,
+      "xml_sha256": "1f33e2cc63c1e9473010cc6b83a35e8897e7a74052ebffa989432e763eafbd63",
+      "log_sha256": "220287d6c5a725f6f41698eff35d7a65a48625e36ada46997dbe9708d3222c78"
+    }
+  ],
+  "new_scheduler_assertions": 5,
+  "replay": {
+    "sha256": "f0f933ee064a1204a21b22779bd2da82f24746e698590b1acb1722a2a74f7351",
+    "commands_verified": 62,
+    "all_old_acknowledgements": true,
+    "checkpoint_hashes": [
+      {
+        "canonical_hash": "4640f173ff6aac07e49444a1cb7ffe344fa3ab52b70d66595e1d512f8f520dc0",
+        "snapshot_roundtrip": true,
+        "tick": "7200"
+      },
+      {
+        "canonical_hash": "258a41e5b88bbd65cf1b119f41e8fc07bf205a81ba041bb22e67f8f56940f8db",
+        "snapshot_roundtrip": true,
+        "tick": "72000"
+      }
+    ]
+  },
+  "complete_original_selector_proof": {
+    "source_commit": "25cb2c097d1077a73a437a8cda8d8d23d7e3a1fb",
+    "complete_original_food_selector_exact_except_trailing_separator": true,
+    "current_selector_differs_only_in_candidate_container_helper": true,
+    "original_method_sha256": "9a09d187593fcbabacecb731ed7c704ba22b4ed7e096b4df78c452a9d417f1ca",
+    "reference_sha256": "9a7b43426f74d0ad6e0a42e2cf5884b783a2e784b89bf6861b9772bd2ec066ec"
+  },
+  "authoritative_complete_tick_profiles": [
+    {
+      "case": "late",
+      "file": "reports/food-view-v79-raw/late-versioned-final.json",
+      "sha256": "1cff413163f19599421e2cf986ff7ae5a5a0600eb1be8eecfce0f2dd5cbc12e8",
+      "ticks": 1200,
+      "initial_tick": 25967,
+      "input_sha256": "cafc0b5ca1be82608b8ab4a9002e114c2bda8312ca38988b05f4c3cf2d08b478",
+      "pairs": 4,
+      "metrics": {
+        "elapsed_us": {
+          "reference_median": 4093545.5,
+          "current_median": 4079412.0,
+          "reduction_percent": 0.345263048865585
+        },
+        "max_tick_us": {
+          "reference_median": 67945.5,
+          "current_median": 64878.5,
+          "reduction_percent": 4.513911885260979
+        },
+        "p95_tick_us": {
+          "reference_median": 17455.5,
+          "current_median": 17532.0,
+          "reduction_percent": -0.43825728280484366
+        },
+        "p99_tick_us": {
+          "reference_median": 24042.5,
+          "current_median": 24343.5,
+          "reduction_percent": -1.2519496724550327
+        }
+      },
+      "max_ticks": [
+        26280,
+        26280,
+        26280,
+        26280,
+        26280,
+        26280,
+        26280,
+        26280
+      ],
+      "all_unsorted_states_invariants_input_and_source_exact": true
+    },
+    {
+      "case": "fresh",
+      "file": "reports/food-view-v79-raw/fresh-versioned-final.json",
+      "sha256": "2c6a0d8e4d56a77cfedd7d4b9f4f47e5290041dc2de799cd29e7a6da9e22359a",
+      "ticks": 7200,
+      "initial_tick": 1800,
+      "input_sha256": "",
+      "pairs": 4,
+      "metrics": {
+        "elapsed_us": {
+          "reference_median": 1116966.0,
+          "current_median": 1114734.5,
+          "reduction_percent": 0.1997822673205807
+        },
+        "max_tick_us": {
+          "reference_median": 18979.0,
+          "current_median": 18916.5,
+          "reduction_percent": 0.329311344117178
+        },
+        "p95_tick_us": {
+          "reference_median": 275.5,
+          "current_median": 273.5,
+          "reduction_percent": 0.7259528130671544
+        },
+        "p99_tick_us": {
+          "reference_median": 342.5,
+          "current_median": 342.5,
+          "reduction_percent": 0.0
+        }
+      },
+      "max_ticks": [
+        5400,
+        5400,
+        5400,
+        5400,
+        5400,
+        5400,
+        5400,
+        5400
+      ],
+      "all_unsorted_states_invariants_input_and_source_exact": true
+    },
+    {
+      "case": "ordinary20",
+      "file": "reports/food-view-v79-raw/ordinary20-versioned-final.json",
+      "sha256": "6bf6ff65eabdcad340592b39a18014a89f15c872703f304cefe4b1484df8a312",
+      "ticks": 720,
+      "initial_tick": 693000,
+      "input_sha256": "e93bff9ebfe59ef1557003a15ab8ff7c4422c8e2b7ccc5f4a6e799c9e31c5b9f",
+      "pairs": 4,
+      "metrics": {
+        "elapsed_us": {
+          "reference_median": 2895028.5,
+          "current_median": 2881468.5,
+          "reduction_percent": 0.46838917129831126
+        },
+        "max_tick_us": {
+          "reference_median": 128355.5,
+          "current_median": 125009.5,
+          "reduction_percent": 2.606822457939084
+        },
+        "p95_tick_us": {
+          "reference_median": 11638.5,
+          "current_median": 11617.0,
+          "reduction_percent": 0.1847317094127221
+        },
+        "p99_tick_us": {
+          "reference_median": 19595.5,
+          "current_median": 19511.0,
+          "reduction_percent": 0.43122145390522837
+        }
+      },
+      "max_ticks": [
+        693240,
+        693240,
+        693240,
+        693240,
+        693240,
+        693240,
+        693240,
+        693240
+      ],
+      "all_unsorted_states_invariants_input_and_source_exact": true
+    }
+  ],
+  "timing_interpretation": "Late median max tick26280 improves4.51percent. Total medians improve less than0.5percent in all three cases; late p95/p99 slightly worsen. Wider tick budget is not resolved. Fresh/legacy max differences are not attributed to food cache. Per-tick observer overhead and host scheduling included.",
+  "legacy_ordinary_scope": "Actual v6 ordinary-twenty96day endpoint693000 decoded with current migration,then720current future ticks compared to complete25cb selector. Not a new96day v7campaign.",
+  "initial_prototype_failure_retained": {
+    "failure_report_sha256": "0ce9288bc4dfcac3ab011505156747f2bdf656165218300912624970b8e517a0",
+    "source_sha256": "a10ee5cf2a38268554822f8f2c76f56450a8bb357710a8c5e08ea39b3f358857",
+    "test_sha256": "e4dbda018d44b71fe6a726b1142853c76cec91ac6448de59dbef8c8babfc4c02",
+    "failure": {
+      "detail": "",
+      "name": "FOOD/same_size_replaced_borrowed_inventory_uses_new_live_rows"
+    },
+    "scope": "Three-field tick/count prototype missed equal-size borrowed inventory replacement. Exact failing sources retained; final four-field identity guard passes five targeted tests and all final suites. Preliminary pre-version3field late profile remains obsolete scope."
+  },
+  "mechanism_diagnosis": {
+    "report_sha256": "b5c8e3e1960f03833fc4fea311effb265263bf81e6e90ccafe517b89f4f24603",
+    "exact_unsorted_ordinary_twin": true,
+    "calls": 20,
+    "array_reuses": 19,
+    "inventory_rows": 1059,
+    "candidate_rows": 139,
+    "phases": {
+      "ColonyAgriculture.advance": {
+        "calls": 1200,
+        "max_tick": 26161,
+        "max_us": 99,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 76468
+      },
+      "ColonyAgriculture.create_jobs": {
+        "calls": 120,
+        "max_tick": 26240,
+        "max_us": 719,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 59820
+      },
+      "ColonyCare.advance": {
+        "calls": 1200,
+        "max_tick": 25968,
+        "max_us": 1388,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 66045
+      },
+      "ColonyCare.create_jobs": {
+        "calls": 120,
+        "max_tick": 26300,
+        "max_us": 13,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 757
+      },
+      "ColonyCharter.advance": {
+        "calls": 1200,
+        "max_tick": 26070,
+        "max_us": 9605,
+        "over_16ms": 0,
+        "over_4ms": 3,
+        "over_50ms": 0,
+        "total_us": 231184
+      },
+      "ColonyCharter.begin_tick": {
+        "calls": 1200,
+        "max_tick": 26062,
+        "max_us": 2,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 706
+      },
+      "ColonyChronicle.advance": {
+        "calls": 1200,
+        "max_tick": 26290,
+        "max_us": 9,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 690
+      },
+      "ColonyCombat.resolve": {
+        "calls": 1200,
+        "max_tick": 26183,
+        "max_us": 115,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 82524
+      },
+      "ColonyConstruction.create_helpers": {
+        "calls": 120,
+        "max_tick": 26060,
+        "max_us": 791,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 16245
+      },
+      "ColonyDefense.advance": {
+        "calls": 1200,
+        "max_tick": 25968,
+        "max_us": 12,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 3064
+      },
+      "ColonyDirector.advance": {
+        "calls": 1200,
+        "max_tick": 26151,
+        "max_us": 3,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 730
+      },
+      "ColonyDomestic.advance": {
+        "calls": 1200,
+        "max_tick": 26289,
+        "max_us": 6,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1481
+      },
+      "ColonyDomestic.create_jobs": {
+        "calls": 120,
+        "max_tick": 26200,
+        "max_us": 1050,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 105586
+      },
+      "ColonyEquipment.create_jobs": {
+        "calls": 120,
+        "max_tick": 26930,
+        "max_us": 643,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 67295
+      },
+      "ColonyFire.create_jobs": {
+        "calls": 120,
+        "max_tick": 26500,
+        "max_us": 7,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 319
+      },
+      "ColonyLiving.advance": {
+        "calls": 1200,
+        "max_tick": 26400,
+        "max_us": 1271,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 343529
+      },
+      "ColonyNature.advance": {
+        "calls": 1200,
+        "max_tick": 26691,
+        "max_us": 5,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1452
+      },
+      "ColonyNature.create_jobs": {
+        "calls": 120,
+        "max_tick": 26450,
+        "max_us": 534,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 42369
+      },
+      "ColonyOpportunities.advance": {
+        "calls": 1200,
+        "max_tick": 27090,
+        "max_us": 162,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 54806
+      },
+      "ColonyPopulation.advance": {
+        "calls": 1200,
+        "max_tick": 25971,
+        "max_us": 2,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 699
+      },
+      "ColonyProduction.create_jobs": {
+        "calls": 120,
+        "max_tick": 25970,
+        "max_us": 2444,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 243000
+      },
+      "ColonyRegion.advance": {
+        "calls": 1200,
+        "max_tick": 26136,
+        "max_us": 6,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1076
+      },
+      "ColonySocial.advance": {
+        "calls": 1200,
+        "max_tick": 26421,
+        "max_us": 261,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 240251
+      },
+      "ColonyTrade.advance": {
+        "calls": 1200,
+        "max_tick": 26916,
+        "max_us": 7,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 906
+      },
+      "ColonyWeather.advance": {
+        "calls": 1200,
+        "max_tick": 26886,
+        "max_us": 8,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 951
+      },
+      "ColonyWildlife.advance": {
+        "calls": 1200,
+        "max_tick": 26100,
+        "max_us": 2785,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 408098
+      },
+      "_assign": {
+        "calls": 2400,
+        "max_tick": 26430,
+        "max_us": 7090,
+        "over_16ms": 0,
+        "over_4ms": 7,
+        "over_50ms": 0,
+        "total_us": 741390
+      },
+      "_create_work": {
+        "calls": 120,
+        "max_tick": 25970,
+        "max_us": 9775,
+        "over_16ms": 0,
+        "over_4ms": 3,
+        "over_50ms": 0,
+        "total_us": 246090
+      },
+      "_needs": {
+        "calls": 24000,
+        "max_tick": 26244,
+        "max_us": 32,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 55908
+      },
+      "_work": {
+        "calls": 23951,
+        "max_tick": 26460,
+        "max_us": 12620,
+        "over_16ms": 0,
+        "over_4ms": 5,
+        "over_50ms": 0,
+        "total_us": 480641
+      },
+      "assignment/candidate_collect": {
+        "calls": 9,
+        "max_tick": 26520,
+        "max_us": 380,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 2447
+      },
+      "assignment/destination": {
+        "calls": 2470,
+        "max_tick": 26650,
+        "max_us": 6,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 2676
+      },
+      "assignment/emergency_candidates": {
+        "calls": 42,
+        "max_tick": 26500,
+        "max_us": 96,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 2059
+      },
+      "assignment/emergency_probe": {
+        "calls": 2386,
+        "max_tick": 26460,
+        "max_us": 141,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 108186
+      },
+      "assignment/food": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 1329,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 18167
+      },
+      "assignment/heap_construct": {
+        "calls": 9,
+        "max_tick": 26430,
+        "max_us": 606,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 4915
+      },
+      "assignment/nonempty_stacks": {
+        "calls": 7,
+        "max_tick": 26430,
+        "max_us": 144,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 810
+      },
+      "assignment/open_jobs": {
+        "calls": 2400,
+        "max_tick": 26280,
+        "max_us": 410,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 312368
+      },
+      "assignment/release": {
+        "calls": 28,
+        "max_tick": 26690,
+        "max_us": 317,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 6128
+      },
+      "assignment/reservation_jobs": {
+        "calls": 39,
+        "max_tick": 26280,
+        "max_us": 56,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1257
+      },
+      "assignment/reserve/build": {
+        "calls": 9,
+        "max_tick": 26070,
+        "max_us": 1174,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 6742
+      },
+      "assignment/reserve/cook": {
+        "calls": 1,
+        "max_tick": 26500,
+        "max_us": 1504,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1504
+      },
+      "assignment/reserve/eat": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 1106,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 19890
+      },
+      "assignment/reserve/haul": {
+        "calls": 2475,
+        "max_tick": 26460,
+        "max_us": 61,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 24074
+      },
+      "assignment/sort_jobs": {
+        "calls": 43,
+        "max_tick": 27080,
+        "max_us": 1328,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1370
+      },
+      "assignment/storage_context": {
+        "calls": 7,
+        "max_tick": 26650,
+        "max_us": 365,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 2267
+      },
+      "assignment/treatment_wait": {
+        "calls": 2400,
+        "max_tick": 26460,
+        "max_us": 194,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 113403
+      },
+      "assignment/unfinished_jobs": {
+        "calls": 120,
+        "max_tick": 26700,
+        "max_us": 239,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 23461
+      },
+      "food/inventory_scan": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 397,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 4548
+      },
+      "food/reachability": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 760,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 7208
+      },
+      "food/sort": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 351,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 6308
+      },
+      "reserve/held_inputs_scan": {
+        "calls": 30,
+        "max_tick": 26090,
+        "max_us": 459,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 11738
+      },
+      "reserve/input_selection": {
+        "calls": 30,
+        "max_tick": 26500,
+        "max_us": 555,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 3991
+      },
+      "reserve/meal_seat": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 515,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 9415
+      },
+      "work_budget": {
+        "calls": 2520,
+        "max_tick": 25968,
+        "max_us": 5418,
+        "over_16ms": 0,
+        "over_4ms": 33,
+        "over_50ms": 0,
+        "total_us": 501656
+      }
+    },
+    "old_report_sha256": "d2e07fe169491ebf875b77092c89c0b0d10626659a7e724b126d45e0c47d53d0",
+    "old_phases": {
+      "ColonyAgriculture.advance": {
+        "calls": 1200,
+        "max_tick": 26471,
+        "max_us": 98,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 78553
+      },
+      "ColonyAgriculture.create_jobs": {
+        "calls": 120,
+        "max_tick": 26730,
+        "max_us": 767,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 63170
+      },
+      "ColonyCare.advance": {
+        "calls": 1200,
+        "max_tick": 25968,
+        "max_us": 1369,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 68165
+      },
+      "ColonyCare.create_jobs": {
+        "calls": 120,
+        "max_tick": 26730,
+        "max_us": 15,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 972
+      },
+      "ColonyCharter.advance": {
+        "calls": 1200,
+        "max_tick": 26070,
+        "max_us": 9777,
+        "over_16ms": 0,
+        "over_4ms": 3,
+        "over_50ms": 0,
+        "total_us": 238537
+      },
+      "ColonyCharter.begin_tick": {
+        "calls": 1200,
+        "max_tick": 26574,
+        "max_us": 6,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 741
+      },
+      "ColonyChronicle.advance": {
+        "calls": 1200,
+        "max_tick": 26700,
+        "max_us": 7,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 748
+      },
+      "ColonyCombat.resolve": {
+        "calls": 1200,
+        "max_tick": 26394,
+        "max_us": 146,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 85558
+      },
+      "ColonyConstruction.create_helpers": {
+        "calls": 120,
+        "max_tick": 26060,
+        "max_us": 755,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 16628
+      },
+      "ColonyDefense.advance": {
+        "calls": 1200,
+        "max_tick": 25968,
+        "max_us": 11,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 3356
+      },
+      "ColonyDirector.advance": {
+        "calls": 1200,
+        "max_tick": 26038,
+        "max_us": 8,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 837
+      },
+      "ColonyDomestic.advance": {
+        "calls": 1200,
+        "max_tick": 26472,
+        "max_us": 8,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1579
+      },
+      "ColonyDomestic.create_jobs": {
+        "calls": 120,
+        "max_tick": 26450,
+        "max_us": 1113,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 109987
+      },
+      "ColonyEquipment.create_jobs": {
+        "calls": 120,
+        "max_tick": 26390,
+        "max_us": 652,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 69689
+      },
+      "ColonyFire.create_jobs": {
+        "calls": 120,
+        "max_tick": 26870,
+        "max_us": 17,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 351
+      },
+      "ColonyLiving.advance": {
+        "calls": 1200,
+        "max_tick": 26100,
+        "max_us": 1252,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 355914
+      },
+      "ColonyNature.advance": {
+        "calls": 1200,
+        "max_tick": 26686,
+        "max_us": 8,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1597
+      },
+      "ColonyNature.create_jobs": {
+        "calls": 120,
+        "max_tick": 26730,
+        "max_us": 450,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 43458
+      },
+      "ColonyOpportunities.advance": {
+        "calls": 1200,
+        "max_tick": 26760,
+        "max_us": 137,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 60891
+      },
+      "ColonyPopulation.advance": {
+        "calls": 1200,
+        "max_tick": 26361,
+        "max_us": 16,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 817
+      },
+      "ColonyProduction.create_jobs": {
+        "calls": 120,
+        "max_tick": 26070,
+        "max_us": 2531,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 255131
+      },
+      "ColonyRegion.advance": {
+        "calls": 1200,
+        "max_tick": 26992,
+        "max_us": 25,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1147
+      },
+      "ColonySocial.advance": {
+        "calls": 1200,
+        "max_tick": 26722,
+        "max_us": 259,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 248476
+      },
+      "ColonyTrade.advance": {
+        "calls": 1200,
+        "max_tick": 26621,
+        "max_us": 10,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 987
+      },
+      "ColonyWeather.advance": {
+        "calls": 1200,
+        "max_tick": 27112,
+        "max_us": 6,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 982
+      },
+      "ColonyWildlife.advance": {
+        "calls": 1200,
+        "max_tick": 26100,
+        "max_us": 2910,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 420278
+      },
+      "_assign": {
+        "calls": 2400,
+        "max_tick": 26480,
+        "max_us": 7439,
+        "over_16ms": 0,
+        "over_4ms": 7,
+        "over_50ms": 0,
+        "total_us": 766621
+      },
+      "_create_work": {
+        "calls": 120,
+        "max_tick": 25970,
+        "max_us": 9958,
+        "over_16ms": 0,
+        "over_4ms": 3,
+        "over_50ms": 0,
+        "total_us": 263848
+      },
+      "_needs": {
+        "calls": 24000,
+        "max_tick": 26113,
+        "max_us": 43,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 57701
+      },
+      "_work": {
+        "calls": 23951,
+        "max_tick": 26460,
+        "max_us": 12871,
+        "over_16ms": 0,
+        "over_4ms": 5,
+        "over_50ms": 0,
+        "total_us": 509515
+      },
+      "assignment/candidate_collect": {
+        "calls": 9,
+        "max_tick": 26480,
+        "max_us": 400,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 2747
+      },
+      "assignment/destination": {
+        "calls": 2470,
+        "max_tick": 26520,
+        "max_us": 21,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 2774
+      },
+      "assignment/emergency_candidates": {
+        "calls": 42,
+        "max_tick": 26500,
+        "max_us": 98,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 2120
+      },
+      "assignment/emergency_probe": {
+        "calls": 2386,
+        "max_tick": 26470,
+        "max_us": 160,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 111315
+      },
+      "assignment/food": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 1506,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 21842
+      },
+      "assignment/heap_construct": {
+        "calls": 9,
+        "max_tick": 26650,
+        "max_us": 605,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 5066
+      },
+      "assignment/nonempty_stacks": {
+        "calls": 7,
+        "max_tick": 26520,
+        "max_us": 173,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 891
+      },
+      "assignment/open_jobs": {
+        "calls": 2400,
+        "max_tick": 26280,
+        "max_us": 354,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 320064
+      },
+      "assignment/release": {
+        "calls": 28,
+        "max_tick": 27120,
+        "max_us": 316,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 6347
+      },
+      "assignment/reservation_jobs": {
+        "calls": 39,
+        "max_tick": 27080,
+        "max_us": 51,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1304
+      },
+      "assignment/reserve/build": {
+        "calls": 9,
+        "max_tick": 26070,
+        "max_us": 1185,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 6756
+      },
+      "assignment/reserve/cook": {
+        "calls": 1,
+        "max_tick": 26500,
+        "max_us": 1638,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1638
+      },
+      "assignment/reserve/eat": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 1101,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 20801
+      },
+      "assignment/reserve/haul": {
+        "calls": 2475,
+        "max_tick": 26650,
+        "max_us": 45,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 25238
+      },
+      "assignment/sort_jobs": {
+        "calls": 43,
+        "max_tick": 27080,
+        "max_us": 1345,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 1383
+      },
+      "assignment/storage_context": {
+        "calls": 7,
+        "max_tick": 26520,
+        "max_us": 410,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 2455
+      },
+      "assignment/treatment_wait": {
+        "calls": 2400,
+        "max_tick": 26460,
+        "max_us": 168,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 115521
+      },
+      "assignment/unfinished_jobs": {
+        "calls": 120,
+        "max_tick": 26230,
+        "max_us": 274,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 24571
+      },
+      "food/inventory_scan": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 426,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 7600
+      },
+      "food/reachability": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 805,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 7519
+      },
+      "food/sort": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 355,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 6605
+      },
+      "reserve/held_inputs_scan": {
+        "calls": 30,
+        "max_tick": 26650,
+        "max_us": 444,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 12114
+      },
+      "reserve/input_selection": {
+        "calls": 30,
+        "max_tick": 26500,
+        "max_us": 585,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 4059
+      },
+      "reserve/meal_seat": {
+        "calls": 20,
+        "max_tick": 26280,
+        "max_us": 548,
+        "over_16ms": 0,
+        "over_4ms": 0,
+        "over_50ms": 0,
+        "total_us": 9957
+      },
+      "work_budget": {
+        "calls": 2520,
+        "max_tick": 25968,
+        "max_us": 5605,
+        "over_16ms": 0,
+        "over_4ms": 38,
+        "over_50ms": 0,
+        "total_us": 525079
+      }
+    },
+    "scope": "Read-only complete-tick instrumentation. Nested stages overlap; old/current component samples are diagnostic,not a controlled paired phone/CPU estimate. Final full-tick paired measurements are authoritative timing scope."
+  },
+  "android_artifact": {
+    "passed": true,
+    "exit_code": 0,
+    "wall_seconds": 7.085272958036512,
+    "local_code": 118,
+    "apk_sha256": "b29ac9f5ac92ef71db7155be6085cca04c4d4f3c29cf4e41b9a8bf552a309a97",
+    "kotlin_xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "kotlin_tests": 4,
+    "kotlin_status": "UP-TO-DATE",
+    "adb_daemon_connection_refused_present": true,
+    "scope": "Export and actual metadata/artifact audit; no emulator or physical install."
+  },
+  "source_sha256": {
+    "src/sim/colony_world.gd": "e702c8feae8008f1ac2ea2382b0bc2d99bbc0a1de9f5a174c68bd98ba389f014",
+    "tools/food_candidates_tests.gd": "5dcd5268e2a538c8c37608b9dfafc0c440f65611bd13d4504e3b24f31e1deaae",
+    "tools/food_candidates_reference.gd": "9a7b43426f74d0ad6e0a42e2cf5884b783a2e784b89bf6861b9772bd2ec066ec",
+    "tools/profile_food_candidates.gd": "b5ea9c35ec8eac8528364c0e2c29b062ae8ee7187544ed853790de62858c99a2",
+    "tools/run_suite.gd": "618731139f25c1f76f19dfcb1f59d5ca8c5e1dafcdf4beb61b41791f89028494",
+    "project.godot": "9708104529805ff36b208fa585af774ae454483b92c81cb9859a1b558eeb56ac",
+    "export_presets.cfg": "4048cea0f107eb77076677f0e1e81dc9394d5d6d04d393bfd89dd752adcae21b"
+  },
+  "raw_sha256": {
+    "apk-artifact-audit.json": "5e712dc1f5f52780acc915e6bbdd4d9545e22c4e01f17190c358b141b48bfd5a",
+    "apk-final-completion.json": "acbc8da4d580e1f6d9e5f9e2f68bd9f3820368f2d1289887d7c3478f978b3949",
+    "apk-final.log": "dd797ea7013648329f2f9ceaaf895aeba1292c03fe7a10d104e29313798cff17",
+    "care-final.log": "dedd4278c4d40af6ceada2f12b95f7c0e1834bd2519d3d66c06e45d4e9bd5ff2",
+    "charter-final.log": "09f676c95ebd32d7dc489f01cdfb368f4a188bec231706094249586774ff8c79",
+    "chronicle-final.log": "79bf6491be4026511a3fba86654d2407bd2ca6ebd0a2aabcda2d22a73fba2cd7",
+    "colony-final.log": "6beeef8f855eaaca3d8e3c61b81dd204239a2c41c9679b79268c000bea7a9330",
+    "colony-world-three-field-prototype.gd": "a10ee5cf2a38268554822f8f2c76f56450a8bb357710a8c5e08ea39b3f358857",
+    "construction-final.log": "ed244dcf5a39ece06df8a206051e31ad5cdd891d36d1d341f4fefd51212049e1",
+    "content-final.log": "e14039489855c74c0a1a50a1e358cffdf1c86b721cf6158411a16852a17ec68e",
+    "current-diagnosis-final.json": "b5c8e3e1960f03833fc4fea311effb265263bf81e6e90ccafe517b89f4f24603",
+    "current-diagnosis-final.log": "61e3c3547d91b694434e5f8ee6ace0430f7eb1096731c1e18a98bbd283aeeeac",
+    "current-diagnosis-provenance.json": "cf93ddb300f01c1b5c48fa76814e9cb2d94ccf7fbf8a0ad55e97ac8a815b92dc",
+    "current-diagnosis.gd": "645a390288dd10e7e8f374619fb3be245b7b1e6cc4e484ec5a192ecbd4ab1b84",
+    "current-diagnosis.json": "bb28cddf51d2d96865b94363db6b6f538f02777b2a156b6fc8f265edd54b4470",
+    "current-diagnosis.log": "b412fa9665888b4486aae8c0551231ebd6322a037e23146f4f5bcf324b0210a7",
+    "defense-final.log": "409f469301112de0d7befe6657b88c9a736a3b52f8a48dbbf2794a550cf65551",
+    "director-final.log": "568cf3232ce24e4fcb9edb5c18d3483e5ff382f45d13a11399cd428753dad256",
+    "domestic-final.log": "179574fdbac223ee599306418f0065d70ee4aab8c790191546b347f6c4ea22c6",
+    "equipment-final.log": "03b18a1d20a1abeeff7f7aada26493e589fb6ad4d3f557eecca2d576f4168dd5",
+    "final-profiles-other-completion.json": "0dc31f8bac4b0f073937b33dadf9cc8cb4f5e481a3d1cf40297961ed4f715b36",
+    "final-profiles-other.log": "05b05602b2bdb9a2677cf018e9b6be4898b3bf93d60b40c65c72d8ac3f8ffa4d",
+    "fire-final.log": "939ed5bf9acfe8fb61cf66b6a2971dc6aa6f7b8e7000c80370f7932032b64ca9",
+    "food-candidates-tests-before-identity-fix.gd": "e4dbda018d44b71fe6a726b1142853c76cec91ac6448de59dbef8c8babfc4c02",
+    "fresh-versioned-final.json": "2c6a0d8e4d56a77cfedd7d4b9f4f47e5290041dc2de799cd29e7a6da9e22359a",
+    "fresh-versioned-final.log": "b52d45f2b52b24f41e218d95c785e00b9fafa500aa39b149deb51e01a7d39f17",
+    "generation-final.log": "f816b3c03b89a11d8b11a2d285c89a4bcd89d2647368a38268716a825f079e7e",
+    "headless-validation-progress.json": "2cdff2f0ba68a34cf5919ee28855d5da30669ff090cf40540e1dd66366bc3874",
+    "headless-validation.log": "2ec0c45f9f3249b30c192464f9aaea221485dfb795ff02a671ec55bcf11650a0",
+    "import-first.log": "53a4a3329a1f3896be79574b90f9770b7713163c9e6c7d8f441eea9099ecbe4c",
+    "integration-final.log": "f8c661023d28dcb6d730f251d0c893c430f513a03a8689c3e06a1c96a9b26a61",
+    "late-prototype.json": "bd4e980ba4cbdc09cc8c9aeb86370e90221091dde64342fd48045591d17e4364",
+    "late-prototype.log": "b52d45f2b52b24f41e218d95c785e00b9fafa500aa39b149deb51e01a7d39f17",
+    "late-versioned-final.json": "1cff413163f19599421e2cf986ff7ae5a5a0600eb1be8eecfce0f2dd5cbc12e8",
+    "late-versioned-final.log": "b52d45f2b52b24f41e218d95c785e00b9fafa500aa39b149deb51e01a7d39f17",
+    "maintenance-final.log": "0e702bc53ec1788fe5c612dafb26f9abbfdcc81a47408e7304ff82d8106aad07",
+    "message-tests-final.log": "888a0c0ed615e57d32cf72be501b0c355f33b8613c81dfdaa99db33d7959487e",
+    "nature-final.log": "85c262f04960452729d07fedab9ca41987c6509566fd01ee31a98f9f552f23b8",
+    "opportunity-final.log": "7498ee6875eaf1a7b1bec8ed82fa493226f50544a75d2c99f4d43e1077dbdd64",
+    "ordinary20-versioned-final.json": "6bf6ff65eabdcad340592b39a18014a89f15c872703f304cefe4b1484df8a312",
+    "ordinary20-versioned-final.log": "b52d45f2b52b24f41e218d95c785e00b9fafa500aa39b149deb51e01a7d39f17",
+    "people-final.log": "ed7014f5a34abe1140603ff3950255440782f4029229ae0ffcea32dbe1126e47",
+    "persistence-final.log": "1e6e8ac8702879998bc625e61e85ca87df245b8e6bfcfbe44b388ee6e00a47b9",
+    "population-final.log": "74730223f0137c452c8dd452ac229bca583a7a9f03db724b91d75bec8ca520a5",
+    "production-final.log": "e22e48d2c362c0a6b7da8054551b43d432646ba4a552887c8d06fc22de910139",
+    "reference-equivalence.json": "beb739639844576fdaa9a6aa098a6a09d30871b736a8c2f2be554caffdcd267e",
+    "region-final.log": "fdd1a0208363b185cd45edc53af0376c873f091b1580ae332b8806719a18298b",
+    "replay-final-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "replay-final-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "replay-final-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "replay-final-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+    "replay-final-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "replay-final.json": "f0f933ee064a1204a21b22779bd2da82f24746e698590b1acb1722a2a74f7351",
+    "replay-final.log": "8a06a9ad4516cd814bb487e2c7809b3dbb137be20e20b0440991069e70fb8c0b",
+    "scheduler-final.log": "896988c057272505d300211e22f1af56a89a2d128f6d97817c9218a2e9ccae73",
+    "scheduler-first.log": "c3a9841ecec4e8c96c36ba007ebd455aac3e009826fe1aebd3ff1330ef7397ed",
+    "seasons-final.log": "b6828abec8cb618b8850b6e0dab9030c5a149b86647f47d88cabf86d6e75cce4",
+    "survival-final.log": "5cd8cdc7a5501bedbfb22e9c479c42da91d4d447a3adbcf11bfffa0508f2ae66",
+    "targeted-after-identity-fix.json": "5c1d9aba41d3581563867beb8977df7b6afa42e14febb5a70f79350459c2a0a4",
+    "targeted-after-identity-fix.log": "7530670597df7076433494650b914f2719c4c2aa4231253ee8310b6460440d4b",
+    "targeted-before-identity-fix.json": "0ce9288bc4dfcac3ab011505156747f2bdf656165218300912624970b8e517a0",
+    "targeted-before-identity-fix.log": "42b6cdcc4a02b28dcdc43a9c770959a04bdb9b989e986e086c6fa937928ed1bf",
+    "targeted-tests.gd": "26ec3d38ae8363fd401634871738967406a9c5d70208a56a47a01e7c8d41ad25",
+    "trade-final.log": "0c272c36b1201787aa0f4cbdd24890e0b94edd7ea4fb0cd194f6be5702324738",
+    "tutorial-final.log": "6893b48368189de8f7c0fbb316db465751e166cbf0e37ef11f75e6f29d4ffd0b",
+    "ui-final.log": "220287d6c5a725f6f41698eff35d7a65a48625e36ada46997dbe9708d3222c78",
+    "unit-final.log": "798d19a4638e2a36740175fefb818f9fa3e543d96e10763ac2c2ae99225cdbbb",
+    "wildlife-final.log": "ffa4f1da4ce9c9e0a8fefd19239a3b1b24cdfc5cf3be5a8b5cbe5d1aa6ddc45a"
+  },
+  "meal_diagnostic_raw_sha256": {
+    "assignment-body-base-generation-proof.json": "4438af2f51f42513f2896636b5c34eb9cf7f5efb476c0bd2d16ccf3d41169099",
+    "assignment-body-equivalence.json": "5e55caf7c1a2f56fcdc898b51ac4cf16de3011b07ebb5f019378d83e9b69df35",
+    "assignment-phases.gd": "1332a18d75e556576e4cd3691085e54990cd4b459e42ffac0d76d17d41512c26",
+    "late-first.json": "d2e07fe169491ebf875b77092c89c0b0d10626659a7e724b126d45e0c47d53d0",
+    "late-first.log": "285e479dec7888ce342294071ec5b4ad4f8c9db43126da0bfb6e0457efdd38aa",
+    "meal-body-equivalence.json": "bc56425124ed49a868d98f238c83495a3a2147db5c17ae25812c923f62acce89"
+  },
+  "scope": "All27headless suites fresh,then full nativeGUI679/replay62/content671/messages5/export118. Final timing profiles had no other native GUI/emulator/benchmark; headless/artifact work afterward. Native75duration pass and unresolved frame-growth/tick-budget observations retain scope. Current79native/CI/publication pending; no physical Android/PSS/thermal/battery/human certification."
+}

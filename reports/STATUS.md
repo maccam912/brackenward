@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.78-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.79-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -18,7 +18,7 @@ Checkpoint: `0.7.78-m7` (campaign schema 23, device settings schema 6), content 
 | Native thirty-minute twenty-resident proxy | Pass at `4515ea6` / v7; later revisions separate | Frozen 75 completes 1,800.006347 seconds at 2x, 36,000 ticks from 3,002 to 39,002, twenty residents and zero counters; lowest one-second FPS is 28.587. Sampled peak/ending growth of 15,468,248 bytes passes the unchanged 20 MiB proxy and separate second audit. Actual endpoint matches the old 63 retry after one current alignment tick, without normalization. A late frame peak of 36,017,872 bytes remains unresolved. Earlier failures and physical/PSS/thermal gates remain separate. |
 | Twenty-resident simulation tick budget | Not yet met in latest native proxy | The 36,000 individual ticks in 75 average 5.033 ms, with a 91.190 ms maximum. The p95/p99 bucket upper bound is 33.334 ms; p95 is above 25 ms versus the 4 ms target. Frame-gap p95/p99 bounds are 36/50 ms at the 30 FPS cap. Wall callbacks include host scheduling and worker overlap. Further scheduler/route work and physical validation remain. |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `f887763`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38782604908) passes 28 suites / 2,889 assertions, Kotlin 4, 768 maps and all four actual native replay/migration/persistence/startup targets. native-ci-v76/77-evidence.json audit both revisions and their exact publications. Current 78 CI and physical certification remain separate. |
+| Remote CI | Pass at `25cb2c0`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38786789304) passes 28 suites / 2,892 assertions, Kotlin 4, 768 maps and all four actual native replay/migration/persistence/startup targets. native-ci-v78-evidence.json audits the exact artifacts and publication. Current 79 CI and physical certification remain separate. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
@@ -27,9 +27,9 @@ Checkpoint: `0.7.78-m7` (campaign schema 23, device settings schema 6), content 
 | M3–M6 gameplay and progression | Implemented; pinned v7 Charter/Winter/raid and broader v6 evidence | Frozen current-v7 generator-2 policies pass all four 96-day Charters and separate no-barter/import audits, all 30 first-Winter maps, and 30 paired prepared-defense/physical-ransom cases. All four v7 post-Charter origins also complete96additional days (192 total), preserving original command prefixes with no zero fullness/grace violations. Four current-v7 imported-cloth economies also pass24days with exact physical purchases/sewing/delivery and eight healthy residents. The v7 ordinary twenty-person seasonal rerun now passes its full96days and separate audit:20home residents for every tick of both seasonal windows,health100 within each window and whole-campaign minimum72. Pinned generator-2 v6 ordinary twenty-resident seasonal windows, four additional 96-day post-Charter cases, first-week and merchant-material economies pass in their recorded scopes; earlier failures remain retained. M7 physical/human gates remain open. |
 | Revision-2 release map sweep | Pass, pinned current v7 | Current-v7 source `424f897` passes all30,000 maps (10,000/site), independent geometry/quantity checks and separate second audit, zero retries/fallbacks. Original v6 full sweep/boundary goldens remain untouched. Balance and physical/human gates remain separate. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `f887763` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-f88776342883), code 230 / 0.7.77-m7+f887763, APK SHA-256 `071a66a3b23e7dba83a86f4cd405ec455617f20bf29c8fc93957c838a1b42cd9`. Four-host artifacts, 28 suites / 2,889 assertions, Kotlin 4 and exact published assets audited. Current 78 publication and production signing/store release remain separate. |
+| Development APK publication | Pass at `25cb2c0` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-25cb2c097d10), code 231 / 0.7.78-m7+25cb2c0, APK SHA-256 `a1e7e5c3eac078074cc803eb715dbb67359aed3102263ab9369087aebed1ee68`. Four-host artifacts, 28 suites / 2,892 assertions, Kotlin 4 and exact published assets audited. Current 79 publication and production signing/store release remain separate. |
 
-Current recorded validation: 28 GDScript suites and 2,892 maintained assertions. The 0.7.78 assignment-filter optimization freshly passes scheduler 428 (three new checks), persistence 502, unit 24, replay 62 with all retained acknowledgements, 671-key/font validation, five Python message checks and Android 117 export/metadata. Cached Kotlin 4 XML is inspected. Presentation, persistence, generation, scenes, catalogs and immutable fixtures are unchanged from 77; its native GUI 679 and other suite scopes carry. Four alternating complete-tick pairs preserve all unsorted state and invariants: late colony improves 5.25%, fresh colony 0.60%, and 720 future ticks from the old ordinary-twenty endpoint 1.71%. The shorter ordinary case and its variable pair remain retained. Remote 76/77 artifacts and publications pass their independent audits; 77/code 230 is last fully audited. Native 75's duration pass and unresolved frame-growth/tick-budget observations retain their scopes. Current 78 CI, publication and physical/human gates remain separate.
+Current recorded validation: all 28 GDScript suites freshly pass / 2,897 assertions, including scheduler 433 and native GUI 679. The 0.7.79 food-candidate view adds five scheduler checks; replay 62 and every retained acknowledgement, catalog/font 671, Python messages 5 and Android 118 export/metadata pass. Cached Kotlin 4 XML is inspected. Four alternating complete-tick pairs preserve all unsorted states, invariants, inputs and source fingerprints. Late-colony median worst tick improves 4.51%; total-time medians improve less than 0.5% in late, fresh and legacy-twenty future cases, with slightly higher late p95/p99. The wider tick target remains open. The initial three-field cache failure and exact failing sources are retained; the identity guard fixes equal-size source replacement. Version 78/code 231 is the latest fully audited remote publication. Native 75 duration, unresolved frame growth and tick budget retain their original scopes. Current 79 native/CI/publication and physical/human gates remain separate.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -4333,3 +4333,48 @@ three published assets. native-ci-v76/77-evidence.json retain source identities 
 published codes 229/230. Version 77 is the latest fully audited download. Current
 78 CI/publication and physical Android/PSS/thermal/battery/human gates remain
 separate; prior failed scopes remain retained.
+
+
+## 0.7.79 lazy edible-definition candidate view
+
+Repeated food selection now borrows a derived edible-definition view during a
+trusted tick. Its key includes both the logical tick and borrowed inventory
+identity, with an appended-prefix count and replacement/shrink/reset invalidation.
+Every location and travel ration is included regardless of current policy; zero
+rows still present in the borrowed inventory remain candidates. The unchanged
+selector reads all quantities, reservations, release projections, policy, ages,
+preferred tags, ordering, safety and routes live. Direct calls clear the view and
+use the original positive-inventory query. Four derived fields never enter saves.
+The complete original 25cb2c0 selector remains an independent oracle.
+
+Five new checks cover membership, shared records, policy/location changes,
+appends/depletion, equal-size borrowed-source replacement, reservations/release
+predictions and hungry save/reload continuation. The equal-size replacement check
+failed the initial three-field prototype; its exact source/test and failure are
+retained. Adding the identity guard passes all five targeted checks and the final
+full suite. All 27 headless suites / 2,218 checks and native GUI 679 freshly pass,
+for 2,897 maintained checks. Replay 62 retains both goldens and all old
+acknowledgements. Catalog/font 671, messages 5, Android 118 export/metadata and
+cached Kotlin 4 XML pass. food-view-v79-evidence.json records these scopes.
+
+The final four alternating complete-tick pairs retain every unsorted field,
+invariant, source/input fingerprint and initial state. Late 1,200 ticks improve
+4,093,545.5 to 4,079,412 microseconds (0.35%); their shared worst tick 26,280 improves
+67,945.5 to 64,878.5 microseconds (4.51%). Late p95 and p99 are slightly higher,
+17,455.5 to 17,532 and 24,042.5 to 24,343.5 microseconds. Fresh 7,200 ticks improve
+0.20%; 720 future ticks from the migrated legacy twenty-resident endpoint improve
+0.47%. These are essentially unchanged average times, not a broad tick-budget fix.
+The legacy case is not a new 96-day campaign certificate. No other native GUI,
+emulator or benchmark runs during final timing; host scheduling and the per-tick
+observer remain included.
+
+A separate complete-state diagnostic observes 20 food calls at tick 26,280,
+reusing the same candidate array 19 times and narrowing 1,059 inventory rows to
+139 candidates. Nested phase timings overlap and the old/current component
+samples are diagnostic rather than a paired phone/CPU estimate. The obsolete
+pre-version three-field profile remains retained. Version 78 remote artifacts,
+all four native hosts, 2,892 prototype assertions, Kotlin 4, 768-map subset and
+exact three published assets pass the independent audit (code 231). Current 79
+native/CI/publication and physical Android/PSS/thermal/battery/human gates remain
+open. Native 75's duration pass and unresolved frame-growth/tick-budget evidence
+retain their original scope; earlier failures stay failed.

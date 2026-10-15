@@ -96,6 +96,10 @@ var stack_query_count: int = 0
 var stack_query_source: Array = []
 var stack_query_live: Array = []
 var stack_query_perishable: Array = []
+var food_query_tick: int = -1
+var food_query_count: int = 0
+var food_query_live: Array = []
+var food_query_source: Array = []
 var resource_query_source: Array = []
 var resource_query_count: int = -1
 var resource_query_dirty: bool = true
@@ -675,6 +679,28 @@ func _refresh_stack_queries() -> void:
 
 func reset_stack_queries() -> void:
 	stack_query_tick=-1;stack_query_count=0;stack_query_source=[];stack_query_live=[];stack_query_perishable=[]
+	reset_food_queries()
+
+func reset_food_queries() -> void:
+	food_query_tick=-1;food_query_count=0;food_query_live=[];food_query_source=[]
+
+func _work_food() -> Array:
+	# Borrow only the edible-definition subset. Keep every location and live
+	# quantity/reservation field; the food selector still checks all its rules.
+	# Within a tick the inventory only appends; replacements rebuild this view.
+	# Preserve zero rows that are still present in that tick's borrowed view.
+	if not in_tick:
+		reset_food_queries()
+		return nonempty_stacks()
+	var inventory: Array=_work_inventory()
+	if food_query_tick!=tick or not is_same(food_query_source,inventory) or food_query_count>inventory.size():
+		reset_food_queries();food_query_tick=tick;food_query_source=inventory
+	var items: Dictionary=definitions.items
+	for index in range(food_query_count,inventory.size()):
+		var stack: Dictionary=inventory[index]
+		if items[stack.item].fullness>0:food_query_live.append(stack)
+	food_query_count=inventory.size()
+	return food_query_live
 
 func reset_resource_queries() -> void:
 	resource_query_source=[];resource_query_count=-1;resource_query_dirty=true;resource_query_regrowing=[]
@@ -1632,7 +1658,7 @@ func _food(citizen: Dictionary, releasing: Dictionary = {}) -> Dictionary:
 	var release_id: int = releasing.get("id",0)
 	var cancel: bool = releasing.get("kind","") in PERSONAL_JOBS
 	var frees_reservations: bool = release_id>0 and (cancel or releasing.kind not in RELEASE_KEEPS_RESERVATIONS)
-	for stack in (_work_inventory() if in_tick else nonempty_stacks()):
+	for stack in _work_food():
 		if definitions.items[stack.item].fullness<=0 or (stack.item=="travel_ration" and not use_rations): continue
 		var available_count: int = stack.count-_reserved(stack)
 		if frees_reservations: available_count+=stack.reservations.get(release_id,0)
