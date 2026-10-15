@@ -2,6 +2,7 @@ class_name FrameDiagnostics
 extends RefCounted
 ## Bounded, local presentation measurements. No files, world mutation or uploads.
 const STAGES: Array[String] = ["frame_gap","session","simulation_batch","simulation_tick","map_update","map_draw_commands","audio_update","save_capture","snapshot_capture","save_finish","save_explicit","save_worker","snapshot_worker"]
+const SPEEDS: Array[int] = [0,1,2,4,6,8,12]
 const LIMITS_US: Array[int] = [4000,8000,16000,25000,33334,34000,36000,40000,50000,100000,250000,500000,1000000]
 const MAX_EVENTS: int = 32
 const MAX_EXPORT_BYTES: int = 65536
@@ -26,7 +27,7 @@ func count(key: String) -> void:
 
 func record(stage: String, microseconds: int, measured_tick: int = -1, measured_speed: int = -1) -> void:
 	var at_speed: int = speed if measured_speed<0 else measured_speed
-	if not foreground or stage not in STAGES or microseconds<0 or at_speed not in [0,1,2,4,12]: return
+	if not foreground or stage not in STAGES or microseconds<0 or at_speed not in SPEEDS: return
 	var key: String = "%s:%d" % [stage,at_speed]
 	if not samples.has(key): samples[key]={"stage":stage,"speed":at_speed,"count":0,"sum_us":0,"max_us":0,"over_50ms":0,"buckets":Array(LIMITS_US).map(func(_limit:int)->int:return 0)+[0]}
 	var entry: Dictionary = samples[key]

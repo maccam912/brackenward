@@ -1,0 +1,17 @@
+{
+  "passed": false,
+  "source_commit": "9683b57e746b94640b730e3a24dbefa0136b7c73",
+  "run_id": 38743892117,
+  "prototype_failure": "Persistence suite exceeded the default120-second prototype limit; no passing suite summary. All seven new worker-timing checks printedPASS before timeout. No full prototype/UI/release success is claimed.",
+  "independent_completed_native_linux_subset": {
+    "persistence_assertions": 472,
+    "failures": 0,
+    "elapsed_ms": 99768,
+    "log_sha256": "1816b74b108b6e253fe5d5516928979e20360349079f156fec112945414a0d8e",
+    "xml_sha256": "7282d0b69a8ae2d68081b28a77015ec544cf97e62e8b95d96f3d666de43131c5"
+  },
+  "previous65_linux_persistence_ms": 96908,
+  "failed_job_log_sha256": "bdab20e2cc90d5bb3e41fc9d25a10c393a13febbe6fcb28135d40e6ffbb5ae38",
+  "run_metadata_sha256": "c40c68505887e77f20ed8e222f3784a35d2ab04d0b4c5679e7ffa3c85dea4730",
+  "correction": "Prototype persistence limit explicitly180seconds,matching local bounded runs; native matrix remains360/600seconds. No assertion or engine-error gate changed,no1.75-second game durability protection changed. New67CI must pass independently."
+}

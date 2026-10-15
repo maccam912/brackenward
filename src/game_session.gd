@@ -517,7 +517,7 @@ func _refresh_clock() -> void:
 	clock_world_id=identity;clock_tick=world.tick;clock_speed=playback
 	var season_name: String = ColonyText.text(["ui.clock.spring","ui.clock.summer","ui.clock.autumn","ui.clock.winter"][ColonyAgriculture.season(world.tick)])
 	var stock: String = ColonyText.text("ui.clock.stock",{"meals":world.available("meal"),"wood":world.available("wood")}) if world is ColonyWorld else ColonyText.plural("ui.clock.travelers",world.citizens.size())
-	var speed_name: String = ColonyText.text("ui.clock.quiet_sleep") if runner.sleep_fast_forward else ColonyText.speed_label(runner.speed)
+	var speed_name: String = ColonyText.text("ui.clock.quiet_sleep",{"speed":runner.playback_speed()}) if runner.sleep_fast_forward else ColonyText.speed_label(runner.speed)
 	clock_label.tooltip_text=ColonyText.text("ui.help.quiet_sleep",{"speed":runner.speed}) if runner.sleep_fast_forward else ""
 	clock_label.text=ColonyText.text("ui.clock.status",{"season":season_name,"day":(world.tick/7200)%8+1,"year":world.tick/230400+1,"hour":"%02d" % ((world.tick%7200)/300),"minute":"%02d" % ((world.tick%300)/5),"stock":stock,"speed":speed_name})
 
@@ -1893,7 +1893,7 @@ func _apply_device_settings() -> void:
 	runner.frame_clock=func()->int:return Time.get_ticks_usec()
 	runner.tick_observer=func(elapsed:int,tick:int,speed:int)->void:diagnostics.record("simulation_tick",elapsed,tick,speed)
 	if runner.quiet_sleep_enabled!=settings.values.quiet_sleep_speed:
-		runner.sleep_boost_suppressed=false;runner.sleep_fast_forward=false
+		runner.sleep_boost_suppressed=false;runner.sleep_fast_forward=false;runner.sleep_speed_tier=0
 	runner.quiet_sleep_enabled=settings.values.quiet_sleep_speed
 	Engine.max_fps=60 if settings.values.quality=="Smooth" else 30
 	if is_instance_valid(view):

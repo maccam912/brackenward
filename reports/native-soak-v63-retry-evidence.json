@@ -1,0 +1,48 @@
+{
+  "passed": true,
+  "source_commit": "357fa04e42323ce93b684fa601a7accb3a14cbc6",
+  "standard_30min_2x_case": true,
+  "measured_wall_seconds": 1800.023079,
+  "warmup_seconds": 60,
+  "logical_ticks": 36001,
+  "initial_tick": 3002,
+  "final_tick": 39003,
+  "peak_sampled_engine_heap_growth_bytes": 15328444,
+  "ending_engine_heap_growth_bytes": 15320492,
+  "lowest_window_fps": 28.133510386892,
+  "max_consecutive_low_fps_window_seconds": 0.0,
+  "residents": 20,
+  "diagnostic_counters": {
+    "backgrounds": 0,
+    "quiet_sleep_limits": 0,
+    "slow_storage_pauses": 0,
+    "speed_reductions": 0,
+    "storage_alerts": 0
+  },
+  "all_authoritative_fields_equal_prior_native62": true,
+  "prior_native62_snapshot_sha256": "b48fa0185540fbd1fb9c620b1b55390d82d2f93d266c1c4881800ad96f1ed1b9",
+  "independent_second_audit": {
+    "passed": true,
+    "source_commit": "357fa04e42323ce93b684fa601a7accb3a14cbc6",
+    "standard_30min_2x_case": true,
+    "scope": "Native source probe and sampled engine-heap proxy; physical release gates remain open",
+    "measured_wall_seconds": 1800.023079,
+    "logical_ticks": 36001,
+    "peak_sampled_engine_heap_growth_bytes": 15328444,
+    "final_residents": 20,
+    "final_snapshot_sha256": "7b6bd9e1e36bfc72dcb062639a5240999f097ac7369bcce0f18da85a5b70883e",
+    "audit_tool_sha256": "662d00cb6505d9b2eddce8f001ac7f60e0d750cfdffc0050a712452cafd35862"
+  },
+  "scope": "Clean frozen same-source63 retry in new directory. No other graphical game/emulator; long scenario/generation workers finished. Bounded headless save/scheduler/unit/replay checks,editor imports/Android exports and CI artifact downloads shared host. Lower contention describes that difference; not isolated CPU/causal attribution for original failure. Both strict audits pass. Earlier failed63 run remains failed. Desktop engine-heap/FPS development proxies only,no physical Android/PSS/thermal/battery/human certification. Later64key-sharing/65regrowth/66worker-timing/67adaptive changes remain separate.",
+  "sha256": {
+    "audit.json": "8c1545801b62626b67d8db9dc4fa86be32812a4e71ed1fbf0616479b5876622b",
+    "probe-latest.json": "6afa3dbce03d9f4679635a73775c99b4c53c6ede0d995f4beb789a227a1562dd",
+    "source.json": "c574e0b68472176b81c09444d9ed7ecd66e034aef6b603f2ad988de96d4a2244",
+    "probe-final.brackenward": "7b6bd9e1e36bfc72dcb062639a5240999f097ac7369bcce0f18da85a5b70883e",
+    "probe.log": "0abfbd0dea29d3af11fec90cbeab29a09d37184ee30dc43c278d2aa32ca392e9",
+    "first-audit.json": "8c1545801b62626b67d8db9dc4fa86be32812a4e71ed1fbf0616479b5876622b",
+    "probe.json": "8c93090de67878198aa6beb4f4f68637acb879f4b621982980523d7132bb174a",
+    "completion.json": "24432a6f164b28fdd3a599d0a9611a194ce59be0872828f6e2c5924f0fa2dec1"
+  },
+  "second_audit_log_sha256": "2565f97ef79308899f7d9e9d92330df691e25315c7d358e9d7d1bba869b51e91"
+}

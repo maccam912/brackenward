@@ -7,6 +7,22 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.67 adaptive quiet-night tiers
+
+A12x sleep boost with sustained backlog now tries8x and6x before disabling bonus
+playback for the sleeping period. The8ms/eight-tick batch budgets remain. Each
+tier still needs more than one second of bonus backlog for three consecutive
+seconds before stepping down. Selected manual speed, exact complete world ticks,
+wake/alert boundaries and the final suppression notice remain unchanged. A pause
+keeps the learned tier; waking or changing the setting resets it. The HUD shows
+actual sleep speed. Diagnostic histograms separate6x/8x and remain bounded to91
+rows and64KiB JSON. No phone-throughput claim follows from injected-clock tests.
+Scheduler421 passes including sustained8x/6x complete-state twins, brief stalls,
+all-tier exact wake/fire stops and the unchanged final manual-fallback checks.
+Persistence472,replay62/all old acknowledgements,graphical UI670 and Android106
+export/metadata also pass. Inspected HUD shows8x sleep with retained4x tooltip;
+remote67CI/publication and physical throughput remain separate.
+
 ## 0.7.66 background-worker latency
 
 The local report adds save_worker and snapshot_worker wall timings. A timestamp
@@ -140,15 +156,15 @@ Persistence 345, colony 42, production 52 and native UI 663 also pass. The froze
 historical replay and all old acknowledgement/foreign-save continuation audits
 pass without golden changes; report SHA-256 is
 `efe5adabbf54233a7f3f7e64d6d6784c4e710f831ae52203de1262b15fc54140`.
-The unchanged strict memory proxy remains failed as documented in
-[STRESS_EVIDENCE.md](STRESS_EVIDENCE.md).
+At this0.7.47 checkpoint the strict memory proxy failed, as documented in
+[STRESS_EVIDENCE.md](STRESS_EVIDENCE.md); later pinned results remain separate.
 
 
 The Android65 whole-map interaction test records the first-night CPU fallback
-notice with selected4x retained. The runner's existing policy requires sustained
+notice with selected4x retained. At that checkpoint the runner requires sustained
 bonus backlog for three seconds before suppressing the boost until a resident
 wakes; this was not merely a single slow tick. The explicit morning save has
 four sleeping residents below900 rest. These observations preserve the fallback
-scope and do not constitute a sustained12x emulator pass. A possible later
-presentation improvement is to retain12x where feasible but try8x/6x before
-falling back to manual speed; that tiered behavior is not implemented here.
+scope and do not constitute a sustained12x emulator pass. The proposed8x/6x
+intermediate tiers are implemented in0.7.67 above; the older65 Android run does
+not certify their emulator or physical-device throughput.

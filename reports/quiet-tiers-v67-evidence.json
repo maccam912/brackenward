@@ -1,0 +1,74 @@
+{
+  "passed": true,
+  "build": "0.7.67-m7",
+  "local_android_code": 106,
+  "content": "colony-v7",
+  "schema": 23,
+  "envelope": 5,
+  "generator": 2,
+  "maintained_gdscript_assertions": 2842,
+  "fresh_checks": {
+    "scheduler": 421,
+    "persistence": 472,
+    "replay_commands": 62,
+    "ui_messages": 530,
+    "python_suite_runner": 11,
+    "ui": 670
+  },
+  "tiers": [
+    12,
+    8,
+    6
+  ],
+  "overload_threshold": "More than one second bonus backlog for three consecutive seconds at each tier; clear unused bonus backlog/overload clock after step. Selected0/1/2/4 remains unchanged. Final6x failure suppresses boost until awake; pause retains learned tier; wake or explicit setting change resets it.",
+  "bounds": {
+    "cpu_budget_us": 8000,
+    "batch_ticks": 8,
+    "stages": 13,
+    "speeds": [
+      0,
+      1,
+      2,
+      4,
+      6,
+      8,
+      12
+    ],
+    "histograms": 91,
+    "bins": 14,
+    "slow_events": 32,
+    "export_bytes": 65536
+  },
+  "scope": "Presentation timing only,with complete authoritative ticks. Injected clocks settle at8x/6x and match ordinary full-state twins; all3tiers stop at exact wake tick for each selected1/2/4 and at a new actual fire with either auto-pause policy. Original final manual-fallback assertions remain. No gameplay/save/content/generator/golden changes; no physical Android throughput claim.",
+  "source_sha256": {
+    "src/sim/sim_runner.gd": "a6f89eadcf34eea6e1fe97127c0d53a586ab785afa474d6b3c8984c5766f7836",
+    "src/game_session.gd": "4ae01021f1f0b4c3325f58d9374e25b4d8ff390821081f3162017be18aff5942",
+    "src/presentation/frame_diagnostics.gd": "aa7dd8f8c33c7ec1cffad3ad2a4a2782bb2c4d68f10b794b77bc88b29cb07cf1",
+    "data/catalogs/en_ui.json": "ede0da429f52ecee9619956518b9822339206c8956ed31c0c0ce19871f884df6",
+    "tools/quiet_sleep_tests.gd": "b5160fca4e6d90fc4d9d2e1906d7b98fc98bc6aecbaf07389e82bdd079329de4",
+    "tools/diagnostics_tests.gd": "a02690523b9fa406b43fcddee82fe597a1b5e8d15dee69b8295410378826ea01",
+    "project.godot": "70d9173d6a20c2f5896e3b153058ee662f414f7898eee7424dbf4ea9609f76b8",
+    "export_presets.cfg": "bf3ff97a3dde184dcbf3e611c13d90895d455db938cc30e0529b1d457562bb12",
+    ".github/workflows/checks.yml": "4aad88561008ff6ecd68dcb82606508fa51b9b8f96f2993d6534a262b7d52435"
+  },
+  "validation_sha256": {
+    "quiet-tiers-v67-suite-runner-tests.log": "770a5a7cfd5ed30408387c611037fc3fb16dc0c5873dba409dd6aae6c67d7bb1",
+    "quiet-tiers-v67-content-first.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "quiet-tiers-v67-persistence.log": "1d869d6953de380108618ad052d65197ce2995ac5668bf46177ccff060304e4e",
+    "quiet-tiers-v67-scheduler-first.log": "013ca123db876fec1c9aa0f3affbcc7e85993a4e15eb5ad18ebf6a1f2f454096",
+    "quiet-tiers-v67-android.log": "2abae33def0841f08d4869f678097dd7f9917698fe0218322227c6f622f46d9d",
+    "quiet-tiers-v67-replay.log": "49be1b10007962aaff5cee71f82f6d4d9a1d73ab94634107227959ebc3e5922a",
+    "quiet-tiers-v67-content-final.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "quiet-tiers-v67-replay.json": "412ca3ed482b2cdaee060ce4b1d63952b9c1c774b4f7a43c304838e5f1fabd67",
+    "quiet-tiers-v67-check-status.json": "ae07c0be658c367748810cc586c15247ca43b87983292084c92ebb31c5d7005f",
+    "quiet-tiers-v67-ui.log": "813e413193b886443c4e8420fdf2da2012567e0ff314e43ec2787a05ec6e350e"
+  },
+  "local_apk_sha256": "75da26e2302665f26848441eef964dc5f576eb9e64b5bc44265b055b92c51cda",
+  "pending": "Local source/save/replay/graphical UI670/content/APK checks pass. Remote67CI/publication and native67longevity/physical gates remain separate. Earlier native63retry passes its pinned source only.",
+  "ui_8x_hud_screenshot_sha256": "a13061657c09a37a1e77bd81edc735bb050ec8046054058c6f92678918627a62",
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "Unchanged plugin checks are UP-TO-DATE; actual XML inspected,not claimed freshly rerun."
+  }
+}

@@ -5,6 +5,23 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## Same-source 0.7.63 retry passes in a separate directory
+
+The clean frozen357fa04 retry completes1800.023079seconds at2x after60seconds
+warmup,36001ticks3002to39003,twenty residents and zero diagnostic counters.
+Sampled engine-heap peak grows15328444bytes (14.618MiB),ending15320492bytes;
+lowest one-second FPS28.134 and no sustained below24 streak. Full source/input,
+invariants,save roundtrip,audio drain and the independent second audit pass.
+Every authoritative world field equals the prior native62 endpoint at39003.
+
+The emulator and long scenario/generation workers were stopped. Bounded headless
+save/scheduler/unit/replay checks,imports/Android exports and artifact downloads
+shared the host; this is lower contention,not an isolated benchmark or causal
+explanation of the earlier failure. Earlier failed63 remains failed. Later64–67
+runtime changes and physical Android/PSS/thermal/battery gates remain separate.
+[native-soak-v63-retry-evidence.json](native-soak-v63-retry-evidence.json) retains
+both audits,complete source/input/report/save hashes and earlier-world equality.
+
 ## Frozen 0.7.63 run fails after a protective save pause
 
 The requested1800-second2x run stops at1576.563294seconds, tick34533,

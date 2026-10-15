@@ -58,7 +58,7 @@ jobs:
           python3 tools/check_suite.py integration
           python3 tools/check_suite.py colony
           python3 tools/check_suite.py survival
-          python3 tools/check_suite.py persistence
+          python3 tools/check_suite.py persistence --timeout 180
           python3 tools/check_suite.py seasons
           python3 tools/check_suite.py people
           python3 tools/check_suite.py production

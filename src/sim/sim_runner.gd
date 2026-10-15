@@ -1,6 +1,7 @@
 class_name SimRunner
 extends RefCounted
 const QUIET_SLEEP_SPEED: int = 12
+const SLEEP_SPEED_STEPS: Array[int] = [12,8,6]
 const SLEEP_BATCH_BUDGET_US: int = 8000
 
 var world: RefCounted
@@ -18,6 +19,7 @@ var quiet_sleep_allowed: bool = true
 var sleep_fast_forward: bool = false
 var sleep_boost_suppressed: bool = false
 var sleep_boost_limited: bool = false
+var sleep_speed_tier: int = 0
 var frame_speed: int = 0
 # Only the presentation supplies wall time; authoritative world steps stay pure.
 var frame_clock: Callable
@@ -45,7 +47,7 @@ func pause() -> void:
 	set_speed(0)
 
 func playback_speed() -> int:
-	return QUIET_SLEEP_SPEED if sleep_fast_forward and speed>0 else speed
+	return SLEEP_SPEED_STEPS[sleep_speed_tier] if sleep_fast_forward and speed>0 else speed
 
 func _clock_usec() -> int:
 	return int(frame_clock.call()) if frame_clock.is_valid() else 0
@@ -84,7 +86,7 @@ func advance_frame(delta: float) -> int:
 	if world is ColonyWorld and _pending_pause(): return 0
 	var was_fast: bool=sleep_fast_forward
 	var all_asleep: bool=_all_asleep() if quiet_sleep_enabled else false
-	if not all_asleep: sleep_boost_suppressed=false
+	if not all_asleep: sleep_boost_suppressed=false;sleep_speed_tier=0
 	sleep_fast_forward=quiet_sleep_enabled and quiet_sleep_allowed and not sleep_boost_suppressed and all_asleep and _quiet()
 	if was_fast and not sleep_fast_forward: accumulator=0.0;behind_seconds=0.0
 	frame_speed=playback_speed()
@@ -122,7 +124,10 @@ func advance_frame(delta: float) -> int:
 		behind_seconds += delta
 		if behind_seconds >= 3.0:
 			if sleep_fast_forward:
-				sleep_boost_suppressed=true;sleep_fast_forward=false;sleep_boost_limited=true
+				if sleep_speed_tier+1<SLEEP_SPEED_STEPS.size():
+					sleep_speed_tier+=1
+				else:
+					sleep_boost_suppressed=true;sleep_fast_forward=false;sleep_boost_limited=true
 				accumulator=0.0;behind_seconds=0.0
 			elif speed > 1:
 				speed /= 2
