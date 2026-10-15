@@ -1689,7 +1689,7 @@ func show_campaigns(skip_save: bool = false) -> void:
 	label(ColonyText.text("ui.help.campaigns.five_independent_campaign_slots_switching_first_saves"),sheet_body)
 	for number in range(1,6):
 		var exists: bool = ColonyStore.occupied(number,store.root_directory)
-		button(("Load" if exists else "New") + " campaign %d" % number,func() -> void: _switch_campaign(number,exists),sheet_body)
+		button(ColonyText.text("ui.save.load_campaign" if exists else "ui.save.new_campaign",{"slot":number}),func() -> void: _switch_campaign(number,exists),sheet_body)
 		if deletion.has_saves(store,number):
 			button(ColonyText.text("ui.action.delete_campaign",{"slot":number}),func()->void:show_delete_saves(number),sheet_body)
 	if not deletion.cleanup_paths(store).is_empty():
@@ -1761,7 +1761,7 @@ func _switch_campaign(number: int, exists: bool) -> void:
 	_replace_world(result.world)
 	_save_settings()
 	close_sheet()
-	notice = "Campaign %d is ready. Time stays paused." % number
+	notice = ColonyText.text("ui.save.campaign_ready",{"slot":number})
 
 func show_import_slots() -> void:
 	if pending_import_world == null:
@@ -1770,18 +1770,18 @@ func show_import_slots() -> void:
 	label(ColonyText.text("ui.help.import_slots.the_complete_snapshot_is_verified_select_an"),sheet_body)
 	for number in range(1,6):
 		var exists: bool = ColonyStore.occupied(number,store.root_directory)
-		button(("Replace" if exists else "Import into")+" campaign %d" % number,func() -> void:
+		button(ColonyText.text("ui.save.replace_campaign" if exists else "ui.save.import_into_campaign",{"slot":number}),func() -> void:
 			if exists:
 				show_sheet("Confirm replacement","ui.sheet.confirm_replacement")
-				label("Replace campaign %d with the verified import? The previous campaign is archived before adoption. Every other campaign stays intact." % number,sheet_body)
-				button("Replace campaign %d" % number,func() -> void: _adopt_import(number,true),sheet_body)
+				label(ColonyText.text("ui.save.confirm_import_replacement",{"slot":number}),sheet_body)
+				button(ColonyText.text("ui.save.replace_campaign",{"slot":number}),func() -> void: _adopt_import(number,true),sheet_body)
 				button(ColonyText.text("ui.action.choose_another_slot"),show_import_slots,sheet_body)
 			else:
 				_adopt_import(number,false),sheet_body)
 	button(ColonyText.text("ui.action.cancel_import"),func() -> void:
 		pending_import_world = null
 		close_sheet()
-		notice = "Import canceled. Campaigns unchanged.",sheet_body)
+		notice = ColonyText.text("ui.save.import_cancelled"),sheet_body)
 
 func _adopt_import(number: int, replace: bool) -> void:
 	if pending_import_world == null:
@@ -1800,7 +1800,7 @@ func _adopt_import(number: int, replace: bool) -> void:
 	_save_settings()
 	pending_import_world = null
 	close_sheet()
-	notice = "Imported verified campaign %d. Time stays paused." % number
+	notice = ColonyText.text("ui.save.imported_campaign",{"slot":number})
 
 func show_named_snapshots() -> void:
 	if not store is ColonyStore or recovery_failed:
@@ -1808,31 +1808,31 @@ func show_named_snapshots() -> void:
 	show_sheet("Named snapshots","ui.sheet.named_snapshots")
 	label(ColonyText.text("ui.help.named_snapshots.ten_named_snapshots_per_campaign_autosaves_use"),sheet_body)
 	for row in store.named_snapshots():
-		label("%d: %s" % [row.index,row.name],sheet_body)
+		label(ColonyText.text("ui.save.snapshot_row",{"slot":row.index,"name":row.name}),sheet_body)
 		if row.valid:
-			button("Load snapshot %d" % row.index,func() -> void: _load_named(row.index),sheet_body)
-		button(("Replace" if row.exists else "Save")+" snapshot %d" % row.index,func() -> void: _name_snapshot(row.index,row.exists,row.name),sheet_body)
+			button(ColonyText.text("ui.save.load_snapshot",{"slot":row.index}),func() -> void: _load_named(row.index),sheet_body)
+		button(ColonyText.text("ui.save.replace_snapshot" if row.exists else "ui.save.save_snapshot",{"slot":row.index}),func() -> void: _name_snapshot(row.index,row.exists,row.name),sheet_body)
 		if row.exists: button(ColonyText.text("ui.action.delete_snapshot",{"slot":row.index}),func()->void:show_delete_saves(store.slot,row.index),sheet_body)
 
 func _name_snapshot(index: int, exists: bool, previous_name: String) -> void:
 	show_sheet("Name snapshot","ui.sheet.name_snapshot")
-	label("Replacing %s requires confirmation." % previous_name if exists else "Name this paused snapshot.",sheet_body)
+	label(ColonyText.text("ui.save.replacing_snapshot",{"name":previous_name}) if exists else ColonyText.text("ui.save.name_snapshot"),sheet_body)
 	label(ColonyText.text("ui.help.name_snapshot.use_1_64_printable_basic_latin_characters"),sheet_body)
 	var entry: LineEdit = LineEdit.new()
-	entry.placeholder_text = "Snapshot name"
+	entry.placeholder_text = ColonyText.text("ui.save.snapshot_name_placeholder")
 	entry.max_length = 64
 	entry.custom_minimum_size = Vector2(48,48)
 	entry.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	sheet_body.add_child(entry)
 	entry.text_changed.connect(_clear_text_entry_error)
-	button("Continue" if exists else "Save snapshot",func() -> void:
+	button(ColonyText.text("ui.action.continue" if exists else "ui.action.save_snapshot"),func() -> void:
 		var snapshot_name: String = entry.text.strip_edges()
 		if not ColonyChronicle._printable(snapshot_name,64):
-			_text_entry_error("Snapshot names require 1-64 printable Basic Latin characters.")
+			_text_entry_error(ColonyText.text("ui.save.invalid_snapshot_name"))
 			return
 		if exists:
 			show_sheet("Confirm snapshot replacement","ui.sheet.confirm_snapshot_replacement")
-			label("Replace %s with %s? Only snapshot slot %d changes." % [previous_name,snapshot_name,index],sheet_body)
+			label(ColonyText.text("ui.save.confirm_snapshot_replacement",{"previous":previous_name,"name":snapshot_name,"slot":index}),sheet_body)
 			button(ColonyText.text("ui.action.replace_snapshot"),func() -> void: _save_named(index,snapshot_name,true),sheet_body)
 		else:
 			_save_named(index,snapshot_name,false),sheet_body)
@@ -1848,7 +1848,7 @@ func _save_named(index: int, name: String, replace: bool) -> void:
 	saving_disabled = false
 	storage_error = ""
 	show_named_snapshots()
-	notice = "Named snapshot saved and verified."
+	notice = ColonyText.text("ui.save.named_saved")
 
 func _load_named(index: int) -> void:
 	if not saving_disabled and not save_local().is_empty():
@@ -1860,7 +1860,7 @@ func _load_named(index: int) -> void:
 	store.recovered = true
 	_replace_world(result.world)
 	close_sheet()
-	notice = "Named snapshot restored. Time stays paused."
+	notice = ColonyText.text("ui.save.named_restored")
 
 func _restore_camera() -> void:
 	if view == null or not store is ColonyStore:

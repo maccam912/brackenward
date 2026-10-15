@@ -50,10 +50,10 @@ def economy_checks(report, world, initial):
     exchanges = world["trade_state"]["exchanges"]
     purchases = [e for e in exchanges if not e["delivery"]]
     deliveries = [e for e in exchanges if e["delivery"]]
-    merchants = {e["id"]: e for e in world["trade_state"]["merchants"]}
-    jobs = {j["id"]: j for j in world["jobs"]}
+    merchants = {int(e["id"]): e for e in world["trade_state"]["merchants"]}
+    jobs = {int(j["id"]): j for j in world["jobs"]}
     sewn = [j for j in world["jobs"] if j["kind"] == "craft" and j["definition"] == "sew_cloak" and j["state"] == "Complete"]
-    receipts = dict(world["receipts"]["$map"])
+    receipts = {int(k): v for k, v in world["receipts"]["$map"]}
     trace = [e["command"] for e in report["commands"]]
     all_commands = trace + world["pending_commands"]
     decisions = [{k: d[k] for k in ("id", "kind", "args")} for d in report["policy_decisions"]]
@@ -64,15 +64,15 @@ def economy_checks(report, world, initial):
     consumed = ledger["consumed"].get("cloth", 0)
     checks = {
         "initial_cloth_absent": sum(s["count"] for s in initial["stacks"] if s["item"] == "cloth") == 0,
-        "two_distinct_riverward_purchases": len(purchases) == 2 and len({e["merchant"] for e in purchases}) == 2 and all(e["community"] == "riverward" and e["buy"] == {"cloth": 8} and e["pay"] == {"wood": 40} and e["gift"] == 0 for e in purchases),
+        "two_distinct_riverward_purchases": len(purchases) == 2 and len({int(e["merchant"]) for e in purchases}) == 2 and all(e["community"] == "riverward" and e["buy"] == {"cloth": 8} and e["pay"] == {"wood": 40} and e["gift"] == 0 for e in purchases),
         "one_road_cloak_delivery": len(deliveries) == 1 and deliveries[0]["community"] == "road_fellowship" and deliveries[0]["pay"] == {"cloak": 3} and deliveries[0]["buy"] == {},
-        "all_payments_physically_committed": len(exchanges) == 3 and all(e["state"] == "Complete" and int(e["receipt"]) > 0 and jobs[e["job"]]["kind"] == "trade" and jobs[e["job"]]["state"] == "Complete" for e in exchanges),
-        "purchases_within_actual_cart_stay": all(int(merchants[e["merchant"]]["deadline"]) - 7200 <= int(e["receipt"]) < int(merchants[e["merchant"]]["deadline"]) and any(v in (0, 127) for v in merchants[e["merchant"]]["entry"]["$tile"]) for e in purchases),
+        "all_payments_physically_committed": len(exchanges) == 3 and all(e["state"] == "Complete" and int(e["receipt"]) > 0 and jobs[int(e["job"])]["kind"] == "trade" and jobs[int(e["job"])]["state"] == "Complete" for e in exchanges),
+        "purchases_within_actual_cart_stay": all(int(merchants[int(e["merchant"])]["deadline"]) - 7200 <= int(e["receipt"]) < int(merchants[int(e["merchant"])]["deadline"]) and any(v in (0, 127) for v in merchants[int(e["merchant"])]["entry"]["$tile"]) for e in purchases),
         "imported_cloth_is_only_source": imported == 16 and all(ledger[k].get("cloth", 0) == 0 for k in ("produced", "recovered", "expedition_gain")),
         "cloth_conservation_and_real_sewing": consumed >= 6 and len(sewn) >= 3 and imported - consumed == sum(s["count"] for s in world["stacks"] if s["item"] == "cloth") and all(ledger[k].get("cloth", 0) == 0 for k in ("spoiled", "lost", "traded_out", "looted")),
         "exact_payment_and_reputation": ledger["traded_out"].get("wood", 0) >= 80 and ledger["traded_out"].get("cloak", 0) == 3 and world["trade_state"]["reputation"]["road_fellowship"] == min(100, 30 + 3 * sum(e["treated"] for e in world["defense_state"]["enemies"])),
         "no_local_weaving_or_expedition_substitute": not any(f["crop"] == "flax" for f in world["fields"]) and not any(o["recipe"] == "weave_cloth" for o in world["production_state"]["orders"]) and world["region_state"]["trips"] == [] and all(int(o["receipt"]) == 0 for o in world["opportunity_state"]["offers"]),
-        "three_accepted_public_trade_commands": len(trades) == 3 and all(receipts[c["id"]] == "accepted" for c in trades) and not any(c["kind"] == "trade_cancel" for c in all_commands),
+        "three_accepted_public_trade_commands": len(trades) == 3 and all(receipts[int(c["id"])] == "accepted" for c in trades) and not any(c["kind"] == "trade_cancel" for c in all_commands),
         "planner_decisions_match_all_public_commands": planned == decisions,
         "only_requested_care_mode": [c["args"] for c in all_commands if c["kind"] == "care_mode"] == ([{"mode": "Hearthside"}] if report.get("mode") == "Hearthside" else []),
         "eight_living_equipped_residents": len(world["citizens"]) == 8 and all(not c["death_recorded"] and not c["departed"] and c["equipment"]["cloak"] == "cloak" for c in world["citizens"]),

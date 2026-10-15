@@ -20,6 +20,12 @@ class MerchantAuditChecks(unittest.TestCase):
     def test_synthetic_contract_is_internally_consistent(self):
         self.assertTrue(all(sweep.economy_checks(*fixture()).values()))
 
+    def test_native_numeric_merchant_reference_matches_string_entity_id(self):
+        r, w, i = fixture()
+        for e in w["trade_state"]["exchanges"]:
+            e["merchant"], e["receipt"] = int(e["merchant"]), int(e["receipt"])
+        self.assertTrue(all(sweep.economy_checks(r, w, i).values()))
+
     def test_same_merchant_twice_is_not_two_scheduled_visits(self):
         r, w, i = fixture();w["trade_state"]["exchanges"][1]["merchant"] = "10"
         self.assertFalse(sweep.economy_checks(r, w, i)["two_distinct_riverward_purchases"])

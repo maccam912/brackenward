@@ -11,8 +11,19 @@ func _init() -> void:
 func plan(world: ColonyWorld) -> void:
 	if last_policy==world.tick:return
 	super.plan(world)
+	_staff_gatherer(world)
 	_buy_cloth(world)
 	_deliver_cloaks(world)
+
+func _staff_gatherer(world: ColonyWorld) -> void:
+	var newcomers: Array=world.citizens.filter(func(c:Dictionary)->bool:return c.id>4 and not c.death_recorded and not c.departed)
+	if newcomers.is_empty():return
+	var person: Dictionary=newcomers[0]
+	if person.preferences.Gathering!=3:issue(world,"preference",{"citizen":person.id,"category":"Gathering","value":3})
+	if person.preferred!="Gathering" and person.preferences[person.preferred]>2:issue(world,"preference",{"citizen":person.id,"category":person.preferred,"value":2})
+
+func _gather(world: ColonyWorld, definition: String, reserve: int, tasks: int, limit: int = 64) -> void:
+	super._gather(world,definition,200 if definition=="tree" else reserve,4 if definition=="tree" else tasks,limit)
 
 func _fields(world: ColonyWorld, crop: String, desired: int, roof: bool) -> void:
 	if crop!="flax":super._fields(world,crop,desired,roof)

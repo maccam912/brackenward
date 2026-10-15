@@ -384,3 +384,29 @@ completion `dc2a7a3707c11528fe27d1018b62c8e6644b28ed650e900079efdbf5ee5dc59e`,
 audit `381e5649fbf9b5330e2ea9378c52cd1f2173434ef35199ed09dd1416ff4f04e4`.
 These are retained generator-1 campaigns. Fresh generator-2 Winter/Charter and
 ordinary twenty-resident seasonal evidence have separate pending scopes.
+
+
+## Fresh generator-2 Charter matrix
+
+All four fresh generator-2/content-v6 cases at clean frozen
+`d8703815c43562b4ef8746446a4d0af3885da725` pass 96 days, tick 1800→693000,
+with eight residents, all five stages, ceremony, Continue and 2304 invariants
+each. All record zero zero-fullness/grace-exceeded ticks. An explicit second
+audit passes, and the independent trade-free audit preserves all twenty files
+and finds no barter, imported goods or opportunity receipts. These are actual
+new generator-2 campaigns, separate from the retained generator-1 origins above.
+
+| Site / mode | Ceremony end | Minimum health | Final canonical hash |
+| --- | ---: | ---: | --- |
+| meadow_reach / Standard | 327,601 | 90 | `74848a32e357ee7ff1004a1bc80a57ef5e50fd3618f3a0b735c6ac97a9b60e3d` |
+| pine_shelf / Standard | 408,001 | 92 | `e235c0af1a7357a76b1bba7a0797fc7409b9b645a4b0ad21029cd06c3ffd87bb` |
+| reed_bend / Standard | 378,601 | 92 | `649ec3d9e7c41e73391d2c65943f0fdb8f0594907bb3819c0d186dd620259a22` |
+| pine_shelf / Hearthside | 314,101 | 100 | `8d437c959f3eebe84c2a3b03c395232026eaf00196d079d3dbe01aa1111322e5` |
+
+Raw directory: `charter-release-gen2-v6-d870381/`. Source SHA-256
+`26e5fc1c96e0fa2e5c36459e4db107e917878c0c13e4870db1b41cc64e1b6107`,
+completion `5cd7cea7bab52c91ae12f2b93c125eb3506544de21eca49f0b1db589254c9fc1`,
+audit `9d6bcce96e5fc7527b6abb4ffc375fc1448696661b1c6f02c5a56f5424b572e4`.
+Separate no-trade audit `charter-gen2-no-trade-v50-audit.json` SHA-256
+`aefbbb8fdfb41ad6b854135b38b6d4f615054c409929e604f8f8ee713b557e57`.
+Fresh Winter and ordinary twenty-resident seasonal results remain separate.
