@@ -1,0 +1,170 @@
+{
+  "format": "brackenward-generation-goldens",
+  "version": 1,
+  "generator_version": 2,
+  "content": "colony-v6",
+  "catalog_sha256": "eb5fd60496e154184057859aad76683ffdd91acd839cf9335fa48293e3f6a9b5",
+  "source_commit": "d8703815c43562b4ef8746446a4d0af3885da725",
+  "source_json_sha256": "0e3e98a7f6c24dfdddf0be22db3b97108c284705d6140becba1148311af2825b",
+  "audit_sha256": "a2ab7d5337115155a8ef48d42c8a7f14de0168074d1a0e82f65e04aa64119570",
+  "review_inputs_sha256": "a0bad21177680eebe624a8d6bdcd617126109334ab9a8c0f62bfba9c641ff7e6",
+  "review_renderer_sha256": "ad9c4ac307df8ef268d710815ff716d373444f6c36c0fd72da48619c56d932f8",
+  "review_scope": "Codex visually inspected all nine terrain/soil/access sheets (18 maps), after independent raw-map validation. No physical play or human tester approval is implied.",
+  "review_images": {
+    "pine_shelf-terrain.png": "abc6836db179fe0d3635efd9c2316e09faea71dd3afc22d1a9be1608dc7f0fa4",
+    "meadow_reach-terrain.png": "d2fa8876bdf139002bad384f9c2cea74397eafd049e226157774ef5382734441",
+    "pine_shelf-soil.png": "1459d81e6da69598c59494a2944a32f993d1d35e01c19f2c0d988809f0a45853",
+    "reed_bend-terrain.png": "ad7cdbb5d6710d935bb4de243bf2eb38ac9e32bf6626afa60f4bb9bb195d6663",
+    "pine_shelf-access.png": "dfb8f58c0faacfdb0c4e379f9f07567cc5f007199ab91aea7f5e6887ceb022b0",
+    "reed_bend-soil.png": "b14cdf95b0e2ae19af1c4bd51727b9cd73427a80916a1b8fbfc0b85ccff487e5",
+    "meadow_reach-soil.png": "e2bfce7846967d873345edfd0a0da73a0f7b38eada3000b98d637704a4b80286",
+    "meadow_reach-access.png": "d3dcbf88a8afd446cd1e35c268ef8a6453b8af5d415b9c0b08d9ac8ea95f8a8d",
+    "reed_bend-access.png": "37a0579eb1cf34c128d511c004edc43853fc14e051d76951d679313a479386ea"
+  },
+  "maps": [
+    {
+      "site": "meadow_reach",
+      "seed": 0,
+      "canonical_hash": "a1f86627435e6636c8d32ee2b214a375b465717657047e87335018b817c92ad3",
+      "map_sha256": "ed457f35aecf689e9025c3614f13841770284161651a83e2bc124692c93535a6",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 1,
+      "canonical_hash": "80de0cade8588f7e1b1150919ee23cf028455c07c7414daf2ca5f9e6da82a710",
+      "map_sha256": "b74687228459f14c046842aecd8d01d32a03d5541b5ba1c1a53a2a247d4fac19",
+      "transform": 1,
+      "attempt": 0
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 42,
+      "canonical_hash": "0994d663745a68f8b5289ace5ec9e1bdd593209e448c9aab63f5ea75f54931a4",
+      "map_sha256": "1398a110e68e2e8763eda64a23495e8860c1abce61ed7f8e9274320b0b8a2a9e",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 104729,
+      "canonical_hash": "0ecd4b3675fe4b910d4003cd51f599b9b0bb8d9612c42a3fa9c28b63d105bf26",
+      "map_sha256": "5bfa312df5f2ae0c566f37d0a2468e4dbd3b9a1c9e45cb77bc8e42e1284831d5",
+      "transform": 3,
+      "attempt": 0
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 2147483647,
+      "canonical_hash": "0eecce69e43e31551a91881c0269aa708c8de5d656055bdcacdb177e80e83b9e",
+      "map_sha256": "21d1f0b74ac0190d66749526f937d8a1fffadf1331ea93740b41b03140590be2",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 4294967295,
+      "canonical_hash": "3755d4b296be1a0ae3eeaf08c1321f3d4237a0b7831aa6c6944a6d57a7266c74",
+      "map_sha256": "df5b28a95eeeaf68a4bfe51fd3f178d1feb843a688fdcdf75d045ba71737008b",
+      "transform": 0,
+      "attempt": 0
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 0,
+      "canonical_hash": "83fa08d115f8470205786bace40c893406f632ed5a45be256dc2f777822b223d",
+      "map_sha256": "d39f5eb528625871ea8835165e02e79a827a6c7fc85fe04b8b73d99d8a3c29f7",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 1,
+      "canonical_hash": "aa3f21960ab712742034effdd579b493abaf6af5debca9f849008fea75bcb4c4",
+      "map_sha256": "d07c547f95713e39977bf0cf781b3b34cf5f97506ec5fa53a61a5e8aaaffc5d9",
+      "transform": 0,
+      "attempt": 0
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 42,
+      "canonical_hash": "d110fe709ae7ae17e0600cd6537c4845f299a31b114db9fa3f1241da18ee3f0e",
+      "map_sha256": "63a0eb24bf1af2fb5855afe28f7145e2371c1f55e9f33d9128e1178449d3f58c",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 104729,
+      "canonical_hash": "19df7b531e71d2bdf1f84d6ef039a92ab2407527fbfa31e51c1fd7fbb5df6a1b",
+      "map_sha256": "68abf13117574d0a214df85ca7f32417c49101638c3aad878de70fa2668afd0e",
+      "transform": 3,
+      "attempt": 0
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 2147483647,
+      "canonical_hash": "bf5787201e51d9f054801ecf70b181f3c16437e8bc7f685094fb2f645ca75290",
+      "map_sha256": "181a64d16ee4316640751bff499bfc19ef6f5ca759bf6bf604d5f3db9579b8a4",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 4294967295,
+      "canonical_hash": "a43d8cf18dd794808d04d8f3c44eb1d74f4831c2dc8bcd2c5e3977f3660a8189",
+      "map_sha256": "d91af9be26f11e04ed8bf73fc439ced4308547f864e65eda570855fb6c32437b",
+      "transform": 3,
+      "attempt": 0
+    },
+    {
+      "site": "reed_bend",
+      "seed": 0,
+      "canonical_hash": "08930a88c6a1ad2629b350f77df3f4d1410c9a917cb0f77d4dff2c7a1ada3fa2",
+      "map_sha256": "e16f9afb605b33608edea60dfd1969216f8ba9a8f641e1731af79b6d3cca35b2",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "reed_bend",
+      "seed": 1,
+      "canonical_hash": "48d75a54104cdad8c6e156781c59f1a42725cb5ce66c1924c49b2ac241a4a040",
+      "map_sha256": "9bcbc33caa7318ed118dae6fd1f91498ffe2fc0ff5f4b28011561f3295b6a26a",
+      "transform": 0,
+      "attempt": 0
+    },
+    {
+      "site": "reed_bend",
+      "seed": 42,
+      "canonical_hash": "3f3901c77d0d77963dfe06d82c918010d3d8aea4e4f8c871ef3fdbe250d25050",
+      "map_sha256": "d230274b4b08e682a6d452434ad8a33929764a177245079487fa99e8421d9649",
+      "transform": 0,
+      "attempt": 0
+    },
+    {
+      "site": "reed_bend",
+      "seed": 104729,
+      "canonical_hash": "328aaeeda39fad8b4029a0402472795079a90ed6d89135c4f6bb9268e82d6572",
+      "map_sha256": "0c0eef8dd48fd3af9e1995c15e3f72a3c44aabcea3186375e9e8f553fcc4bdc0",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "reed_bend",
+      "seed": 2147483647,
+      "canonical_hash": "c34d3ea36c6271f13caaf54d34323dd74b44e8d87ffb0fe7313a86a51228a6b9",
+      "map_sha256": "b59a08d88cc4cdd4fba6a36a20da04d312a0bb0ccc267822126a20cd6e90a7b3",
+      "transform": 2,
+      "attempt": 0
+    },
+    {
+      "site": "reed_bend",
+      "seed": 4294967295,
+      "canonical_hash": "08d01c213998f74b25e189b656d8e4588ced4ad2269b842929b2192497c5af6c",
+      "map_sha256": "466cbd4867342fe97525c7cc128556c9415ef6d900cfd6cb04b7bf381bd03a20",
+      "transform": 2,
+      "attempt": 0
+    }
+  ]
+}

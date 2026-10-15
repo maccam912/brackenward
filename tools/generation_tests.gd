@@ -3,6 +3,10 @@ extends RefCounted
 
 static func run(check: Callable) -> void:
 	NavigationTests.reachability(check)
+	var golden: Variant=JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/generation-v2-goldens.json"))
+	var valid: bool=golden is Dictionary and golden.get("format","")=="brackenward-generation-goldens" and golden.get("version",0)==1 and golden.get("generator_version",0)==ColonyGeneration.VERSION and golden.get("maps",[]) is Array and golden.maps.size()==18 and golden.get("catalog_sha256","")==ColonyTests.world().definitions.content_hash
+	check.call("GEN/inspected_golden_fixture_identity_and_coverage",valid)
+	if not valid:return
 	var hashes: Dictionary = {}
 	for site in ColonyGeneration.SITES:
 		for seed_value in [0,1,42,104729,2147483647,4294967295]:
@@ -15,6 +19,8 @@ static func run(check: Callable) -> void:
 			var repeat: ColonyWorld = ColonyTests.world()
 			ColonyGeneration.configure(repeat,seed_value,site)
 			check.call("GEN/reproducible_%s_%d" % [site,seed_value],repeat.canonical_hash() == world.canonical_hash())
+			var expected: Array=golden.maps.filter(func(row:Dictionary)->bool:return row.site==site and row.seed==seed_value)
+			check.call("GEN/inspected_v2_golden_%s_%d" % [site,seed_value],expected.size()==1 and expected[0].canonical_hash==world.canonical_hash() and expected[0].transform==world.terrain_state.transform and expected[0].attempt==world.terrain_state.attempt)
 			hashes[site+str(seed_value)] = world.canonical_hash()
 			var counts: Dictionary = {}
 			for resource in world.resources: counts[resource.definition] = counts.get(resource.definition,0)+1

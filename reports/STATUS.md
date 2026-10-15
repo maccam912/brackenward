@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.45-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.46-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.45-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `4042af1` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-4042af1cdd66); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,622 checks, zero failures, including 663 native UI checks. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,641 checks, zero failures, including 663 native UI checks. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained; the expanded generation suite passes 167 in 0.7.46. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2831,3 +2831,18 @@ Remote 0.7.44 CI and all three published assets were verified; the
 [checked APK](https://github.com/maccam912/brackenward/releases/tag/dev-cd5d75141fc6)
 has SHA-256 `e920288dc542f89ff08b9383155dd0295479198f39fe73be91c9fe72a1bc1b84`.
 Current physical Android behavior/PSS/battery/thermals remain unmeasured.
+
+## 0.7.46 inspected generation expectations
+
+The exact frozen 0.7.45 boundary export and independent audit pass all eighteen
+maps with zero fallbacks. Nine rendered terrain, soil and shortest-access/flood
+sheets were visually inspected before pinning eighteen revision-2 whole-world
+canonical hashes. The new fixture records source/raw-map/audit/renderer/image
+identities; old replay and geometry expectations remain untouched. See
+[GENERATION_EVIDENCE.md](GENERATION_EVIDENCE.md) for hashes and observations.
+The expanded generation suite passes 167 checks, bringing the maintained total
+to 2,641 across 28 suites. Runtime generation is unchanged from 0.7.45. The full
+30,000-map release sweep and fresh revision-2 first-Winter matrix remain running;
+the older revision-1 post-Charter continuation also remains in progress.
+Catalog/media validation and local Android export pass; aapt verifies
+0.7.46-m7 / local code 85. No runtime gameplay rule changes in this checkpoint.

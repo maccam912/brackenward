@@ -76,3 +76,41 @@ The frozen historical replay passes all 234 checks and 62 commands, keeping
 and `b996c5f4e4d953d234b3d967fc931582dbd426fc527e410e6dc92af5bee707d6`.
 Native source launch, catalog/media validation and Android debug export pass;
 aapt reports 0.7.45-m7 / local code 84. These do not certify physical Android.
+
+## 0.7.46 inspected revision-2 golden fixtures
+
+The clean frozen d8703815c43562b4ef8746446a4d0af3885da725 boundary run completes
+and independently audits all eighteen maps, with no fallbacks or retries.
+Minimum reachable safe building area is 11,231 tiles and minimum reachable wild
+food is 606 units. The release flag is correctly false for this six-seed subset.
+Raw directory is `generation-v2-d870381-boundary/`; source SHA-256 is
+`0e3e98a7f6c24dfdddf0be22db3b97108c284705d6140becba1148311af2825b`,
+audit `a2ab7d5337115155a8ef48d42c8a7f14de0168074d1a0e82f65e04aa64119570`.
+
+`render_generation_review.py` produces nine contact sheets: terrain/resources,
+soil, and actual shortest resource access with future flood overlay, separately
+for all six boundary seeds at each site. Codex visually inspected all nine.
+Rivers remain continuous with a four-tile crossing; paths are two tiles wide,
+home rectangles and fields remain empty/dry, poor/rich soil retains coarse patch
+boundaries outside protected ground, and mirrored fields/uplands/river crossings
+remain consistent with the stored transform. Pine is visibly more wooded and
+poorer; Reed has richer patches and the wider flood band. Route colors show
+clear cart approaches; no protected home/field intersects floodwater and boars
+remain beyond the near resource rings. Independent quantities and BFS, rather
+than visual guesses at individual dots, establish the exact 24/40-step counts.
+This is agent visual inspection, not user playtesting or human-study approval.
+
+After that inspection, `tests/fixtures/generation-v2-goldens.json` pins eighteen
+whole-world canonical hashes with raw map, source, audit, renderer and image
+hashes. Fixture SHA-256 is
+`0ebd2c7c26acf34842598eac3d598fa517c5295c0622554c8b9d14450fd2e292`;
+review manifest SHA-256 is
+`a0bad21177680eebe624a8d6bdcd617126109334ab9a8c0f62bfba9c641ff7e6`.
+The normal generation suite compares these inspected expectations without
+replacing any older fixtures; all 167 checks pass. Maintained total is now
+2,641 in 28 suites. Runtime generation remains exactly the 0.7.45 code.
+
+The full 30,000-map release sweep and thirty-case fresh revision-2 Winter matrix
+are running from separate clean d870381 checkouts. They are not yet passing
+release results. The existing revision-1 Charter/Winter/twenty-colony evidence
+keeps its original scope and bytes.
