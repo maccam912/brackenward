@@ -843,6 +843,20 @@ func _assignment_jobs() -> Array:
 		if state!="Complete" and state!="Canceled" and state!="Queued":result.append(job)
 	return result
 
+func _has_treatment(open_jobs: Array, target: int) -> bool:
+	if not in_tick:
+		return open_jobs.any(func(j:Dictionary)->bool:return j.kind == "treat" and j.target == target and j.state not in ["Complete","Canceled"])
+	for job: Dictionary in open_jobs:
+		if job.kind=="treat" and job.target==target and job.state!="Complete" and job.state!="Canceled":return true
+	return false
+
+func _has_emergency(open_jobs: Array) -> bool:
+	if not in_tick:
+		return open_jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
+	for job: Dictionary in open_jobs:
+		if job.emergency and job.worker==0 and job.state!="Complete" and job.state!="Canceled" and tick>=job.retry:return true
+	return false
+
 func _assign_search(citizen: Dictionary) -> void:
 	work_budget.mark_dirty()
 	if citizen.away: return
@@ -868,13 +882,13 @@ func _assign_search(citizen: Dictionary) -> void:
 	var hunger_food: Dictionary = {};var hunger_food_checked: bool = false
 	var taking_break: bool = citizen.break_until > tick
 	var draft_ready: bool = citizen.drafted and not taking_break and citizen.fullness > 0 and citizen.rest > 100 and (citizen.health > 40 or citizen.stand_fast)
-	var treatment_wait: bool = not draft_ready and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.kind == "treat" and j.target == citizen.id and j.state not in ["Complete","Canceled"])
+	var treatment_wait: bool = not draft_ready and citizen.fullness > 0 and citizen.rest > 100 and _has_treatment(open_jobs,citizen.id)
 	if treatment_wait and current.get("kind") not in ["eat","sleep"]:
 		_release(current,false)
 		citizen.activity = "Resting for treatment"
 		return
 	if not current.is_empty():
-		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
+		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and _has_emergency(open_jobs)
 		var ordinary_food: bool = not draft_ready and not current.emergency and citizen.fullness<=food_threshold and current.kind!="eat" and (current.kind!="sleep" or citizen.rest>100)
 		if ordinary_food or (citizen.fullness==0 and current.kind!="eat"):
 			# Query the exact food that releasing this job would expose, without

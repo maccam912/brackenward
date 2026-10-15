@@ -1,0 +1,249 @@
+{
+  "passed": true,
+  "build": "0.7.80-m7",
+  "local_android_code": 119,
+  "maintained_gdscript_assertions": 2902,
+  "change": "Direct typed trusted-tick treatment-wait and emergency existence scans over the same open-job list. Identical ordered predicates and short circuit,live target/worker/state/retry/tick. Outside-tick callbacks remain. No new cache,serialized state,catalog,admission or wire rule.",
+  "fresh_suites": [
+    {
+      "suite": "scheduler",
+      "assertions": 438,
+      "xml_sha256": "f3e25b6a83b35be66dc2fd791f9846893f2f47e8c84f6c307fa141eee47d1c6c",
+      "log_sha256": "113acc19de7d7e01d04276c3d6668a88b79722a31ed5156879c48516be90b628"
+    },
+    {
+      "suite": "persistence",
+      "assertions": 502,
+      "xml_sha256": "062bfe87d79cf14cd69041c4865198f016c8013db2bfa30168a52c1ee8b8e894",
+      "log_sha256": "e09c58a3855564cafce0188658d596de285ae925d4c4beb39a85905f5e993b42"
+    },
+    {
+      "suite": "unit",
+      "assertions": 24,
+      "xml_sha256": "ad3950ae55174291e3a84924266526fbd4b402e54db6b83f8b0c631db33de658",
+      "log_sha256": "354b17b1f751caf5652dbef4b12f28b2a501b5f68d452701bebfc67a26f112b5"
+    },
+    {
+      "suite": "care",
+      "assertions": 55,
+      "xml_sha256": "cc52ef30c03780c7a8917fda9c050c15e68d4133f67a16c8bca26949db5e8c66",
+      "log_sha256": "b465b00f16f90d87a5730a0c06080557e9f4fd91679e41c186634871a380bbbb"
+    },
+    {
+      "suite": "fire",
+      "assertions": 23,
+      "xml_sha256": "521bee2de7a6e1bb07b3b7db38b75a0e74bab6f68747a3a9c06a4bf688aa139f",
+      "log_sha256": "5dd6529731c0ba47fad4bd25fe16d4c3fd017630edca4e5e5f006dcdd1c9e9ff"
+    },
+    {
+      "suite": "defense",
+      "assertions": 81,
+      "xml_sha256": "568ceba0ff61deb8c155f75555a34b42085b0d07597848d7303b71bca50c8342",
+      "log_sha256": "cc707c6417250989b15ba5e32bfdd55a771013d003ae80e3e3f271fcb22c83bb"
+    }
+  ],
+  "new_scheduler_assertions": 5,
+  "replay": {
+    "sha256": "06cb35057cafdf44e739623b0327d82dccb27d1fc44959a88d8cb2484cc29c92",
+    "commands_verified": 62,
+    "all_old_acknowledgements": true,
+    "checkpoint_hashes": [
+      {
+        "canonical_hash": "4640f173ff6aac07e49444a1cb7ffe344fa3ab52b70d66595e1d512f8f520dc0",
+        "snapshot_roundtrip": true,
+        "tick": "7200"
+      },
+      {
+        "canonical_hash": "258a41e5b88bbd65cf1b119f41e8fc07bf205a81ba041bb22e67f8f56940f8db",
+        "snapshot_roundtrip": true,
+        "tick": "72000"
+      }
+    ]
+  },
+  "inherited_validation": "79GUI679 and other21headless suites retain original fresh79scopes; all presentation/persistence/generation/scenes/catalogs and immutable fixtures unchanged. Current80S438,P502,unit24,care55,fire23,defense81,replay62 fresh. No fresh80GUI/native claim.",
+  "ui679_original79_xml_sha256": "1f33e2cc63c1e9473010cc6b83a35e8897e7a74052ebffa989432e763eafbd63",
+  "complete_original_search_proof": {
+    "source_commit": "476bdd0be6472366ca6870a82d8e29ba2753c274",
+    "complete_original_assignment_search_exact_except_trailing_separator": true,
+    "current_search_differs_only_in_two_probe_calls": true,
+    "original_method_sha256": "33f1153aa612bbb91911d506c907f38db09efce03ea404986fca07a64f87b64a",
+    "reference_sha256": "48f83c0a0fd346d1e56430b79d51fdf3978743097f41f37a2136c38b8803fa74"
+  },
+  "authoritative_complete_tick_profiles": [
+    {
+      "case": "late",
+      "file": "reports/assignment-probes-v80-raw/late-versioned-final.json",
+      "sha256": "37c8ec0d31cacd72709d2fed3cc35e222667e5e8426069a93c4369402864ca0e",
+      "ticks": 1200,
+      "initial_tick": 25967,
+      "input_sha256": "cafc0b5ca1be82608b8ab4a9002e114c2bda8312ca38988b05f4c3cf2d08b478",
+      "pairs": 4,
+      "metrics": {
+        "elapsed_us": {
+          "reference_median": 4176351.5,
+          "current_median": 4122712.0,
+          "reduction_percent": 1.284362678763984
+        },
+        "max_tick_us": {
+          "reference_median": 67606.0,
+          "current_median": 66445.5,
+          "reduction_percent": 1.7165636186137312
+        },
+        "p95_tick_us": {
+          "reference_median": 18178.5,
+          "current_median": 17745.5,
+          "reduction_percent": 2.3819347030833105
+        },
+        "p99_tick_us": {
+          "reference_median": 24107.5,
+          "current_median": 23930.5,
+          "reduction_percent": 0.7342113450171106
+        }
+      },
+      "all_unsorted_states_invariants_input_and_source_exact": true
+    },
+    {
+      "case": "fresh",
+      "file": "reports/assignment-probes-v80-raw/fresh-versioned-final.json",
+      "sha256": "74d3984d1374ac033f6a0a688e1da2f8361d593a8d60d1adb040128831e11d12",
+      "ticks": 7200,
+      "initial_tick": 1800,
+      "input_sha256": "",
+      "pairs": 4,
+      "metrics": {
+        "elapsed_us": {
+          "reference_median": 1144078.5,
+          "current_median": 1137500.5,
+          "reduction_percent": 0.5749605468505892
+        },
+        "max_tick_us": {
+          "reference_median": 19138.0,
+          "current_median": 18971.0,
+          "reduction_percent": 0.8726094680739926
+        },
+        "p95_tick_us": {
+          "reference_median": 280.5,
+          "current_median": 276.0,
+          "reduction_percent": 1.6042780748663055
+        },
+        "p99_tick_us": {
+          "reference_median": 350.0,
+          "current_median": 348.0,
+          "reduction_percent": 0.5714285714285672
+        }
+      },
+      "all_unsorted_states_invariants_input_and_source_exact": true
+    },
+    {
+      "case": "ordinary20",
+      "file": "reports/assignment-probes-v80-raw/ordinary20-versioned-final.json",
+      "sha256": "e40125cda4dba6ee9a62f7998c5fc8b15c22128af982f4dbeba60981b2c1d606",
+      "ticks": 720,
+      "initial_tick": 693000,
+      "input_sha256": "e93bff9ebfe59ef1557003a15ab8ff7c4422c8e2b7ccc5f4a6e799c9e31c5b9f",
+      "pairs": 4,
+      "metrics": {
+        "elapsed_us": {
+          "reference_median": 2943680.5,
+          "current_median": 2899702.5,
+          "reduction_percent": 1.4939800701876393
+        },
+        "max_tick_us": {
+          "reference_median": 130999.0,
+          "current_median": 131892.5,
+          "reduction_percent": -0.6820662753150852
+        },
+        "p95_tick_us": {
+          "reference_median": 11983.0,
+          "current_median": 11735.0,
+          "reduction_percent": 2.0695985980138554
+        },
+        "p99_tick_us": {
+          "reference_median": 20102.0,
+          "current_median": 19749.5,
+          "reduction_percent": 1.7535568600139273
+        }
+      },
+      "all_unsorted_states_invariants_input_and_source_exact": true
+    }
+  ],
+  "legacy_ordinary_scope": "Actual v6 ordinary-twenty96day endpoint at693000 decoded with current migration,then720current future ticks compared against complete476bdd0search. Not a new96day v7campaign.",
+  "initial_future_test_failure_retained": {
+    "failure_log_sha256": "c344762f0c1067c271462e91bb5a076b8459a21f6977c5d555b8e3acc56012dd",
+    "first_test_source_sha256": "56ba21e7bcacc9715f6e9e2b097034441f7c3a947a5923fa6c252c691fd07ff2",
+    "diagnostic_sha256": "8e2cddd4a86faa6530d9bf9b0ae9d65b007601079bd47f707c66b075ea7193d2",
+    "cause": "Test reloaded only current twin at90ticks; codec dictionary-key insertion order differs while canonical hashes equal. Corrected test compares unsorted state on every tick and reloads both at the same boundary,then preserves full old-search override. Product code unchanged.",
+    "corrected_ordinary_cases": "700ticks each real treat_now/mobile waiting and real firefighting with CareOff,actualcompletion required,both reload at90ticks,exact full unsorted state each tick and invariants."
+  },
+  "message_test_launcher_failure_retained": {
+    "initial_exit_code": 5,
+    "initial_log_sha256": "e70fec2825d9bf206d27463a792768195039599cb39bcca66339f47283f84cce",
+    "scope": "Wrong discovery pattern found zero tests; rejected. Correct pattern test_ui_messages.py freshly runs five and passes."
+  },
+  "android_artifact": {
+    "passed": true,
+    "exit_code": 0,
+    "wall_seconds": 7.578284417046234,
+    "local_code": 119,
+    "apk_sha256": "2cbbb6e4606ae79bc2ad1b16b2c7ee19814efac3a662d848ba2a71f77d2cd151",
+    "kotlin_xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "kotlin_tests": 4,
+    "kotlin_status": "UP-TO-DATE",
+    "adb_daemon_connection_refused_present": true,
+    "scope": "Actual export/metadata/artifact audit; no emulator or physical install."
+  },
+  "source_sha256": {
+    "src/sim/colony_world.gd": "a497c3c6adbaa457bacae8838a6f78a890f1ac4401962a4131bee2b45634a0f3",
+    "tools/assignment_probe_tests.gd": "b333305117c4243e26d366dec144b3367046da72d1a88ac95de42e65f849e8a9",
+    "tools/assignment_probe_reference.gd": "48f83c0a0fd346d1e56430b79d51fdf3978743097f41f37a2136c38b8803fa74",
+    "tools/profile_assignment_probes.gd": "b896128b0fe9599773fbcb2f1c38c358cf57ef37f00d1ecb62b067c02e934c41",
+    "tools/run_suite.gd": "0243c2dd8ff971f08b12ecd61246b972d91430027f78dfd77469b7c0191ccd7c",
+    "project.godot": "95fd86a1aa5b522caea68aed76ec07ccf7766be8f356e32c102509a702258c05",
+    "export_presets.cfg": "9d317d30b2a038057d0d149bd7186407e97ee910d37fed0809ef9e6fd1a637cd"
+  },
+  "raw_sha256": {
+    "apk-artifact-audit.json": "c924570c79dd46308cf36fe0ab6f6d2b4f62aa61ba67e1c4ea417e910de31e60",
+    "apk-final-completion.json": "feca7a3ba5b6f2b0f2cc69a9b642189a755c0e317f8526fae564335113a86e4c",
+    "apk-final.log": "4445284569402102a813d9d699fbb31d43055ee1131d7521530e7678e1ed39e3",
+    "assignment-probe-tests-diagnostic-future.gd": "6a39786e50a2b4bb16260ca66dbe81239c1c107aa5c47a136efc30a57c76a9e1",
+    "assignment-probe-tests-first-future.gd": "56ba21e7bcacc9715f6e9e2b097034441f7c3a947a5923fa6c252c691fd07ff2",
+    "care-final.log": "b465b00f16f90d87a5730a0c06080557e9f4fd91679e41c186634871a380bbbb",
+    "content-final.log": "e14039489855c74c0a1a50a1e358cffdf1c86b721cf6158411a16852a17ec68e",
+    "defense-final.log": "cc707c6417250989b15ba5e32bfdd55a771013d003ae80e3e3f271fcb22c83bb",
+    "final-profiles-completion.json": "169f10f7b2b757479f72adf0c2948fb3380e164a326549b9c27dfa453113f5a2",
+    "fire-final.log": "5dd6529731c0ba47fad4bd25fe16d4c3fd017630edca4e5e5f006dcdd1c9e9ff",
+    "fresh-versioned-final.json": "74d3984d1374ac033f6a0a688e1da2f8361d593a8d60d1adb040128831e11d12",
+    "fresh-versioned-final.log": "c65b8f4e80929e1d667417edd63beca64659b8ea6f55ce00cbe035d22651b3ed",
+    "future-corrected.json": "43a99728ec3c60585e46969afae4dfd424f081dd93bf785d896960babc9aa583",
+    "future-corrected.log": "228c7e4c9a989139340050447d6a205a269078736f66d7bf94820bc1a90d3a64",
+    "future-diagnosis.json": "8e2cddd4a86faa6530d9bf9b0ae9d65b007601079bd47f707c66b075ea7193d2",
+    "future-diagnosis.log": "8e497174552ac6b262da887d1ce99860be8aa2e361b80ecf1f140d2865aceff1",
+    "import-first.log": "3a443218598bdcd03c8bb17624aba53af61dd2f48671d03a9b4032be23331d0e",
+    "late-versioned-final.json": "37c8ec0d31cacd72709d2fed3cc35e222667e5e8426069a93c4369402864ca0e",
+    "late-versioned-final.log": "c65b8f4e80929e1d667417edd63beca64659b8ea6f55ce00cbe035d22651b3ed",
+    "launcher-correction.json": "bf9e8af08107673ac99d0008678687c836354d3d95dcb2e2a8ec83116738c5c5",
+    "messages-corrected-final.log": "888a0c0ed615e57d32cf72be501b0c355f33b8613c81dfdaa99db33d7959487e",
+    "messages-final.log": "e70fec2825d9bf206d27463a792768195039599cb39bcca66339f47283f84cce",
+    "native-endpoint-preservation.gd": "0e7099bab0fb2575a6e4d3f9e2947ce5ff31bf065935eb99066a92fe14e4a926",
+    "native-endpoint-preservation.json": "7bd98e8ec7bee0e4ff2e85f2ab912fffcdfdc4a9053d184a1293d537c143abbe",
+    "native-endpoint-preservation.log": "cbc976512401df9628d7f59f3507b83589d39d88c52f30561edcb7de3f585917",
+    "ordinary20-versioned-final.json": "e40125cda4dba6ee9a62f7998c5fc8b15c22128af982f4dbeba60981b2c1d606",
+    "ordinary20-versioned-final.log": "c65b8f4e80929e1d667417edd63beca64659b8ea6f55ce00cbe035d22651b3ed",
+    "persistence-final.log": "e09c58a3855564cafce0188658d596de285ae925d4c4beb39a85905f5e993b42",
+    "reference-equivalence.json": "194fccc27d13294fb9e5d20b228b3b1fe5c8534c7ec1665edbb8236e34b248f9",
+    "replay-final-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "replay-final-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "replay-final-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "replay-final-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+    "replay-final-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "replay-final.json": "06cb35057cafdf44e739623b0327d82dccb27d1fc44959a88d8cb2484cc29c92",
+    "replay-final.log": "3d9c0da9f6c9acb3e69ae26fcde7eb7e344bca14898348826453dfd19b180f61",
+    "scheduler-final.log": "113acc19de7d7e01d04276c3d6668a88b79722a31ed5156879c48516be90b628",
+    "scheduler-first.log": "83c4a1d9b2677b66328736320486f4dacfc4786643b9554279d7fdb281c1c8d4",
+    "scheduler-future-first-failure.log": "c344762f0c1067c271462e91bb5a076b8459a21f6977c5d555b8e3acc56012dd",
+    "targeted-future.gd": "033780d4b705c506f77ffd63135392a949db9d2fde0f73a255ac959a784761b2",
+    "unit-final.log": "354b17b1f751caf5652dbef4b12f28b2a501b5f68d452701bebfc67a26f112b5",
+    "validation-progress.json": "3ab05a5ccdd3a4875635e1b60172f7569c7b02ceeb5d5a3098f2ae61365699ea"
+  },
+  "scope": "Final four alternating complete-tick pairs run after native79soak ends,without another GUI/emulator/benchmark. Headless regressions/replay/export shared host during that separate native79measurement. No physical/PSS/thermal/battery/human or4ms tick certificate. User requested finishing this batch and stopping for testing; longer quota goal paused after publishing."
+}

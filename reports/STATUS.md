@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.79-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.80-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -29,7 +29,7 @@ Checkpoint: `0.7.79-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `25cb2c0` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-25cb2c097d10), code 231 / 0.7.78-m7+25cb2c0, APK SHA-256 `a1e7e5c3eac078074cc803eb715dbb67359aed3102263ab9369087aebed1ee68`. Four-host artifacts, 28 suites / 2,892 assertions, Kotlin 4 and exact published assets audited. Current 79 publication and production signing/store release remain separate. |
 
-Current recorded validation: all 28 GDScript suites freshly pass / 2,897 assertions, including scheduler 433 and native GUI 679. The 0.7.79 food-candidate view adds five scheduler checks; replay 62 and every retained acknowledgement, catalog/font 671, Python messages 5 and Android 118 export/metadata pass. Cached Kotlin 4 XML is inspected. Four alternating complete-tick pairs preserve all unsorted states, invariants, inputs and source fingerprints. Late-colony median worst tick improves 4.51%; total-time medians improve less than 0.5% in late, fresh and legacy-twenty future cases, with slightly higher late p95/p99. The wider tick target remains open. The initial three-field cache failure and exact failing sources are retained; the identity guard fixes equal-size source replacement. Version 78/code 231 is the latest fully audited remote publication. Native 75 duration, unresolved frame growth and tick budget retain their original scopes. Current 79 native/CI/publication and physical/human gates remain separate.
+Current recorded validation: 28 maintained GDScript suites / 2,902 assertions. Current 0.7.80 freshly passes scheduler 438 (five new checks), persistence 502, unit 24, care 55, fire 23, defense 81, replay 62/all retained acknowledgements, catalog/font 671, messages 5 and Android 119 export/metadata. Cached Kotlin 4 XML is inspected. The other 21 headless suites and native GUI 679 retain their fresh 79 scopes; presentation/persistence/generation/scenes/catalogs/immutable fixtures are unchanged. Complete original-search four-pair timing and full unsorted state/invariant comparisons pass. Native 79 completes ten minutes at 4x with twenty residents and both audits passing its periodic heap/time/counter proxies. Separate frame peaks, the 4 ms tick target and physical/human gates remain open. Version 78/code 231 is last fully audited remote publication; current 79/80 remote scopes remain separate.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -4378,3 +4378,66 @@ exact three published assets pass the independent audit (code 231). Current 79
 native/CI/publication and physical Android/PSS/thermal/battery/human gates remain
 open. Native 75's duration pass and unresolved frame-growth/tick-budget evidence
 retain their original scope; earlier failures stay failed.
+
+
+## 0.7.80 direct treatment/emergency existence scans and testing handoff
+
+Two trusted-tick assignment probes now use direct typed loops over the same
+search-local open-job list, retaining exact predicates, predicate order and first
+match short circuit. Both read target, state, worker, retry and tick live. Calls
+outside trusted ticks retain the original callbacks. No new cache, persistent
+field, rule, admission or wire behavior is added. The complete original 476bdd0
+assignment-search method remains an independent oracle.
+
+Five new scheduler checks cover all nine states, treatment kinds/targets,
+emergency worker/retry boundaries, same-tick mutations/appends/replacements,
+short circuit and unchanged direct-call state. Two real 700-tick treatment/fire
+cases compare every unsorted field against the complete original search, reload
+both at tick 90, require observed waiting/emergency ownership and actual job
+completion, and retain invariants. The initial test reloaded only one twin and
+failed dictionary insertion-order equality at the reload despite equal canonical
+hashes. Its exact source, failure and diagnosis stay retained. The corrected test
+compares before and after the same reload on both twins; product code is unchanged.
+A wrong message-test discovery pattern ran zero tests and exited 5; that result is
+rejected and retained. The corrected pattern freshly runs all five tests.
+
+Scheduler 438, persistence 502, unit 24, care 55, fire 23, defense 81, replay 62
+and every old acknowledgement pass. Catalog/font 671, Python messages 5, Android
+119 export/metadata and cached Kotlin 4 XML pass. Presentation and other production
+paths are unchanged; 79's fresh other 21 headless suites and native GUI 679 retain
+their scopes. Maintained total: 2,902. assignment-probes-v80-evidence.json retains
+source, independent method proof, logs, actual APK and complete-tick comparisons.
+
+Final late four-pair total medians: 4,176,351.5 to 4,122,712.0 microseconds (1.28% reduction). All full unsorted states, invariants, inputs, initial states and source fingerprints match.
+Final fresh four-pair total medians: 1,144,078.5 to 1,137,500.5 microseconds (0.57% reduction). All full unsorted states, invariants, inputs, initial states and source fingerprints match.
+Final ordinary20 four-pair total medians: 2,943,680.5 to 2,899,702.5 microseconds (1.49% reduction). All full unsorted states, invariants, inputs, initial states and source fingerprints match.
+These final timings run after the native 79 soak ends, with no other GUI,
+emulator or benchmark active. Per-tick observer and host scheduling remain
+included. The legacy case loads the actual old v6 ordinary-twenty endpoint at
+693,000, then compares 720 current future ticks; it is not a new 96-day certificate.
+The 4 ms tick budget and physical-phone behavior remain unresolved.
+
+Frozen 79 completes 600.015925 seconds at 4x, advancing
+24,000 ticks from 4,205 to 28,205, retaining twenty residents
+and zero counters. Lowest one-second FPS is 28.832. Periodic peak growth is
+9,723,279 bytes and ending growth 9,639,316; both
+independent audits pass the unchanged 20 MiB proxy, logical time, exact final
+snapshot, audio, source/input and invariants. The separate frame-boundary peak is
+34,618,920 bytes and remains an unresolved observation. This ten-minute
+4x result is separate from 75's thirty-minute 2x pass and from the full physical
+stress matrix. Main 80 headless checks, replay, import/export and edits share the
+host; no other native GUI/emulator runs. native-soak-v79-evidence.json records the
+original scope. No native 80 performance claim is made.
+
+Actual 74 and 79 native endpoints both reach tick 28,205 and compare equal in
+every unsorted field without alignment ticks or normalization, retaining canonical
+hash ffcf2b76e7a999e6d8659f98d256b1a6e7eae1667f7dbf3180ca47e9120b5944.
+Native 79 individual ticks average 4.396 ms, max 74.354 ms, p95/p99 bucket upper
+bounds 25/33.334 ms. The 4 ms target is still not met. Frame-gap p95/p99 bounds
+are 36/50 ms at the 30 FPS cap; the separate frame peak is 34,618,920 bytes.
+
+On 15 October the user asked to finish the current work, commit and push, then
+stop for their testing. This supersedes the earlier autonomous continuation to
+50% weekly remaining. Finish this verified batch and publish it; do not start
+another development batch until the user resumes. M7 performance/localization and
+physical/human release gates remain open; the game is not certified complete.
