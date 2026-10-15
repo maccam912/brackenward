@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.63-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.64-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ Checkpoint: `0.7.63-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `424f897` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-424f897de132), code 215 / 0.7.62-m7+424f897; published APK SHA-256 `e30cbb6b19b820d28bdbf2a26ef47032296db2583d2579c668529e99e453460e`. All four actual native artifact sets,28 suites/2804 assertions,Kotlin4 and published assets audited. Current0.7.63 publication remains separate; production signing/store publication pending. |
 
-Current recorded validation:28 GDScript suites,2807 maintained assertions including669 native UI checks. Remote0.7.62 freshly passes all28 suites/2804 assertions; current0.7.63 freshly passes persistence461, graphical UI669, unit20, integration6 and scheduler403, with exact v7 replay62 plus every older acknowledgement audit. Content/font validation covers528 English keys. Kotlin4 and current local Android export pass. Android0.7.62 settings/migration interactions retain their recorded scope;0.7.63 diagnostic bridge/export verification is recorded below. Full current CI/publication and physical Android/human release gates remain distinct. The incorrect assertion-only0.7.59 persistence pass claim is explicitly corrected below; failed engine-error runs remain failures. Generated XML/screenshots/raw logs/builds are ignored; committed compact reports retain exact evidence hashes.
+Current recorded validation:28 GDScript suites,2811 maintained assertions including669 native UI checks. Current0.7.64 freshly passes persistence465,unit20,integration6 and the exact62-command replay plus all older acknowledgements. Last full remote0.7.62 passes2804 assertions;0.7.63 adds three verified diagnostic checks, and0.7.64 adds four loader checks. GUI669 last passed locally at0.7.63; further local graphical/Android interactions are deferred while its frozen native soak is running. Current content/font validation covers528 English keys; Kotlin4 and local APK export results are recorded below. Full current CI/publication and physical/human release gates remain separate. Earlier failed runs retain their original outcomes and compact evidence hashes.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -3647,3 +3647,41 @@ rotation preferences are restored, task files removed and emulator stopped.
 The graphical suite separately verifies frozen preview/export reuse. All actual
 0.7.62 CI artifacts and code215 published assets now audit successfully in
 `native-ci-v62-evidence.json`. Current0.7.63 CI/publication is still pending.
+
+
+## 0.7.64 retain fewer duplicate String keys after external load
+
+The isolated key-sharing attribution probe preserves complete unsorted serialized
+state, canonical hash and invariants while releasing7810632bytes on the synthetic
+endpoint and124856776bytes on the ordinary20 endpoint. Its input bytes and
+sources are unchanged. This motivates a per-load pool in fresh private JSON
+conversion, capped at2048 distinct keys and128-key record dictionaries.
+Only equal String key buffers are shared; every value, key type, key insertion
+order and private dictionary/array identity remain. Integer-keyed map semantics,
+coordinate/depth/null rejection, public restore, complete validation, all history,
+content/schema/envelope and external save bytes remain unchanged.
+
+The complete357fa04 decoder and its prior converter remain independent. Source
+proof verifies the exact reference body, an unchanged prior converter file and
+only one production decoder call replacement. Four regressions compare all39
+immutable saves,20 boundary shapes, a5000-record pool-cap/identity/order case,
+and complete720-tick future state plus roundtrip. Persistence465 passes with no
+engine errors. The exact v7 replay still verifies62commands, both fixed goldens,
+foreign continuation and every older acknowledgement. Unit20/integration6 and
+528-key content checks pass. UI669 remains the fresh0.7.63 local result while
+its frozen graphical soak runs; current remote UI and actual Android remain
+separate.
+
+Four alternating full-load pairs retain26.168 to18.719MiB on the synthetic input
+and393.791 to274.718MiB on the ordinary20 input. CPU214.170 to239.350ms and
+3285.532 to3565.311ms is about9–12% higher. Sampled peak remains essentially the
+same at47.8/730.4MiB. This trades a modest measured load cost for lower retained
+memory; it is not a load-speed or peak-memory improvement. Frozen native63,
+generation and ordinary20 workers share the host. `snapshot-keys-v64-evidence.json`
+retains raw/reference/input/source identities; physical Android remains open.
+
+
+Local0.7.64 Android export succeeds as code103 with all four Kotlin checks.
+The exact APK/log hashes are included in snapshot-keys-v64-evidence.json.
+Current CI/publication and graphical/emulator reruns remain separate; the
+unchanged UI last passes669 locally at0.7.63. The native63 soak stays frozen.

@@ -33,6 +33,7 @@ func run() -> void:
 			AgingReadTests.run(check)
 			SurvivalTests.run(check)
 		"persistence":
+			SnapshotKeyTests.run(check)
 			SnapshotMigrationTests.run(check)
 			SnapshotLoadTests.run(check)
 			SnapshotByteTests.run(check)

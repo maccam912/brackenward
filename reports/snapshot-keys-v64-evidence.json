@@ -1,0 +1,102 @@
+{
+  "passed": true,
+  "build": "0.7.64-m7",
+  "prior_commit": "357fa04e42323ce93b684fa601a7accb3a14cbc6",
+  "rows": [
+    {
+      "input": "synthetic",
+      "input_sha256": "00475035bf565d9e27afc7c5e99eed28be3856c1853175f63772d1d007190fda",
+      "canonical_hash": "90963136fab77c7e3f99a7428e13697fb1ca3ed070f8d37e998da3226dbdf8f5",
+      "report_sha256": "13e771dd06935ee5cb3f651f4b046c3801f1797c6f486577c58f35ea0dc8decc",
+      "log_sha256": "9fbfec7bd51209f2e24456ab9bcf78c69336badfd07bdc2689d07c4a0bfc6ca1",
+      "medians": {
+        "original": {
+          "elapsed_us": 214169.5,
+          "sampled_peak_engine_heap_growth": 50164230.0,
+          "ending_engine_heap_growth": 27439500.0
+        },
+        "candidate": {
+          "elapsed_us": 239350.0,
+          "sampled_peak_engine_heap_growth": 50172194.0,
+          "ending_engine_heap_growth": 19628072.0
+        }
+      }
+    },
+    {
+      "input": "ordinary20",
+      "input_sha256": "e93bff9ebfe59ef1557003a15ab8ff7c4422c8e2b7ccc5f4a6e799c9e31c5b9f",
+      "canonical_hash": "89347c8bc3c7ff1d4325168212d9875beeabfd0a7746a2393fe7c27a3660408b",
+      "report_sha256": "68d39f65e562d37475956ae4332db43b492ac5e239b4f6a5359a11a02fc76b2d",
+      "log_sha256": "c48c7fcf34654f7419d4239911b309fd4ed30aaf26318923d1d525171c0a8112",
+      "medians": {
+        "original": {
+          "elapsed_us": 3285532.0,
+          "sampled_peak_engine_heap_growth": 765910840.0,
+          "ending_engine_heap_growth": 412919892.0
+        },
+        "candidate": {
+          "elapsed_us": 3565311.0,
+          "sampled_peak_engine_heap_growth": 765895110.0,
+          "ending_engine_heap_growth": 288062320.0
+        }
+      }
+    }
+  ],
+  "reference_proof": {
+    "passed": true,
+    "prior_commit": "357fa04e42323ce93b684fa601a7accb3a14cbc6",
+    "complete_decoder_reference_exact_after_only_method_and_class_qualification": true,
+    "production_decoder_changes_only_converter_call": true,
+    "independent_prior_converter_entire_file_exact": true,
+    "prior_converter_sha256": "62a6d025523baf2a3b128298d860f07ea12de59f81f6e17245a6652656ea0008"
+  },
+  "scope": "Four alternating background complete-decode pairs on immutable retained inputs; complete payloads and all39 immutable saves match,original357fa04 decode body and prior converter independent/unchanged. Per-load String-key pool max2048,record size128,private container/key-order/value/type preservation; public restore/codec validation unchanged. Retained world heap decreases,CPU about9to12% higher,peak effectively unchanged. Concurrent native63,generation and ordinary20 scenario share host. No physical Android PSS,load latency or frame certification.",
+  "probe_sha256": {
+    "loaded-keys-v63-stress-probe.json": "7562d1c14f7dbee7f47589647ba7e30bac2d9a25cb27a4193231f361fd25371f",
+    "loaded-keys-v63-ordinary20-probe.json": "e4206909e5836812e672c7a03f0895059d88d07946ee2bd5d4dccb4b449579a4",
+    "snapshot-keys-v64-reference-proof.json": "e2915e9e7b890c0c7c84171d3b1ff361cf1c6da83569dcc932997c9abaf2f93c"
+  },
+  "fresh_checks": {
+    "persistence": 465,
+    "unit": 20,
+    "integration": 6,
+    "replay_commands": 62,
+    "kotlin": 4,
+    "ui_messages": 528
+  },
+  "last_local_graphical_suite": {
+    "build": "0.7.63-m7",
+    "assertions": 669,
+    "scope": "No current local GUI/emulator while frozen native63 measures; current remote UI remains required."
+  },
+  "local_android_code": 103,
+  "local_apk_sha256": "7b2ff95686f130c2c6b7c5b1a5da41cd970342c579abd5a1a8139b218f8b335d",
+  "validation_sha256": {
+    "snapshot-keys-v64-persistence-first.log": "f6777443dab6e3ca8c14fe2e5c10066fc87497b9b00c5bf9472f8f08d6d59496",
+    "snapshot-keys-v64-unit.log": "0313df326928846f2e9483ac28a5258e5d24c842e9f0cf17fd4b2ae0d2cb5d30",
+    "snapshot-keys-v64-integration.log": "44df0fa3a0aceb1a5b4c246d1546dd7d5b7f32e80e0b866348282def31c1b885",
+    "snapshot-keys-v64-replay.json": "87d65e2972de48bd3fc717b405cf05cc52df03997ed62f9cc1e32d8d35622036",
+    "snapshot-keys-v64-replay.log": "19b56392945fd6da9277affda60c584bc39d7b94548252fa7904316cd9659db7",
+    "snapshot-keys-v64-android.log": "1648bad08238d6eb207dd95493399e6daa5afa76a9918dc284715e6e994fef11",
+    "snapshot-keys-v64-content.log": "96ddcf4951223ce5a21eb24f7b9b97cf99d2e0573349ca3e7bd94d43be582d86",
+    "snapshot-keys-v64-android-final.log": "4e043c24f5895844bdf4a704995fc064d6454e16be1fc2fc4131194e5de88a9a",
+    "snapshot-keys-v64-persistence-clean.log": "23f50fb356b5f697ce7e73decb63f8cef513a4d995cdecd2fd1b54bbb9745035",
+    "snapshot-keys-v64-package/snapshot-keys-v64-final-aapt.txt": "9c7e3ecf2b8a98cfe61a76963f70305eec8d77d14b34988a74f459190175d8f9"
+  },
+  "kotlin_xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+  "package_label_correction": {
+    "before_version_name": "0.7.63-m7",
+    "after_version_name": "0.7.64-m7",
+    "code": 103,
+    "first_local_apk_retained_sha256": "236f6793eda3a5eaedbc6086b2c76cf6c5f203ad6cf6d52f0f3f193b516d3935",
+    "scope": "Unpublished first export label mismatch corrected before commit/push; local stamp intentionally preserves Android CI provenance fields."
+  },
+  "earlier_raw_profiles_retained": {
+    "snapshot-keys-v64-stress.json": "e8c631fca55542e202e8c5f0a7fbd9b76deef5c88df28c31ea95d975cd52a3c0",
+    "snapshot-keys-v64-ordinary20.json": "a31f291fedcd74e22634e7df243cf0ebf43f37c96498481f72343f37f448379e",
+    "snapshot-keys-v64-clean-stress.json": "971541cbe5365cd98dfb3970e44cea7192741338926c491797f48d9d6eb22d53",
+    "snapshot-keys-v64-clean-ordinary20.json": "ae3888f526ccaf5bfd2c9af7ddcf5c2c173fe82f47e615b89f432be288bc2b40"
+  },
+  "earlier_profile_scope": "Earlier valid complete-load pairs retain their raw results. Final release profiles use consistent SnapshotKeyTests.equivalent corpus reference, current concurrency description and clean EOF; no original input or earlier report overwritten.",
+  "package_artifact_directory": "reports/snapshot-keys-v64-package"
+}

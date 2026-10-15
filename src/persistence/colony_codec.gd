@@ -41,7 +41,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	# before unpacking, then reuse those containers without a second full tree.
 	# restore() still accepts ordinary callers' data without consuming it.
 	envelope.erase("payload")
-	var decoded: Variant = ColonyPreparedSnapshot._unpack_owned_json(parser.data)
+	var decoded: Variant = ColonyOwnedJson.unpack(parser.data)
 	parser=null
 	if not decoded is Dictionary:
 		return {"error": "Invalid integer, coordinate or state encoding"}

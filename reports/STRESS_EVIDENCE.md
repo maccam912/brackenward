@@ -5,6 +5,30 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.64 share repeated keys in privately decoded worlds
+
+Fresh external JSON conversion now shares equal String dictionary keys through
+one bounded per-load pool. It retains key types, insertion order and private
+container identities. No string value or history record changes. Integer maps,
+coordinates, depth limits, full schema/reference/conservation checks and public
+restore remain unchanged. The complete0.7.63 decoder and prior converter remain
+the independent reference. All39 immutable fixtures and malformed-input gates
+pass, including complete future-state and roundtrip comparisons.
+
+| Retained input | Prior CPU ms | Shared CPU ms | Prior peak MiB | Shared peak MiB | Prior ending MiB | Shared ending MiB |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Synthetic native44 endpoint | 214.170 | 239.350 | 47.840 | 47.848 | 26.168 | 18.719 |
+| Ordinary20 generator2 endpoint | 3285.532 | 3565.311 | 730.430 | 730.414 | 393.791 | 274.718 |
+
+Four alternating background complete-load pairs preserve every authoritative
+field and unchanged input/source. Ending world allocation falls28.5%/30.2%; CPU
+is about9–12% higher and peak is effectively unchanged. The one-world attribution
+probe separately identifies equal key buffers as the retained cost. The host
+also runs frozen native63, generation and an ordinary20 campaign; these results
+are not physical Android PSS, frame pacing or load latency certification.
+[snapshot-keys-v64-evidence.json](snapshot-keys-v64-evidence.json) retains the
+medians, full reports, independent reference proof and immutable-input hashes.
+
 ## Frozen 0.7.62 native continuation passes
 
 Clean424f897 completes1800.029161 seconds at selected2x after60seconds warmup,
