@@ -50,9 +50,16 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		return {"error":"Catalog or campaign identity mismatch; original save retained"}
 	var snapshot_name: String=envelope.get("snapshot_name","")
 	envelope={};decoded=null
-	return restore(data,snapshot_name)
+	return _restore_owned_json(data,snapshot_name)
 
 static func restore(data: Dictionary, snapshot_name: String = "", initialize_weather: bool = false) -> Dictionary:
+	return _restore(data,snapshot_name,initialize_weather,false)
+
+## Only fresh private parser data from decode enters this consuming path.
+static func _restore_owned_json(data: Dictionary, snapshot_name: String) -> Dictionary:
+	return _restore(data,snapshot_name,false,true)
+
+static func _restore(data: Dictionary, snapshot_name: String, initialize_weather: bool, owned_json: bool) -> Dictionary:
 	if data.get("schema_revision") is int and data.schema_revision > ColonyWorld.SCHEMA_REVISION:
 		return {"error":"Campaign requires a newer build: schema revision %d (this build supports %d). Original files retained." % [data.schema_revision,ColonyWorld.SCHEMA_REVISION]}
 	var world: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data())
@@ -70,7 +77,8 @@ static func restore(data: Dictionary, snapshot_name: String = "", initialize_wea
 		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released %s catalog; original files retained" % previous_version.trim_prefix("colony-")}
 		# Definitions are identical. Change only the declared content header;
 		# unlike older acquisition upgrades, preserve even user filter ordering.
-		data=data.duplicate(true);data.content=ColonyWorld.CONTENT_VERSION;data.content_hash=world.definitions.content_hash
+		if not owned_json:data=data.duplicate(true)
+		data.content=ColonyWorld.CONTENT_VERSION;data.content_hash=world.definitions.content_hash
 	if initialize_weather and data.get("weather_state") == {}:
 		# Only pure legacy migration supplies the empty initial schedule.
 		world.tick = data.tick

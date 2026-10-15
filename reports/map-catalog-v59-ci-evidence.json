@@ -1,0 +1,83 @@
+{
+  "passed": true,
+  "source_commit": "487bb1d8172234713ce479085bde24df936fc7e0",
+  "run_id": 38715869602,
+  "scope": "Actual independent-generation-subset artifact passes all768 v7 hashed maps,256/site, zero source drift. This does not replace the full30000 release sweep. Overall workflow failed empty-hash persistence; no publication.",
+  "audit": {
+    "passed": true,
+    "geometry_pass": true,
+    "release_generation_gate_pass": false,
+    "full_10000_per_site": false,
+    "fallback_budget_pass": null,
+    "source_commit": "487bb1d8172234713ce479085bde24df936fc7e0",
+    "cases": 768,
+    "fallback_counts": {
+      "meadow_reach": 0,
+      "pine_shelf": 0,
+      "reed_bend": 0
+    },
+    "attempt_counts": {
+      "meadow_reach": {
+        "0": 256
+      },
+      "pine_shelf": {
+        "0": 256
+      },
+      "reed_bend": {
+        "0": 256
+      }
+    },
+    "minimum_safe_buildable": 11141,
+    "minimum_wild_food_units": 600,
+    "audit_tool_sha256": "622d2c6d32a2d4df95556aff1c7b38b11a6042e22b659c2fbb6aeb6c6675fa66",
+    "scope": "Independent exported-map geometry/quantity audit only. Physical play, balance, saves and other release gates remain separate."
+  },
+  "shards": [
+    {
+      "site": "pine_shelf",
+      "start": 6,
+      "count": 256,
+      "processed": 256,
+      "exit_code": 0,
+      "pass": true,
+      "errors": [],
+      "cases_sha256": "c8fa02de501ed285b4def02824a60819e2b2d66b005f907c6903989dad53ac99",
+      "log_sha256": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e"
+    },
+    {
+      "site": "meadow_reach",
+      "start": 6,
+      "count": 256,
+      "processed": 256,
+      "exit_code": 0,
+      "pass": true,
+      "errors": [],
+      "cases_sha256": "74bba1f4b97ef3a1271cc2b55ab7dac4e3196f39bc730d78af80d1a8dc1b701f",
+      "log_sha256": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e"
+    },
+    {
+      "site": "reed_bend",
+      "start": 6,
+      "count": 256,
+      "processed": 256,
+      "exit_code": 0,
+      "pass": true,
+      "errors": [],
+      "cases_sha256": "53005730eeab16f4a032b58e80dbc00a2ea2f9030ba9e97e4310077d3e5b80ae",
+      "log_sha256": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e"
+    }
+  ],
+  "files_sha256": {
+    "audit.json": "91ab3a2e6de298b10c71fd1457836c04b7c91b252a7fc6cc716c2aac9a419b1e",
+    "completion.json": "89fd27822aad4e0ecc97797e670ef8402ee8bd37b5d8f9da34334b67e26f949b",
+    "meadow_reach-00006-00261.jsonl": "74bba1f4b97ef3a1271cc2b55ab7dac4e3196f39bc730d78af80d1a8dc1b701f",
+    "meadow_reach-00006-00261.log": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e",
+    "pine_shelf-00006-00261.jsonl": "c8fa02de501ed285b4def02824a60819e2b2d66b005f907c6903989dad53ac99",
+    "pine_shelf-00006-00261.log": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e",
+    "progress.json": "365bac26f3386edef759eb1bb8809358b2c5de9de3986d2ad2622d90c960fd3d",
+    "reed_bend-00006-00261.jsonl": "53005730eeab16f4a032b58e80dbc00a2ea2f9030ba9e97e4310077d3e5b80ae",
+    "reed_bend-00006-00261.log": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e",
+    "source.json": "8e4164edad0466ac9fd6b260d5d7b523bf128cac34ad1533860649f009f26cb8",
+    "summary.json": "5c4c7272c040594e93154883060f73acadfdb0579d1e61e3fe2d91a357bdf624"
+  }
+}

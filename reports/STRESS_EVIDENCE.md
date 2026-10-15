@@ -5,6 +5,30 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.61 avoid a private catalog-header deep copy
+
+The external decoder owns its fresh converted JSON. For exact verified v2–v6
+catalogs with identical definitions, it changes only the two content headers in
+that private root before the unchanged full restoration. Public/shared restore
+keeps its original copy behavior; no capture or live-world data enters the
+consuming path. The complete prior decoder remains the reference, with source
+proof for the full restoration body and unchanged validators/migrations/codec.
+Persistence458, exact replay62 and all39 immutable save comparisons pass.
+
+| Retained input | Prior CPU ms | Owned CPU ms | Prior peak MiB | Owned peak MiB | Prior ending MiB | Owned ending MiB |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Synthetic native44 endpoint | 212.178 | 199.911 | 52.826 | 47.846 | 26.138 | 26.168 |
+| Ordinary20 generator2 endpoint | 3519.236 | 3310.099 | 805.392 | 730.419 | 393.496 | 393.791 |
+
+Four alternating background full-decode pairs, approximately1ms sampled process
+engine heap; ending read before diagnostic equality. Every complete world is
+identical; sources/inputs/all39 fixtures stay unchanged. Peak falls about9.3%
+and CPU about6%, while ending allocation is slightly higher. The host also runs
+frozen native, Winter and post-Charter work; no physical Android or uncontended
+whole-native ratio is inferred. The ordinary retained-history cost remains open.
+[snapshot-migration-v61-evidence.json](snapshot-migration-v61-evidence.json)
+records all inputs, source fingerprints, raw reports and medians.
+
 ## 0.7.60 reduce external decode peak
 
 The loader releases checked payload text, converts only fresh owned parser
