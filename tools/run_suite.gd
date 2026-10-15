@@ -975,6 +975,7 @@ func ui() -> void:
 	TextTests.ui(colony_game,check)
 	TextTests.literal_routes(colony_game,check)
 	WorkScheduleUITests.run(colony_game,check)
+	TextTests.person_panels(colony_game,check)
 	await AppearanceUITests.run(colony_game,check)
 	await FontUITests.run(colony_game,check)
 	await AccessibilityUITests.run(colony_game,check)

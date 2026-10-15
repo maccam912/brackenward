@@ -86,4 +86,3 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 		citizen.travel_credit = citizen.progress
 		citizen.progress = 0
 	return citizen.x == goal.x and citizen.y == goal.y and citizen.progress == 0
-

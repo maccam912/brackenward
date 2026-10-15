@@ -1,0 +1,113 @@
+{
+  "passed": true,
+  "build": "0.7.77-m7",
+  "local_android_code": 116,
+  "maintained_gdscript_assertions": 2889,
+  "old_message_count": 578,
+  "new_message_count": 671,
+  "new_messages": 93,
+  "old_values_exact": true,
+  "fixed_activity_phrases": 54,
+  "trait_ids": 8,
+  "food_tag_ids": 8,
+  "skill_ids": 7,
+  "fresh_suites": [
+    {
+      "suite": "unit",
+      "assertions": 24,
+      "xml_sha256": "ad3950ae55174291e3a84924266526fbd4b402e54db6b83f8b0c631db33de658"
+    },
+    {
+      "suite": "persistence",
+      "assertions": 502,
+      "xml_sha256": "062bfe87d79cf14cd69041c4865198f016c8013db2bfa30168a52c1ee8b8e894"
+    },
+    {
+      "suite": "ui",
+      "assertions": 679,
+      "xml_sha256": "1f33e2cc63c1e9473010cc6b83a35e8897e7a74052ebffa989432e763eafbd63"
+    }
+  ],
+  "new_pure_text_assertions": 6,
+  "new_actual_control_assertions": 5,
+  "headless_control_checks": {
+    "cases": [
+      "TEXT/UI_person_labels_and_real_bed_rate_preserve_state_and_camera",
+      "TEXT/UI_care_cases_show_original_bleeding_treatment_and_hearthside_numbers",
+      "TEXT/UI_named_care_action_keeps_real_patient_worker_ids",
+      "TEXT/UI_newcomer_names_and_stored_tags_remain_literal_and_unchanged",
+      "TEXT/UI_named_newcomer_accept_keeps_offer_id_without_a_tick"
+    ],
+    "failures": [],
+    "passed": true,
+    "scope": "Headless real Controls/callbacks and simulation proof only; full graphical suite remains separate."
+  },
+  "english_old_current_parity": {
+    "passed": true,
+    "original_source": "4515ea6d9ae6bc2d8077d8e101a483544d6d25ab",
+    "cases": 5,
+    "text_nodes": 56,
+    "all_control_text_world_hashes_focus_and_pending_commands_exact": true,
+    "normalization": "none",
+    "harness_sha256": "727604eb7a9fa21865e596bfdb8d41e93dd8d184fc5a53252958ea6f8983aa84"
+  },
+  "core_persistence_simulation_generation_scenes_and_immutable_fixtures_unchanged_from": "d00ee865f3c2b68ed7ead811c4ab4993eddf9336",
+  "route_oracle_change": "Only trailing blank separator trimmed; no executable difference. Historical76profile fingerprints remain their recorded source.",
+  "inherited_validation": "76all27headless/2204,replay62/all old acknowledgements and original/current tick pairs retain their scopes. Fresh77unit24,P502,GUI679 supersede their respective counts. Native75duration pass is separately scoped. No fresh77replay/other25suite/physical claim.",
+  "initial_control_test_failures": {
+    "retained": [
+      "headless-controls-first.json",
+      "headless-controls-diagnosis.json"
+    ],
+    "cause": "Initial assertion compared raw camera_tile across a panel layout offset. Diagnosis confirmed all label text and world hashes already matched. Final assertion measures the same visible world focus via camera_center; unchanged product focus code preserves it. Final five real-control and679nativeGUI checks pass."
+  },
+  "android_artifact": {
+    "passed": true,
+    "exit_code": 0,
+    "wall_seconds": 7.776901375036687,
+    "local_code": 116,
+    "apk_sha256": "6e9b18a41801eb2e315d3526652a2ba0c046fd6cb4ae28fe9582be8cf89b165f",
+    "kotlin_xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "kotlin_tests": 4,
+    "kotlin_status": "UP-TO-DATE",
+    "adb_daemon_connection_refused_present": true,
+    "scope": "Actual export/metadata/artifact audit; no emulator or physical install."
+  },
+  "source_sha256": {
+    "src/game_session.gd": "c84add60ca33a06bc2de7fcdfc3453dbe36a313067ce5f9a83eb5e993d61f018",
+    "src/presentation/colony_text.gd": "3a07114663e14e20753aca8abd04082ca44a847ca3fc8536aa00941a4e81294d",
+    "data/catalogs/en_ui.json": "bd3c31fba652b9ce262dca83b6ff4096f8aa0c4e8a835e64775caf880f89172c",
+    "tools/text_tests.gd": "c0959f8fe267b809661c6b340f700de142083d37f8d516b830f8b31c444d7119",
+    "tools/run_suite.gd": "7efc2a6d2246e996d5517d43a3199fd41e804340f77e46c003495278ab0dedc6",
+    "tools/route_context_reference.gd": "457588662f84dd3e90f19ebc4f238244ad3e3b81f79c9fa6361ee1c5da69d709",
+    "project.godot": "564b547e9e2babb1a3438c31b88d67ccb81bc356301d6155d305d4bb3f684eb9",
+    "export_presets.cfg": "dbf3fac2e51854825081cb49c267e6e4a80d4a38447aff4502b5197817c3a0ee"
+  },
+  "raw_sha256": {
+    "apk-artifact-audit.json": "02c1ea0b7230afbb414d3826cec559d591c43f60d7dd2d8422b1eed4d6bf528b",
+    "apk-final-completion.json": "65a87bb73bdad9aa386483e39e8a6281a7b2e33913e7dd9dc20156c305e18a70",
+    "apk-final.log": "436c6e5e60ef7ca267949541ed2d09ae1a78f2d957c4669047e3378eb2fe3b47",
+    "catalog-additions.json": "9652791f9bf0b1089895d0862feb64111f0ee6ba1e1c5a2fc13a5df67a9ba637",
+    "content-first.log": "e14039489855c74c0a1a50a1e358cffdf1c86b721cf6158411a16852a17ec68e",
+    "english-control-parity.gd": "727604eb7a9fa21865e596bfdb8d41e93dd8d184fc5a53252958ea6f8983aa84",
+    "english-controls-current77.json": "74c8b0a79c4c21c1ee5dca886450561d26a0d0123f8bcd83c4af93f48d1d504b",
+    "english-controls-current77.log": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e",
+    "english-controls-original75.json": "74c8b0a79c4c21c1ee5dca886450561d26a0d0123f8bcd83c4af93f48d1d504b",
+    "english-controls-original75.log": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e",
+    "english-controls-parity.json": "fff12f31362b2b1421b910f51fd6b91dabb34bf6def0bb255714fa3524c4caf8",
+    "headless-controls-diagnosis.gd": "66f58149426ad9f6ca548f0e20315a928300b53ef24ef9959cc014f12cb32323",
+    "headless-controls-diagnosis.json": "e1233b38d55fd5936661f1ef8f557bef217326e579e517312ef01f5e4be8a9d7",
+    "headless-controls-diagnosis.log": "f18eeaf90ebf94617b9277fe588004aa88cf27efe0391d9bb25bd7fc3e0d219f",
+    "headless-controls-final.gd": "56103a69486203e03f158750f0f981093ae2e4f8a339fde4e705e3da07bc7963",
+    "headless-controls-final.json": "e654e1ea5f925380b072077b564bb2e6091dcddd23b834428a086b409db2c488",
+    "headless-controls-final.log": "d724ca1b2d69de716a8301d718158e67796a9f08214a39c60084e6b5a99c8a13",
+    "headless-controls-first.gd": "3212647ef76419096d0937393a4a3c8c9fccc23fa4e593fdc063991362699ab3",
+    "headless-controls-first.json": "77b89a89a570f597f0c3764a1bf572628fdb97741c301fe8a2fd6871eb217a97",
+    "headless-controls-first.log": "05c19b13a61c7cd3086c2a43218d287c7205f34ffe5ca84792eb38a88ea0833a",
+    "message-tests-first.log": "888a0c0ed615e57d32cf72be501b0c355f33b8613c81dfdaa99db33d7959487e",
+    "persistence-first.log": "d8e59ac8f77707b6bbf4e37ce7864d6f7ccfc238384bf24d181cfd0b1884b386",
+    "ui-final-first.log": "bd90bde3df55d42c8389eb7d189fe4fcf9b26d4a9c36f4287bb7614ed913edec",
+    "unit-first.log": "68e25af6064d7b110a7f9159245d2fabcff31a7f11880f210555fe4695219ec2"
+  },
+  "scope": "Exact fixed-label English mapping plus named bed/care/newcomer templates. Unknown/composed saved descriptions and braces remain literal; names,canonical state,activity/trait/food/skill IDs,asset filenames,callbacks and rates stay unchanged. Old75/current77real control text across56nodes,fivepanels,world hashes,camera focus and real pending acceptance bytes match without normalization. Care callbacks preserve patient/worker IDs. No translation selector or physical Android certification. Dynamic/composed activities,facts/morale/shared descriptions and remaining templates remain later audit."
+}

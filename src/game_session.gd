@@ -1411,7 +1411,7 @@ func _update_inspector() -> void:
 		if is_instance_valid(inspector_portrait): CitizenArt.update_portrait(inspector_portrait,citizen.appearance)
 		var job: Dictionary = world.find(world.jobs, citizen.job)
 		var work: String=ColonyText.text("ui.inspector.work",{"work":job.work/1000,"required":job.required/1000}) if not job.is_empty() and job.required>0 else ColonyText.text("ui.inspector.needs_first" if not job.is_empty() else "ui.inspector.choose_orders")
-		inspector_details.text=ColonyText.text("ui.inspector.person",{"name":citizen.name,"activity":citizen.activity,"food":citizen.fullness,"rest":citizen.rest,"health":citizen.health,"preferred":ColonyText.category_name(citizen.preferred),"work":work})
+		inspector_details.text=ColonyText.text("ui.inspector.person",{"name":citizen.name,"activity":ColonyText.activity_name(citizen.activity),"food":citizen.fullness,"rest":citizen.rest,"health":citizen.health,"preferred":ColonyText.category_name(citizen.preferred),"work":work})
 		if citizen.departure_until>world.tick: inspector_details.text+="\n"+departure_description(citizen)
 	else:
 		inspector_details.text=ColonyText.text("ui.inspector.prototype",{"name":citizen.name})
@@ -2072,7 +2072,7 @@ func show_work_preferences(id: int) -> void:
 	_tutorial_action("work_preferences",{"citizen":id})
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_details(ColonyText.text("ui.person.work_title",{"name":citizen.name}))
-	label(ColonyText.text("ui.work.preferences_help",{"activity":citizen.activity}),sheet_body)
+	label(ColonyText.text("ui.work.preferences_help",{"activity":ColonyText.activity_name(citizen.activity)}),sheet_body)
 	var shift_caption: String=ColonyText.shift_name(_queued_shift(id))
 	if _has_pending_shift(id):shift_caption=ColonyText.text("ui.work.shift_pending",{"shift":shift_caption})
 	sheet_body.set_meta("work_citizen",id)
@@ -2113,7 +2113,7 @@ func show_beds(id: int) -> void:
 	var person: Dictionary = world.find(world.citizens,id)
 	if person.is_empty(): return
 	show_details(ColonyText.text("ui.person.bed_title",{"name":person.name}))
-	label(ColonyBeds.description(world,person),sheet_body)
+	label(ColonyText.bed_description(world,person),sheet_body)
 	label(ColonyText.text("ui.help.beds.choose_a_free_bed_or_bedroll_assignment"),sheet_body)
 	if person.bed>0: button(ColonyText.text("ui.action.unassign_current_bed"),func()->void:show_bed_choice(id,0),sheet_body)
 	for bed in world.structures:
@@ -2177,8 +2177,8 @@ func show_person(id: int) -> void:
 	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.appearance"),func()->void:show_appearance(id),sheet_body)
 	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(id),sheet_body)
 	button(ColonyText.text("ui.action.remembered_moments"),func()->void:show_person_history(id),sheet_body)
-	label(ColonyText.text("ui.person.summary",{"activity":citizen.activity,"food":citizen.fullness,"rest":citizen.rest,"health":citizen.health,"morale":citizen.morale,"trait_a":citizen.traits[0],"trait_b":citizen.traits[1],"preferred":ColonyText.category_name(citizen.preferred),"food_tag":citizen.food_tag}),sheet_body)
-	label(ColonyBeds.description(world,citizen),sheet_body)
+	label(ColonyText.text("ui.person.summary",{"activity":ColonyText.activity_name(citizen.activity),"food":citizen.fullness,"rest":citizen.rest,"health":citizen.health,"morale":citizen.morale,"trait_a":ColonyText.trait_name(citizen.traits[0]),"trait_b":ColonyText.trait_name(citizen.traits[1]),"preferred":ColonyText.category_name(citizen.preferred),"food_tag":ColonyText.food_tag_name(citizen.food_tag)}),sheet_body)
+	label(ColonyText.bed_description(world,citizen),sheet_body)
 	var food_access: String=food_access_description(citizen)
 	if not food_access.is_empty(): label(food_access,sheet_body)
 	label(ColonyText.text("ui.help.person.rest_policy",{"tired":ColonyRest.TIRED,"preferred":ColonyRest.PREFERRED_TIRED,"rested":ColonyRest.RESTED,"bed":ColonyRest.BED,"bedroll":ColonyRest.BEDROLL,"ground":ColonyRest.GROUND}),sheet_body)
@@ -2188,7 +2188,7 @@ func show_person(id: int) -> void:
 	for trait_name in citizen.traits:
 		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
 		var icon: TextureRect = TextureRect.new();icon.texture=load("res://assets/exported/ui/traits/%s.svg" % trait_name.to_lower());icon.custom_minimum_size=Vector2(48,48);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;row.add_child(icon)
-		label(trait_name,row)
+		label(ColonyText.trait_name(trait_name),row)
 	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.assign_bed"),func()->void:show_beds(id),sheet_body)
 	if citizen.health < 100: button(ColonyText.text("ui.action.care_and_recovery"),show_care,sheet_body)
 	label(ColonyText.text("ui.help.person.active_morale_causes"),sheet_body)
@@ -2359,25 +2359,25 @@ func show_care() -> void:
 	for patient in world.citizens:
 		if patient.death_recorded or patient.departed or patient.health >= 100: continue
 		var activity: String = ("Downed: bleeding, needs care" if not patient.stabilized else "Downed: recovering") if patient.downed else patient.activity
-		label("%s | Health %d/100 | Food %d/1000 | Rest %d/1000\n%s" % [patient.name,patient.health,patient.fullness,patient.rest,activity],sheet_body)
+		label(ColonyText.text("ui.care.person",{"name":patient.name,"health":patient.health,"food":patient.fullness,"rest":patient.rest,"activity":ColonyText.activity_name(activity)}),sheet_body)
 		if patient.hearthside_until > world.tick:
-			label("Hearthside recovery: %.1f days until waking at 40 health." % [float(patient.hearthside_until-world.tick)/7200],sheet_body)
+			label(ColonyText.text("ui.care.hearthside",{"days":"%.1f" % [float(patient.hearthside_until-world.tick)/7200]}),sheet_body)
 		elif not patient.stabilized:
-			label("Bleeding: 2 health/hour. About %.1f hours until zero health without care." % [float(((patient.health+1)/2)*300-patient.bleed_ticks)/300],sheet_body)
+			label(ColonyText.text("ui.care.bleeding",{"hours":"%.1f" % [float(((patient.health+1)/2)*300-patient.bleed_ticks)/300]}),sheet_body)
 		else:
 			var rate: int = patient.recovery_rate if patient.recovery_until > world.tick else 2
-			label("Stabilized. Resting restores %d health/hour; about %.1f hours to work at 50 health. Treatment recovery lasts 12 hours, then resting gives 2/hour." % [rate,float(maxi(0,50-patient.health))/rate],sheet_body)
+			label(ColonyText.text("ui.care.resting",{"rate":rate,"hours":"%.1f" % [float(maxi(0,50-patient.health))/rate]}),sheet_body)
 		label(ColonyText.text("ui.help.care.stabilize_no_input_24_wu_2_health"),sheet_body)
 		if patient.hearthside_until == 0:
 			for worker in world.citizens:
 				if worker.id == patient.id or worker.health < 50 or worker.departed: continue
-				button("Treat with "+worker.name,func()->void:
+				button(ColonyText.text("ui.care.treat_with",{"name":worker.name}),func()->void:
 					_submit("treat_now",{"target":patient.id,"citizen":worker.id})
 					close_sheet(),sheet_body)
 	for body in world.care_state.bodies:
 		if body.buried: continue
 		var person: Dictionary = world.find(world.citizens,body.patient)
-		label(person.name+" died. Nearby unburied remains give -40 morale. Grief declines over two days, or three for friends.",sheet_body)
+		label(ColonyText.text("ui.care.remains",{"name":person.name}),sheet_body)
 		button(ColonyText.text("ui.action.mark_burial_here"),func()->void:
 			_submit("burial",{"target":body.id,"x":body.x,"y":body.y})
 			close_sheet(),sheet_body)
@@ -2664,19 +2664,19 @@ func show_newcomers() -> void:
 	if waiting.is_empty(): label(ColonyText.text("ui.help.newcomers.no_traveler_is_waiting_the_next_offers"),sheet_body)
 	for request in waiting:
 		var person: Dictionary = request.candidate
-		label("%s · %s first · %s / %s · prefers %s food" % [person.name,person.preferred,person.traits[0],person.traits[1],person.food],sheet_body)
+		label(ColonyText.text("ui.newcomers.person",{"name":person.name,"preferred":ColonyText.category_name(person.preferred),"trait_a":ColonyText.trait_name(person.traits[0]),"trait_b":ColonyText.trait_name(person.traits[1]),"food_tag":ColonyText.food_tag_name(person.food)}),sheet_body)
 		var skill_text: Array[String] = []
-		for skill in person.skills: skill_text.append(skill+" "+str(person.skills[skill]))
+		for skill in person.skills: skill_text.append(ColonyText.text("ui.newcomers.skill",{"skill":ColonyText.skill_name(skill),"level":person.skills[skill]}))
 		label(", ".join(skill_text),sheet_body)
 		if request.state=="Accepted": label(ColonyText.text("ui.help.newcomers.walking_in_from_the_boundary_the_arrival"),sheet_body);continue
-		label("Waits %.1f more game hours. No hidden reputation penalty if this expires." % ((request.deadline-world.tick)/300.0),sheet_body)
+		label(ColonyText.text("ui.newcomers.waits",{"hours":"%.1f" % [(request.deadline-world.tick)/300.0]}),sheet_body)
 		var check: Dictionary = ColonyPopulation.acceptance(world,request)
-		label("Ready: free sleeping place and at least two days of food for the enlarged household." if check.error.is_empty() else check.error,sheet_body)
-		if check.error.is_empty(): button("Accept "+person.name,func()->void:_submit("newcomer",{"target":request.id,"accept":true});close_sheet(),sheet_body)
+		label(ColonyText.text("ui.newcomers.ready") if check.error.is_empty() else check.error,sheet_body)
+		if check.error.is_empty(): button(ColonyText.text("ui.newcomers.accept",{"name":person.name}),func()->void:_submit("newcomer",{"target":request.id,"accept":true});close_sheet(),sheet_body)
 		else:
 			button(ColonyText.text("ui.action.build_sleeping_place"),func()->void:begin_build("bedroll"),sheet_body)
 			button(ColonyText.text("ui.action.food_forecast"),func()->void:show_sheet("Journal","ui.sheet.journal"),sheet_body)
-		button("Decline "+person.name,func()->void:_submit("newcomer",{"target":request.id,"accept":false});close_sheet(),sheet_body)
+		button(ColonyText.text("ui.newcomers.decline",{"name":person.name}),func()->void:_submit("newcomer",{"target":request.id,"accept":false});close_sheet(),sheet_body)
 
 func show_valley() -> void:
 	show_sheet("Valley and neighbors","ui.sheet.valley_and_neighbors")

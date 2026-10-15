@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.76-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.77-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -15,7 +15,8 @@ Checkpoint: `0.7.76-m7` (campaign schema 23, device settings schema 6), content 
 | macOS native launch | Pass | macOS 26.6.2, Apple Silicon, Apple M5 Pro, OpenGL 4.1 Compatibility via Metal 90.5; native scene/UI runner launched |
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | The user supplied a CPH2655/Adreno 830/Android 36 CPU/frame-gap report from 0.7.24, retained in ANDROID_DEVICE_EVIDENCE.md. Android PSS, brightness-controlled battery and thermal measurements remain Not run. |
-| Native thirty-minute twenty-resident proxy | Pass at `357fa04` retry / v7; later runtime separate | Frozen2x continuation:14.618MiB sampled peak/14.611MiB ending growth,lowest one-second FPS28.134,36001ticks,twenty residents,zero counters/errors; separate second audit passes. Original same-source failure after a protective save pause remains failed. Lower-contention retry does not assign that cause. Physical Android/PSS/thermal and later runtime revisions remain separate;74's ten-minute4x pass is a shorter/different-speed case,with the latest30-minute2x rerun pending. |
+| Native thirty-minute twenty-resident proxy | Pass at `4515ea6` / v7; later revisions separate | Frozen 75 completes 1,800.006347 seconds at 2x, 36,000 ticks from 3,002 to 39,002, twenty residents and zero counters; lowest one-second FPS is 28.587. Sampled peak/ending growth of 15,468,248 bytes passes the unchanged 20 MiB proxy and separate second audit. Actual endpoint matches the old 63 retry after one current alignment tick, without normalization. A late frame peak of 36,017,872 bytes remains unresolved. Earlier failures and physical/PSS/thermal gates remain separate. |
+| Twenty-resident simulation tick budget | Not yet met in latest native proxy | The 36,000 individual ticks in 75 average 5.033 ms, with a 91.190 ms maximum. The p95/p99 bucket upper bound is 33.334 ms; p95 is above 25 ms versus the 4 ms target. Frame-gap p95/p99 bounds are 36/50 ms at the 30 FPS cap. Wall callbacks include host scheduling and worker overlap. Further scheduler/route work and physical validation remain. |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
 | Remote CI | Pass at `4515ea6`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38776860028) passes28 suites/2874 assertions,Kotlin4,768 maps and all four actual native replay/migration/persistence/startup targets. native-ci-v75-evidence.json audits actual artifacts and publication. Current76CI and physical certification remain separate. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
@@ -28,7 +29,7 @@ Checkpoint: `0.7.76-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `4515ea6` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-4515ea6d9ae6),code228 / 0.7.75-m7+4515ea6,APK SHA-256 `1e1783a6d1fbb919634996d061630985eed43b8d1008e972aa0ebd5d4a5c84c4`. Four-host artifacts,28 suites/2874 assertions,Kotlin4 and exact published assets audited. Current76 publication and production signing/store release remain separate. |
 
-Current recorded validation: 28 GDScript suites,2878 maintained assertions. The0.7.76 route-context optimization freshly passes all27headless suites/2204 assertions,including unit24/four new route checks,persistence496,scheduler425 and real cart/reload behavior. Replay62/all retained acknowledgements,578-key/font validation,five message checks and Android115 export/artifact audit pass. Cached Kotlin4 XML is inspected. Presentation/messages/scenes are unchanged from75; its native GUI674 remains carried at that exact scope,with no new GUI during the active75thirty-minute2x probe. Four alternating complete-tick original/current pairs preserve every unsorted state/invariant: fresh7200 median1,145,977to1,137,040.5us (0.78%);late1200 median4,500,362.5to4,447,107.5us (1.18%). This modest CPU result does not resolve phone freezing or memory/device gates. Latest actual remote75artifacts and publication pass their independent audit,code228. Current76CI/publication,latest30-minute2x and physical/human gates remain separate. Earlier failed scopes remain retained;all45original emulator files remain restored exactly.
+Current recorded validation: 28 GDScript suites and 2,889 maintained assertions. The 0.7.77 person-text audit freshly passes unit 24, persistence 502 (six new text checks), native GUI 679 (five new control checks), 671-key/font validation, five Python message checks and Android 116 export/metadata. Cached Kotlin 4 XML is inspected. All 578 old messages remain exact; 93 new messages cover fixed activities, trait/food/skill IDs, bed descriptions, care and newcomer presentation. Five actual old-75/current-77 panels match all 56 text nodes, world hashes, camera focus and pending action bytes without normalization. Core persistence/simulation/generation/scenes and immutable fixtures are unchanged from 76; its other suite/replay scopes carry. Native 75 passes the full thirty-minute 2x development proxy with two audits and matches the actual 63-retry endpoint after one alignment tick. Late frame growth and the 4 ms simulation-tick target remain unresolved. Remote 75/code 228 is last fully audited; 76 CI, current 77 publication and physical/human gates remain separate. Earlier failures and all 45 restored original emulator files remain retained.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -4238,3 +4239,53 @@ native-ci-v75-evidence.json records code228/APK SHA-256
 `1e1783a6d1fbb919634996d061630985eed43b8d1008e972aa0ebd5d4a5c84c4`.
 The latest thirty-minute2x75probe is still running; previous failures,late frame
 heap peaks,physical Android/PSS/thermal and human gates remain separate.
+
+
+## 0.7.77 person/care text and latest native-duration audit
+
+Ninety-three English messages bring the catalog from 578 to 671, with every prior
+value unchanged. All 54 known fixed activity phrases, eight traits, eight food
+tags and seven skills use exact-value presentation maps. Unknown or composed saved
+activities and reasons stay literal, including braces. Trait asset paths and
+stored IDs are unchanged. Bed descriptions use the actual 75/60/45 recovery rates
+and match the unchanged simulator description for unassigned, destroyed, outdoor
+and roofed beds. Care summaries, bleeding/treatment/Hearthside timelines and named
+actions, plus newcomer summaries, skills, deadlines, readiness and accept/decline
+actions, use named templates. Rates, world/save fields, action IDs and routes stay
+unchanged. No language selector is added.
+
+Six new pure checks pass in persistence 502; five new real-control checks pass both
+headless and in the full native GUI 679 suite. Unit 24, catalog/font validation,
+five Python message checks and Android 116 export/metadata pass. Cached Kotlin 4
+XML is inspected. An independent headless comparison loads actual 75 and current
+77 controls: all 56 text nodes across five panels, world hashes, visible world
+focus and pending newcomer acceptance bytes match exactly, without normalization.
+Care callbacks retain real patient/worker IDs. The first camera assertion compared
+raw camera_tile across a layout offset change; diagnosis showed correct text and
+state already. Final checks compare the preserved camera_center. Both initial
+failures remain retained. The route oracle loses only its trailing blank separator;
+no executable code changes. Core persistence/simulation/generation/scenes and
+immutable fixtures remain exact from 76. Maintained total: 2,889.
+person-text-v77-evidence.json retains source, proof, log and APK hashes. Composed
+activities, facts/morale, shared descriptions and remaining templates stay in the
+M7 audit.
+
+Frozen 75 completes 1,800.006347 seconds at 2x: 36,000 ticks from 3,002 to 39,002,
+twenty residents, zero counters and lowest one-second FPS 28.587. Snapshot roundtrip,
+source/input, logical time, invariants and audio checks pass. Periodic sampled peak
+and ending growth are 15,468,248 bytes, within the unchanged 20 MiB proxy; both
+independent audits pass. Actual 63-retry and 75 endpoints match every field and
+canonical hash at tick 39,003 after one current 77 alignment tick. No header or
+gameplay normalization occurs; both retain the same original input.
+
+The separate frame-boundary peak is 36,017,872 bytes at tick 37,383 and 1,719.065
+seconds, with a live writer, no preparation worker and stable navigation. Its
+cause remains unproven. Individual ticks average 5.033 ms, peak at 91.190 ms and
+have p95/p99 bucket bounds of 33.334 ms; p95 exceeds 25 ms and does not meet the
+4 ms target. At the 30 FPS cap, frame-gap p95/p99 bounds are 36/50 ms. Worker maxima
+of 223.755 ms for saves and 295.074 ms for snapshots are parallel wall latency and
+must not be added to CPU totals. No other GUI/emulator runs during measurement;
+bounded headless work, source edits, replay/import/export and artifact downloads
+share the host. native-soak-v75-evidence.json retains valid subsets and unresolved
+scopes. Earlier 63-original storage-pause and 67-heap failures remain failed;
+physical Android/PSS/battery/thermal and human certification stay open.
