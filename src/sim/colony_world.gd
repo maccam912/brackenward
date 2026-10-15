@@ -807,6 +807,16 @@ func _assign(citizen: Dictionary) -> void:
 	_assign_search(citizen)
 	assigning_work=false;reservation_query_ready=false;reservation_query_jobs.clear()
 
+func _assignment_jobs() -> Array:
+	# The returned list owns its container and retains original live records/order.
+	# Direct callers keep the complete existing query/filter behavior.
+	if not in_tick:return unfinished_jobs().filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled","Queued"])
+	var result: Array=[]
+	for job: Dictionary in _work_jobs():
+		var state: String=job.state
+		if state!="Complete" and state!="Canceled" and state!="Queued":result.append(job)
+	return result
+
 func _assign_search(citizen: Dictionary) -> void:
 	work_budget.mark_dirty()
 	if citizen.away: return
@@ -821,7 +831,7 @@ func _assign_search(citizen: Dictionary) -> void:
 	if ColonyCharter.assign(self,citizen): return
 	# Query lists preserve job order and share the live dictionaries, so releases
 	# and failed reservations below remain visible to subsequent queries.
-	var open_jobs: Array = (_work_jobs() if in_tick else unfinished_jobs()).filter(func(j:Dictionary)->bool:return j.state not in ["Complete","Canceled","Queued"])
+	var open_jobs: Array = _assignment_jobs()
 	var preparing: bool = ColonyRegion.preparing(self,citizen)
 	var food_threshold: int = 500 if preparing else 350
 	var needs_sleep: bool = ColonyRest.wants_sleep(citizen,tick,preparing)

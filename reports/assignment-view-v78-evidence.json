@@ -1,0 +1,244 @@
+{
+  "passed": true,
+  "build": "0.7.78-m7",
+  "local_android_code": 117,
+  "maintained_gdscript_assertions": 2892,
+  "change": "During trusted complete ticks,a direct typed loop replaces per-row filter callbacks for assignment eligibility. Same Complete/Canceled/Queued exclusions,order,shared records and owned container. Outside-tick path keeps the original query/filter. No new cache/state/rule/wire/catalog fields.",
+  "fresh_suites": [
+    {
+      "name": "scheduler",
+      "assertions": 428,
+      "xml_sha256": "edc025421a61bfe227528f4a7871585c055ea16bdeae708415d0d4fc7190ef5a"
+    },
+    {
+      "name": "persistence",
+      "assertions": 502,
+      "xml_sha256": "062bfe87d79cf14cd69041c4865198f016c8013db2bfa30168a52c1ee8b8e894"
+    },
+    {
+      "name": "unit",
+      "assertions": 24,
+      "xml_sha256": "ad3950ae55174291e3a84924266526fbd4b402e54db6b83f8b0c631db33de658"
+    }
+  ],
+  "new_scheduler_assertions": 3,
+  "replay": {
+    "sha256": "8f7ff0690528dfac4f9cd585826c267acccb684512d7b4c0d1282a6139eb6551",
+    "commands_verified": 62,
+    "all_old_acknowledgements": true,
+    "checkpoint_hashes": [
+      {
+        "tick": "7200",
+        "canonical_hash": "4640f173ff6aac07e49444a1cb7ffe344fa3ab52b70d66595e1d512f8f520dc0"
+      },
+      {
+        "tick": "72000",
+        "canonical_hash": "258a41e5b88bbd65cf1b119f41e8fc07bf205a81ba041bb22e67f8f56940f8db"
+      }
+    ]
+  },
+  "inherited_validation": "77GUI679 and other suite scopes carry; presentation/scenes/catalogs/persistence/generation/immutable fixtures unchanged. Current78unit24,P502,S428 and replay62 are fresh; no fresh78GUI/other24suite/native/physical claim.",
+  "ui679_original77_xml_sha256": "1f33e2cc63c1e9473010cc6b83a35e8897e7a74052ebffa989432e763eafbd63",
+  "complete_original_search_proof": {
+    "source_commit": "f88776342883a93f7a3a3d90e282e4c6252198bf",
+    "complete_original_assignment_search_retained_exact_except_trailing_separator": true,
+    "current_assignment_search_differs_only_in_filter_helper_call": true,
+    "original_method_sha256": "168f7400d8c3d5f6bd85a5287591b209c828b2437f254aa1889230dde5a5baed",
+    "reference_sha256": "84738c77b99d8602e454ed3e4a5d316530d2c218ef2bac2984d010ad89af010d"
+  },
+  "authoritative_complete_tick_profiles": [
+    {
+      "case": "late",
+      "file": "reports/assignment-phases-v78-raw/late-versioned-final.json",
+      "sha256": "d9bdaa659e0be7655188d02791e4cd6fb9d3a0f24c8f22c2f8fb826adf0df8eb",
+      "ticks": 1200,
+      "initial_tick": 25967,
+      "input_sha256": "cafc0b5ca1be82608b8ab4a9002e114c2bda8312ca38988b05f4c3cf2d08b478",
+      "pairs": 4,
+      "reference_median_us": 4374820.5,
+      "current_median_us": 4145258.5,
+      "reduction_percent": 5.247346719711132,
+      "all_unsorted_states_and_invariants_exact": true,
+      "source_still_matches_every_profile_fingerprint": true
+    },
+    {
+      "case": "fresh",
+      "file": "reports/assignment-phases-v78-raw/fresh-versioned-final.json",
+      "sha256": "c46d828d3182818b0337207d37c65cca93a6de5f1757ed00ac1ccfe22b010540",
+      "ticks": 7200,
+      "initial_tick": 1800,
+      "input_sha256": "",
+      "pairs": 4,
+      "reference_median_us": 1137910.0,
+      "current_median_us": 1131134.5,
+      "reduction_percent": 0.5954337337750748,
+      "all_unsorted_states_and_invariants_exact": true,
+      "source_still_matches_every_profile_fingerprint": true
+    },
+    {
+      "case": "ordinary20-720",
+      "file": "reports/assignment-phases-v78-raw/ordinary20-720-versioned-final.json",
+      "sha256": "83a0f970b6c1b106726af52dfdcd59c859f7683f176115d044be9b2a0a1676b7",
+      "ticks": 720,
+      "initial_tick": 693000,
+      "input_sha256": "e93bff9ebfe59ef1557003a15ab8ff7c4422c8e2b7ccc5f4a6e799c9e31c5b9f",
+      "pairs": 4,
+      "reference_median_us": 2925097.0,
+      "current_median_us": 2875179.0,
+      "reduction_percent": 1.7065416975915682,
+      "all_unsorted_states_and_invariants_exact": true,
+      "source_still_matches_every_profile_fingerprint": true
+    }
+  ],
+  "legacy_ordinary_scope": "Actual v6 ordinary-twenty96day endpoint at693000 is decoded under current migration,then compared for720current future ticks against complete f887763search. This is not a new96day v7campaign run. Original snapshot SHA and complete unsorted future state/invariants remain exact.",
+  "short_ordinary_case_retained": {
+    "file": "ordinary20-versioned-final.json",
+    "sha256": "95ee28e514918a479c54699cd0c163e1e88b3ea2d584a53d7e200b2dc48b7b91",
+    "ticks": 120,
+    "reference_median_us": 449031.0,
+    "current_median_us": 444247.5,
+    "all_states_exact": true,
+    "scope": "Short case median improves1.065percent but one pair is slower; all raw rows retained. Longer720case was added to examine that variation,without assigning a cause."
+  },
+  "original_subsystem_diagnosis": {
+    "source_commit": "f88776342883a93f7a3a3d90e282e4c6252198bf",
+    "report_sha256": "77448eb891e9f8e4d1a86ed3cdfd7b921c646083684f8e915277cf280ea767cc",
+    "baseline_us": 4249554,
+    "instrumented_us": 4317837,
+    "open_job_filter": {
+      "calls": 2400,
+      "max_tick": 26280,
+      "max_us": 441,
+      "over_16ms": 0,
+      "over_4ms": 0,
+      "over_50ms": 0,
+      "total_us": 492201
+    },
+    "treatment_probe": {
+      "calls": 2400,
+      "max_tick": 26490,
+      "max_us": 137,
+      "over_16ms": 0,
+      "over_4ms": 0,
+      "over_50ms": 0,
+      "total_us": 112381
+    },
+    "emergency_probe": {
+      "calls": 2386,
+      "max_tick": 26490,
+      "max_us": 130,
+      "over_16ms": 0,
+      "over_4ms": 0,
+      "over_50ms": 0,
+      "total_us": 108084
+    },
+    "worst_tick": {
+      "elapsed_us": 68423,
+      "jobs": 2027,
+      "path_requests": 4,
+      "phases_us": {
+        "ColonyAgriculture.advance": 64,
+        "ColonyAgriculture.create_jobs": 441,
+        "ColonyCare.advance": 58,
+        "ColonyCare.create_jobs": 5,
+        "ColonyCharter.advance": 1547,
+        "ColonyCharter.begin_tick": 1,
+        "ColonyChronicle.advance": 2,
+        "ColonyCombat.resolve": 86,
+        "ColonyConstruction.create_helpers": 97,
+        "ColonyDefense.advance": 3,
+        "ColonyDirector.advance": 1,
+        "ColonyDomestic.advance": 1,
+        "ColonyDomestic.create_jobs": 835,
+        "ColonyEquipment.create_jobs": 541,
+        "ColonyFire.create_jobs": 2,
+        "ColonyLiving.advance": 302,
+        "ColonyNature.advance": 1,
+        "ColonyNature.create_jobs": 330,
+        "ColonyOpportunities.advance": 42,
+        "ColonyPopulation.advance": 1,
+        "ColonyProduction.create_jobs": 1944,
+        "ColonyRegion.advance": 1,
+        "ColonySocial.advance": 193,
+        "ColonyTrade.advance": 1,
+        "ColonyWeather.advance": 1,
+        "ColonyWildlife.advance": 348,
+        "_assign": 51917,
+        "_create_work": 1666,
+        "_needs": 43,
+        "_work": 2180,
+        "assignment/emergency_candidates": 834,
+        "assignment/emergency_probe": 800,
+        "assignment/food": 20401,
+        "assignment/open_jobs": 4801,
+        "assignment/release": 3614,
+        "assignment/reservation_jobs": 789,
+        "assignment/reserve/eat": 19717,
+        "assignment/sort_jobs": 13,
+        "assignment/treatment_wait": 971,
+        "assignment/unfinished_jobs": 195,
+        "work_budget": 5693
+      },
+      "stacks": 1440,
+      "tick": 26280
+    },
+    "scope": "Read-only complete-tick ordinary twin; extra callback/observer overhead and scheduling included. Nested phases overlap,not additive. No device/FPS or causal phone-freeze claim."
+  },
+  "android_artifact": {
+    "passed": true,
+    "exit_code": 0,
+    "wall_seconds": 7.563995749922469,
+    "local_code": 117,
+    "apk_sha256": "a46636dbbcd3fb165e16e5c056ac4f0e28cebcb8675285d5c521c976130b1473",
+    "kotlin_xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "kotlin_tests": 4,
+    "kotlin_status": "UP-TO-DATE",
+    "adb_daemon_connection_refused_present": true,
+    "scope": "Actual export/metadata/artifact audit; no emulator or physical install."
+  },
+  "source_sha256": {
+    "src/sim/colony_world.gd": "30c239cc57db92ac81ad638b146c6e15e975debcde9b74a59afb582d81be3ea0",
+    "tools/assignment_view_tests.gd": "d2d5495ca5d38a3ef7c4d89b939409d5c2a3b7a4684301d10543636ea9564e81",
+    "tools/assignment_view_reference.gd": "84738c77b99d8602e454ed3e4a5d316530d2c218ef2bac2984d010ad89af010d",
+    "tools/profile_assignment_view.gd": "dadc753e2d0584c0237d865ae76303d44ce896c10ab739671158bd62bb27cc97",
+    "tools/run_suite.gd": "586bb07a7de7a1a347f47c9ef0adc4d02d47d0df17ea8fc1cfbc3c4f14496ca0",
+    "project.godot": "3ac808328f5f1b447969495385f405b05fea9169341cc0882098841e5d27ecd7",
+    "export_presets.cfg": "0210d8d9ba2e1a485cda1c275bfc91bf3956c709e2cb58d80286f5de08b3f6c6"
+  },
+  "raw_sha256": {
+    "apk-artifact-audit.json": "a53fedefc3035d2cc64e666005b26119d8d869e4c0312fe88ba873139add3c48",
+    "apk-final-completion.json": "ad533e6261a854a64230334897761d5a7890dad440ee2eb4c61a28354746667d",
+    "apk-final.log": "657a547acfbe31fc3c26cc3f545ab800801c8aaa23cf66b566bd12b215211397",
+    "assignment-body-equivalence.json": "fe9c1de21ed426c47f93e187fc59bbf8b1c5cc31273f36cf7ffbd2d1c57936de",
+    "assignment-phases.gd": "432f5d1e4ff91ea76dd418129b8361ebdb9a37739d888dc1cc895f5bbc0b1672",
+    "content-final.log": "e14039489855c74c0a1a50a1e358cffdf1c86b721cf6158411a16852a17ec68e",
+    "final-profiles-completion.json": "d4cd3551c17f90fc139378f455687d144a7017bd0fde61f73a7ccaca8333eeed",
+    "final-profiles.log": "71476e54f2d4ba645ab134f0306a8fcea3ecb0b9ac41e62e446b80e243ee84e8",
+    "fresh-versioned-final.json": "c46d828d3182818b0337207d37c65cca93a6de5f1757ed00ac1ccfe22b010540",
+    "fresh-versioned-final.log": "f50ee326464113b5952fc49ce3c61c242d269ee3321563b258312523a794a124",
+    "import-first.log": "ab9b9831990c5c5cd565a9f56b3b63beffd4bd3a2f42a6afeecd76a69d2fc30a",
+    "late-first.json": "77448eb891e9f8e4d1a86ed3cdfd7b921c646083684f8e915277cf280ea767cc",
+    "late-first.log": "5b47700f24518275778f6d45ac41849a219b56ce164c4d754f991dc9eb6a5ec4",
+    "late-versioned-final.json": "d9bdaa659e0be7655188d02791e4cd6fb9d3a0f24c8f22c2f8fb826adf0df8eb",
+    "late-versioned-final.log": "f50ee326464113b5952fc49ce3c61c242d269ee3321563b258312523a794a124",
+    "manual-late-first.json": "0934e9293fc9dc6bb0a4932d0286a2ed625d9b2ebb631f9adac1b14ff026b473",
+    "manual-late-first.log": "f50ee326464113b5952fc49ce3c61c242d269ee3321563b258312523a794a124",
+    "message-tests-final.log": "888a0c0ed615e57d32cf72be501b0c355f33b8613c81dfdaa99db33d7959487e",
+    "ordinary20-720-versioned-final.json": "83a0f970b6c1b106726af52dfdcd59c859f7683f176115d044be9b2a0a1676b7",
+    "ordinary20-720-versioned-final.log": "f50ee326464113b5952fc49ce3c61c242d269ee3321563b258312523a794a124",
+    "ordinary20-versioned-final.json": "95ee28e514918a479c54699cd0c163e1e88b3ea2d584a53d7e200b2dc48b7b91",
+    "ordinary20-versioned-final.log": "f50ee326464113b5952fc49ce3c61c242d269ee3321563b258312523a794a124",
+    "persistence-final.log": "568e8c2cbfda2363dd3994e697645b873f288e7b822f70b8b0e7e2cbeab00902",
+    "reference-equivalence.json": "949b217ea745f0924a6d4739ec3c8d0695479bc5725c7f61fbd448dbf9813f96",
+    "replay-final-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "replay-final-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "replay-final-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "replay-final-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+    "replay-final-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "replay-final.json": "8f7ff0690528dfac4f9cd585826c267acccb684512d7b4c0d1282a6139eb6551",
+    "replay-final.log": "9ad0b98ea2960d4ae26790fef9c52140e91621df39dfc6a0d94e966e4c5ff51b",
+    "scheduler-first.log": "c067ec2273df84ec1d73dc54af057a1b84d3d25d3efbc7bfe70e8f4d3c331d66",
+    "unit-final.log": "3cee40f4b65ddc1212bf67e27d105be82c10e51a27dccaf3702526cdfc5d6ff4"
+  },
+  "scope": "Four alternating complete-tick pairs for fresh,late and legacy ordinary-twenty future cases. Every unsorted state/invariant,input/base state and source fingerprint matches. No other native GUI/emulator/benchmark during final timings; headless validation and76/77artifact downloads run afterward. Preliminary pre-version late pair retained. Latest75native30minute proxy and its unresolved frame-heap/tick-budget observations retain original scope. No physical Android/PSS/thermal,battery or human certificate;78CI/publication pending push."
+}
