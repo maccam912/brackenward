@@ -12,11 +12,11 @@ func _initialize() -> void:
 		var flag: String = args[index].trim_prefix("--")
 		if not args[index].begins_with("--") or not options.has(flag) or seen.has(flag): _usage();return
 		seen.append(flag);options[flag]=args[index+1]
-	if options.scenario not in ["first_week","first_winter","vegetarian_charter","twenty_colony"] or not options.seed.is_valid_int() or int(options.seed)<0 or int(options.seed)>4294967295 or not options.days.is_valid_int() or int(options.days)<1 or int(options.days)>128 or not ColonyGeneration.SITES.has(options.site) or options.mode not in ["Standard","Hearthside"] or options.report.is_empty() or options.report==options.resume: _usage();return
+	if options.scenario not in ["first_week","first_winter","vegetarian_charter","twenty_colony","merchant_economy"] or not options.seed.is_valid_int() or int(options.seed)<0 or int(options.seed)>4294967295 or not options.days.is_valid_int() or int(options.days)<1 or int(options.days)>128 or not ColonyGeneration.SITES.has(options.site) or options.mode not in ["Standard","Hearthside"] or options.report.is_empty() or options.report==options.resume: _usage();return
 	call_deferred("run")
 
 func _usage() -> void:
-	printerr("Usage: -- --scenario first_week|first_winter|vegetarian_charter|twenty_colony --seed UINT32 --site meadow_reach|pine_shelf|reed_bend --mode Standard|Hearthside --days 1..128 --report PATH [--resume PREVIOUS_REPORT]")
+	printerr("Usage: -- --scenario first_week|first_winter|vegetarian_charter|twenty_colony|merchant_economy --seed UINT32 --site meadow_reach|pine_shelf|reed_bend --mode Standard|Hearthside --days 1..128 --report PATH [--resume PREVIOUS_REPORT]")
 	quit(2)
 
 func run() -> void:
@@ -25,7 +25,7 @@ func run() -> void:
 	var error: String = ColonyGeneration.configure(world,int(options.seed),options.site)
 	if not error.is_empty(): printerr(error);quit(2);return
 	var previous: Dictionary = {}
-	var policy: ColonyPolicy = LargeColonyPolicy.new() if options.scenario=="twenty_colony" else ColonyPolicy.new(options.scenario)
+	var policy: ColonyPolicy = MerchantEconomyPolicy.new() if options.scenario=="merchant_economy" else (LargeColonyPolicy.new() if options.scenario=="twenty_colony" else ColonyPolicy.new(options.scenario))
 	var initial: PackedByteArray
 	if not options.resume.is_empty():
 		var parsed: Variant = ColonyState.unpack(JSON.parse_string(FileAccess.get_file_as_string(options.resume)))
@@ -82,6 +82,7 @@ func run() -> void:
 	var scenario_pass: bool = failure.is_empty()
 	if options.scenario=="first_week": scenario_pass=scenario_pass and world.tick-metrics.start_tick>=57600 and metrics.starvation_grace_exceeded_ticks==0 and result.completed_improvements>=3 and FoodForecast.calculate(world).ticks>=7200 and world.citizens.all(func(c:Dictionary)->bool:return not c.departed and not c.death_recorded)
 	elif options.scenario=="first_winter": scenario_pass=scenario_pass and world.tick>=32*7200 and metrics.starvation_grace_exceeded_ticks==0 and world.citizens.filter(func(c:Dictionary)->bool:return not c.departed and not c.death_recorded).size()>=8 and not world.citizens.any(func(c:Dictionary)->bool:return c.departed)
+	elif options.scenario=="merchant_economy": scenario_pass=scenario_pass and world.tick-metrics.start_tick>=24*7200 and metrics.starvation_grace_exceeded_ticks==0 and MerchantEconomyPolicy.passes(world)
 	elif options.scenario=="twenty_colony": scenario_pass=scenario_pass and LargeColonyScenario.passes(world,large_metrics,metrics.starvation_grace_exceeded_ticks)
 	else: scenario_pass=scenario_pass and world.charter_state.ending and not world.researched.has("husbandry") and world.ledger.consumed.get("meat",0)==0 and world.ledger.consumed.get("leather",0)==0
 	result.scenario_pass=scenario_pass
@@ -93,6 +94,7 @@ func run() -> void:
 func report(world: ColonyWorld, policy: ColonyPolicy, metrics: Dictionary, started: int) -> Dictionary:
 	var result: Dictionary = metrics.duplicate(true)
 	result.merge({"scenario":options.scenario,"seed":world.seed,"site":world.site_id,"mode":options.mode,"requested_days":int(options.days),"end_tick":world.tick,"ticks_run":world.tick-metrics.start_tick,"elapsed_ms":metrics.elapsed_ms+Time.get_ticks_msec()-started,"engine":Engine.get_version_info().string,"content_hash":world.definitions.content_hash,"generator_version":world.generator_version,"canonical_hash":world.canonical_hash(),"invariant_failure":failure,"completed_improvements":metrics.prior_improvements+world.structures.filter(func(s:Dictionary)->bool:return s.health>0 and not metrics.initial_structure_ids.has(s.id)).size(),"final":sample(world),"ledger":world.ledger,"researched":world.researched,"charter":world.charter_state,"director_history":world.director_state.history,"facts":world.facts,"commands":world.command_trace,"policy_decisions":policy.decisions,"ordinary_play_only":true,"certification":"Scenario evidence only; physical devices and human comprehension remain separate"},true)
+	if options.scenario=="merchant_economy":result.merchant_economy=MerchantEconomyPolicy.metrics(world)
 	return result
 
 func save_report(path: String, data: Dictionary, initial: PackedByteArray, world: ColonyWorld) -> bool:

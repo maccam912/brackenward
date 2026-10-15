@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.49-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.50-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -22,11 +22,12 @@ Checkpoint: `0.7.49-m7` (campaign schema 23, device settings schema 6), content 
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
-| M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Fresh v6 Standard-site and Pine Hearthside vegetarian Charters pass all four 96-day cases with eight residents, all stages, Continue and zero zero-fullness/grace-exceeded ticks; independent completion and current 0.7.32 loading audits pass. The earlier v6 29/30 failure is traced to a replanted tree blocking the lodge. The complete clean revised-policy matrix at 7059064 now passes all 30/30 cases, keeping eight residents with zero zero-fullness/grace ticks and passing 23,760 invariant checks; a current 0.7.42 pure-loading audit preserves all thirty endpoints. The revision-1 ordinary twenty-resident campaign passes both full seasonal windows with all twenty alive, zero window starvation and no campaign grace violations. The separate ninety-six additional post-Charter days are still running. Revision-2 fresh-map balance evidence remains pending. The earlier v4 matrix is 30/30. M7 and physical/human gates remain; older v2/v3/v4 results retain their pinned scopes. |
+| M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Fresh v6 Standard-site and Pine Hearthside vegetarian Charters pass all four 96-day cases with eight residents, all stages, Continue and zero zero-fullness/grace-exceeded ticks; independent completion and current 0.7.32 loading audits pass. The earlier v6 29/30 failure is traced to a replanted tree blocking the lodge. The complete clean revised-policy matrix at 7059064 now passes all 30/30 cases, keeping eight residents with zero zero-fullness/grace ticks and passing 23,760 invariant checks; a current 0.7.42 pure-loading audit preserves all thirty endpoints. The revision-1 ordinary twenty-resident campaign passes both full seasonal windows with all twenty alive, zero window starvation and no campaign grace violations. The separate ninety-six additional post-Charter days now pass all four generator-1 cases with preserved origins/commands, eight survivors, no starvation/grace ticks and a final food day. Revision-2 fresh-map balance evidence remains pending. The earlier v4 matrix is 30/30. M7 and physical/human gates remain; older v2/v3/v4 results retain their pinned scopes. |
+| Revision-2 release map sweep | Pass | All 30,000/30,000 independently audited maps (10,000 per site), zero retries/fallbacks; source `d870381`. Inspected boundary goldens and separate actual native/Android initial-map checks retain their scopes. Campaign balance remains separate. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `5fa7e82` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-5fa7e821484c); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,658 checks, zero failures in their recorded runs, including 667 native UI checks. Persistence 350 and UI 667 were rerun for the fresh-adoption paused-save fix in 0.7.49. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained; the expanded generation suite passes 167 in 0.7.46 and scheduler passes 403 in 0.7.47. Persistence, colony, production and native UI were rerun for the storage-read optimization. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,672 checks, zero failures in their recorded runs, including 667 native UI checks. Trade/economy passes 41 in 0.7.50, adding fourteen policy/physical-transaction checks; charter passes 106. Persistence 350 and UI 667 were rerun for the fresh-adoption paused-save fix in 0.7.49. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained; the expanded generation suite passes 167 in 0.7.46 and scheduler passes 403 in 0.7.47. Persistence, colony, production and native UI were rerun for the storage-read optimization. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2930,3 +2931,41 @@ old generator-1 post-Charter evidence continue in frozen checkouts. The stale
 SIM06 acceptance-table arithmetic now agrees with the already implemented v6
 rates and passing tests (rest 100 + four hours gives 400/340/280). Weekly
 remaining last observed 58%; authorized work continues.
+
+
+## 0.7.50 completed generation/post-Charter gates and merchant economy scenario
+
+The frozen revision-2 release map sweep and explicit independent second audit
+pass all 30,000/30,000 cases (10,000 unique seeds/site), zero retries/fallbacks,
+minimum safe building area 11,002 and wild food 588. This closes the independent
+map-geometry gate; [GENERATION_EVIDENCE.md](GENERATION_EVIDENCE.md) retains exact
+source/completion/audit hashes and scopes. The completed frozen checkout now
+runs the separate generator-2 twenty-resident seasonal campaign.
+
+All four retained generator-1 Charters also pass ninety-six additional ordinary
+days, 693,000→1,384,200, with original input bytes/command prefixes intact. Each
+adds 2,304 invariants, keeps exactly eight residents, records zero starvation/
+grace ticks and retains at least one food day. An explicit second audit passes.
+[CAMPAIGN_EVIDENCE.md](CAMPAIGN_EVIDENCE.md) retains the actual endpoint hashes;
+these are not fresh generator-2 claims. That separate Winter/Charter matrix
+continues without editing its frozen source.
+
+The new merchant_economy scenario observes/queues ordinary commands, buys eight
+cloth on each of two scheduled Riverward visits, physically sews spare cloaks,
+and completes the listed Road Fellowship three-cloak delivery. It keeps the
+starting worn equipment, makes no local cloth, pays normal prices/reservations,
+and retains all weather/incidents. The documented 24-day acceptance contract
+requires exact imported-material provenance, physical receipts, eight living equipped
+residents, a final food day and no starvation. The independent Python auditor checks actual
+snapshots/commands/receipts/quantities; fifteen synthetic counterexample tests
+pass and do not certify a real campaign. Fourteen GDScript policy/physical
+transaction checks pass (trade 41); charter 106 also passes. A one-day bounded
+run correctly returns incomplete with 24 invariant checks and no script errors.
+The full four-case frozen matrix is not yet a completed gate.
+
+Maintained local total is 2,672 across 28 suites, including the previously
+verified UI 667 and persistence 350. Runtime rules, content v6/schema 23/envelope
+5/settings 6/generator 2, inspected expectations and historical replay inputs
+remain unchanged; this checkpoint extends the verification harness/design.
+Catalog/media validation and local Android export pass (0.7.50-m7 / local code 89).
+Weekly remaining last observed 57%; authorized work continues.

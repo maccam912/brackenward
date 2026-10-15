@@ -135,3 +135,29 @@ Local direct-native generation 167, graphical UI 663 and Reed tutorial flow 22
 pass; catalog/media and Android export pass (0.7.48-m7 / local code 87).
 Remote new native-generation coverage is pending at this checkpoint. Runtime
 gameplay/generation code and all pinned expectations are unchanged from 0.7.47.
+
+
+## Full revision-2 release sweep completed
+
+The clean frozen `d8703815c43562b4ef8746446a4d0af3885da725` run now
+passes all **30,000/30,000** cases: 10,000 unique specified seeds at each site.
+Every map passes the independent exported-byte geometry/quantity validator.
+All three sites use attempt zero for all 10,000 cases; fallback counts are
+0/0/0, below the strict per-site ten-case limit. Minimum reachable safe building
+area is 11,002 tiles; minimum reachable wild food is 588 units. Completion and
+an explicit second audit from the same unchanged frozen source both pass the
+full release-generation gate. The inspected eighteen-map fixtures stay unchanged.
+
+Raw geometry boundaries/failures, all 30,000 metrics and provenance remain in
+`generation-v2-d870381-release/`. SHA-256:
+
+| Evidence | SHA-256 |
+| --- | --- |
+| source.json | `88b5761a149b98caec726566d3471f31a19b1f835fe829feedf2db4e276ee0f1` |
+| completion.json | `dd6ef6e4b2d617a73f4e1afa386cf7eb859532a9e9d1832443ced166f6b3873e` |
+| audit.json | `694d66c1d1fbf9b6abe3be067a6979c92258dfb78c189cf96a65fbbf1b36e050` |
+
+This closes the map-generation release sweep, not campaign balance, performance,
+physical-device or human gates. The completed checkout is now frozen for the
+separate generator-2 ordinary twenty-resident seasonal campaign, with a new
+report directory; its balance result is still pending.

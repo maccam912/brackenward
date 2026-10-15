@@ -1,6 +1,6 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.49-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content/generator versions. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.50-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content/generator versions. Physical Android testing is deferred to the user and does not block further implementation.
 
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
@@ -118,3 +118,11 @@ with its inspected expectation without advancing play or rewriting the save:
 `tools/godot.sh --headless --script tools/check_initial_golden_save.gd -- INITIAL_SNAPSHOT NEW_REPORT`.
 Only the random campaign ID is normalized in the private decoded copy. A failed
 comparison leaves existing expectations and input bytes intact.
+
+
+`merchant_economy` is a 24-day ordinary-play scenario: two scheduled cloth
+purchases supply real sewing and a three-cloak community delivery, with no local
+cloth production or material grants. From a clean frozen checkout run
+`python3 tools/merchant_sweep.py --source CLEAN_CHECKOUT --report-dir NEW_DIRECTORY`;
+use `--audit` with the same source/directory after completion. Its four-case
+release result stays separate from bounded policy tests.

@@ -356,3 +356,31 @@ No simulation advances during migration. Report charter-v4-current28-audit.json
 SHA-256 0143f08a723251fffc8933b5720fd0aa5f6e52cd9e9b31e45af32a7f80608f3a.
 The observed v4 health/starvation figures above remain v4 results. Fresh v6
 Charter/ceremony/Continue runs remain pending.
+
+
+## Ninety-six additional post-Charter days completed
+
+All four generator-1/content-v6 origins above now continue another 96 days at
+clean frozen `4042af1cdd665b235b6f1f83ea64afe7dac15a5d`. Each progresses from
+693,000 to 1,384,200, preserving the exact source endpoint link, original initial
+snapshot and complete command prefix. Every case adds 2,304 invariant checks
+(4,608 across the whole 192-day history), keeps exactly eight residents without
+replacements/departures, and records zero zero-fullness/grace-exceeded ticks.
+All retain at least one food day and complete/continued Charter state. Original
+twenty-file input evidence remains unchanged. The independent second audit
+passes all four; this meets the additional-days gate rather than counting the
+original mid-campaign ceremony as that continuation.
+
+| Site / mode | Minimum health over whole history | Final food ticks | Final canonical hash |
+| --- | ---: | ---: | --- |
+| meadow_reach / Standard | 82 | 38,526 | `ab3dd2a9c349fe82eed3156b9eb9f03078ff307faa95a52747cca739e2ad2124` |
+| pine_shelf / Standard | 87 | 41,198 | `620dd8dc9fa10b03c2ebc038fa2035a7f2cab1d550fd188fe58031d64bce9c7a` |
+| reed_bend / Standard | 100 | 45,935 | `68059749a9c089f7224bd1fa0624337887594a56c9afd7a0d5649c34fd38a0a2` |
+| pine_shelf / Hearthside | 100 | 49,386 | `810fb20eb3f9f2bde17cbbb65fafb7078da247742994e0a751d04e24a964f92c` |
+
+Raw outputs: `post-charter-v6-4042af1/`. Source SHA-256
+`fb374339f71ec80d9f2d1d269a047cdfe12d8158d25a1dfe5583404a7b5a5b17`,
+completion `dc2a7a3707c11528fe27d1018b62c8e6644b28ed650e900079efdbf5ee5dc59e`,
+audit `381e5649fbf9b5330e2ea9378c52cd1f2173434ef35199ed09dd1416ff4f04e4`.
+These are retained generator-1 campaigns. Fresh generator-2 Winter/Charter and
+ordinary twenty-resident seasonal evidence have separate pending scopes.

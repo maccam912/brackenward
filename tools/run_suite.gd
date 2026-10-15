@@ -70,7 +70,9 @@ func run() -> void:
 		"equipment": EquipmentTests.run(check)
 		"maintenance": MaintenanceTests.run(check)
 		"population": PopulationTests.run(check)
-		"trade": TradeTests.run(check)
+		"trade":
+			TradeTests.run(check)
+			MerchantEconomyTests.run(check)
 		"region": RegionTests.run(check)
 		"fire": FireTests.run(check)
 		"defense": DefenseTests.run(check)
