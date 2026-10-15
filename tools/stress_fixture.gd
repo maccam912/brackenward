@@ -3,7 +3,7 @@ extends RefCounted
 ## Synthetic release-load fixture, never ordinary-play/balance evidence.
 ## Uses real records, geometry and ledgers; no simulation override runs afterward.
 
-static func make() -> Dictionary:
+static func make(use_rations: bool = false) -> Dictionary:
 	var world: ColonyWorld = ColonyTests.world()
 	world.session_id="synthetic-stress-v1"
 	world.resources.clear();world.nature_state=ColonyNature.initial_state(world.tick)
@@ -89,13 +89,16 @@ static func make() -> Dictionary:
 	world.defense_state.alert_serial=1;world.danger_cache_tick=-1
 	while world.chronicle_state.facts.size()<1000:
 		world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"haul","text":"Synthetic stress fixture delivery record."})
+	# A longevity probe can opt into its existing nonperishable food reserve.
+	# Apply through the normal next-tick command; never replenish during a run.
+	if use_rations: world.queue_command("food_policy",{"enabled":true})
 	world.reset_job_queries();world.reset_stack_queries();world.record_indexes.clear()
 	var errors: Array[String] = world.invariant_errors()
 	if not errors.is_empty(): return {"error":str(errors)}
 	var decoded: Dictionary = ColonyCodec.decode(ColonyCodec.encode(world))
 	if not decoded.has("world"): return {"error":"Stress save validation: "+decoded.get("error","")}
 	if decoded.world.canonical_hash()!=world.canonical_hash(): return {"error":"Stress save roundtrip mismatch"}
-	return {"world":world,"counts":counts(world),"scope":"Synthetic overload fixture; eight neutral downed road visitors plus six hostiles exceed ordinary shared admission reservations. No ordinary-play/balance or physical-device certification."}
+	return {"world":world,"counts":counts(world),"scope":"Synthetic overload fixture; eight neutral downed road visitors plus six hostiles exceed ordinary shared admission reservations. No ordinary-play/balance or physical-device certification."+(" Normal food-policy command queued to permit the existing ration reserve; no runtime replenishment." if use_rations else "")}
 
 static func counts(world: ColonyWorld) -> Dictionary:
 	return {"residents":ColonyPopulation.living(world),"domestic":world.domestic_state.animals.filter(func(a:Dictionary)->bool:return a.health>0).size(),"wildlife":world.wildlife_state.animals.filter(func(a:Dictionary)->bool:return a.health>0).size(),"hostiles":world.defense_state.enemies.filter(ColonyDefense.enemy_active).size(),"neutral_visitors":world.defense_state.enemies.filter(func(e:Dictionary)->bool:return e.state in ["Downed","Leaving"]).size(),"structures":world.structures.filter(func(s:Dictionary)->bool:return s.health>0).size(),"nonempty_stacks":world.nonempty_stacks().size(),"active_targets":world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.kind in ["build","craft","cook"]).size(),"crop_tiles":world.fields.size(),"chronicle":world.chronicle_state.facts.size(),"weather":world.weather}

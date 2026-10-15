@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.38-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.39-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.38-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `ed28488` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-ed28488431b5); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,545 checks, zero failures, including 663 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.38; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,548 checks, zero failures, including 663 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.39; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2555,3 +2555,33 @@ revised-policy Winter sweep currently has twelve passing cases; its complete gat
 remains pending. Remote ed28488 CI passes all four native targets and publication,
 with APK/build.json/checksum assets explicitly verified. Current revision CI and
 physical Android remain separate. Weekly remaining last observed 65%; work continues.
+
+
+## 0.7.39 prepared longevity fixture without runtime grants
+
+The synthetic stress generator now optionally queues the existing normal
+food_policy command to permit its already supplied travel-ration reserve. The
+option defaults off, preserving the original fixture and all failed evidence.
+No goods, people, health, work, weather or other initial field differs: only the
+pending command and next command ID change. The command stays unapplied in the
+snapshot and takes effect on the first ordinary tick. Counts remain exactly
+20/12/32 residents/domestic/wildlife, six hostiles/eight neutral visitors,
+400 structures, 1,000 positive stacks, 256 active targets, 192 crops, 1,000 Chronicle
+facts and rain. Admission overload remains explicitly synthetic. The future probe
+must retain ending counts and cannot certify a constant hostile/visitor load.
+
+Three new checks compare the complete initial payloads, verify durable pending
+policy/no load progress, and apply it through real first-tick simulation with an
+identical save continuation and real food forecast. Persistence passes 324;
+maintained 28-suite total is 2,548, including the unchanged 663 native UI checks
+from 0.7.38. Native startup/audio drain, content/media validation and Android export
+pass; aapt verifies 0.7.39-m7 / local code 78. Runtime gameplay/UI is unchanged.
+The snapshot writer accepts --use-rations true|false and now refuses an existing
+output. A deliberate attempted overwrite of the retained failed-soak input exits
+nonzero and leaves its original SHA
+3a65112145f5bf35ee179d02075d48a2accc037dd611630021c43d4460128e32
+unchanged. A separate smoke snapshot passes, canonical
+16bda08ba7d67f228f637684ac0bacd864f599d91931905a821084a803e4bb2a.
+The next frozen-source native longevity run uses a newly named input; no outcome
+is assumed yet. Physical Android and full M7 gates remain open. Current revision
+CI is separate. Weekly remaining last observed 64%; authorized work continues.

@@ -757,3 +757,18 @@ exact world/row data; eleven real image-buffer comparisons remain identical acro
 membership, growth, tint, selection, camera and adoption changes. STATUS.md records
 full source hashes, validation and retained first-test failures. No simulation
 rules, target graphics quality, or authoritative ticks were changed.
+
+
+## Optional prepared-ration longevity input
+
+0.7.39 adds --use-rations true to create_stress_snapshot.gd. This queues the normal
+food_policy command before measurement, allowing the existing nonperishable food
+reserve. It defaults off; the original failed fixture/input is unchanged. Complete
+initial payloads differ only in pending_commands and next_command_id. The saved
+command must round-trip unapplied and execute through the first normal tick.
+No inventory/actor/health grant or refill occurs during measurement. This prepares
+food access, not ordinary shared admission or constant all-actor load. Keep original
+failures, declare the new input hash and report ending counts. A prepared run must
+pass its own duration/population/heap/source checks; no result is inferred from
+configuration. The producer refuses existing output files rather than overwriting
+retained evidence.
