@@ -5,6 +5,68 @@ campaign evidence and physical Android release requirements. The full release
 stress gate, all-alert variant, thirty-minute soak, PSS/battery/thermal measurements
 and low-tier/Mali phone matrix remain incomplete.
 
+## Frozen 0.7.39 ration-enabled thirty-minute result
+
+The new input queues the ordinary food-policy command so that residents can eat
+its existing reserve of travel rations. Clean frozen source
+`f5868772d3e6b93edfd383c2d1d168b87b226425`, content v6/schema 23, ran
+1,800.01258 measured seconds after sixty seconds of warmup at selected 2x.
+All 36,000 expected ticks ran, from 3,002 to 39,002; all twenty residents survive
+and every sampled invariant/storage check, final save round trip, source check
+and audio drain passes. All five diagnostic counters remain zero. Ending load
+is 569 structures, 1,058 positive stacks, 2,264 job records, 99 active
+construction/production targets, 192 crop tiles, twelve domestic animals and thirty-two wildlife.
+Hostiles and visitors leave through ordinary simulation. This is a changing
+synthetic colony, with concurrent headless tests/campaigns on the same Mac.
+
+**The native probe and independent audit fail the unchanged memory gate.**
+Engine heap grows 26,896,076 bytes by the post-measurement drain; its sampled
+peak increase is 58,547,825 bytes. The first large peak is at sixty measured
+seconds. The thirty-minute FPS-floor proxy passes (lowest one-second window
+27.911 FPS; no consecutive below-24 window), but this is not the separate
+Android p95/p99 or PSS requirement. Frame gaps max at 112.437 ms, with 275/53,974
+above 50 ms. Session/batch max is 100.909/98.274 ms; map-update mean/max is
+4.001/16.045 ms; save-capture mean/max is 7.417/17.869 ms. Keep this complete
+failed result; the next allocation fix must earn new evidence.
+
+Raw directory: `reports/native-soak-v6-f586877-rations/`. SHA-256:
+
+| Evidence | SHA-256 |
+| --- | --- |
+| Initial snapshot | `6a3d3c4636802ca2374e48c5d423bfd6d939c82e4cd3e179583b21324c76c774` |
+| source.json | `94c67a96dc5ef386ad99657f81f1551dce8b2ca5988dc360e55f536fcca6035d` |
+| completion.json | `ad59f96675845eb310b78f48ee6b175f4cbc103690f68e3124f8b702339b08c9` |
+| probe.json | `4767cf000598ee2a6d69222e0f30df5120aa7aa619debd54715f24efbe63705d` |
+| audit.json | `309e3926567334ce59f50433880a78267accb41b395f49a85dce96332997d1da` |
+| Final snapshot | `d9e17fa699e55192a5fe7ee59cc0a60bc75353083388a6d774ef31112c987fa8` |
+
+Final canonical hash is
+`3cdeb39092ecb0d5a1a4a17e898330a0b22b7d86ad3de1b7217ce2cc7e31890d`.
+This result does not replace or amend any earlier failed starvation/storage soak.
+
+## 0.7.41 retaining the already-owned journal base
+
+Only background writers use the new CapturedStore. After a successful save,
+journal append or prepared rotation, it retains the exact recursively read-only
+capture that the worker already owns. The live mutable world never crosses the
+thread boundary. Normal direct ColonyStore calls still deep-copy their durable
+base. Capture history reuses unchanged immutable records; no historical row is
+deleted, reordered or compacted, and no save format or simulator rule changes.
+
+Four alternating headless pairs on the retained 0.7.39 endpoint compare the old
+deep-copy retention with owned retention. Complete payloads match, source/input
+bytes and canonical state stay unchanged, and owned results share capture identity.
+Median CPU is 8,510.5 versus 34 microseconds. The old retained allocation is
+17,043,556 bytes (16.25 MiB); owned retention adds no payload allocation (the
+counter moves by -128 bytes of fixed local overhead). This measures one retention
+step, not whole-save peaks, frame rate, PSS or a passing longevity probe.
+Raw `owned-base-v41-profile.json` SHA-256:
+`0da77374703987d0aba6656dac3669fa56a702d9f86d5b25f9b2c8cb8a37cac9`.
+Eight new persistence checks cover direct mutable-world isolation, capture identity,
+unchanged history sharing, pending command recovery/one-time continuation, prepared
+catch-up and cache replacement. Existing asynchronous failure/retry/crash checks
+also pass. A new frozen thirty-minute test remains necessary.
+
 ## Fixture and measurement contract
 
 `tools/stress_fixture.gd` constructs an isolated synthetic object-load fixture using

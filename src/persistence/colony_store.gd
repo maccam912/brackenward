@@ -63,7 +63,7 @@ func save(world: RefCounted) -> String:
 	journal_tick = world.tick
 	journal_sequence = 0
 	journal_length=0;journal_digest=""
-	journal_payload=world.payload().duplicate(true)
+	journal_payload=_retain_payload(world)
 	journal_parent_hash=encoded_payload_hash;journal_size_bound=encoded_snapshot_bytes;snapshot_tick=world.tick
 	world.command_trace.clear()
 	recovered = false
@@ -158,7 +158,7 @@ func checkpoint(world: ColonyWorld) -> String:
 	journal_sequence = next_sequence
 	journal_length=complete_length;journal_digest=FileAccess.get_sha256(path)
 	verified_journals[path]=snapshot_digest+":"+journal_digest;rejected_journals.erase(path)
-	journal_payload=world.payload().duplicate(true)
+	journal_payload=_retain_payload(world)
 	journal_parent_hash=tick_frame.slice(tick_frame.size()-32).hex_encode()
 	# A replacement cannot grow the canonical envelope by more than twice its
 	# encoded patch size. This upper bound forces a full checked save before the
@@ -226,13 +226,17 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 	if snapshot_error!=OK: return "Could not publish prepared snapshot: "+error_string(snapshot_error)
 	sequence=next;snapshot_tick=prepared.payload.tick
 	journal_sequence=count;journal_length=frames.size();journal_digest=FileAccess.get_sha256(journal_path) if count>0 else ""
-	journal_tick=world.tick;journal_payload=world.payload().duplicate(true);journal_parent_hash=parent
+	journal_tick=world.tick;journal_payload=_retain_payload(world);journal_parent_hash=parent
 	journal_size_bound=bytes.size()+2*frames.size();recovered=false
 	verified_generations[snapshot_path]=FileAccess.get_sha256(snapshot_path)
 	if count>0: verified_journals[journal_path]=verified_generations[snapshot_path]+":"+journal_digest
 	world.command_trace.clear()
 	_prune_generations()
 	return ""
+
+func _retain_payload(world: RefCounted) -> Dictionary:
+	# Direct callers own a mutable world and need an independent durable base.
+	return world.payload().duplicate(true)
 
 func _write_prepared_bytes(path: String, bytes: PackedByteArray) -> String:
 	var file: FileAccess = FileAccess.open(path,FileAccess.WRITE)

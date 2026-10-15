@@ -12,6 +12,15 @@ var preparation_thread: Thread
 var preparation_world_id: int = 0
 var prepared: ColonyPreparedSnapshot
 
+class CapturedStore extends ColonyStore:
+	var owned_capture: Dictionary = {}
+	func _retain_payload(world: RefCounted) -> Dictionary:
+		# This writer receives only a fully owned, recursively read-only capture.
+		# Its world never steps; retaining that same base avoids another complete
+		# history copy after every journal append or snapshot rotation.
+		assert(owned_capture.is_read_only() and owned_capture==world.payload())
+		return owned_capture
+
 class WorkRequest extends RefCounted:
 	var writer: ColonyStore
 	var captured: Dictionary = {}
@@ -79,7 +88,8 @@ func start(store: ColonyStore, world: ColonyWorld, full_snapshot: bool = false) 
 	request.full_snapshot=full_snapshot
 	if full_snapshot and ready(world): request.prepared=prepared;prepared=null
 	request.retired=retired_payloads;retired_payloads=[]
-	var writer: ColonyStore = ColonyStore.new()
+	var writer: CapturedStore = CapturedStore.new()
+	writer.owned_capture=request.captured
 	for field in ["directory","root_directory","slot","sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick"]:
 		writer.set(field,store.get(field))
 	writer.verified_generations=store.verified_generations.duplicate()

@@ -45,6 +45,7 @@ func run() -> void:
 			PreparedSnapshotTests.run(check)
 			await PreparedSnapshotTests.asynchronous(self,check)
 			CaptureTests.run(check)
+			ImmutableJournalTests.run(check)
 			DeltaTests.run(check)
 			CampaignTests.run(check)
 			await AsyncSaveTests.run(self,check)
