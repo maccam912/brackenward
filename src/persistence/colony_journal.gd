@@ -13,6 +13,16 @@ static func frame(record: Dictionary) -> PackedByteArray:
 	bytes.append_array(_hash(payload))
 	return bytes
 
+static func _frame_bounded(record: Dictionary) -> PackedByteArray:
+	var encoded: Dictionary=ColonyJournalEncoding.encode(record)
+	# Retain the original encoder's behavior for unsupported/deep/oversized
+	# input; callers keep their existing frame and snapshot fallback checks.
+	if encoded.has("error"):return frame(record)
+	var payload: PackedByteArray=encoded.bytes;encoded={}
+	var bytes: PackedByteArray=PackedByteArray();bytes.resize(4)
+	bytes.encode_u32(0,payload.size());bytes.append_array(payload);bytes.append_array(_hash(payload))
+	return bytes
+
 static func _hash(bytes: PackedByteArray) -> PackedByteArray:
 	var context: HashingContext = HashingContext.new()
 	context.start(HashingContext.HASH_SHA256)

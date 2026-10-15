@@ -7,6 +7,29 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.72 bounded internal journal encoder
+
+The private writer encodes sorted string dictionaries recursively and native-packs
+at most256 array/map rows per block. Every original frame byte is preserved;
+public encoding/recovery and fallback/bounds remain unchanged. Three new boundary,
+immutable-fixture and deep-fallback checks pass within persistence487; UI670,
+replay62/all old acknowledgements, content530 and Android111 export also pass.
+
+Four alternating actual-frame encoder pairs show median sampled peak growth
+9,633,600 to2,075,580 bytes (78.5% lower), encoding time30,139.5 to27,834 microseconds
+(7.6% lower), identical ending allocation1,180,098 bytes and exact original output.
+The complete checkpoint comparison against7698c08 includes71's buffer lifetimes:
+peak22,343,648 to15,484,270 bytes, wall time98,944.5 to99,141 microseconds, ending
+1,404 bytes and exact bytes/metadata/recovery. This does not isolate72's complete
+writer benefit; a large checkpoint peak remains. Bounded UI/replay checks share
+host. Thread lifecycle/sampling/disk cache are included, physical/FPS/PSS excluded.
+[journal-frame-v72-evidence.json](journal-frame-v72-evidence.json).
+
+The preceding71session still reaches30,249,953 bytes frame-boundary growth during
+writer ownership without preparation, despite its periodic7,944,796-byte pass.
+The cause remains unassigned. New72session measurement is separate.
+[native-heap-v71-observation-evidence.json](native-heap-v71-observation-evidence.json).
+
 ## 0.7.71 shorter writer buffer lifetimes
 
 The producer patch, redundant frame, checked byte buffers and parsed verification

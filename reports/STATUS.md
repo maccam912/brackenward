@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.71-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.72-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ Checkpoint: `0.7.71-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `126407a` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-126407a94256), code222 / 0.7.69-m7+126407a, APK SHA-256 `30ead8c11f57e806c4e5d9b34fb951018fc45469abcab3da4f8d8be675df4d16`. Actual four-host artifacts,28 suites/2851 assertions,Kotlin4 and exact published assets audited. Current70 publication and production signing/store release remain separate. |
 
-Current recorded validation: 28 GDScript suites, 2858 maintained assertions. The 0.7.71 worker-buffer change passes persistence484 (three new complete-reference twin checks), native UI670, replay62 and every retained acknowledgement migration, content530 and Android110 export/metadata. Unchanged cached Kotlin4 XML is inspected. Last fully audited remote69 has28 suites/2851 assertions and published Android code222; current70 CI and71 publication remain separate. Both69and70 short4x probes pass the periodic20MiB proxy while separate frame-boundary peaks remain about30MB. Memory is unresolved; the67ten-minute4x failure stays failed. Current71 whole-session tracing and physical/human gates remain separate. All45 original emulator files remain restored exactly.
+Current recorded validation: 28 GDScript suites, 2861 maintained assertions. The 0.7.72 private bounded encoder passes persistence487 (three new byte-equivalence/boundary/fallback checks), native UI670, replay62 and every retained acknowledgement migration, content530 and Android111 export/metadata. Unchanged cached Kotlin4 XML is inspected. Last fully audited remote69 has28 suites/2851 assertions and published Android code222; current70/71 CI and72 publication remain separate. The69–71 short4x probes pass the periodic20MiB proxy while separate frame-boundary peaks remain about30MB. Memory remains unresolved; the67ten-minute4x failure stays failed. Current72 whole-session tracing and physical/human gates remain separate. All45 original emulator files remain restored exactly.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -4007,3 +4007,39 @@ passes the proxy and separate second audit. Frame-boundary peak30,358,802 bytes
 still occurs during live writer ownership with no preparation and stable caches.
 The decoder improvement therefore does not resolve whole-session memory.
 native-heap-v70-observation-evidence.json retains that scope and earlier failures.
+
+
+## 0.7.72 bound native packing during internal journal framing
+
+Four internal writer calls use a private encoder that walks sorted string-keyed
+dictionaries and native-packs at most256 array rows or integer-map entries per
+block. IDs, tags, sorted integer keys, escaping and every framed byte stay exact.
+The original public frame encoder and recovery reader remain unchanged. Unsupported,
+deep or size errors fall back to the original encoder; caller bounds and snapshot
+fallbacks still apply. Inputs, captures, durability and acknowledgements stay.
+
+Three new checks compare every record in five immutable journals against the
+complete independent native encoder, exercise0/1/255/256/257/512/513 row boundaries,
+mutable/frozen inputs, integer maps, IDs, tags, Unicode/escaping, and deep fallback.
+Persistence487 also passes the prior complete writer/reference twins. Native
+UI670, replay62/all old acknowledgements, content530 and Android111 export pass;
+Kotlin4 is an inspected unchanged cached result. Maintained total:2861.
+
+Four alternating real-frame encoder pairs produce identical786,572framed bytes
+(payload786,536). Median sampled peak growth falls9,633,600 to2,075,580 bytes
+(78.5%); encoding time30,139.5 to27,834 microseconds (7.6% lower), ending allocation
+1,180,098 bytes for both. Full checkpoint pairs against7698c08, including the71
+buffer-lifetime change, remain exact in bytes, metadata and recovery: peak
+22,343,648 to15,484,270 bytes, wall time98,944.5 to99,141 microseconds and ending
+1,404 bytes. This cumulative comparison does not isolate72 whole-writer benefit;
+the complete checkpoint still has a large transient peak. Thread lifecycle,
+sampling, disk cache and concurrent bounded UI/replay checks remain in scope.
+journal-frame-v72-evidence.json retains source/input/log/APK hashes and both
+read-only candidate prototypes. No physical/session-level gain is inferred.
+
+The71 short native case completes180.016457seconds/7200ticks,20residents,zero
+counters and lowest one-second FPS29.464. Periodic peak7,944,796 bytes passes its
+proxy and separate second audit. Frame-boundary peak30,249,953 bytes remains at
+tick5395 during live writer ownership, no preparation/retired groups and stable
+navigation. native-heap-v71-observation-evidence.json retains the unresolved scope.
+Current72 frozen-session measurement is next; prior failures remain failed.

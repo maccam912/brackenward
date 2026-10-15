@@ -90,7 +90,7 @@ func checkpoint(world: ColonyWorld) -> String:
 	for entry in world.command_trace:
 		if entry.tick > journal_tick:
 			next_sequence += 1
-			var command_frame: PackedByteArray = ColonyJournal.frame({"sequence": str(next_sequence), "kind": "command", "tick": entry.tick, "command": entry.command})
+			var command_frame: PackedByteArray = ColonyJournal._frame_bounded({"sequence": str(next_sequence), "kind": "command", "tick": entry.tick, "command": entry.command})
 			if command_frame.decode_u32(0) > ColonyJournal.MAX_RECORD or records.size() + command_frame.size() > ColonyJournal.MAX_JOURNAL:
 				records=PackedByteArray();command_frame=PackedByteArray()
 				return save(world)
@@ -98,7 +98,7 @@ func checkpoint(world: ColonyWorld) -> String:
 			command_frame=PackedByteArray()
 	next_sequence += 1
 	var delta: Dictionary = {"version":1,"base_tick":journal_tick,"campaign_id":world.session_id,"parent":journal_parent_hash,"patch":ColonyDelta.make(journal_payload,world.payload())}
-	var tick_frame: PackedByteArray = ColonyJournal.frame({"sequence": str(next_sequence), "kind": "tick", "tick": world.tick, "delta":delta})
+	var tick_frame: PackedByteArray = ColonyJournal._frame_bounded({"sequence": str(next_sequence), "kind": "tick", "tick": world.tick, "delta":delta})
 	# Serialization owns its bytes; do not retain the producer patch while the
 	# independently read-back patch is decoded and checked on this same worker.
 	delta={}
@@ -216,10 +216,10 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 		if parsed.has("error") or parsed.get("torn_tail",false) or parsed.total_records!=journal_sequence: return "Snapshot catch-up journal failed verification"
 		for record in parsed.commands:
 			count+=1
-			frames.append_array(ColonyJournal.frame({"sequence":str(count),"kind":"command","tick":record.tick,"command":record.command}))
+			frames.append_array(ColonyJournal._frame_bounded({"sequence":str(count),"kind":"command","tick":record.tick,"command":record.command}))
 		parsed={}
 		count+=1
-		var marker: PackedByteArray = ColonyJournal.frame({"sequence":str(count),"kind":"tick","tick":world.tick,"delta":{"version":1,"base_tick":prepared.payload.tick,"campaign_id":world.session_id,"parent":parent,"patch":ColonyDelta.make(prepared.payload,world.payload())}})
+		var marker: PackedByteArray = ColonyJournal._frame_bounded({"sequence":str(count),"kind":"tick","tick":world.tick,"delta":{"version":1,"base_tick":prepared.payload.tick,"campaign_id":world.session_id,"parent":parent,"patch":ColonyDelta.make(prepared.payload,world.payload())}})
 		if marker.decode_u32(0)>ColonyJournal.MAX_RECORD or frames.size()+marker.size()>ColonyJournal.MAX_JOURNAL or bytes.size()+2*(frames.size()+marker.size())>ColonyCodec.MAX_BYTES-4096:
 			bytes=PackedByteArray();frames=PackedByteArray();marker=PackedByteArray()
 			return save(world)

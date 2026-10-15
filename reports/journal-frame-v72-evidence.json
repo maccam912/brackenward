@@ -1,0 +1,88 @@
+{
+  "passed": true,
+  "build": "0.7.72-m7",
+  "local_android_code": 111,
+  "maintained_gdscript_assertions": 2861,
+  "fresh_checks": {
+    "persistence": 487,
+    "new_bounded_encoding": 3,
+    "native_ui": 670,
+    "replay_commands": 62,
+    "ui_messages": 530
+  },
+  "component_encoder_medians": {
+    "0": {
+      "elapsed_us": 30139.5,
+      "peak_growth_bytes": 9633600.0,
+      "ending_growth_bytes": 1180098.0
+    },
+    "1": {
+      "elapsed_us": 27834.0,
+      "peak_growth_bytes": 2075580.0,
+      "ending_growth_bytes": 1180098.0
+    }
+  },
+  "component_peak_change_percent": -78.45478325859492,
+  "component_cpu_change_percent": -7.649430149803416,
+  "cumulative_complete_checkpoint_medians_vs_7698c08": {
+    "0": {
+      "elapsed_us": 98944.5,
+      "peak_growth_bytes": 22343648.0,
+      "ending_growth_bytes": 1404.0
+    },
+    "1": {
+      "elapsed_us": 99141.0,
+      "peak_growth_bytes": 15484270.0,
+      "ending_growth_bytes": 1404.0
+    }
+  },
+  "scope": "Only four internal writer framing calls use bounded encoding. Original public frame/read unchanged. Native packing uses256 array rows or integer-map entries per block, sorted keys and unchanged tags/IDs/escaping. Unsupported/deep/size errors use original framing, caller guards unchanged. Three tests cover5immutable journals,0/1/255/256/257/512/513 boundaries,integer maps,frozen/mutable aliases,literals/Unicode/tags/IDs and deep fallback. Exact real frame bytes and complete original7698c08 checkpoint append/metadata/recovery match; cumulative comparison includes71buffer lifetime change and cannot isolate72whole-writer benefit. Full checkpoint peak remains large; component gain does not resolve session or phone memory. Thread sampling/lifecycle/diskcache included. Bounded UI/replay checks share host during final comparisons.",
+  "source_sha256": {
+    "project.godot": "f9bb92f2ee2e19d81108623c8aeda14d6606b05812eb668cdb54b0c1c0bc3cd9",
+    "src/persistence/colony_capture.gd": "4f388a71f18e4340ab2b48aa5fd82935c9483202d220e7bde10ea0762229dab9",
+    "src/persistence/colony_codec.gd": "1a6122fa3f81360db5de5e76381a1f253c783af186c1fb8c9675c323bf1d9459",
+    "src/persistence/colony_delta.gd": "79024ca74cc076104dbf77e8f3823bd923f071631da4b5a4be8bc95a5056f643",
+    "src/persistence/colony_journal.gd": "31491c991363451cdeb8fabdd5e7ed6f7f4608863730d91bdea118b21c735980",
+    "src/persistence/colony_save_queue.gd": "39e8e4b00a09d287e0b2eb21692eb0366ecbd501ec83837fa0d97f2fcfda8bec",
+    "src/persistence/colony_store.gd": "df274497f9bf5393a683956313fc4093f876cecd5b8447d57122eaff91b2e14e",
+    "tools/profile_writer_buffers.gd": "5150387b603c07ee3b4dfb1fe1d1d5c477251fdb33377da3a0390d591bce197d",
+    "tools/writer_buffers_reference.gd": "f576a2b65f79af4830a6ab65b9a2a32423cca136162d1bc0ff96d6d5bf5777f0",
+    "tools/writer_buffers_tests.gd": "c54ff6aeb2c0a926083c4970b02333ad8ac10d8086f7e8e47b71cefbb437a13b",
+    "src/persistence/colony_journal_encoding.gd": "6c46d6ed0930a9659c4c3f5e52aaad9247c984b9d51519ba93e118cc34450fe0",
+    "src/sim/colony_state.gd": "dc5ec49d0ebc3bc82ba3fdf1417ebe21db58eff69ef2b69f705e14a9b265b664",
+    "tools/journal_frame_tests.gd": "1b3e988f3cbc44bf1d55caac16abc48777191666df900a68091efef8edd47240",
+    "tools/journal_read_reference.gd": "02a9e1cd66a3068fd70c055803278dfc121017bfa41e36ba4a639eb4f00677ec",
+    "tools/profile_journal_frame.gd": "c628393efe98b486e9c21992cba5654a9456776a0dd91a946a94adc16872aa5f"
+  },
+  "validation_sha256": {
+    "journal-frame-v72-content.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "journal-frame-v72-replay-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "journal-frame-v72-replay-72000.brackenward": "002de015d945bb5cde1ff7461cc01a1f4c83ae9dfed5db1ea40136965d4ce694",
+    "journal-frame-v72-replay-7200.brackenward": "28573a02ae9af95207f99f8ab51a0dbb7e662943c63b3605c98edad78a6a52a5",
+    "journal-frame-v72-replay-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+    "journal-frame-v72-apk.log": "39fb7ccbed82abe1cf36b6d483d3e6c6b7eed4e9cd5bfb72a13ebe254ca1e265",
+    "journal-frame-v72-prototype.log": "51d5c121587bba3b53142124dbb2baed58bd866e04bf0772f7bd4d9af2c2135d",
+    "journal-frame-v72-prototype-bounded.json": "58d4a2d369a8f605e7435783b4dbde3ad42634cd723edbe2352b03d798614af0",
+    "journal-frame-v72-replay-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "journal-frame-v72-replay-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "journal-frame-v72-cumulative-checkpoint.log": "c14964044a68a6ff0c8eefe882e236c6b1651ad0fb8195c3f180a1804c18c865",
+    "journal-frame-v72-replay-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "journal-frame-v72-replay.json": "738507605c9e1c308f23c33738c2d4bc0813245224e15048a8425d1d1b16502d",
+    "journal-frame-v72-import.log": "a56cbffa805980b631cd06d8fc895127b543ce91a6c2f7e03307db621562eaaa",
+    "journal-frame-v72-final-frame.log": "3871802269853a76ca83350231bbab14063d441ffba2ed7af44abc77a20bc1b4",
+    "journal-frame-v72-final-frame.json": "3297e07930042eb22074360d27723786d8c92814a63cc79a6c027e2860b3f7a8",
+    "journal-frame-v72-persistence-first.log": "c8b4042197c2785945a85631ac97ffd611b232175fbd4ec8f5d94da04c74f185",
+    "journal-frame-v72-ui.log": "07546e66243fb44606219b56e18233a651d757e59d6352a913a5390caaf6aeb0",
+    "journal-frame-v72-replay.log": "c3f32f4c6a7e19b2a8c31a47c510225e8a0d8f007a59ab5db8e8755839474d2d",
+    "journal-frame-v72-cumulative-checkpoint.json": "a3e81c3b756fc3c0e4425bb7430fc2172cb4dacc4f7fbb03152744d18347833a",
+    "journal-frame-v72-prototype-bounded.log": "3f245c3a303939256a37068caa9ddd5481f1d8a5dae6608ae8b51bb845636234",
+    "journal-frame-v72-prototype.json": "f640652d2dc328a2eee3c895772ac15757fad34c816ffe17802e271552dc1d29"
+  },
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "UP-TO-DATE unchanged XML inspected,not freshly rerun."
+  },
+  "apk_sha256": "e3937532fcf5d6ddca31cf18c618ec5cd521857911dfe75b70743076d91ec996",
+  "pending": "Current frozen native whole-session trace,remote CI,physical gates. Earlier71frame peak remains unresolved."
+}
