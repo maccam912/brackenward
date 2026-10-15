@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "scope": "New v7 replay uses the exact unmodified v6 command input. Full actual checkpoint dictionaries are equal to v6 after changing only the two declared content headers. The frozen trace does not trigger the distant-goods self-defense bug; dedicated controlled tests cover that behavior. Older reviewed input/golden/foreign bytes remain unchanged. A new absent v7 golden and Mac-produced foreign save were recorded separately; cross-host CI validation remains required.",
+  "rows": [
+    {
+      "tick": 7200,
+      "old_file": "tests/fixtures/campaign-replay-v6-7200.brackenward",
+      "old_sha256": "dbc248d219c6f2ee783ed802ea7e7a6a786db09f916064229b39095fd2401621",
+      "new_file": "reports/self-defense-v58-record-7200.brackenward",
+      "new_sha256": "8d11b6fe8df8118ace6eb06840f4b90c1bfba85de70dd2b9ee23a3a705469017",
+      "current_headers": {
+        "content": "colony-v7",
+        "content_hash": "0ad46307023fe5b49971eecf1e8d16e3bb11545393ef57159c526b4e28fe168c"
+      },
+      "different_gameplay_fields": [],
+      "all_gameplay_fields_identical": true
+    },
+    {
+      "tick": 72000,
+      "old_file": "tests/fixtures/content6/replay-72000.brackenward",
+      "old_sha256": "97d18753a7ce0b1823caf1062f0e55b75e076a38dc59be5b67b2b5654defbda8",
+      "new_file": "reports/self-defense-v58-record-72000.brackenward",
+      "new_sha256": "13e7fb46b4d0c56ad479d62b2ebe3c9a1e4259efdf0efb15c4fa57aecd887f4d",
+      "current_headers": {
+        "content": "colony-v7",
+        "content_hash": "0ad46307023fe5b49971eecf1e8d16e3bb11545393ef57159c526b4e28fe168c"
+      },
+      "different_gameplay_fields": [],
+      "all_gameplay_fields_identical": true
+    }
+  ],
+  "new_golden_sha256": "21e95991464d35f847a2326a5cc450f5fa23b93a1565208d843bfe1049fde94b",
+  "new_foreign_sha256": "8d11b6fe8df8118ace6eb06840f4b90c1bfba85de70dd2b9ee23a3a705469017",
+  "new_input_sha256": "80343bb6b45afa78784d4adbb4fe96456d7bfc2ac9681649c15e020cf5ef5354",
+  "content_hash": "0ad46307023fe5b49971eecf1e8d16e3bb11545393ef57159c526b4e28fe168c"
+}

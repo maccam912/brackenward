@@ -1,0 +1,10 @@
+{
+  "passed": false,
+  "source_commit": "3beaaa45b8aee41b511d9b4304bd61acf0cac8b6",
+  "run_id": 38704954113,
+  "windows_job_id": 116321953977,
+  "failure": "The new CP1252-output regression assumed LF; Windows TextIOWrapper emitted CRLF and failed two equality assertions. Unicode output itself was preserved. The job stopped before engine checks.",
+  "job_log_sha256": "bc9857712cfbba1d2284f01099554a1a9cd6322fbf71d1f77d7f204d7d84724d",
+  "repair": "Force UTF-8 with LF in the shared output helper, and explicitly create CRLF legacy streams in both regressions so the same issue is exercised on macOS/Linux.",
+  "scope": "Original failure retained; fixed-source Windows CI is required before claiming the platform passes."
+}

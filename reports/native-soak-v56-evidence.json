@@ -1,0 +1,65 @@
+{
+  "passed": true,
+  "source_commit": "e4003fb1eb532f76b2d747975075244f09a221d4",
+  "input_sha256": "6a3d3c4636802ca2374e48c5d423bfd6d939c82e4cd3e179583b21324c76c774",
+  "duration_seconds": 1800.003209,
+  "logical_ticks": 36000,
+  "nominal_ticks": 36000,
+  "final_residents": 20,
+  "initial_tick": 3002,
+  "final_tick": 39002,
+  "minimum_one_second_fps": 27.315527511614,
+  "engine_heap_peak_growth_bytes": 15305596,
+  "engine_heap_ending_growth_bytes": 15305596,
+  "strict_peak_limit_bytes": 20971520,
+  "checks": {
+    "audio_drained": true,
+    "completed": true,
+    "engine_heap_proxy_within_20_mib": true,
+    "fps_floor_proxy_pass": true,
+    "logical_time_kept_up": true,
+    "population_kept": true,
+    "probe_pass": true,
+    "release_gate_pass": false,
+    "roundtrip_verified": true,
+    "source_unchanged": true,
+    "standard_30min_2x_case": true
+  },
+  "all_diagnostic_counters": {
+    "backgrounds": 0,
+    "quiet_sleep_limits": 0,
+    "slow_storage_pauses": 0,
+    "speed_reductions": 0,
+    "storage_alerts": 0
+  },
+  "final_canonical_hash": "3cdeb39092ecb0d5a1a4a17e898330a0b22b7d86ad3de1b7217ce2cc7e31890d",
+  "files_sha256": {
+    "source.json": "f0e459a372d635b956d51c5e278c981fb049422ea602d7d168b38193d69050a3",
+    "completion.json": "5d4727eee000be4b8ab8e33d016b8d2d7dd97e80ff1411cb975ddba20297cc73",
+    "probe.json": "e7ada9153cb5e075695102d6103645cf126840993febd1b12460d37441af053d",
+    "audit.json": "866d9f1b027b1b52f35a9758104d861d85ed03f0f79f734a30c2cd72f8a38827",
+    "probe.log": "383afcc2288458c6f380c7896d339b0d5089f08fc913943769c7fa1f7fce0d2c",
+    "probe-final.brackenward": "f3985f5242ad74744182a02ac2ff82e2c4029f0fe73ec1766eef56edd9bbc64d"
+  },
+  "independent_second_audit_log_sha256": "dd400b4444c84c16e1b2b1e280b821fe9bf26189649e412454e16dfc393fbd29",
+  "aligned_state": {
+    "aligned_canonical_hash": "4a8fee28b0a01de385fc3bb8bfe48f7df5706c1b291760e7dca36c530303f881",
+    "comparison_tick": 39003,
+    "extra_private_steps": 1,
+    "inputs_sha256": {
+      "native55": "88fef79261487c34e8e28c2ff2d17b6b612c689d1c0b8ab52ed09405d944299c",
+      "native56": "f3985f5242ad74744182a02ac2ff82e2c4029f0fe73ec1766eef56edd9bbc64d"
+    },
+    "measured_final_tick": 39002,
+    "passed": true,
+    "reference_canonical_hash": "4a8fee28b0a01de385fc3bb8bfe48f7df5706c1b291760e7dca36c530303f881",
+    "scope": "Separate deterministic state comparison after the native run: one private extra tick aligns the 36000-tick run with the older 36001-tick run. No native evidence, saved bytes, clocks or measured results are changed.",
+    "source_commit": "e4003fb1eb532f76b2d747975075244f09a221d4"
+  },
+  "aligned_state_files_sha256": {
+    "check.gd": "fa96a6ea802a127e8d7148a0469e532de0247c8498774ad6052ff71175fd295e",
+    "check.log": "9cef50641486e6c40e5e8a6ffb9db49e92b0974217a3c3a9bfbd15d8bff805f6",
+    "check.json": "be6edd73d75d8f60310608435d1b55419621c88448e68845094c8508f0399295"
+  },
+  "scope": "Completed and independently audited frozen native synthetic 30-minute 2x case. Strict sampled engine-heap/fps proxies pass, with unchanged source, full roundtrip, population, logical time and all diagnostic counters zero. A separate private one-tick alignment equals the older native55 complete payload; measured saved endpoints remain untouched. No second graphical Godot ran during measurement; controlled probes, source suites/replays and Android export ran as separate headless work on the host. All prior long campaign workers had completed. Not a pristine host, physical Android PSS/battery/thermal or overall release certification."
+}

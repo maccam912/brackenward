@@ -82,8 +82,8 @@ class SuiteChecks(unittest.TestCase):
             with self.subTest(code=code):
                 data = io.BytesIO()
                 errors = io.BytesIO()
-                output = io.TextIOWrapper(data, encoding='cp1252')
-                diagnostic = io.TextIOWrapper(errors, encoding='cp1252')
+                output = io.TextIOWrapper(data, encoding='cp1252', newline='\r\n')
+                diagnostic = io.TextIOWrapper(errors, encoding='cp1252', newline='\r\n')
                 result = subprocess.CompletedProcess([], 0, GOOD + suffix)
                 with patch('check_suite.sys.stdout', output), patch('check_suite.sys.stderr', diagnostic), patch('check_suite.bootstrap.verify_engine'), patch('check_suite.subprocess.run', return_value=result), patch.dict('os.environ', {'BRACKENWARD_GODOT': '/test/editor'}):
                     self.assertEqual(check_suite.main(['persistence']), code)

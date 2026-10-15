@@ -337,8 +337,8 @@ static func attacks(world: ColonyWorld) -> Array:
 		if raid.state!="Active": continue
 		var definition: Dictionary = world.definitions.enemies[enemy.definition]
 		var maximum: int = (4 if world.weather=="fog" else 6) if definition.weapon=="bow" else 1
-		var objective: Dictionary = world.find(world.stacks,enemy.target_stack)
-		var candidates: Array = world.citizens.filter(func(c:Dictionary)->bool:return not c.away and not c.downed and not c.death_recorded and not c.departed and (c.drafted or c.id==enemy.last_attacker) and ColonyWildlife.distance(c,enemy)<=maximum and (objective.is_empty() or ColonyWildlife.distance(c,objective)<=12) and ColonyCombat.line_of_sight(world,Vector2i(enemy.x,enemy.y),Vector2i(c.x,c.y)))
+		# Goods control movement; an intercepted enemy can defend within its weapon range.
+		var candidates: Array = world.citizens.filter(func(c:Dictionary)->bool:return not c.away and not c.downed and not c.death_recorded and not c.departed and (c.drafted or c.id==enemy.last_attacker) and ColonyWildlife.distance(c,enemy)<=maximum and ColonyCombat.line_of_sight(world,Vector2i(enemy.x,enemy.y),Vector2i(c.x,c.y)))
 		candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
 			var aa: int = ColonyWildlife.distance(enemy,a);var bb: int = ColonyWildlife.distance(enemy,b)
 			return aa<bb if aa!=bb else a.id<b.id)

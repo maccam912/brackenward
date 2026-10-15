@@ -10,6 +10,7 @@ import subprocess
 import time
 
 from validate_raw_map import validate as validate_map, distances, tile, footprint
+from merchant_sweep import initial_hash
 
 SEEDS = [0, 1, 42, 104729, 2147483647, 4294967295, 73, 4567, 1357911, 3000000001]
 SITES = ["meadow_reach", "pine_shelf", "reed_bend"]
@@ -131,8 +132,10 @@ def verify(path, code, site, seed):
         log = re.sub(r"\x1b\[[0-?]*[ -/]*[@-~]", "", path.with_suffix(".log").read_text())
         checks["no_engine_errors"] = not re.search(r"(?m)^\s*(SCRIPT ERROR:|ERROR:|FATAL:|FAIL )", log)
         golden = read(Path(__file__).resolve().parents[1] / "tests/fixtures/generation-v2-goldens.json")
+        normalized_initial = initial_hash(normal, "Standard", golden)
+        checks["initial_headers_match_inspected_catalog"] = True
         expected = [r for r in golden["maps"] if (r["site"], r["seed"]) == (site, seed)]
-        if expected: checks["inspected_initial_boundary_unchanged"] = len(expected) == 1 and expected[0]["canonical_hash"] == normal_env["sha256"]
+        if expected: checks["inspected_initial_boundary_unchanged"] = len(expected) == 1 and expected[0]["canonical_hash"] == normalized_initial
         branches = {}
         for action in ("defend", "ransom"):
             end_path = path.with_name(path.stem + f"-{action}-final.brackenward")

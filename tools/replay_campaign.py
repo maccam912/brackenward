@@ -27,7 +27,7 @@ def run_engine(binary, arguments, timeout, logs):
 def main():
     configure_output()
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--record-golden", action="store_true", help="Explicitly replace the reviewed local baseline after a gameplay change")
+    parser.add_argument("--record-golden", action="store_true", help="Record a new content-version baseline; existing reviewed files are protected")
     parser.add_argument("--report", default="reports/replay.json")
     parser.add_argument("--replay-timeout", type=int, default=780,
                         help="Maximum replay subprocess seconds (1..3600; default 780)")
@@ -88,6 +88,13 @@ def main():
         if not json.loads(migration5.read_text()).get("passed"):
             raise RuntimeError("Frozen v5 acknowledgement migration audit failed")
         evidence["content5_acknowledgement_preservation"] = True
+        migration6 = report.with_name(report.stem + "-content6-migration.json")
+        migration6.unlink(missing_ok=True)
+        run_engine(binary, ["--script", "tools/check_content6_migration.gd", "--",
+                           "--audit", str(migration6)], 180, logs)
+        if not json.loads(migration6.read_text()).get("passed"):
+            raise RuntimeError("Frozen v6 acknowledgement migration audit failed")
+        evidence["content6_acknowledgement_preservation"] = True
         report.write_text(json.dumps(evidence, indent=2) + "\n", encoding="utf-8")
     except (OSError, ValueError, RuntimeError, subprocess.SubprocessError) as error:
         if isinstance(error, subprocess.TimeoutExpired) and error.stdout:

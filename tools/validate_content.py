@@ -261,3 +261,8 @@ rest_catalog=json.loads((root / 'data/catalogs/colony_v6.json').read_text())
 assert rest_catalog['version']=='colony-v6'
 assert {k:v for k,v in rest_catalog.items() if k!='version'}=={k:v for k,v in feasible_sleep_catalog.items() if k!='version'}
 print('Validated independent-rest content v6; definitions are identical to retained v5 except the declared version.')
+
+combat_catalog=json.loads((root / 'data/catalogs/colony_v7.json').read_text())
+assert combat_catalog['version']=='colony-v7'
+assert {k:v for k,v in combat_catalog.items() if k!='version'}=={k:v for k,v in rest_catalog.items() if k!='version'}, 'Self-defense correction must retain every released catalog definition'
+print('Validated self-defense content v7; definitions are identical to retained v6 except the declared version.')

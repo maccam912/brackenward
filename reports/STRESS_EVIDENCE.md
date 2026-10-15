@@ -1,9 +1,37 @@
 # Synthetic crowded-colony measurements
 
 These are development profiling results on macOS, separate from ordinary-play
-campaign evidence and physical Android release requirements. The full release
-stress gate, all-alert variant, thirty-minute soak, PSS/battery/thermal measurements
-and low-tier/Mali phone matrix remain incomplete.
+campaign evidence and physical Android release requirements. The frozen v6 thirty-minute native source case now passes its strict sampled
+engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
+PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
+
+## Frozen 0.7.56 thirty-minute native proxy passes
+
+Clean unchanged `e4003fb1eb532f76b2d747975075244f09a221d4` completes
+1800.003209 measured seconds after sixty seconds of warmup at selected 2x,
+advancing exactly 36000 ticks against 36000 nominal (3002 to 39002). Both the
+original probe and separate second audit pass. All twenty residents remain;
+invariants/storage/logical time, full final round trip, source identity and
+audio drain pass. All five diagnostic counters are zero. Lowest one-second
+FPS is 27.316, without a below-24 streak.
+
+Peak and ending sampled engine-heap growth are 15305596 bytes (14.597 MiB),
+below the unchanged strict 20 MiB proxy. The measured final canonical hash is
+`3cdeb39092ecb0d5a1a4a17e898330a0b22b7d86ad3de1b7217ce2cc7e31890d`.
+A separate private extra tick aligns this 36000-tick run with native55's
+36001-tick endpoint and reproduces its entire payload exactly, canonical
+`4a8fee28b0a01de385fc3bb8bfe48f7df5706c1b291760e7dca36c530303f881`.
+Neither measured endpoint/save is changed by that separate comparison. Earlier
+native44/53/55 failures remain intact; unaligned samples are not a causal ratio.
+
+No second graphical Godot ran during measurement. Separate controlled probes,
+headless suites/replays and Android export ran on the host; all earlier long
+campaign workers had finished. This is not a pristine-host, Android PSS/battery/
+thermal or overall release certificate. Raw files are
+`native-soak-v6-e4003fb-quiet-host/`; exact source/completion/probe/audit/save,
+second-audit and aligned-state fingerprints are retained in
+[native-soak-v56-evidence.json](native-soak-v56-evidence.json).
+The later v7 combat change requires its own current frozen run.
 
 ## 0.7.56 bounded snapshot verification and envelope escaping
 

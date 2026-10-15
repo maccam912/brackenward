@@ -1,0 +1,379 @@
+{
+  "passed": true,
+  "version": "0.7.58-m7",
+  "content": "colony-v7",
+  "schema": 23,
+  "catalog_hash": "0ad46307023fe5b49971eecf1e8d16e3bb11545393ef57159c526b4e28fe168c",
+  "suites": [
+    {
+      "suite": "unit",
+      "checks": 20,
+      "log": "reports/validation-v58-headless/unit.log",
+      "log_sha256": "d5d6d0aaa826d256f579d4186352deb4d89bff4a35f20e1379c112b5bae619cb"
+    },
+    {
+      "suite": "integration",
+      "checks": 6,
+      "log": "reports/validation-v58-headless/integration.log",
+      "log_sha256": "bb7c5ebdd7f405c0df0205803c91877790fef914bd181bbdac396acc21ae0be7"
+    },
+    {
+      "suite": "survival",
+      "checks": 83,
+      "log": "reports/validation-v58-headless/survival.log",
+      "log_sha256": "bd43ac2938a1a7364bc5abe51732789167bd499d3c45e71f419914ed63e02bc7"
+    },
+    {
+      "suite": "colony",
+      "checks": 42,
+      "log": "reports/validation-v58-headless/colony.log",
+      "log_sha256": "3c7c47e8fa44cccc8a8cc50c0d729b5c8fe3f1c30f0cb72b55795de1fd42d1de"
+    },
+    {
+      "suite": "seasons",
+      "checks": 26,
+      "log": "reports/validation-v58-headless/seasons.log",
+      "log_sha256": "ff7b6ee25df0d3a0a296eca5832d90702ba761f91280a0f8899ee7a97bcd34c0"
+    },
+    {
+      "suite": "people",
+      "checks": 33,
+      "log": "reports/validation-v58-headless/people.log",
+      "log_sha256": "f6f0368ebac859798491de442bfc4aa785c3d3d2771baa2615482c1712828433"
+    },
+    {
+      "suite": "care",
+      "checks": 55,
+      "log": "reports/validation-v58-headless/care.log",
+      "log_sha256": "20a1f1e1e5c19e54e519431321fb79cbb8b32c05a5efad34e605df4a68a2c66d"
+    },
+    {
+      "suite": "production",
+      "checks": 52,
+      "log": "reports/validation-v58-headless/production.log",
+      "log_sha256": "002e81c89b2b39d7c4770f4bc8c5ac1a6655e8582b6bae0c9f806cb36f39e83f"
+    },
+    {
+      "suite": "nature",
+      "checks": 18,
+      "log": "reports/validation-v58-headless/nature.log",
+      "log_sha256": "1a598b990144b47bfd6f8229c39e4f543e7b595f7a1917e2f71b5c5ca30eccd8"
+    },
+    {
+      "suite": "wildlife",
+      "checks": 63,
+      "log": "reports/validation-v58-headless/wildlife.log",
+      "log_sha256": "84671d6d7ddcefc391c4bf0ed154f0e81bddcc7958382af29248f12d707b9a71"
+    },
+    {
+      "suite": "domestic",
+      "checks": 40,
+      "log": "reports/validation-v58-headless/domestic.log",
+      "log_sha256": "bcd7d3949011c6bc683ca45da853c292a896c8d26e0ec4a25a633c6919af6d67"
+    },
+    {
+      "suite": "equipment",
+      "checks": 17,
+      "log": "reports/validation-v58-headless/equipment.log",
+      "log_sha256": "33e86b862633a6791574d1e6b59f1059f69e75299bece592221cb39f36065bd1"
+    },
+    {
+      "suite": "construction",
+      "checks": 21,
+      "log": "reports/validation-v58-headless/construction.log",
+      "log_sha256": "b74fe3f250f0100dd4dccd3f175decfcc18386535f0f3cda2347cc33d547a029"
+    },
+    {
+      "suite": "population",
+      "checks": 57,
+      "log": "reports/validation-v58-headless/population.log",
+      "log_sha256": "89bdd853d7480d64fdce2f0cd3cf3dc2da6e1c4f2eb21a30fa7ba1db3a7729cd"
+    },
+    {
+      "suite": "maintenance",
+      "checks": 32,
+      "log": "reports/validation-v58-headless/maintenance.log",
+      "log_sha256": "0247d77ae6c823f303c629622823cd7641f11a9fde84387aff7728d0df83819b"
+    },
+    {
+      "suite": "trade",
+      "checks": 41,
+      "log": "reports/validation-v58-headless/trade.log",
+      "log_sha256": "daefcf2e9325652ac66ef78eed7c600af5d46741f95fd38ebf94b588fb1d5947"
+    },
+    {
+      "suite": "fire",
+      "checks": 23,
+      "log": "reports/validation-v58-headless/fire.log",
+      "log_sha256": "58de6ba2389934faa5dd873ea8caee4cf9c8060cffad66a98d5b172c5e300d5b"
+    },
+    {
+      "suite": "director",
+      "checks": 27,
+      "log": "reports/validation-v58-headless/director.log",
+      "log_sha256": "7ba5a71e74037e450551b0dd0a58cb741bca532111a7d9372b33f5958be12390"
+    },
+    {
+      "suite": "opportunity",
+      "checks": 57,
+      "log": "reports/validation-v58-headless/opportunity.log",
+      "log_sha256": "8592a9f7375ac3663085d7a64fcead1ebdf7ed22fca69219a3e76109a5e52a1e"
+    },
+    {
+      "suite": "charter",
+      "checks": 106,
+      "log": "reports/validation-v58-headless/charter.log",
+      "log_sha256": "a22b492e7da22a82498947628497ca4d5ff05442507cfa91e72f141cdb51bcad"
+    },
+    {
+      "suite": "chronicle",
+      "checks": 52,
+      "log": "reports/validation-v58-headless/chronicle.log",
+      "log_sha256": "558fc4c009705d67591df3f79cd36c9300bf167f3c59b869dfaaf579c599793c"
+    },
+    {
+      "suite": "region",
+      "checks": 107,
+      "log": "reports/validation-v58-headless/region.log",
+      "log_sha256": "fc11cf2061ad21df1f67517d9ae072cd04dcaf0fc0aa087fb5b5e613185e69ce"
+    },
+    {
+      "suite": "tutorial",
+      "checks": 46,
+      "log": "reports/validation-v58-headless/tutorial.log",
+      "log_sha256": "297ee6f741226c7de3eafa720618bdf2f2ba5e86d9d4654c1712f5f4099eae29"
+    },
+    {
+      "suite": "scheduler",
+      "checks": 403,
+      "log": "reports/validation-v58-headless/scheduler.log",
+      "log_sha256": "4c43cbc63ed10a9e08a1a568e59945e3b6efbd6d476dae74a6848e66efd56456"
+    },
+    {
+      "suite": "persistence",
+      "checks": 444,
+      "log": "reports/self-defense-v58-persistence.log",
+      "log_sha256": "16eb9c61abc2ba4e2e219d3a24adfb084ba11883f27dc3f6f5b44e4959a5103c"
+    },
+    {
+      "suite": "defense",
+      "checks": 81,
+      "log": "reports/self-defense-v58-defense-2.log",
+      "log_sha256": "7a6e45c3442b8d7e2111714390bd7ae8856c2327202fd73394b0bd36570fbf14"
+    },
+    {
+      "suite": "generation",
+      "checks": 169,
+      "log": "reports/self-defense-v58-generation-3.log",
+      "log_sha256": "727fd5f0c26c4ab1b0a127a6954ef9634903109cdeb6897a4f3562edf5498ee9"
+    },
+    {
+      "suite": "ui",
+      "checks": 667,
+      "log": "reports/self-defense-v58-ui.log",
+      "log_sha256": "008dbe7465746ae72e5bfc5383104707217b3d016d3551642aed47a54d579886"
+    }
+  ],
+  "total_checks": 2788,
+  "python_checks": {
+    "merchant": {
+      "checks": 18,
+      "log_sha256": "e102e541459cd2c6aab5128db2c860ab50420536197a02bbe142366c6c4420e9"
+    },
+    "defense-python": {
+      "checks": 25,
+      "log_sha256": "64ef075a97a5a5998a4c63f34d0c9636fd2d738eb7cfed107970c5558ab18f4e"
+    },
+    "suite-python": {
+      "checks": 11,
+      "log_sha256": "ce895947b8ffcb2e77addf8382970fd1c07ecab9486fbbfca209319a47c37f4f"
+    },
+    "checked-python": {
+      "checks": 9,
+      "log_sha256": "d965801e4334809edd0981824becdccd8e809c7c654e00e41f9796a02ced8492"
+    },
+    "native-python": {
+      "checks": 6,
+      "log_sha256": "dcd2147edfda2291b456dfb6d9f3021f0fed07760d5a1c8869fc5446f30e28fe"
+    }
+  },
+  "kotlin_checks": 4,
+  "all_existing_fixture_and_catalog_bytes_preserved": true,
+  "old_files_checked": 67,
+  "producer_sha256": "98cbf0cd9e16f6a29582c48779c5bc0a8666e5ee808c25d62442d1292f9ccd14",
+  "replay": {
+    "architecture": "arm64",
+    "checkpoints": [
+      {
+        "canonical_hash": "4640f173ff6aac07e49444a1cb7ffe344fa3ab52b70d66595e1d512f8f520dc0",
+        "snapshot_roundtrip": true,
+        "tick": "7200"
+      },
+      {
+        "canonical_hash": "258a41e5b88bbd65cf1b119f41e8fc07bf205a81ba041bb22e67f8f56940f8db",
+        "snapshot_roundtrip": true,
+        "tick": "72000"
+      }
+    ],
+    "commands_verified": 62,
+    "content_hash": "0ad46307023fe5b49971eecf1e8d16e3bb11545393ef57159c526b4e28fe168c",
+    "cross_host_save_continuation": true,
+    "elapsed_ms": 59021,
+    "engine": "4.7.2-stable (official)",
+    "initial_hash": "7cb8e9792cbd469104ed369532be676cebde46a3cfdce6ae1efa4cef8dde39bf",
+    "input_sha256": "80343bb6b45afa78784d4adbb4fe96456d7bfc2ac9681649c15e020cf5ef5354",
+    "invariants_checked": 234,
+    "passed": true,
+    "platform": "macOS",
+    "save_fixture_sha256": "8d11b6fe8df8118ace6eb06840f4b90c1bfba85de70dd2b9ee23a3a705469017",
+    "schema_revision": 23,
+    "scope": "Native source replay and save compatibility; exported-app/GPU/physical Android checks are separate.",
+    "version": 1,
+    "schema22_gameplay_preservation": true,
+    "schema22_scope": "Frozen schema-22-compatible acknowledged endpoints retain every gameplay field; current replay separately checks future rest and combat rules",
+    "content3_acknowledgement_preservation": true,
+    "content4_acknowledgement_preservation": true,
+    "content5_acknowledgement_preservation": true,
+    "content6_acknowledgement_preservation": true
+  },
+  "source": {
+    "src/compat/m1_catalog.gd": "8eb598132108d5854bf68caa5f53b5b9ddb76d601042698525353da13df53393",
+    "src/compat/m1_codec.gd": "2ed910f579efdf03986ec85d0e0292fc7a2396581c7fb57ce3fc48f198d7eaa9",
+    "src/compat/m1_world.gd": "9e41285981581eb3906a138e7b1074a41fa9882b6a5efa61d8813b31a7ef9966",
+    "src/compat/m2_agriculture.gd": "0c941d6fbd5772118ce75acd65e21e06539c99e23fc2fc83f3b39524d1c3d40d",
+    "src/compat/m2_catalog.gd": "3ad44ed0335fc5384aac521f71b3b280e48a1376c8ef3d9cd915bde63c52586c",
+    "src/compat/m2_codec.gd": "ebe8d8dcc308a02845f4f0bc1ca101d3cfe020198ebd8add94a127da9d3f176a",
+    "src/compat/m2_food_forecast.gd": "5140a52f4d4dde3bfe1ca31ce65342674766278680f121f7e81d42e9f2087bbe",
+    "src/compat/m2_living.gd": "b311e1d9a551fd76c80ded51bba5d23a818a5a60a2b5848738ed790aba7ef8b1",
+    "src/compat/m2_migrations.gd": "eda78bb96cb7621a50a6ef0709eff2587c7f0cb9db3845af06646c3d3f1b89f4",
+    "src/compat/m2_navigation.gd": "eefdfb05ef78742e23162bb612e68ebcf3bd44ba9f9bd928d5e13dce8fdf6710",
+    "src/compat/m2_rooms.gd": "e680c8c5057fd3dacdd63ebbdcd30135f0023014945d1b5c233143ed09920980",
+    "src/compat/m2_state.gd": "75c7e409c4d4b4cff83a9ec26289cb3f6235e7a29a0423434bd77215d788e8e4",
+    "src/compat/m2_world.gd": "5cab6b9e6c4634cc2b5358cb520c6af2e2dcfc4e3a330ef64d889c10c632d3da",
+    "src/game_session.gd": "0e30e3b7973e973ece36720743fe9ee8f3caea04c6aade31154f00e2cfb5a9b6",
+    "src/generation/colony_generation.gd": "056dbf97d8592f99f9c226e7c49062e26c36d2260e2c8643570fe8403cd54fee",
+    "src/persistence/colony_capture.gd": "4f388a71f18e4340ab2b48aa5fd82935c9483202d220e7bde10ea0762229dab9",
+    "src/persistence/colony_codec.gd": "41faf6c0e2241568d67edd378aaa656cd693fe49b1962bbeaa9651484675ca0a",
+    "src/persistence/colony_deletion.gd": "2282265673bedaf6e2a235446c083e96d25074e9671bc024f4c08c9d6341f51b",
+    "src/persistence/colony_delta.gd": "79024ca74cc076104dbf77e8f3823bd923f071631da4b5a4be8bc95a5056f643",
+    "src/persistence/colony_journal.gd": "ca0c80ba4117a3ae00888875f361f35b2ce8817d883508d4d425ed1e9ac7ec5a",
+    "src/persistence/colony_migrations.gd": "c3f3fe1212dc6260c5db86faf36e7b2cfd6362b45cc64bf14e36a01191cb1a35",
+    "src/persistence/colony_prepared_snapshot.gd": "1ab92a4b89ed8c3dd19815879f98ec3fff4d65c84e6372266b7b5f029a8b7b1f",
+    "src/persistence/colony_save_queue.gd": "a975dd97c3fda0c42f4757c9ad4011a5834fccfaef1988155ffa1a8d3f0c510b",
+    "src/persistence/colony_snapshot_encoding.gd": "4b227c42fe87b911419140e2b3410df78e9d18645b0336b58e1b8c7b52b511d8",
+    "src/persistence/colony_snapshot_envelope.gd": "1b0316ad0facf5befabb086edd3be88b93c25422a892836436b64b0a16166189",
+    "src/persistence/colony_snapshot_tree.gd": "eeefd03a4b33c1937557f887a651d29d62e47fb23d2df24cde7a2a8acce892fb",
+    "src/persistence/colony_store.gd": "15bb55feac2deed0698cbaad73557f6543e2999e485805dda9400269f8346544",
+    "src/persistence/device_settings.gd": "e897c2cae7f8b10365b263a3fd909ee613bf4e781f4072646c50298bd5ccf68d",
+    "src/persistence/prototype_codec.gd": "c413d7f5f124d4ccb8715fc2e2bf64a22c5c2584178c1ec59abe98411de14cc7",
+    "src/persistence/prototype_store.gd": "64061f45a9e77d912ec57b441ebe2dd350bbe544db7649a3975842377b7beb15",
+    "src/presentation/animal_art.gd": "b77965798ab91b937d81c4aeca27901a659f51f2533d037a9aa9c00401aaa72f",
+    "src/presentation/animal_sprite.gd": "62b65999dc5147a8f9ccc8208ec05ffeec4e9952b5bb84a581d7e434b49dde35",
+    "src/presentation/citizen_art.gd": "c005b5ed8df49427a0b41b6938d003fe36264e5f4009b8d2f499a9da9981ac7a",
+    "src/presentation/citizen_sprite.gd": "e33ee3617bd2e5b8da2d17804853846f71996348113f2f86e3c72e625f5fc720",
+    "src/presentation/colony_audio.gd": "d49d6910e613d8e6743a4417486bb5a9d945011fe917677ee76cc83b8be6ef72",
+    "src/presentation/colony_audio_library.gd": "6397fd8173d7431162357b90528bfd6fd312ee31a508be55dd4aa76b331c19a5",
+    "src/presentation/colony_environment.gd": "5751bf8406ca7319c9a21691f9caf843a6cc10dd3a15c1609941554db0b56edc",
+    "src/presentation/colony_fonts.gd": "b642daf3b2a7543cad6150ab6d7ef49af89e1ca35c113a9d7b040c18bd64f510",
+    "src/presentation/colony_sound_plan.gd": "093397fbcac8d497b0a0da6144ea24a3c0b40aa074b47d83531b41694afdb6b9",
+    "src/presentation/colony_text.gd": "a95037e6b3b2ebbbd342ccd87c39b96a1f898d179c08084d17cb07d93669582c",
+    "src/presentation/colony_tutorial.gd": "e4ed3888e317a6e91bbae603228e5eb13d4311e69441bebd31fb5ecc3f1db314",
+    "src/presentation/control_bindings.gd": "b9a303a7f8771158f888ca3d9e391e062e6037e26a5d859d1baf752797d4d43c",
+    "src/presentation/environment_art.gd": "14b178b55b85263e8b418372a3828c207b3b1e4778d0edb86c6da80c61ad05f1",
+    "src/presentation/environment_ground_chunk.gd": "a03983da1be5b9fd1686711e8270db9419745f5ea3ffba07a540d2f8f8fc9e46",
+    "src/presentation/environment_prop.gd": "aa2ac1463e5be2d4d7143978efd192cedbc3dcf3ef1e6f522ac163c225c71685",
+    "src/presentation/environment_resource_row.gd": "b10ff316bb2f22f9512230415481a0e11c5b650cf0d667bc3994cd6aeebc0705",
+    "src/presentation/frame_diagnostics.gd": "015d39f5e4fefb111564d826a8f9136dbf9ef576cf064c669210f500dbf59dfc",
+    "src/presentation/guest_sprite.gd": "45bc585e3234995e089221b9e89207f0d4df4dd8676e5eb125848a11fc9b2c98",
+    "src/presentation/resident_markers.gd": "bb9fe410d413053558a037d1b9d94cea544bf4f0dc6b4d97f8273b381d8275ae",
+    "src/presentation/world_view.gd": "744985de03a732c041e34a0680418badac3a467e55655443a498eccf09eaaaf6",
+    "src/sim/colony_agriculture.gd": "592a06dffcbd0c6eb111ee20854bf9ec6f6eb509899fe4337c90b241337b1c41",
+    "src/sim/colony_appearance.gd": "b3bcf691696fb6c5042f0041848f1e583d93a85615a61e3da5087762ce41bf8f",
+    "src/sim/colony_beds.gd": "2d86457f532e14b009fd93f13f6fac9a401bcf58a00ab13953e35a650f3b3435",
+    "src/sim/colony_care.gd": "c876ed02656d4306621607a24a999d16f377ce2c81c60e315a1837d67de0e3f6",
+    "src/sim/colony_catalog.gd": "b7a42caa42151b92a5f1fce1a2c3aced6e7b101c402602a01a97025ed03f8fd1",
+    "src/sim/colony_charter.gd": "8e7b9016b27276903df89788ca6892c1d04d9cbb9ba81f75dd67b542cd109011",
+    "src/sim/colony_chronicle.gd": "d6c91722ca4d6e396952e7c411acfb46c91006c3b67e41a3619025ce73c935bd",
+    "src/sim/colony_combat.gd": "b5512e6e31f9b914661a9efef5152527f87dcd39bf82f30982945d53371f3ee5",
+    "src/sim/colony_construction.gd": "84b3472916324328dff29431686e6a7b7218afa0abea8c24314c010365d8668d",
+    "src/sim/colony_danger.gd": "6192e11c04d07930391c6b6fca007e40d17eb4c8ee7ee1ba9cc388b977e6c26d",
+    "src/sim/colony_defense.gd": "30755df8af5690708a2ca7419bdb320c72a926d53e3e5e8566e7d78e142756fd",
+    "src/sim/colony_director.gd": "64be1bdf10376e13b322bdc0fec2881eb664d15e02c73dfcec9d024bdab61e07",
+    "src/sim/colony_domestic.gd": "22c393c10f198865736559eb42bd7f376490d66a384a716aae3c01c99499c66c",
+    "src/sim/colony_equipment.gd": "f65c2b291c0eef5ead4a57fa94c1465cd4305c9b0694208db71d7d3ea477762c",
+    "src/sim/colony_fire.gd": "376c57faebb294839f9dbf9be500e41262ca8291327da1ead4928a588d11ce34",
+    "src/sim/colony_job_queue.gd": "92c606a455d55299e36f9068c1f7be23746811a0bf02c1b723f2e7ae42770eb1",
+    "src/sim/colony_living.gd": "1ef4de00fcf261abe4af5f42ee15e41d4d03bd12790e226a20f7fed2dbdccb53",
+    "src/sim/colony_maintenance.gd": "22447232405084cc1a7616098f9da3cb6fd47a2e735fe9eb25e3a272b602f9a7",
+    "src/sim/colony_nature.gd": "44ca461a9b993906d5cd4c700be18f471eb2a03d75f155acc3a7f18e38b03244",
+    "src/sim/colony_navigation.gd": "04b9b64bf91bb35cf212c570512f295d51c401f05ee7a9a8bafbc86e97d203e6",
+    "src/sim/colony_opportunities.gd": "90ce4e894356de4ec240b3b8eeaebfad81e29786fced579bf87a3a2dac950e64",
+    "src/sim/colony_population.gd": "832b47ab0f87920c39c241fde3e31c35e3e2569bc277dcb1389761070c359df7",
+    "src/sim/colony_production.gd": "c9758c3e41756dde189094a3c81e081361849edf2440b0f2279855a8208a68bb",
+    "src/sim/colony_region.gd": "501a7788a7bb9e0c73aaca360389056d1f5c57651163d0ff78a46772597a7be2",
+    "src/sim/colony_rest.gd": "d5db8281575d4324dd95280ad4547e44f3cd7e010d3414a43c1f48c30a255738",
+    "src/sim/colony_rooms.gd": "3dc096adfc277b35e3307a3e479b1d8a80b3100ddf3342c153cd5fdeacd08904",
+    "src/sim/colony_social.gd": "6fc7d7d2afd2384e00cb31cabb400ebf9628d3f60893b2635e9e278ea604ecbe",
+    "src/sim/colony_state.gd": "dc5ec49d0ebc3bc82ba3fdf1417ebe21db58eff69ef2b69f705e14a9b265b664",
+    "src/sim/colony_trade.gd": "0347688601c02191b4eb382d92e759c12dfbc322f4ef276b37085a3e42cbd384",
+    "src/sim/colony_weather.gd": "48eb8a0f4b4c3cf5998d4edfd49fefb99dfef9e297d42144ee2f7e4c610bc65b",
+    "src/sim/colony_wildlife.gd": "ea2caecd52c3b55e374eb928f0d1a3d5e83bc93d674e822c93b6d5fb4add2b39",
+    "src/sim/colony_work_budget.gd": "91b5c6302f34d3f1070d4ce51f635212d81328d8037af13e0354b5f6220880be",
+    "src/sim/colony_world.gd": "b81c9acc14605bfbce4e87d79157a7869395ccb43a01524b76c031c8782ee6ea",
+    "src/sim/food_forecast.gd": "ba293de3153c58b0c61a5379970bac60caafcf5fa78afc2b39fdd6ec110d2f1b",
+    "src/sim/park_miller.gd": "5315a988e8709be6049383ba16119249f24600db99af5095295db0e49e6c60db",
+    "src/sim/prototype_world.gd": "79a8aa7279e0f72cea489eea69b00e9440e71825295eb962012700a6b40c29c6",
+    "src/sim/sim_runner.gd": "20668c452badafb95dc26740f59264344a24745f8488871bd1929e5ed673c561",
+    "src/ui/cycle_choice_button.gd": "2bcfaac870219e3227e4c7c3a1b7915ad9c351b4dbb10227194ba6868e072164",
+    "src/ui/gesture_state.gd": "55991aa69297d9bfc1f31d616f57f5d62ffaedc960d7c4a092c2e135607ef7af",
+    "src/ui/touch_scroll_container.gd": "d22c0456251f747b1d00e009f229e0817ea879d1e4d96a28eabe60111fa7db6a",
+    "src/ui/touch_volume_slider.gd": "bfd5cabd5870fdcdae8edb6f2e5ffce3b9078e6f198b5a7a355db1198d200501",
+    "data/catalogs/colony_v1.json": "14bbdbbe656014de62ab586eb21119816f9ef7970619fea47b84a5af6aafdc55",
+    "data/catalogs/colony_v2.json": "30027bad17f3a373c31c583c934baf97135b2ad501563276a7d8b7e5b17cf40b",
+    "data/catalogs/colony_v3.json": "2bdad943fe607421505e71d40425eb322fef6a4e2bdb4f9d042977d4cc56392a",
+    "data/catalogs/colony_v4.json": "13edfa3918334ca16d6958571446c0d8fb82eee78a959f7e912d62feab634a5c",
+    "data/catalogs/colony_v5.json": "176679cb112251bb142fb340d8dd95ee61279d5b38c8207a0ba375f779687090",
+    "data/catalogs/colony_v6.json": "eb263909da826844c24f2f504dd9368bdc8d08a13b01cf82fbe43c197f3a6f73",
+    "data/catalogs/colony_v7.json": "12fe7242931cc9a4997e350c1ba45c2aeb5a07ba505d895a8213b35e75a307a5",
+    "data/catalogs/en_colony_v1.json": "3529940c36a6555444cf5d964a36428b653f34aaefee3b56c8b7d6448cba10fc",
+    "data/catalogs/en_colony_v2.json": "ef6216e652cb2f3ffb40f46f8443a04cd6c9a4b00879dd21a94e38eeeb0fa524",
+    "data/catalogs/en_m1.json": "fc6121e2e867893bf268a8ad89955cf3807fe7f67403a5bb532fd2f3897a1bce",
+    "data/catalogs/en_m2.json": "47b4f9421a3c65e8ee80a83d1d88cf0fd947e9275ac90c2cbacbac6f70124f99",
+    "data/catalogs/en_ui.json": "fec0320bcca01b127957e8cd8f30832b1ecaed5a379563f1dac0451497391b5f",
+    "data/catalogs/m1.json": "dab0818f8c64dda6a8b2c8732d792b4182ae580d687fd43cea6a2bcb94761263",
+    "data/catalogs/m2.json": "9de001717c8f9d0f1e8defc39fed013e1c09baa85174763c7bae9e75e1810d92",
+    "data/catalogs/m3.json": "f9d15a13601885d8c65ef725b6c2df686bd7d352bd26a19a8d0447be35372d8a",
+    "project.godot": "987437ff576ef92687b775a50d894d5ba33e29427eeed9b587f14021075aa1fb",
+    "export_presets.cfg": "1e7c10d89bf72512a0bda18e91ae8c510379add57be8da16203eb17c97540f6e",
+    "tools/replay_campaign.gd": "091ef9364ea35f03c1623ebae536de599da33c222fb3fec2c4833c9ac3fde735",
+    "tools/replay_campaign.py": "466c01f7076ca0e41d9462ee7fb54ca3f8d3b427f312286533c64da50bd00bea",
+    "tools/content6_migration.gd": "c254fe6de30bf732c7689e93913cd79653815e4590cd1f3aca3845e761d11ef3",
+    "tools/record_content6_defense_fixture.gd": "98cbf0cd9e16f6a29582c48779c5bc0a8666e5ee808c25d62442d1292f9ccd14",
+    "tools/self_defense_tests.gd": "9f93ba47b26506e9ca1bdf7e64dd6ac38fcca5100051ff9612176db9f03bee05",
+    "tools/generation_tests.gd": "70ca491b8337472e6a6833fdb0a6fc2f70f24772b99d46f5c966d7327bf1b102",
+    "tools/check_initial_golden_save.gd": "8dbe3c1d2ee50223a6841f49ddf60c04deb63fea00d9a1c8ffacf3ad64829baf",
+    "tools/merchant_sweep.py": "ba3800e7e8b04f70954d09f5b866b320af7b96b0248a290b797b9deac1d79a8d",
+    "tools/defense_sweep.py": "fa4c0a5610cdbaaad865239db9f13f0e812be23fceb133afc167502e9ae99dae",
+    "tools/utf8_output.py": "26633e29aa0ff1f478627356aca7adceb49df78bab730e8ac093ae82108f7a05",
+    "tests/fixtures/content6/preservation.json": "4032b38e62a69a8dd6f596ad02e60d9583c5ea75b4b463485e02b6f426cace4a",
+    "tests/fixtures/content7/campaign-replay-input.json": "80343bb6b45afa78784d4adbb4fe96456d7bfc2ac9681649c15e020cf5ef5354",
+    "tests/fixtures/content7/campaign-replay-golden.json": "21e95991464d35f847a2326a5cc450f5fa23b93a1565208d843bfe1049fde94b",
+    "tests/fixtures/content7/campaign-replay-7200.brackenward": "8d11b6fe8df8118ace6eb06840f4b90c1bfba85de70dd2b9ee23a3a705469017"
+  },
+  "local_apk_sha256": "81be32d9eb5c8d072abcebf461b8570d5bb9346c66a36f47056a2ae32a5d10f6",
+  "local_apk_badging": "package: name='dev.brackenward.game' versionCode='97' versionName='0.7.58-m7' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "evidence_files_sha256": {
+    "reports/self-defense-v58-replay.json": "8c42ee9ff25c972ba4f531a591cc866ffde0dd2ede51f88f4b988cf07085064b",
+    "reports/self-defense-v58-replay.log": "847370344b098b7754777edd3f258be135ef291e46ef3317f69ad0c706e99aab",
+    "reports/self-defense-v58-replay-comparison.json": "410bef55bd90b104b9896874be7ea1c7d5d4b0d4a70512eaf318a97e8d9da716",
+    "reports/self-defense-v58-golden-refusal.json": "3201e26c8f43d1954bcf723eb2ec9d18582b6575b179f3aeb3b667ec58b6818a",
+    "reports/self-defense-v58-golden-refusal.log": "dd7e0e8acd8f2111288c91c1282d328c044e9ecfa6d1f57c856252304d893f00",
+    "reports/content6-fixtures-before-v7-audit.json": "12031115ff22ffb98cfc7f4a81f874cc56f06b1d7c88daabcaa5a1281d8a5b7c",
+    "reports/content6-fixtures-before-v7-audit.log": "841731e2629976c41d9454a4f32c82305a7727d9f27e8accffd31dc495066831",
+    "reports/self-defense-v58-initial/native-audit.json": "4bc892e41fc306a6068cf37812b8af49ed240ad8521a77e76f03f8f32a0f4062",
+    "reports/defense-self-defense-v58-pilot/independent-audit.json": "d19f3e21de221152f8ca4a6e56eb6a8d2093204ac395e3393783e4b2b9317f53",
+    "reports/self-defense-v58-android.log": "1cfb140d8ea58c4c2f3e42fc50877153379194e017c75e3878e127dd05816bed",
+    "reports/self-defense-v58-content.log": "5e12f307f526d7c74020e88fe5770aeaae4d8647146d143056a1a17db81d1e14"
+  },
+  "scope": "All28 local source suites, fixed new v7 replay and independent old-v6 checkpoint comparison, original fixture preservation, current full v6-acknowledgement/journal migration audit, guarded golden refusal, native/Python initial-map comparison, targeted Python contracts and Android debug export. The single paired-raid pilot is mutable-source evidence. Full frozen v7 campaign/raid/native/platform/physical/human gates remain separate; the independently audited source56 native proxy is separately pinned."
+}

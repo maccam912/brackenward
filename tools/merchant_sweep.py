@@ -34,8 +34,19 @@ def snapshot(path):
     return envelope, json.loads(envelope["payload"])
 
 
-def initial_hash(initial, mode):
+def initial_hash(initial, mode, golden=None):
     normalized = dict(initial)
+    if golden is not None:
+        directory = Path(__file__).resolve().parents[1] / "data/catalogs"
+        original = read(directory / "colony_v6.json")
+        if golden["content"] != "colony-v6" or initial["content"] not in ("colony-v6", "colony-v7"):
+            raise ValueError("Unsupported inspected content headers")
+        current = read(directory / (initial["content"].replace("-", "_") + ".json"))
+        digest = lambda value: hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+        if (digest(original) != golden["catalog_sha256"] or digest(current) != initial["content_hash"]
+                or {k: v for k, v in current.items() if k != "version"} != {k: v for k, v in original.items() if k != "version"}):
+            raise ValueError("Inspected catalog definitions or exact headers differ")
+        normalized["content"], normalized["content_hash"] = golden["content"], golden["catalog_sha256"]
     if mode == "Hearthside":
         expected = [{"id": "1", "session": "m1-test", "kind": "care_mode", "args": {"mode": "Hearthside"}}]
         if initial["pending_commands"] != expected or initial["next_command_id"] != "2":
@@ -90,7 +101,7 @@ def verify(path, code, site, mode):
         checks = economy_checks(report, world, initial)
         golden = read(Path(__file__).resolve().parents[1] / "tests/fixtures/generation-v2-goldens.json")
         expected = next(r["canonical_hash"] for r in golden["maps"] if r["site"] == site and r["seed"] == SEED)
-        checks["complete_initial_payload_matches_inspected_boundary"] = initial_hash(initial, mode) == expected
+        checks["complete_initial_payload_matches_inspected_boundary"] = initial_hash(initial, mode, golden) == expected
         clean = not re.search(r"(?m)^\s*(SCRIPT ERROR:|ERROR:|FATAL:|FAIL )", path.with_suffix(".log").read_text())
         checks["complete_ordinary_scenario"] = (code == 0 and clean and report["scenario"] == "merchant_economy" and report["ordinary_play_only"] is True and report["roundtrip_verified"] is True and report["scenario_pass"] is True and report["invariant_failure"] == "" and report["site"] == world["site_id"] == initial["site_id"] == site and report["mode"] == world["care_state"]["mode"] == mode and report["seed"] == int(world["seed"]) == int(initial["seed"]) == SEED and report["generator_version"] == world["generator_version"] == initial["generator_version"] == 2 and report["start_tick"] == int(initial["tick"]) == 1800 and report["end_tick"] == int(world["tick"]) == 1800 + DAYS * 7200 and len(initial["citizens"]) == 4 and report["invariant_checks"] == DAYS * 24 and envelope["sha256"] == report["canonical_hash"])
         row.update({"pass": all(checks.values()), "checks": checks, "canonical_hash": report["canonical_hash"], "minimum_health": report["minimum_health"], "final_food_ticks": report["final"]["food"]["ticks"], "economy": report["merchant_economy"], "final_snapshot_sha256": sha(path.with_name(path.stem + "-final.brackenward"))})

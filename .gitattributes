@@ -26,3 +26,10 @@ tools/record_content4_sleep_fixture.gd text eol=lf
 tools/record_content5_sleep_fixture.gd text eol=lf
 tests/fixtures/campaign-replay-v6-input.json text eol=lf
 tests/fixtures/campaign-replay-v6-golden.json text eol=lf
+tools/record_content6_defense_fixture.gd text eol=lf
+tests/fixtures/content6/*.brackenward -text
+tests/fixtures/content6/*.frames -text
+tests/fixtures/content6/preservation.json text eol=lf
+tests/fixtures/content7/*.brackenward -text
+tests/fixtures/content7/campaign-replay-input.json text eol=lf
+tests/fixtures/content7/campaign-replay-golden.json text eol=lf

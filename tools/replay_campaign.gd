@@ -1,10 +1,10 @@
 extends SceneTree
 ## SAVE10: frozen player commands, canonical checkpoints and a foreign-host save.
-## Historical v6 replay keeps its reviewed generator-1 world.
+## Current v7 replay keeps the historical generator-1 map and command input.
 const GENERATOR_REVISION: int = 1
-const INPUT: String = "res://tests/fixtures/campaign-replay-v6-input.json"
-const GOLDEN: String = "res://tests/fixtures/campaign-replay-v6-golden.json"
-const SAVED: String = "res://tests/fixtures/campaign-replay-v6-7200.brackenward"
+const INPUT: String = "res://tests/fixtures/content7/campaign-replay-input.json"
+const GOLDEN: String = "res://tests/fixtures/content7/campaign-replay-golden.json"
+const SAVED: String = "res://tests/fixtures/content7/campaign-replay-7200.brackenward"
 var report_path: String = "res://reports/replay.json"
 var record_golden: bool = false
 var failure: String = ""
@@ -20,6 +20,7 @@ func _initialize() -> void:
 	call_deferred("run")
 
 func run() -> void:
+	if record_golden and (FileAccess.file_exists(GOLDEN) or FileAccess.file_exists(SAVED)):_fail("Reviewed current replay files already exist; never overwrite them");return
 	var started: int = Time.get_ticks_msec()
 	var bytes: PackedByteArray = FileAccess.get_file_as_bytes(INPUT)
 	var decoded: Variant = ColonyState.unpack(JSON.parse_string(bytes.get_string_from_utf8()))

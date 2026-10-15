@@ -7,6 +7,7 @@ static func raid(world: ColonyWorld, budget: int = 2) -> Dictionary:
 	return result
 
 static func run(check: Callable) -> void:
+	SelfDefenseTests.run(check)
 	goods_queries(check)
 	payment_history(check)
 	var world: ColonyWorld = ColonyTests.world()

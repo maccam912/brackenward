@@ -1,9 +1,11 @@
 """Synthetic audit-contract counterexamples; these are not campaign evidence."""
 import copy
+import hashlib
 import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 import merchant_sweep as sweep
 
@@ -17,6 +19,33 @@ def fixture():
 
 
 class MerchantAuditChecks(unittest.TestCase):
+    def test_content_header_normalization_keeps_all_gameplay_and_source_fields(self):
+        root = Path(__file__).resolve().parents[1]
+        golden = sweep.read(root / 'tests/fixtures/generation-v2-goldens.json')
+        catalog = sweep.read(root / 'data/catalogs/colony_v7.json')
+        digest = hashlib.sha256(json.dumps(catalog, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+        old = {'content': 'colony-v6', 'content_hash': golden['catalog_sha256'], 'pending_commands': [], 'next_command_id': '1', 'citizens': [{'rest': 1000}]}
+        current = copy.deepcopy(old);current.update(content='colony-v7', content_hash=digest)
+        before = copy.deepcopy(current)
+        self.assertEqual(sweep.initial_hash(current, 'Standard', golden), sweep.initial_hash(old, 'Standard', golden))
+        self.assertEqual(current, before)
+        current['citizens'][0]['rest'] = 999
+        self.assertNotEqual(sweep.initial_hash(current, 'Standard', golden), sweep.initial_hash(old, 'Standard', golden))
+
+    def test_header_normalization_rejects_changed_definitions_hashes_and_versions(self):
+        root = Path(__file__).resolve().parents[1]
+        golden = sweep.read(root / 'tests/fixtures/generation-v2-goldens.json')
+        catalog = sweep.read(root / 'data/catalogs/colony_v7.json')
+        digest = hashlib.sha256(json.dumps(catalog, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+        current = {'content': 'colony-v7', 'content_hash': digest, 'pending_commands': [], 'next_command_id': '1'}
+        for changes in [{'content_hash': '0' * 64}, {'content': 'colony-v8'}]:
+            with self.assertRaises(ValueError):sweep.initial_hash({**current, **changes}, 'Standard', golden)
+        changed = copy.deepcopy(catalog);changed['items'][0]['barter_value'] += 1
+        forged = {**current, 'content_hash': hashlib.sha256(json.dumps(changed, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()}
+        original_read = sweep.read
+        with patch('merchant_sweep.read', side_effect=lambda path: changed if path.name == 'colony_v7.json' else original_read(path)):
+            with self.assertRaises(ValueError):sweep.initial_hash(forged, 'Standard', golden)
+
     def test_synthetic_contract_is_internally_consistent(self):
         self.assertTrue(all(sweep.economy_checks(*fixture()).values()))
 

@@ -2,7 +2,7 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v6"
+const CONTENT_VERSION: String = "colony-v7"
 const SCHEMA_REVISION: int = 23
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]

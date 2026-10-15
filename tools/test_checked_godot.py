@@ -48,8 +48,8 @@ class CheckedGodotTests(unittest.TestCase):
         for prefix, expected in [('WARNING:', 0), ('SCRIPT ERROR:', 1)]:
             data = io.BytesIO()
             errors = io.BytesIO()
-            output = io.TextIOWrapper(data, encoding='cp1252')
-            diagnostic = io.TextIOWrapper(errors, encoding='cp1252')
+            output = io.TextIOWrapper(data, encoding='cp1252', newline='\r\n')
+            diagnostic = io.TextIOWrapper(errors, encoding='cp1252', newline='\r\n')
             source = "import sys; sys.stdout.buffer.write(" + repr((prefix + ' Unicode \ufffd ☀\n').encode('utf-8')) + ")"
             with patch('sys.stdout', output), patch('sys.stderr', diagnostic):
                 actual = run_command([sys.executable, '-c', source])
@@ -57,6 +57,7 @@ class CheckedGodotTests(unittest.TestCase):
             diagnostic.flush()
             self.assertEqual(actual, expected)
             self.assertIn(prefix + ' Unicode \ufffd ☀', data.getvalue().decode('utf-8'))
+            self.assertNotIn(b'\r', data.getvalue())
             self.assertEqual(output.encoding, 'utf-8')
 
 

@@ -1,12 +1,31 @@
 class_name GenerationTests
 extends RefCounted
 
+static func inspected_catalog_matches(golden: Dictionary) -> bool:
+	var original: Dictionary=ColonyCatalog.load_data("res://data/catalogs/colony_v6.json")
+	var current: Dictionary=ColonyCatalog.load_data()
+	current.version=original.version;current.content_hash=original.content_hash
+	return golden.get("content")=="colony-v6" and golden.get("catalog_sha256")==original.content_hash and current==original
+
+static func inspected_hash(world: ColonyWorld, golden: Dictionary) -> String:
+	# Only these two declared headers changed; compare every initial gameplay field.
+	var state: Dictionary=world.payload();state.content=golden.content;state.content_hash=golden.catalog_sha256
+	return JSON.stringify(ColonyState.pack(state),"",true).sha256_text()
+
 static func run(check: Callable) -> void:
 	NavigationTests.reachability(check)
 	var golden: Variant=JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/generation-v2-goldens.json"))
-	var valid: bool=golden is Dictionary and golden.get("format","")=="brackenward-generation-goldens" and golden.get("version",0)==1 and golden.get("generator_version",0)==ColonyGeneration.VERSION and golden.get("maps",[]) is Array and golden.maps.size()==18 and golden.get("catalog_sha256","")==ColonyTests.world().definitions.content_hash
+	var valid: bool=golden is Dictionary and golden.get("format","")=="brackenward-generation-goldens" and golden.get("version",0)==1 and golden.get("generator_version",0)==ColonyGeneration.VERSION and golden.get("maps",[]) is Array and golden.maps.size()==18 and inspected_catalog_matches(golden)
 	check.call("GEN/inspected_golden_fixture_identity_and_coverage",valid)
 	if not valid:return
+	var wrong_header: Dictionary=golden.duplicate(true);wrong_header.catalog_sha256="0".repeat(64)
+	var wrong_content: Dictionary=golden.duplicate(true);wrong_content.content="colony-v7"
+	check.call("GEN/inspected_header_normalization_requires_exact_original_catalog_and_content",not inspected_catalog_matches(wrong_header) and not inspected_catalog_matches(wrong_content))
+	var altered: ColonyWorld=ColonyTests.world();ColonyGeneration.configure(altered,104729,"meadow_reach")
+	var before_hash: String=altered.canonical_hash();var inspected: String=inspected_hash(altered,golden)
+	var unchanged: bool=altered.canonical_hash()==before_hash
+	altered.resources[0].remaining+=1
+	check.call("GEN/inspected_header_normalization_keeps_every_gameplay_field_and_input",unchanged and inspected_hash(altered,golden)!=inspected)
 	var hashes: Dictionary = {}
 	for site in ColonyGeneration.SITES:
 		for seed_value in [0,1,42,104729,2147483647,4294967295]:
@@ -20,7 +39,7 @@ static func run(check: Callable) -> void:
 			ColonyGeneration.configure(repeat,seed_value,site)
 			check.call("GEN/reproducible_%s_%d" % [site,seed_value],repeat.canonical_hash() == world.canonical_hash())
 			var expected: Array=golden.maps.filter(func(row:Dictionary)->bool:return row.site==site and row.seed==seed_value)
-			check.call("GEN/inspected_v2_golden_%s_%d" % [site,seed_value],expected.size()==1 and expected[0].canonical_hash==world.canonical_hash() and expected[0].transform==world.terrain_state.transform and expected[0].attempt==world.terrain_state.attempt)
+			check.call("GEN/inspected_v2_golden_%s_%d" % [site,seed_value],expected.size()==1 and expected[0].canonical_hash==inspected_hash(world,golden) and expected[0].transform==world.terrain_state.transform and expected[0].attempt==world.terrain_state.attempt)
 			hashes[site+str(seed_value)] = world.canonical_hash()
 			var counts: Dictionary = {}
 			for resource in world.resources: counts[resource.definition] = counts.get(resource.definition,0)+1
