@@ -33,6 +33,7 @@ func run() -> void:
 			AgingReadTests.run(check)
 			SurvivalTests.run(check)
 		"persistence":
+			DeltaMatchTests.run(check)
 			TextTests.run(check)
 			StressTests.run(check)
 			EnvironmentTests.run(check)

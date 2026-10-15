@@ -21,7 +21,7 @@ RENDERER = re.compile(
 def is_software_renderer(renderer):
     # The Windows hosted runner uses ANGLE over Microsoft's WARP adapter.
     return bool(re.search(
-        r"llvmpipe|softpipe|SwiftShader|Software Rasterizer|Microsoft Basic Render (?:Driver|Adapter)",
+        r"llvmpipe|softpipe|SwiftShader|Software Rasterizer|Apple Software Renderer|Microsoft Basic Render (?:Driver|Adapter)",
         renderer, re.I,
     ))
 

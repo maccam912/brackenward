@@ -41,6 +41,8 @@ jobs:
           python3 tools/test_run_soak.py
           python3 tools/test_trade_free_audit.py
           python3 tools/test_post_charter_sweep.py
+          python3 tools/test_merchant_sweep.py
+          python3 tools/test_defense_sweep.py
           python3 tools/test_push_checkpoint.py
           python3 tools/test_validate_raw_map.py
           python3 tools/test_map_sweep.py
@@ -82,6 +84,18 @@ jobs:
           python3 tools/check_suite.py tutorial_flow --site meadow_reach
           python3 tools/check_suite.py tutorial_flow --site pine_shelf
           python3 tools/check_suite.py tutorial_flow --site reed_bend
+      - name: Verify paired prepared defense and physical ransom delivery
+        run: |
+          python3 tools/checked_godot.py --timeout 240 -- --headless --script tools/defense_scenario.gd -- --seed 104729 --site meadow_reach --report reports/prepared-defense-ci.json > reports/prepared-defense-ci.log
+          PYTHONPATH=tools python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from defense_sweep import verify
+          result = verify(Path('reports/prepared-defense-ci.json'), 0, 'meadow_reach', 104729)
+          Path('reports/prepared-defense-ci-audit.json').write_text(json.dumps(result, indent=2) + '\n')
+          print(json.dumps(result))
+          raise SystemExit(0 if result['passed'] else 1)
+          PY
       - name: Real Control/input/layout suite
         run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK
@@ -123,6 +137,7 @@ jobs:
           path: |
             reports/*.xml
             reports/*.png
+            reports/prepared-defense-ci*
             platform/android_save/plugin/build/test-results/testDebugUnitTest/*.xml
             build/
           if-no-files-found: warn

@@ -1,0 +1,64 @@
+{
+  "passed": true,
+  "version": "0.7.54-m7",
+  "content": "colony-v6",
+  "maintained_gd_suites": 28,
+  "maintained_gd_checks": 2714,
+  "fresh_checks": {
+    "persistence": {
+      "passed": true,
+      "checks": 392,
+      "elapsed_ms": 21909,
+      "log_sha256": "861286f8b677428d129f78f63e9dcb5a9e246d150eb295efad3ed23735c0f2ba"
+    },
+    "ui": {
+      "passed": true,
+      "checks": 667,
+      "elapsed_ms": 22675,
+      "log_sha256": "fe1618e411dbfe4ee242f76e1aefdcf5b26c51d05561fd0303035debe1070d77"
+    },
+    "historical_replay": {
+      "passed": true,
+      "commands": 62,
+      "report_sha256": "7a49e37121e0a22add12f8aab0b715a0cdea5c67b1cf8c238a820f927e078f68",
+      "elapsed_ms": 65143,
+      "checkpoints": [
+        {
+          "canonical_hash": "50bb80a8c127473adf03f8882bef3f0ac6b09844c42c14bc0cce3816cf7b920e",
+          "snapshot_roundtrip": true,
+          "tick": "7200"
+        },
+        {
+          "canonical_hash": "b996c5f4e4d953d234b3d967fc931582dbd426fc527e410e6dc92af5bee707d6",
+          "snapshot_roundtrip": true,
+          "tick": "72000"
+        }
+      ]
+    },
+    "android": {
+      "passed": true,
+      "local_version": "0.7.54-m7",
+      "local_code": 93,
+      "kotlin_tests": 4,
+      "apk_sha256": "4dfd94638864502768a03bca58c3256b9f3e45a39efb2f8b7db8292e3983bd66",
+      "log_sha256": "d5bbf17cc55683be5010ea60f961ff445d7198e8ef3795dba7ae86e396b6fb80"
+    },
+    "defense_audit": {
+      "passed": true,
+      "checks": 19,
+      "log_sha256": "3b252b4b30824510c43deef68b14d0eb3a6ac95b8f91329ce07dd256a36db41c"
+    },
+    "merchant_audit": {
+      "passed": true,
+      "checks": 16,
+      "log_sha256": "bf1d8186df2d63ab6beb6c5dbd7841764bfe6ec831b9b94b3acbe5cbc71d83a5"
+    },
+    "native_classification": {
+      "passed": true,
+      "checks": 6,
+      "log_sha256": "dcd2147edfda2291b456dfb6d9f3021f0fed07760d5a1c8869fc5446f30e28fe"
+    }
+  },
+  "component_reports_match_current_source": true,
+  "scope": "Fresh affected local checks; unchanged suites retain their recorded earlier scope. Build/export is distinct from running the actual APK. Current remote CI, new frozen raid matrix/native soak and physical/human gates remain separate."
+}

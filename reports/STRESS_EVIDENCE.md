@@ -5,6 +5,63 @@ campaign evidence and physical Android release requirements. The full release
 stress gate, all-alert variant, thirty-minute soak, PSS/battery/thermal measurements
 and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.54 read-only journal verification
+
+The writer now verifies its actual reparsed journal patch directly against the
+before/after captures, preserving the complete reconstruction semantics without
+allocating another mutable copy of the entire old world. External recovery still
+uses the unchanged reconstruction and full final codec validation. Integer
+spelling, nesting bounds, all dictionary edits/erasures, unchanged output fields,
+record identities/order, unused updates and nonmutation are checked. Eleven new
+persistence checks compare against the original reconstruction, including 80
+frozen generated cases, malformed inputs and all 32 immutable save fixtures.
+Persistence 392 and native UI 667 pass; maintained total is 2714 in 28 suites.
+
+Four alternating pairs use the same reparsed frame after 360 actual simulation
+ticks on each retained input. Every pair reproduces the exact complete capture;
+all source/input/world identities remain unchanged. Two ordinary campaign workers
+had resumed, so this is a contended component comparison, not an isolated OS test.
+
+| Input | Reconstruction CPU ms | Read-only CPU ms | Reconstruction temporary heap MiB | Read-only MiB |
+| --- | ---: | ---: | ---: | ---: |
+| Native-44 synthetic endpoint | 21.145 | 7.387 | 17.936 | 0.304 |
+| Fresh-generator-2 ordinary twenty endpoint | 297.857 | 115.507 | 261.592 | 8.313 |
+
+These are medians of four roughly 1-ms sampled process engine-heap observations.
+The comparison reduces temporary verification heap about 98.3% / 96.8% and CPU
+about 65.1% / 61.2%. It does not remove the separate full-snapshot preparation
+cost or prove a passing native soak, Android PSS/frame times, battery or thermals.
+Exact raw report/input/runtime fingerprints and medians are retained in
+[delta-verification-v54-evidence.json](delta-verification-v54-evidence.json).
+No save format, schema, content, generator or simulation rule changes.
+
+## Frozen 0.7.53 quieter-host thirty-minute result: memory failure retained
+
+Clean unchanged source `fbd5638ef564c52310871218873c5e00d5fe782d`
+completed 1800.02223 measured seconds after sixty seconds of warmup at selected
+2x, advancing 36001 ticks against 36000 nominal. All twenty residents remain;
+sampled invariants/storage, logical time, full final codec round trip, unchanged
+source and audio drain pass. All five diagnostic counters are zero. Lowest
+one-second drawn FPS is 28.149, with no below-24 streak.
+
+The **strict 20 MiB sampled peak proxy fails**: peak growth is 71915981 bytes
+(68.6 MiB), ending growth 15310960 (14.6 MiB). The probe and independent second
+audit remain Fail. This is a temporary allocation observation, not proof of a
+monotonic leak. Worker phases do not align between sixty-second samples in this
+and the earlier run, so their peaks are not a causal before/after measurement.
+The final complete payload is byte-identical to the native-44 endpoint, canonical
+`4a8fee28b0a01de385fc3bb8bfe48f7df5706c1b291760e7dca36c530303f881`.
+
+The same retained ration-enabled input is used without grants or refills. Two
+task-owned ordinary campaign workers were suspended/resumed by exact process
+identity; both resume states were independently confirmed. Short headless source
+checks and one exploratory raid pair also ran; no second graphical Godot ran.
+This is a quieter host, not a pristine benchmark or physical release certificate.
+Raw data is `native-soak-v6-fbd5638-quiet-host/`; exact source/completion/probe/
+audit/save and scheduling hashes are tracked in
+[native-soak-v53-evidence.json](native-soak-v53-evidence.json).
+The separate 0.7.54 journal comparison above does not relabel this failed run.
+
 ## 0.7.53 bounded snapshot preparation: paired local evidence
 
 The in-memory preparation path now encodes sorted fields and top-level arrays
@@ -36,8 +93,8 @@ Sampled temporary peak falls about 24.3%/23.3%; CPU cost rises about 1.6%/2.4%
 on this contended Mac. Baselines include the retained reference text, and roughly
 1 ms sampling is a process engine-heap observation. Ordinary preparation still
 has a large 239 MiB temporary peak; neither result certifies Android PSS or the
-separate native thirty-minute peak/fps proxy. A new frozen native soak must earn
-that result; the failed 0.7.44 result below remains unchanged.
+separate native thirty-minute peak/fps proxy. The completed frozen 0.7.53 run
+above still fails the peak proxy; the older failed 0.7.44 result remains unchanged.
 
 Exact inputs: native-44 endpoint SHA-256
 `00475035bf565d9e27afc7c5e99eed28be3856c1853175f63772d1d007190fda`,

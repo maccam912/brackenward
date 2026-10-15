@@ -150,8 +150,7 @@ func checkpoint(world: ColonyWorld) -> String:
 		recovered = true
 		return "Journal verification failed; current state retained in memory"
 	var markers: Array = verified.records.filter(func(record:Dictionary)->bool:return record.kind=="tick")
-	var rebuilt: Dictionary = ColonyDelta.restore(journal_payload,markers[0].delta.patch) if markers.size()==1 else {"error":"Missing complete delta marker"}
-	if rebuilt.has("error") or rebuilt.state!=world.payload():
+	if markers.size()!=1 or not ColonyDelta.matches(journal_payload,markers[0].delta.patch,world.payload()):
 		recovered=true
 		return "Journal delta did not reproduce the captured state; current state retained in memory"
 	journal_tick = world.tick
@@ -210,8 +209,7 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 		frames.append_array(marker)
 		var verified: Dictionary = ColonyJournal.read(frames)
 		if verified.has("error") or verified.get("torn_tail",false) or verified.records.size()!=count: return "Prepared catch-up marker failed verification"
-		var rebuilt: Dictionary = ColonyDelta.restore(prepared.payload,verified.records[-1].delta.patch)
-		if not rebuilt.has("state") or rebuilt.state!=world.payload(): return "Prepared catch-up marker differs from the current capture"
+		if not ColonyDelta.matches(prepared.payload,verified.records[-1].delta.patch,world.payload()): return "Prepared catch-up marker differs from the current capture"
 		parent=marker.slice(marker.size()-32).hex_encode()
 	error=_write_prepared_bytes(snapshot_path+".tmp",bytes)
 	if not error.is_empty(): return error

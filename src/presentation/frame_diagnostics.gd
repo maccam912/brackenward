@@ -2,7 +2,7 @@ class_name FrameDiagnostics
 extends RefCounted
 ## Bounded, local presentation measurements. No files, world mutation or uploads.
 const STAGES: Array[String] = ["frame_gap","session","simulation_batch","map_update","map_draw_commands","audio_update","save_capture","snapshot_capture","save_finish","save_explicit"]
-const LIMITS_US: Array[int] = [4000,8000,16000,25000,33334,50000,100000,250000,500000,1000000]
+const LIMITS_US: Array[int] = [4000,8000,16000,25000,33334,34000,36000,40000,50000,100000,250000,500000,1000000]
 const MAX_EVENTS: int = 32
 const MAX_EXPORT_BYTES: int = 65536
 var samples: Dictionary = {}

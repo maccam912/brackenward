@@ -21,6 +21,11 @@ class NativeSmokeTests(unittest.TestCase):
         self.assertFalse(inspect_output(renderer, 0, True)["failures"])
         self.assertFalse(is_software_renderer(renderer))
 
+    def test_actual_intel_mac_hosted_runner_is_software_rendering(self):
+        renderer = "OpenGL API 4.1 APPLE-21.1.1 - Compatibility - Using Device: Apple Inc. - Apple Software Renderer"
+        self.assertFalse(inspect_output(renderer, 0, True)["failures"])
+        self.assertTrue(is_software_renderer(renderer))
+
     def test_headless_or_failed_engine_cannot_pass(self):
         self.assertTrue(inspect_output("Godot Engine\n", 0, True)["failures"])
         renderer = "OpenGL API 4.1 - Compatibility - Using Device: Apple - GPU\n"

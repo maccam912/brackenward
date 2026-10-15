@@ -1,0 +1,129 @@
+{
+  "passed": true,
+  "source_commit": "fbd5638ef564c52310871218873c5e00d5fe782d",
+  "run_id": 38687799190,
+  "run_url": "https://github.com/maccam912/brackenward/actions/runs/38687799190",
+  "hosts": [
+    {
+      "host": "linux-x64",
+      "passed": true,
+      "counts": {
+        "generation": 167,
+        "persistence": 377
+      },
+      "replay_commands": 62,
+      "software_renderer_recorded": true,
+      "software_renderer_from_actual_text": true,
+      "renderer": [
+        "OpenGL API 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 20.1.2, 256 bits)"
+      ],
+      "files_sha256": {
+        "replay-linux-x64-72000.brackenward": "eea8c26c4b556af2828d7adf6cf17bec9643815e38da69f622d32ee7cab5bd8b",
+        "replay-linux-x64-7200.brackenward": "627125c02e7604964c0ca3a143f0cb5d9998745013ef7a9c1149232be8717ffd",
+        "replay-linux-x64.json": "78872040ef10be9142c4316bf0bbee4760c2154dfe916608a18e61d7269533a7",
+        "replay-linux-x64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+        "replay-linux-x64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f",
+        "replay-linux-x64-native-smoke.json": "9dadc57af4b371bec43b6966b05cae3c461981eda868871f0ba13a6ce2458a05",
+        "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+        "replay-linux-x64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+        "replay-linux-x64.log": "87b526fe0c7977b07c00866097310f1fbc6128dcc674de4121b07d209e350832",
+        "replay-linux-x64-native-smoke.log": "00a3eb90a60cc68650fabdcac1466a1b065780323d0c850325e696ee99cf3773",
+        "replay-linux-x64-generation.log": "604f2dc4f6f73451b838676a31957506d39fcbe02b64de4ab74e60c6c338211e",
+        "persistence.xml": "cbb45e5f4288a520381dcb27e25441a96e95a44576f53342831400640989da9a",
+        "replay-linux-x64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+        "replay-linux-x64-persistence.log": "5ba852443ceb2dba5d202bb7fa6b1ade742de43c68bcc8f3be667ae77fdb6211"
+      }
+    },
+    {
+      "host": "windows-x64",
+      "passed": true,
+      "counts": {
+        "generation": 167,
+        "persistence": 376
+      },
+      "replay_commands": 62,
+      "software_renderer_recorded": true,
+      "software_renderer_from_actual_text": true,
+      "renderer": [
+        "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.20348.5386)"
+      ],
+      "files_sha256": {
+        "replay-windows-x64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+        "replay-windows-x64-persistence.log": "1df6e1085c654321a651a4e590dc5100e47cf8baff0a164c0463652ae7874d6e",
+        "replay-windows-x64-native-smoke.log": "fc8b1857c0287280c5a862fc726693386d04e58a0bd62c8b4e069e6b2040ec06",
+        "replay-windows-x64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+        "replay-windows-x64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+        "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+        "replay-windows-x64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f",
+        "replay-windows-x64.json": "5c4e42e408ff3b96ad4c6f8d74f09a2d817474ccc5011e8259cad9d165cbabf4",
+        "replay-windows-x64-native-smoke.json": "236a1793c9719e24dd739d81700e3110f75b1645686bc2999990f42bcd7d5264",
+        "persistence.xml": "de3c7c0eb06936be85a40bd2a186135285e200261017be38f8fe39a31be18420",
+        "replay-windows-x64-7200.brackenward": "1999e32ce63fd12868b1c9b4db6accecd6668e1f93957288672436bf970bd9f9",
+        "replay-windows-x64-generation.log": "ffc07e7c30e8ac948a95a63ae21930b8d643c4c96d76bd8ba28fd0c8a5bf4992",
+        "replay-windows-x64-72000.brackenward": "35e1306ed5fa68d96c4f2ec13bbb2d7b24585095607400f7785961ad21fd851c",
+        "replay-windows-x64.log": "adf2302d438d7d77ff9212dabd9e06e6d43a2a4b77d152ea1b9945cedb0a2936"
+      }
+    },
+    {
+      "host": "macos-arm64",
+      "passed": true,
+      "counts": {
+        "generation": 167,
+        "persistence": 377
+      },
+      "replay_commands": 62,
+      "software_renderer_recorded": false,
+      "software_renderer_from_actual_text": false,
+      "renderer": [
+        "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Apple) - ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.7.9 (Build 24G830))"
+      ],
+      "files_sha256": {
+        "replay-macos-arm64-7200.brackenward": "112f655945ac14faa51befc4889773db1b8cfda59d6ca88ee5193502a8a2d466",
+        "replay-macos-arm64-72000.brackenward": "edcda95c3242b283779fe4ebff31c96d86db17ac75b5863ac755cae6aef5c874",
+        "replay-macos-arm64.log": "07d21f21e000c42bb552ccd2e7f8764ce60db7a7690734332f7fc2e36d3e3d38",
+        "replay-macos-arm64-persistence.log": "de43483f4a790152ddd53cbc3e9634f2d48d4e873a4d1cb161d6fc3936c1d4fb",
+        "replay-macos-arm64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+        "replay-macos-arm64-native-smoke.json": "7acd5c1df57db02590ab1d23a3a0dbce4c3c58298edb688cac4b3d67a41bf9f0",
+        "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+        "replay-macos-arm64-generation.log": "214546e92dcbdbeedb47fe082230e420b73215b3f0545f86f93b3321608b7cb1",
+        "replay-macos-arm64-native-smoke.log": "34d87da446c00b235514e1e89da2bd15ca864c2c04865a859887e754eb41c921",
+        "replay-macos-arm64.json": "d747c80b8a64844da8d5216af89a35b4b95b00b130312d6a7963391c6489cd29",
+        "persistence.xml": "cbb45e5f4288a520381dcb27e25441a96e95a44576f53342831400640989da9a",
+        "replay-macos-arm64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+        "replay-macos-arm64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+        "replay-macos-arm64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f"
+      }
+    },
+    {
+      "host": "macos-x64",
+      "passed": true,
+      "counts": {
+        "generation": 167,
+        "persistence": 377
+      },
+      "replay_commands": 62,
+      "software_renderer_recorded": false,
+      "software_renderer_from_actual_text": true,
+      "renderer": [
+        "OpenGL API 4.1 APPLE-21.1.1 - Compatibility - Using Device: Apple Inc. - Apple Software Renderer"
+      ],
+      "files_sha256": {
+        "replay-macos-x64-72000.brackenward": "e2511ebf0a079eac8f9fb6f059504f852c8ecb07869fdfd4276cbee5ef6d389d",
+        "replay-macos-x64.json": "4d54d55a6e5272098c0533188b45a40aac8317d5c6e488bdd3cc3c245cded099",
+        "replay-macos-x64-native-smoke.log": "abcbabc311e053404703ef9a447c54bfbbea6a8259d0567d570ed56f5c170a4c",
+        "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+        "replay-macos-x64-generation.log": "554379db35271631bf01a7a2bea9ba841a6711405f16990e1399c3f61942f290",
+        "replay-macos-x64-native-smoke.json": "30f9b6c2d9defc2d2e2b8922cb797837a1650100a4ddbe241807d84ba40ee784",
+        "replay-macos-x64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f",
+        "replay-macos-x64.log": "5403ff58f1f11bde58e6cfd61d4b3e606e797457e1edce8026be96f107352c8f",
+        "replay-macos-x64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+        "persistence.xml": "cbb45e5f4288a520381dcb27e25441a96e95a44576f53342831400640989da9a",
+        "replay-macos-x64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+        "replay-macos-x64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+        "replay-macos-x64-7200.brackenward": "b26388d0e6eedaf224bb6124ca4dcc212c903f1b23a3d351a9f34c247fa8699b",
+        "replay-macos-x64-persistence.log": "de1fce5c957495d5d9a87d09b629729fbdecf975aeb19e6efd953d56a4a916b8"
+      }
+    }
+  ],
+  "scope": "Downloaded actual native source CI evidence. Windows omits the Unix-only symlink test, otherwise persistence check names match. Intel Mac Apple Software Renderer was mislabeled false by the old classifier; raw evidence is preserved and the new derived field corrects attribution. No exported-package interaction or physical-device performance certification."
+}
