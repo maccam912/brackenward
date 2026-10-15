@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.46-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.47-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.46-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `4042af1` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-4042af1cdd66); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,641 checks, zero failures, including 663 native UI checks. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained; the expanded generation suite passes 167 in 0.7.46. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,649 checks, zero failures, including 663 native UI checks. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained; the expanded generation suite passes 167 in 0.7.46 and scheduler passes 403 in 0.7.47. Persistence, colony, production and native UI were rerun for the storage-read optimization. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2846,3 +2846,24 @@ to 2,641 across 28 suites. Runtime generation is unchanged from 0.7.45. The full
 the older revision-1 post-Charter continuation also remains in progress.
 Catalog/media validation and local Android export pass; aapt verifies
 0.7.46-m7 / local code 85. No runtime gameplay rule changes in this checkpoint.
+
+## 0.7.47 fewer repeated storage reads during assignment
+
+A completed ordinary twenty-resident campaign exposed repeated full structure
+scans for every tile of a painted stockpile during failed hauling probes.
+The association lookup now runs once per eligible store, preserving the exact
+candidate list, sort, ties, returned shape and all capacity/tag/fire rules.
+Eight regressions compare the retained original query, 576 quotes, lookup count,
+complete crowded ticks, save round-trip and continuation. Scheduler passes 403;
+maintained total is 2,649. Persistence 345, colony 42, production 52, UI 663 and
+the full frozen replay/acknowledgement audits pass without expected-hash changes.
+
+Four alternating 720-tick pairs at the original twenty-colony endpoint reduce
+median CPU 13.47%, with exact complete state and unchanged input bytes. The
+crowded stress endpoint improves 1.60%; the longer fresh 7,200-tick comparison
+changes by +0.034%, and a noisy shorter regression is retained. See
+[RUNTIME_PERFORMANCE.md](RUNTIME_PERFORMANCE.md) for all hashes and limits.
+This is a measured late-game source improvement; current Android remains
+unmeasured. Content v6/schema 23/generator 2 are unchanged.
+Catalog/media checks and local Android debug export pass; aapt verifies
+0.7.47-m7 / local code 86. Remote CI/publication is checked separately.

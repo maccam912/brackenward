@@ -1649,10 +1649,14 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [],
 		var occupied: int = context.occupied.get(store.id,0)
 		if occupied + quantity > store.capacity:
 			continue
+		# A stockpile's association cannot change while this read-only query
+		# visits its tiles. A missing structure would otherwise rescan the full
+		# structure history once for every tile on every failed hauling probe.
+		var individual_piles: bool = find(structures,store.id).is_empty()
 		for tile: Vector2i in store.tiles:
 			var used: int = 0
 			var blocked: bool = false
-			if find(structures, store.id).is_empty():
+			if individual_piles:
 				var key: Vector3i = Vector3i(store.id,tile.x,tile.y)
 				for stack in context.tiles.get(key,[]):
 					blocked=blocked or stack.item!=item or stack.tags!=tags;used+=stack.count

@@ -84,6 +84,7 @@ func run() -> void:
 		"scheduler":
 			HearthReadTests.run(check)
 			AssignmentReadTests.run(check)
+			DestinationReadTests.run(check)
 			SleepCycleTests.run(check)
 			SleepCycleTests.pacing(check)
 			QuietSleepTests.run(check)
