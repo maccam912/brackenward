@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "version": "0.7.57-m7",
+  "runtime_matches_e4003fb": true,
+  "python_checks": {
+    "suite_launcher": 11,
+    "checked_command": 9,
+    "renderer_evidence": 6
+  },
+  "persistence": 431,
+  "local_apk_sha256": "759fa59066124d0de3697bf40c9f14e47297e508485f29f847173dab31fae6de",
+  "apk_badging": "package: name='dev.brackenward.game' versionCode='96' versionName='0.7.57-m7' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "files_sha256": {
+    "tools/utf8_output.py": "8c0d3ab6bea4d0972483b57b5d94f294f3042c4b6b0aec9cfc53bc6d8e55871e",
+    "tools/check_suite.py": "06897abcb299e42ae091ce89d05f8e38136dbb5fb3e971d2524610ca3b2ccada",
+    "tools/checked_godot.py": "45919a80dec4364ae91d11251797f44172d1a72b8ff6309e0a7e944964401037",
+    "tools/native_smoke.py": "62d1a59de5f8af5789457a0ed01f01d03e9db7627e080321a535ebbbc6ecabc6",
+    "tools/replay_campaign.py": "39846101efb10d04e39ab1894fc4dcafec989412eb8ab8a5a5ed50feaf6030db",
+    "tools/test_check_suite.py": "9153e1fb07376cde3fc9c92d328c52b5b85b8b20517e7863a89657df73c773e1",
+    "tools/test_checked_godot.py": "3c8081c1339d43515a3b032da3cf3c75c09ae11e130414d6e139862f1eff5c2b",
+    "reports/utf8-v57-suite-tests.log": "770a5a7cfd5ed30408387c611037fc3fb16dc0c5873dba409dd6aae6c67d7bb1",
+    "reports/utf8-v57-checked-tests.log": "d965801e4334809edd0981824becdccd8e809c7c654e00e41f9796a02ced8492",
+    "reports/utf8-v57-smoke-tests.log": "dcd2147edfda2291b456dfb6d9f3021f0fed07760d5a1c8869fc5446f30e28fe",
+    "reports/utf8-v57-persistence.log": "585b9e8d2c90fcdc1c0cbf79afc4ea50a65db1b262ab9bc728125c2399f20cbf",
+    "reports/utf8-v57-android.log": "490734f05a7db03a314ee8d14902a58903646564db72e11794edea6ff457ae7a"
+  },
+  "scope": "Local UTF-8 output repair, including real legacy CP1252 streams and real subprocess error rejection, targeted full persistence and Android debug export. Runtime/data are byte-identical to e4003fb; only package metadata changes. Full fixed-source Windows CI/publication and the running native56 soak remain separate."
+}

@@ -1,0 +1,28 @@
+{
+  "passed": false,
+  "source_commit": "e4003fb1eb532f76b2d747975075244f09a221d4",
+  "run_id": 38703471140,
+  "windows_job_id": 116317008681,
+  "failed_step": "Verify persistence and bounded snapshot bytes on this native editor",
+  "observed_engine_junit": {
+    "tests": 430,
+    "failures": 0
+  },
+  "failure": "Python print(result.stdout) raised UnicodeEncodeError for U+FFFD using cp1252 after the engine completed; redirected persistence log is empty.",
+  "files_sha256": {
+    "windows_job.log": "56d9868e4b5793798b0f922825c5d2a71ee251b4f508c901ed255fcd4655879e",
+    "generation.xml": "b350f64793b8cd969fef7ef5485706ba6ed01450c56f3e0dcca111eb5d75b460",
+    "persistence.xml": "282da937b806d5e013659908ba8ccdbb4ace41bd7b74e317bb2d21ab9b70a531",
+    "replay-windows-x64-7200.brackenward": "a8c3b5f9fa3c058caec577959d0126c15c6650a5f7c223a26de3d8af723672ca",
+    "replay-windows-x64-72000.brackenward": "e25d0b610356d4c15fd31bef06e06fb154f26b308940432d1949c0f164fadc00",
+    "replay-windows-x64-content3-migration.json": "47335658e5ac208ca7a601e901f19578f86458766e02ac80645879afbe557f3a",
+    "replay-windows-x64-content4-migration.json": "73ce1249c5063ac03a38d657d93a44a66b85ea013f46e2fe5ae39c73d139ab0f",
+    "replay-windows-x64-content5-migration.json": "b8f2eaa3f2e23b8d8fe5781edcf6857778fc359f98bf0c1841e1e60a8be40de3",
+    "replay-windows-x64-generation.log": "83a00f4b3ff46eca57b496dea7af19f51118b6780db56ff3f05b2b43ded810a3",
+    "replay-windows-x64-persistence.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "replay-windows-x64-schema22-audit.json": "7a88d7935968e2b3cc2fcc1fe1aa664300248364d3bab2996ddfc7bbd360b042",
+    "replay-windows-x64.json": "5451a985c8858aac0e98df6bd9a7541b723d57b7b17174a75b99a19e78151ffb",
+    "replay-windows-x64.log": "3ac1ca25c36e065c479f284a4b648f68881340cf3e4b88fa085282022406b336"
+  },
+  "scope": "Original Windows workflow failure retained. JUnit success does not establish passing launcher status or absence of unreported engine errors; successful fixed-output CI remains required. Native startup was skipped after this failure. Other target/publication outcomes are observed separately."
+}

@@ -9,6 +9,7 @@ import subprocess
 import sys
 
 import bootstrap
+from utf8_output import configure_output
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -24,6 +25,7 @@ def run_engine(binary, arguments, timeout, logs):
     return clean
 
 def main():
+    configure_output()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--record-golden", action="store_true", help="Explicitly replace the reviewed local baseline after a gameplay change")
     parser.add_argument("--report", default="reports/replay.json")

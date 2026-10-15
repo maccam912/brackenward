@@ -5,6 +5,7 @@ import io
 import sys
 import unittest
 import tempfile
+from unittest.mock import patch
 from checked_godot import run_command
 
 
@@ -42,6 +43,21 @@ class CheckedGodotTests(unittest.TestCase):
         self.assertEqual(1, self.run_script("print(" + repr(marker) + ")", require_smoke_exit=True))
         self.assertEqual(1, self.run_script("print(" + repr(renderer) + ")", require_smoke_exit=True))
         self.assertEqual(0, self.run_script("print(" + repr(renderer + "\n" + marker) + ")", require_smoke_exit=True))
+
+    def test_redirected_legacy_console_preserves_unicode_and_rejects_engine_errors(self):
+        for prefix, expected in [('WARNING:', 0), ('SCRIPT ERROR:', 1)]:
+            data = io.BytesIO()
+            errors = io.BytesIO()
+            output = io.TextIOWrapper(data, encoding='cp1252')
+            diagnostic = io.TextIOWrapper(errors, encoding='cp1252')
+            source = "import sys; sys.stdout.buffer.write(" + repr((prefix + ' Unicode \ufffd ☀\n').encode('utf-8')) + ")"
+            with patch('sys.stdout', output), patch('sys.stderr', diagnostic):
+                actual = run_command([sys.executable, '-c', source])
+            output.flush()
+            diagnostic.flush()
+            self.assertEqual(actual, expected)
+            self.assertIn(prefix + ' Unicode \ufffd ☀', data.getvalue().decode('utf-8'))
+            self.assertEqual(output.encoding, 'utf-8')
 
 
 if __name__ == "__main__":

@@ -8,6 +8,7 @@ import subprocess
 import sys
 
 import bootstrap
+from utf8_output import configure_output
 
 ROOT = Path(__file__).resolve().parents[1]
 SUITES = ['unit','integration','colony','survival','persistence','seasons','people','production','care','generation','nature','wildlife','domestic','construction','equipment','maintenance','population','trade','region','fire','defense','director','opportunity','charter','chronicle','scheduler','tutorial','tutorial_flow','ui']
@@ -33,6 +34,7 @@ def passed(output, returncode):
 
 
 def main(argv=None):
+    configure_output()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('suite', choices=SUITES)
     parser.add_argument('--headless', action='store_true')

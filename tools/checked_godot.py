@@ -10,11 +10,13 @@ from pathlib import Path
 import subprocess
 import sys
 from native_smoke import inspect_output
+from utf8_output import configure_output
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def run_command(command, require_smoke_exit=False, timeout=180, working_directory=ROOT):
+    configure_output()
     try:
         result = subprocess.run(command, cwd=working_directory, stdout=subprocess.PIPE,
                                 stderr=subprocess.STDOUT, text=True, encoding="utf-8",

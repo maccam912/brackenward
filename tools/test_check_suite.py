@@ -77,5 +77,21 @@ class SuiteChecks(unittest.TestCase):
                 self.assertEqual(error.exception.code, 2)
                 verify.assert_not_called()
 
+    def test_redirected_cp1252_output_preserves_unicode_without_hiding_errors(self):
+        for code, suffix in [(0, 'WARNING: Unicode \ufffd ☀\n'), (1, 'SCRIPT ERROR: Unicode \ufffd ☀\n')]:
+            with self.subTest(code=code):
+                data = io.BytesIO()
+                errors = io.BytesIO()
+                output = io.TextIOWrapper(data, encoding='cp1252')
+                diagnostic = io.TextIOWrapper(errors, encoding='cp1252')
+                result = subprocess.CompletedProcess([], 0, GOOD + suffix)
+                with patch('check_suite.sys.stdout', output), patch('check_suite.sys.stderr', diagnostic), patch('check_suite.bootstrap.verify_engine'), patch('check_suite.subprocess.run', return_value=result), patch.dict('os.environ', {'BRACKENWARD_GODOT': '/test/editor'}):
+                    self.assertEqual(check_suite.main(['persistence']), code)
+                output.flush()
+                diagnostic.flush()
+                self.assertEqual(data.getvalue().decode('utf-8'), GOOD + suffix)
+                self.assertEqual(output.encoding, 'utf-8')
+                self.assertEqual(diagnostic.encoding, 'utf-8')
+
 
 if __name__ == '__main__': unittest.main()

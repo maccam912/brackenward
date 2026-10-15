@@ -70,6 +70,8 @@ def run_stage(command, graphical):
 
 
 def main():
+    from utf8_output import configure_output
+    configure_output()
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--report", type=Path, required=True, help="JSON evidence output path")
     parser.add_argument("--skip-import", action="store_true", help="Use an already imported project")

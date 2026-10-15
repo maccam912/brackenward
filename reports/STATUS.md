@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.56-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.57-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -3301,3 +3301,31 @@ APK/log/replay/source-comparison fingerprints are in
 `release-polish-v56-evidence.json`. Publication and the fresh frozen native soak
 are observed separately. Standing work continues against the live weekly
 remaining threshold; the meter most recently showed 97% remaining after reset.
+
+
+## 0.7.57 Windows Unicode log output
+
+Build 56's Windows native job completed 430 persistence checks with zero JUnit
+failures, then its Python launcher failed while printing U+FFFD through CP1252.
+The redirected log is empty, so the original workflow remains Fail and Windows
+startup/publication cannot be inferred from JUnit alone. Raw job/artifact hashes
+are retained in `native-ci-v56-windows-failure-evidence.json`; Linux and Apple
+Silicon replay/generation/persistence/startup jobs passed at last observation.
+
+The suite, checked-command, replay and native-smoke entry points now explicitly
+configure UTF-8 output, preserving Unicode logs under redirected Windows consoles.
+Engine error detection and positive/complete-summary requirements are unchanged.
+Two new regressions use actual CP1252 text wrappers, preserve U+FFFD/Unicode, and
+prove script errors still fail; one also exercises a real subprocess. Eleven
+suite-launcher, nine checked-command and six renderer checks pass locally.
+Runtime/schema/content/generator/gameplay are unchanged from 56. Its frozen native
+soak continues separately; new CI must verify the complete fixed Windows path.
+
+
+Local 0.7.57 persistence passes 431 with zero script errors. Android debug
+exports as code 96; the storage plugin's unchanged four checks pass. All runtime
+and data files are byte-identical to e4003fb, verified independently of package
+metadata. `utf8-v57-evidence.json` retains exact output-helper/test/log/APK hashes.
+No GUI suite was repeated during the separately frozen native soak; prior UI
+coverage keeps its recorded source scope. Combat correction work is preserved
+separately and has not entered this logging repair.
