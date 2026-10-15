@@ -21,6 +21,10 @@ class CapturedStore extends ColonyStore:
 		assert(owned_capture.is_read_only() and owned_capture==world.payload())
 		return owned_capture
 
+	func _make_delta(before: Dictionary, world: ColonyWorld) -> Dictionary:
+		assert(owned_capture.is_read_only() and owned_capture==world.payload())
+		return ColonyDelta._make_owned(before,owned_capture)
+
 class WorkRequest extends RefCounted:
 	var writer: ColonyStore
 	var captured: Dictionary = {}

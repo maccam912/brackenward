@@ -5,6 +5,17 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.72 short diagnostic trace: encoding gain does not resolve session peak
+
+This180.018198-second4x case completes7200ticks,20residents,zero counters and lowest
+one-second FPS28.645. Periodic peak7,196,632 bytes passes its20MiB proxy and second
+audit. Frame peak29,856,564 bytes at tick5396 has live writer/capture5380/journal5345,
+no preparation/retired groups and stable navigation. There are5399valid frame
+observations; bounded collector allocations are included. No other GUI/emulator
+runs. Read-only73prototype, code/import/persistence share host. The component
+encoder gain does not resolve the session transient or certify physical gates.
+[native-heap-v72-observation-evidence.json](native-heap-v72-observation-evidence.json).
+
 ## 0.7.71 short diagnostic trace: whole-session peak unresolved
 
 The180.016457-second4x case completes7200ticks,20residents,zero counters and lowest

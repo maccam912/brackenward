@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.72-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.73-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ Checkpoint: `0.7.72-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `126407a` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-126407a94256), code222 / 0.7.69-m7+126407a, APK SHA-256 `30ead8c11f57e806c4e5d9b34fb951018fc45469abcab3da4f8d8be675df4d16`. Actual four-host artifacts,28 suites/2851 assertions,Kotlin4 and exact published assets audited. Current70 publication and production signing/store release remain separate. |
 
-Current recorded validation: 28 GDScript suites, 2861 maintained assertions. The 0.7.72 private bounded encoder passes persistence487 (three new byte-equivalence/boundary/fallback checks), native UI670, replay62 and every retained acknowledgement migration, content530 and Android111 export/metadata. Unchanged cached Kotlin4 XML is inspected. Last fully audited remote69 has28 suites/2851 assertions and published Android code222; current70/71 CI and72 publication remain separate. The69–71 short4x probes pass the periodic20MiB proxy while separate frame-boundary peaks remain about30MB. Memory remains unresolved; the67ten-minute4x failure stays failed. Current72 whole-session tracing and physical/human gates remain separate. All45 original emulator files remain restored exactly.
+Current recorded validation: 28 GDScript suites, 2865 maintained assertions. The 0.7.73 captured-writer patch change passes persistence491 (four new complete-reference/ownership/reconstruction/future checks), native UI670, replay62 and every retained acknowledgement migration, content530 and Android112 export/metadata. Unchanged cached Kotlin4 XML is inspected. Last fully audited remote69 has28 suites/2851 assertions and published Android code222;70now has successful job metadata awaiting actual-artifact audit.71's first Intel generation attempt fails the existing600second timeout while prototype/other hosts pass; same-source retry is requested and its failure retained.72CI and current73publication remain separate. The69–72short4x probes pass the periodic20MiB proxy while separate frame-boundary peaks remain about30MB. Memory remains unresolved;67's ten-minute4x failure stays failed. New73whole-session and physical/human gates remain separate. All45 original emulator files remain restored exactly.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -4043,3 +4043,47 @@ proxy and separate second audit. Frame-boundary peak30,249,953 bytes remains at
 tick5395 during live writer ownership, no preparation/retired groups and stable
 navigation. native-heap-v71-observation-evidence.json retains the unresolved scope.
 Current72 frozen-session measurement is next; prior failures remain failed.
+
+
+## 0.7.73 retain immutable capture values while constructing writer patches
+
+Only CapturedStore uses the private owned-after delta helper. Its after-state is
+an owned, recursively read-only ColonyCapture tree and equals the writer's frozen
+world. Changed records and whole replacement values can remain referenced until
+framing completes. Public mutable delta creation and direct ColonyStore calls
+still clone them. Reconstruction returns independent mutable state. Patch fields,
+order, integer handling, wire bytes, matching and save rules stay unchanged.
+
+Four new checks retain the complete2446783 delta source independently and cover
+unsorted patch equality, records/maps/reordering/empty/wide values, explicit frozen
+sharing versus public mutable isolation, independent mutable reconstruction and
+120 real future ticks through the captured/direct writer methods. Persistence491,
+UI670, replay62/all old acknowledgements, content530 and Android112 export pass.
+Kotlin4 is an inspected unchanged cached result. Maintained total:2865.
+
+Four alternating real26426/26466 capture pairs keep exact patch hash, full restore
+and matching, input/source unchanged. Median patch-construction time falls11,264
+to8,662 microseconds (23.1%), sampled peak5,705,560 to180,076 bytes (96.8%), ending
+5,705,560 to128,764 bytes. Complete checkpoint comparison against7698c08 includes
+71/72/73: wall time97,678 to90,751 microseconds, peak22,371,854 to15,481,666 bytes
+and identical ending1,404 bytes, appended bytes, metadata and recovery. It cannot
+isolate73's whole-writer effect, and a large checkpoint peak remains. No other
+native GUI/emulator or benchmark runs during final pairs; thread lifecycle,
+sampling and disk cache remain included. owned-delta-v73-evidence.json records
+source/input/log/APK hashes. Current73whole-session tracing remains separate.
+
+The72short native case completes180.018198seconds/7200ticks,20residents,zero
+counters and lowest one-second FPS28.645. Periodic peak7,196,632 bytes passes its
+proxy and independent audit. Frame-boundary peak29,856,564 bytes remains during
+live writer ownership without preparation and with stable caches. The component
+encoder improvement therefore does not resolve the session transient.
+native-heap-v72-observation-evidence.json retains this scope and earlier failures.
+
+Remote70jobs succeed.71's first Intel generation job reaches its existing600second
+timeout after GEN/pine1_reference_extra_requires_forty_one_real_path_steps; it has
+no passing generation result. The prototype and three other native jobs succeed,
+publication is skipped in that attempt, and generation/src/sim/data are unchanged
+from70. Raw partial artifacts and job/run logs remain retained in
+ci-v71-timeout-failure-evidence.json. A same-source failed-job retry is requested;
+limits are unchanged and no host-load cause is assigned. Later attempts need their
+own actual-artifact/publication audit; this first attempt remains failed.

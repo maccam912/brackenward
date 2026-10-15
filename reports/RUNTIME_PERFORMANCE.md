@@ -7,6 +7,28 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.73 immutable patch inputs in the captured writer
+
+The private writer retains changed records/whole values from its recursively
+read-only after-capture until framing. Public mutable callers still get clones,
+and reconstruction still returns independent mutable state. Four ownership/
+reference/future regressions pass within persistence491; UI670, replay62/old
+acknowledgements, content530 and Android112 export also pass.
+
+Four alternating validated real-capture pairs reduce patch-construction median
+11,264 to8,662 microseconds (23.1%), sampled peak5,705,560 to180,076 bytes (96.8%)
+and ending allocation5,705,560 to128,764 bytes. Full patch hash/order, restore,
+matching and input/source equality stay exact. Final pairs have no other native
+GUI/emulator/benchmark; thread lifecycle and sampling remain included.
+
+Complete checkpoint pairs versus7698c08 include71/72/73: time97,678 to90,751
+microseconds, peak22,371,854 to15,481,666 bytes and ending1,404 bytes. These remain
+exact in appended bytes, metadata and recovery. The cumulative result does not
+isolate73whole-writer benefit and a large peak remains. The preceding72session
+still reaches29,856,564 bytes of frame growth despite a periodic7,196,632-byte pass.
+[owned-delta-v73-evidence.json](owned-delta-v73-evidence.json),
+[native-heap-v72-observation-evidence.json](native-heap-v72-observation-evidence.json).
+
 ## 0.7.72 bounded internal journal encoder
 
 The private writer encodes sorted string dictionaries recursively and native-packs

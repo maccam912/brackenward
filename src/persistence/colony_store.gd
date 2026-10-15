@@ -97,7 +97,7 @@ func checkpoint(world: ColonyWorld) -> String:
 			records.append_array(command_frame)
 			command_frame=PackedByteArray()
 	next_sequence += 1
-	var delta: Dictionary = {"version":1,"base_tick":journal_tick,"campaign_id":world.session_id,"parent":journal_parent_hash,"patch":ColonyDelta.make(journal_payload,world.payload())}
+	var delta: Dictionary = {"version":1,"base_tick":journal_tick,"campaign_id":world.session_id,"parent":journal_parent_hash,"patch":_make_delta(journal_payload,world)}
 	var tick_frame: PackedByteArray = ColonyJournal._frame_bounded({"sequence": str(next_sequence), "kind": "tick", "tick": world.tick, "delta":delta})
 	# Serialization owns its bytes; do not retain the producer patch while the
 	# independently read-back patch is decoded and checked on this same worker.
@@ -219,7 +219,7 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 			frames.append_array(ColonyJournal._frame_bounded({"sequence":str(count),"kind":"command","tick":record.tick,"command":record.command}))
 		parsed={}
 		count+=1
-		var marker: PackedByteArray = ColonyJournal._frame_bounded({"sequence":str(count),"kind":"tick","tick":world.tick,"delta":{"version":1,"base_tick":prepared.payload.tick,"campaign_id":world.session_id,"parent":parent,"patch":ColonyDelta.make(prepared.payload,world.payload())}})
+		var marker: PackedByteArray = ColonyJournal._frame_bounded({"sequence":str(count),"kind":"tick","tick":world.tick,"delta":{"version":1,"base_tick":prepared.payload.tick,"campaign_id":world.session_id,"parent":parent,"patch":_make_delta(prepared.payload,world)}})
 		if marker.decode_u32(0)>ColonyJournal.MAX_RECORD or frames.size()+marker.size()>ColonyJournal.MAX_JOURNAL or bytes.size()+2*(frames.size()+marker.size())>ColonyCodec.MAX_BYTES-4096:
 			bytes=PackedByteArray();frames=PackedByteArray();marker=PackedByteArray()
 			return save(world)
@@ -250,6 +250,10 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 	world.command_trace.clear()
 	_prune_generations()
 	return ""
+
+func _make_delta(before: Dictionary, world: ColonyWorld) -> Dictionary:
+	# Direct callers may mutate their worlds after this method returns.
+	return ColonyDelta.make(before,world.payload())
 
 func _retain_payload(world: RefCounted) -> Dictionary:
 	# Direct callers own a mutable world and need an independent durable base.

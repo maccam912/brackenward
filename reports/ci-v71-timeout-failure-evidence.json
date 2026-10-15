@@ -1,0 +1,25 @@
+{
+  "passed": false,
+  "source_commit": "48479d40b440aa20db27236ab758af31ac42bffc",
+  "run_id": 38761064199,
+  "attempt": 1,
+  "failed_job_id": 116512142475,
+  "failure": "IntelMac generation suite reached existing600second timeout; no passing result. Partial log reaches GEN/pine1_reference_extra_requires_forty_one_real_path_steps. Native Linux/Windows/AppleSilicon and prototype jobs succeed. Publish skipped in original attempt.",
+  "generation_src_data_unchanged_from_7698c08": true,
+  "failed_log_sha256": "7a690304d38cdf4c784c5de2a50c5bb704b4685076e694c5eeb03533d34b1e33",
+  "run_metadata_sha256": "ed3d6e82b0b1fda5f2fb31327f3310c924e4d56d8620db29161c639e2006b41f",
+  "retained_partial_artifact_sha256": {
+    "run-attempt.json": "9b0f6740c21358750a37afb93fdb83ed284c62733c7efa81a07cfd5ca101e444",
+    "native-replay-macos-x64/replay-macos-x64-72000.brackenward": "a1214d302477f4bb8693e86cf51acb4f6f6b4e1035826872e71a79048e6b7289",
+    "native-replay-macos-x64/replay-macos-x64.json": "bb30c122c5e1c6e54afaadf83bf382063d1136f7addb3c5d30fa346d1c518dc9",
+    "native-replay-macos-x64/replay-macos-x64-generation.log": "5fe4cfae9c410f99f6f4efa31e08296df27955a39e8a1d4ce56046e88b1443c5",
+    "native-replay-macos-x64/replay-macos-x64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "native-replay-macos-x64/replay-macos-x64.log": "a49d2b2bf04cc0ed5347e463a505c3d3866f7ebbc4b919a21acc26e76d664a3c",
+    "native-replay-macos-x64/replay-macos-x64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "native-replay-macos-x64/replay-macos-x64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "native-replay-macos-x64/replay-macos-x64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "native-replay-macos-x64/replay-macos-x64-7200.brackenward": "657f594370ae0c2df170bb2968a17652fb9bf79504dac73c01a4bef55b41e74e",
+    "native-replay-macos-x64/replay-macos-x64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3"
+  },
+  "followup": "Same-source failed-job retry requested,limits unchanged. Original attempt remains failed; new attempt separately auditable. No host-load cause or product fix inferred."
+}

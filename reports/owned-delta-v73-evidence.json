@@ -1,0 +1,86 @@
+{
+  "passed": true,
+  "build": "0.7.73-m7",
+  "local_android_code": 112,
+  "maintained_gdscript_assertions": 2865,
+  "fresh_checks": {
+    "persistence": 491,
+    "new_owned_delta": 4,
+    "native_ui": 670,
+    "replay_commands": 62,
+    "ui_messages": 530
+  },
+  "complete_reference_source_from": "244678328bbe9437c5d3b63cdcbe8b5e3c512311",
+  "reference_source_sha256": "79024ca74cc076104dbf77e8f3823bd923f071631da4b5a4be8bc95a5056f643",
+  "delta_component_medians": {
+    "0": {
+      "elapsed_us": 11264.0,
+      "peak_growth_bytes": 5705560.0,
+      "ending_growth_bytes": 5705560.0
+    },
+    "1": {
+      "elapsed_us": 8662.0,
+      "peak_growth_bytes": 180076.0,
+      "ending_growth_bytes": 128764.0
+    }
+  },
+  "component_peak_change_percent": -96.84385055980482,
+  "component_cpu_change_percent": -23.10014204545454,
+  "cumulative_checkpoint_vs_7698c08": {
+    "0": {
+      "elapsed_us": 97678.0,
+      "peak_growth_bytes": 22371854.0,
+      "ending_growth_bytes": 1404.0
+    },
+    "1": {
+      "elapsed_us": 90751.0,
+      "peak_growth_bytes": 15481666.0,
+      "ending_growth_bytes": 1404.0
+    }
+  },
+  "scope": "Only captured background writer uses private owned delta helper on recursively read-only ColonyCapture after-state. Public mutable make and direct stores retain cloning. Patch borrows changed records/whole values only until framing; restore still returns independent mutable data. Complete original delta reference,unsorted patch hash/order/types,maps/records/reorder/empty/wide values,explicit alias/public isolation,independent reconstruction and120real future ticks pass. Four alternating real26426/26466 pairs verifyfull restore/matches and unchanged input/source. Cumulative complete checkpoint includes71/72/73changes and does not isolate73whole-writer benefit. Peak remains large; no native73session or phone claim. Thread lifecycle/sampling/disk cache included.",
+  "source_sha256": {
+    "project.godot": "39fae936927fa6ac095fa20fd61e7778b36a5ff268b28cc71c79161f1fa2fbd6",
+    "src/persistence/colony_capture.gd": "4f388a71f18e4340ab2b48aa5fd82935c9483202d220e7bde10ea0762229dab9",
+    "src/persistence/colony_codec.gd": "1a6122fa3f81360db5de5e76381a1f253c783af186c1fb8c9675c323bf1d9459",
+    "src/persistence/colony_delta.gd": "14a372a1e8c27bfe73d8feefdd032d5b43f620849e28644919d78071fb39a116",
+    "src/persistence/colony_journal.gd": "31491c991363451cdeb8fabdd5e7ed6f7f4608863730d91bdea118b21c735980",
+    "src/persistence/colony_save_queue.gd": "3535dd2d6b72d0701808501ab99f6e8168bd173856054620007aa37fdee918ea",
+    "src/persistence/colony_store.gd": "d48330502b80f4d025c41b0c1691f4900d6f20e302811f24a5f85d426db1bcee",
+    "tools/profile_writer_buffers.gd": "5150387b603c07ee3b4dfb1fe1d1d5c477251fdb33377da3a0390d591bce197d",
+    "tools/writer_buffers_reference.gd": "f576a2b65f79af4830a6ab65b9a2a32423cca136162d1bc0ff96d6d5bf5777f0",
+    "tools/writer_buffers_tests.gd": "c54ff6aeb2c0a926083c4970b02333ad8ac10d8086f7e8e47b71cefbb437a13b",
+    "tools/owned_delta_reference.gd": "e5b7f284f264646352425d6c8ba614dba9a97f8fc76ac59e8efa3f4e0e6f99be",
+    "tools/owned_delta_tests.gd": "69f20ea5fcf79c747864361fcf40b3fcf959620e7f05fde8182dfcb094225fa4",
+    "tools/profile_owned_delta.gd": "0648c55d1ed2de6769d5b9f5fc418854dd70ef53a6f9b54f2eadcef58bdec1d4"
+  },
+  "validation_sha256": {
+    "owned-delta-v73-replay-72000.brackenward": "04d1330023d1ae53ed43630ccff7c3129190e1a37e56c83cba9f886878b7f134",
+    "owned-delta-v73-content.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "owned-delta-v73-persistence-first.log": "84e065a4eb8a461f9cc72ce73225108a979f21055292b9301974ea63cde9d5d4",
+    "owned-delta-v73-replay-7200.brackenward": "7e78e8c43fec77b63d500a7ea1a0021b19a743306a5d6fb2231f8b7b676ef3eb",
+    "owned-delta-v73-final-delta.log": "52941e2af90afd8829577f9a4183b7b9e45379d0a24faac8ae5a1f9adb2e7aae",
+    "owned-delta-v73-cumulative-checkpoint.log": "10b8d9b1cb33403265b71356ad1f094aca17ae19e839d0a55d091c37ba478e6f",
+    "owned-delta-v73-prototype.json": "d4d011756cbb823e0fa6f45568d19ab6c2ed8f94ae06c9bc025a7e1559c3727e",
+    "owned-delta-v73-replay-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "owned-delta-v73-replay-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "owned-delta-v73-cumulative-checkpoint.json": "f6b2e94af4f30b3cf142580f9d923a002eeaa5cc39c774e95c72e9fe28f92efd",
+    "owned-delta-v73-replay-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "owned-delta-v73-prototype.log": "0c575c7b273e1d949c229c71d46bdc8ef851a76069e68eff32bd2281fb7fdda8",
+    "owned-delta-v73-final-delta.json": "ad40705b914abf76d63a47355bf9c017ac6e9d46b54ba523aa7e1ee749b5861b",
+    "owned-delta-v73-replay-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "owned-delta-v73-apk.log": "9e8543df353aeffb81ddca6c10dfc538aa2b2c86dfa7af5caa7f82fab761dbac",
+    "owned-delta-v73-ui.log": "c6c5e198fdf2e97d3b4dc003d28d33bf94671c1d0a90c03b6e7956444ae70596",
+    "owned-delta-v73-import.log": "491dcd4aca28bb70080c5a0c8556921439c70740a35320f73f4de0727a528f15",
+    "owned-delta-v73-replay.json": "25fe9df509129bae776df8b7385b8549f03395a558e7fca9a5c7bd9637a2642b",
+    "owned-delta-v73-replay.log": "ea2de024b73093ae2c31193c322c5dba842b572b4b4bdf0556c44f24bada4213",
+    "owned-delta-v73-replay-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3"
+  },
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "Unchanged UP-TO-DATE results inspected,not freshly rerun."
+  },
+  "apk_sha256": "90455dc03170dee8d76a4e8ac98d06cf672d25ed686eb6372c0ca94f2f1b685f",
+  "pending": "Current remote CI/publication,whole-session native and physical gates remain separate.72short frame peak remains unresolved."
+}

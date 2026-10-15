@@ -7,6 +7,12 @@ const MAX_DEPTH: int = 32
 static func make(before: Dictionary, after: Dictionary) -> Dictionary:
 	return _diff(before,after)
 
+static func _make_owned(before: Dictionary, after: Dictionary) -> Dictionary:
+	# Internal writer only: after is a recursively read-only ColonyCapture tree.
+	# Retain its changed records/whole values until framing instead of cloning.
+	assert(after.is_read_only())
+	return _diff(before,after,true)
+
 static func restore(before: Dictionary, patch: Dictionary) -> Dictionary:
 	var result: Dictionary = _apply(before.duplicate(true),patch,0)
 	if result.has("error"): return result
@@ -64,7 +70,7 @@ static func _matches(before: Variant, patch: Dictionary, after: Variant, depth: 
 static func _clone(value: Variant) -> Variant:
 	return value.duplicate(true) if value is Dictionary or value is Array else value
 
-static func _diff(before: Variant, after: Variant) -> Dictionary:
+static func _diff(before: Variant, after: Variant, owned_after: bool=false) -> Dictionary:
 	if typeof(before)==typeof(after) and before==after: return {}
 	if after is int: return {"set_int":str(after)}
 	if before is Dictionary and after is Dictionary and not before.is_empty() and not after.is_empty():
@@ -73,7 +79,7 @@ static func _diff(before: Variant, after: Variant) -> Dictionary:
 		for key in before:
 			if not after.has(key): erased[key]=true
 		for key in after:
-			var part: Dictionary = _diff(before.get(key),after[key])
+			var part: Dictionary = _diff(before.get(key),after[key],owned_after)
 			if not part.is_empty(): changed[key]=part
 		return {"map":changed,"erase":erased}
 	if before is Array and after is Array and not before.is_empty() and not after.is_empty() and _record_array(before) and _record_array(after):
@@ -86,9 +92,9 @@ static func _diff(before: Variant, after: Variant) -> Dictionary:
 		for index in range(after.size()):
 			var record: Dictionary = after[index]
 			if index>=prefix: tail.append(record.id)
-			if not previous.has(record.id) or previous[record.id]!=record: changed[record.id]=record.duplicate(true)
+			if not previous.has(record.id) or previous[record.id]!=record: changed[record.id]=record if owned_after else record.duplicate(true)
 		return {"records":{"prefix":prefix,"tail_ids":tail,"changes":changed}}
-	return {"set":_clone(after)}
+	return {"set":after if owned_after else _clone(after)}
 
 static func _record_array(value: Array) -> bool:
 	if value.size()>MAX_RECORDS: return false
