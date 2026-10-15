@@ -954,6 +954,7 @@ func ui() -> void:
 	await AudioUITests.run(colony_game,check)
 	await AnimalUITests.run(colony_game,check)
 	await DiagnosticsUITests.run(colony_game,check)
+	await ResidentMarkerTests.run(colony_game,check)
 	await EnvironmentReadTests.run(colony_game,check)
 	await EnvironmentUITests.run(colony_game,check)
 	await WorkBudgetUITests.run(colony_game,check)

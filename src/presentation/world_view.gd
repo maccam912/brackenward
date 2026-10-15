@@ -52,6 +52,7 @@ var reduced_motion: bool = false
 var high_contrast: bool = false
 var diagnostics: FrameDiagnostics
 var environment: ColonyEnvironment
+var resident_markers: ResidentMarkers
 var quality: String = "Balanced"
 var rooms_overlay: bool = false
 var inspected_tiles: Array[Vector2i] = []
@@ -87,6 +88,8 @@ func setup(state: RefCounted) -> void:
 	add_child(carried_overlay)
 	carried_overlay.draw.connect(_draw_carried_items)
 	if world is ColonyWorld: environment=_make_environment()
+	if world is ColonyWorld:
+		resident_markers=ResidentMarkers.new(self);add_child(resident_markers)
 	refresh_terrain()
 	for index in range(4): _add_actor(index)
 	resized.connect(_update_transform)
@@ -94,6 +97,16 @@ func setup(state: RefCounted) -> void:
 
 func _make_environment() -> ColonyEnvironment:
 	return ColonyEnvironment.new(self)
+
+func resident_visible(person: Dictionary) -> bool:
+	return not world is ColonyWorld or (not person.death_recorded and not person.departed and person.carried_by==0 and ColonyRegion.visible(world,person))
+
+func refresh_resident_markers() -> void:
+	if resident_markers!=null: resident_markers.refresh()
+
+func resident_selection_point(person: Dictionary) -> Vector2:
+	if resident_markers!=null and resident_markers.visible and resident_markers.points.has(person.id): return resident_markers.points[person.id]
+	return tile_to_screen(citizen_point(person))
 
 func _process(delta: float) -> void:
 	var started: int = Time.get_ticks_usec()
@@ -128,7 +141,7 @@ func _update_frame(delta: float) -> void:
 			point.x += float(citizen.progress) / 10000.0 * citizen.direction
 		actors[i].position = point * 16.0
 		if world is ColonyWorld:
-			actors[i].visible = not citizen.death_recorded and not citizen.departed and citizen.carried_by == 0 and ColonyRegion.visible(world,citizen)
+			actors[i].visible = resident_visible(citizen)
 			if actors[i].visible: actors[i].animate(world,citizen,delta,simulation_speed,cargo.has(citizen.id),reduced_motion)
 		if citizen.id == follow_id:
 			if world is ColonyWorld and not ColonyRegion.visible(world,citizen): follow_id=0
@@ -349,6 +362,7 @@ func _update_transform() -> void:
 	ground.position = size * 0.5 + focus_offset - camera_tile * tile_size
 	actor_layer.scale = ground.scale
 	actor_layer.position = ground.position
+	refresh_resident_markers()
 
 func _draw() -> void:
 	var started: int = Time.get_ticks_usec()
@@ -406,7 +420,7 @@ func _draw_feedback(painter: CanvasItem) -> void:
 		for resource in world.gather_targets(preview_resource,preview_tiles()):
 			_draw_gather_mark(Vector2(resource.x,resource.y),Color("F3E8CC"),painter)
 	for citizen in world.citizens:
-		if citizen.id == selected_id:
+		if citizen.id == selected_id and resident_visible(citizen) and not (resident_markers!=null and resident_markers.visible):
 			var point: Vector2 = tile_to_screen(citizen_point(citizen))
 			if high_contrast: painter.draw_arc(point,maxf(12.0,tile_size*0.55),0,TAU,24,Color.BLACK,7.0)
 			painter.draw_arc(point, maxf(12.0, tile_size * 0.55), 0, TAU, 24, Color("F3E8CC"), 2.0)

@@ -287,6 +287,7 @@
   "ui.help.opportunities.no_offer_is_waiting_tables_friendships_and": "No offer is waiting. Tables, friendships and research desks create more opportunities.",
   "ui.help.pen.breeding_one_juvenile_after_eight_days_with": "Breeding: one juvenile after eight days with two fed adults and spare space/shelter. Blocked births never accumulate. Juveniles mature in four days and eat half adult feed; hens alternate whole-unit feeding days.",
   "ui.help.pens.husbandry_unlocks_pens_and_animal_acquisition_build": "Husbandry unlocks pens and animal acquisition. Build fences/gates and a touching or enclosed barn, then paint the interior. Animals workers lead livestock, move real feed and collect products. Each barn holds six animals, 24 feed units and 24 output units.",
+  "ui.help.people.overview": "At wide zoom, nearby residents share portrait pins. A number shows the group size. Tap a pin to choose anyone in the group. A cross marks a downed resident or someone carrying a patient.",
   "ui.help.person.active_morale_causes": "Active morale causes",
   "ui.help.person.food_access": "Food is stored, but {name} cannot reach a safe, unreserved portion. Check blocked entrances, fire or danger, and food reservations. Clear the obstruction or move food closer.",
   "ui.help.person.food_and_rest_priority": "With no safe food available, a hungry resident keeps their work instead of restarting it. At rest 100 or lower, they stop to sleep. Hungry sleepers can get up for food at rest 300.",

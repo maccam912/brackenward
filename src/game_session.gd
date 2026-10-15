@@ -696,10 +696,11 @@ func confirm_placement() -> void:
 
 func _map_intent(action: Dictionary) -> void:
 	if action.kind == "notice": notice=action.text;return
+	view.refresh_resident_markers()
 	var candidates: Array[Dictionary] = []
 	for citizen in world.citizens:
-		if world is ColonyWorld and (citizen.death_recorded or citizen.departed or citizen.carried_by>0 or not ColonyRegion.visible(world,citizen)): continue
-		var separation: float = view.tile_to_screen(view.citizen_point(citizen)).distance_to(action.point)
+		if not view.resident_visible(citizen): continue
+		var separation: float = view.resident_selection_point(citizen).distance_to(action.point)
 		if separation<=maxf(24,view.tile_size*0.6): candidates.append({"kind":"citizen","object":citizen,"rank":0,"distance":separation})
 	if world is ColonyWorld:
 		for enemy in world.defense_state.enemies:
@@ -800,6 +801,7 @@ func select_citizen(id: int) -> void:
 	var actions: HBoxContainer = HBoxContainer.new()
 	inspector_rows.add_child(actions)
 	button(ColonyText.text("ui.action.follow"), func() -> void:
+		if view.tile_size<ResidentMarkers.ZOOM_LIMIT: view.zoom_at(32.0/view.tile_size,view.size*0.5)
 		view.follow_id = id;_tutorial_action("follow",{"citizen":id});_refresh_guidance(), actions, 80)
 	button(ColonyText.text("ui.action.close"), close_inspector, actions, 64)
 	_layout()
@@ -898,6 +900,7 @@ func show_sheet(title: String, title_key: String = "", literal_title: bool = fal
 					else:
 						close_sheet()
 						select_citizen(citizen.id), sheet_body)
+			if world is ColonyWorld: label(ColonyText.text("ui.help.people.overview"),sheet_body)
 		"Work":
 			_work_sheet()
 		"Valley":
