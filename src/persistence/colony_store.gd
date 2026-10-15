@@ -13,6 +13,10 @@ var encoded_payload_hash: String = ""
 var encoded_snapshot_bytes: int = 0
 var verified_journals: Dictionary = {}
 var rejected_journals: Dictionary = {}
+# Derived evidence only; never serialized. Unknown/cold prefixes use full reading.
+var _journal_last_command_tick: int = -1
+var _journal_command_digest: String = ""
+var _journal_command_sequence: int = 0
 var slot: int = 1
 const CAMPAIGN_ROOT: String = "user://campaigns"
 var root_directory: String = CAMPAIGN_ROOT
@@ -31,6 +35,7 @@ func select_slot(number: int) -> void:
 	recovered = false
 	journal_payload={};journal_parent_hash="";journal_size_bound=0;snapshot_tick=0
 	verified_journals={};rejected_journals={}
+	_journal_last_command_tick=-1;_journal_command_digest="";_journal_command_sequence=0
 
 static func occupied(number: int, root: String = CAMPAIGN_ROOT) -> bool:
 	var paths: Array[String] = [root.path_join("slot-%d" % number)]
@@ -65,6 +70,7 @@ func save(world: RefCounted) -> String:
 	journal_length=0;journal_digest=""
 	journal_payload=_retain_payload(world)
 	journal_parent_hash=encoded_payload_hash;journal_size_bound=encoded_snapshot_bytes;snapshot_tick=world.tick
+	_set_command_bound(0)
 	world.command_trace.clear()
 	recovered = false
 	return ""
@@ -164,6 +170,7 @@ func checkpoint(world: ColonyWorld) -> String:
 	if markers.size()!=1 or not ColonyDelta.matches(journal_payload,markers[0].delta.patch,world.payload()):
 		recovered=true
 		return "Journal delta did not reproduce the captured state; current state retained in memory"
+	var command_bound: int=maxi(_journal_last_command_tick,_last_command_in(verified.records)) if _command_bound_known() else -1
 	markers=[];verified={}
 	journal_tick = world.tick
 	journal_sequence = next_sequence
@@ -171,12 +178,43 @@ func checkpoint(world: ColonyWorld) -> String:
 	verified_journals[path]=snapshot_digest+":"+journal_digest;rejected_journals.erase(path)
 	journal_payload=_retain_payload(world)
 	journal_parent_hash=next_parent_hash
+	_set_command_bound(command_bound)
 	# A replacement cannot grow the canonical envelope by more than twice its
 	# encoded patch size. This upper bound forces a full checked save before the
 	# recovery state could exceed the snapshot's 64 MiB limit.
 	journal_size_bound+=2*records_size
 	world.command_trace.clear()
 	return ""
+
+func _command_bound_known() -> bool:
+	return _journal_last_command_tick>=0 and (journal_sequence==0 or not journal_digest.is_empty()) and _journal_command_digest==journal_digest and _journal_command_sequence==journal_sequence
+
+func _set_command_bound(tick: int) -> void:
+	_journal_last_command_tick=tick
+	_journal_command_digest=journal_digest if tick>=0 else ""
+	_journal_command_sequence=journal_sequence if tick>=0 else 0
+
+static func _last_command_in(records: Array) -> int:
+	var latest: int=0
+	for record: Dictionary in records:
+		if record.kind=="command":latest=maxi(latest,record.tick)
+	return latest
+
+func _catchup_commands(path: String, tick: int) -> Dictionary:
+	if _command_bound_known() and _journal_last_command_tick<=tick:
+		# Every frame was already checked at append. Bind that evidence to the
+		# exact current prefix before proving there are no newer commands.
+		var file: FileAccess=FileAccess.open(path,FileAccess.READ)
+		if file==null:return {"source_changed":true}
+		var length: int=file.get_length();file.close()
+		if length<=0 or length!=journal_length or FileAccess.get_sha256(path)!=journal_digest:return {"source_changed":true}
+		return {"commands":[],"total_records":journal_sequence,"torn_tail":false}
+	return _read_catchup_commands(path,tick)
+
+func _read_catchup_commands(path: String, tick: int) -> Dictionary:
+	var original: PackedByteArray=FileAccess.get_file_as_bytes(path)
+	if original.size()!=journal_length or original.is_empty() or FileAccess.get_sha256(path)!=journal_digest:return {"source_changed":true}
+	return ColonyJournal.commands_after(original,tick)
 
 func _next_sequence() -> int:
 	var next: int = super._next_sequence()
@@ -205,14 +243,11 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 	var frames: PackedByteArray = PackedByteArray()
 	var count: int = 0
 	var parent: String = prepared.digest
+	var command_bound: int=0
 	if world.tick>prepared.payload.tick:
 		var old_path: String = directory.path_join("journal-%010d.frames" % sequence)
-		var original: PackedByteArray = FileAccess.get_file_as_bytes(old_path)
-		if original.size()!=journal_length or original.is_empty() or FileAccess.get_sha256(old_path)!=journal_digest: return "Snapshot catch-up journal changed; original durable state retained"
-		var parsed: Dictionary = ColonyJournal.commands_after(original,prepared.payload.tick)
-		# Parsed commands own private containers; the old journal bytes are no
-		# longer needed during catch-up serialization or read-back verification.
-		original=PackedByteArray()
+		var parsed: Dictionary = _catchup_commands(old_path,prepared.payload.tick)
+		if parsed.get("source_changed",false):return "Snapshot catch-up journal changed; original durable state retained"
 		if parsed.has("error") or parsed.get("torn_tail",false) or parsed.total_records!=journal_sequence: return "Snapshot catch-up journal failed verification"
 		for record in parsed.commands:
 			count+=1
@@ -229,6 +264,7 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 		var verified: Dictionary = ColonyJournal._read_owned(frames)
 		if verified.has("error") or verified.get("torn_tail",false) or verified.records.size()!=count: return "Prepared catch-up marker failed verification"
 		if not ColonyDelta.matches(prepared.payload,verified.records[-1].delta.patch,world.payload()): return "Prepared catch-up marker differs from the current capture"
+		command_bound=_last_command_in(verified.records)
 		verified={}
 	error=_write_prepared_bytes(snapshot_path+".tmp",bytes)
 	if not error.is_empty(): return error
@@ -243,6 +279,7 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 	if snapshot_error!=OK: return "Could not publish prepared snapshot: "+error_string(snapshot_error)
 	sequence=next;snapshot_tick=prepared.payload.tick
 	journal_sequence=count;journal_length=frames.size();journal_digest=FileAccess.get_sha256(journal_path) if count>0 else ""
+	_set_command_bound(command_bound)
 	journal_tick=world.tick;journal_payload=_retain_payload(world);journal_parent_hash=parent
 	journal_size_bound=bytes.size()+2*frames.size();recovered=false
 	verified_generations[snapshot_path]=FileAccess.get_sha256(snapshot_path)
@@ -319,6 +356,7 @@ func load_latest() -> Dictionary:
 				return {"error":backup_error}
 		sequence = snapshot_sequence
 		journal_tick = decoded.world.tick
+		_journal_last_command_tick=-1;_journal_command_digest="";_journal_command_sequence=0
 		recovered = true
 		decoded.world.command_trace.clear()
 		decoded["recovery"] = "Recovered through tick %d. Original files retained.%s" % [journal_tick, " Earlier damaged generation: " + str(earlier_errors) if not earlier_errors.is_empty() else ""]
@@ -465,7 +503,7 @@ func adopt(world: ColonyWorld, number: int, replace: bool = false) -> String:
 	# The verified staged save is already this campaign's durable baseline.
 	# Keep its payload/metadata through the move so same-tick queued commands
 	# are detected and the first advanced tick can append a verified delta.
-	for field in ["journal_tick","journal_sequence","journal_length","journal_digest","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick"]:
+	for field in ["journal_tick","journal_sequence","journal_length","journal_digest","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick","_journal_last_command_tick","_journal_command_digest","_journal_command_sequence"]:
 		set(field,staging.get(field))
 	verified_generations={}
 	for path: String in staging.verified_generations:

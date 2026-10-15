@@ -1,0 +1,75 @@
+{
+  "passed": true,
+  "build": "0.7.74-m7",
+  "local_android_code": 113,
+  "maintained_gdscript_assertions": 2870,
+  "fresh_checks": {
+    "persistence": 496,
+    "new_bound_guards_queue_failure_reference": 5,
+    "native_ui": 670,
+    "replay_commands": 62,
+    "ui_messages": 530
+  },
+  "reference_commit": "9905cf22cfe403d86f683fea30d40b0bfc5afe55",
+  "complete_reference_methods_sha256": "ec66cd8cf2fe4f7868b78071571f863b864a629cd52b7ec3a0b6c024ffa88512",
+  "rotation_medians": {
+    "0": {
+      "elapsed_us": 660702.5,
+      "peak_growth_bytes": 25048073.5,
+      "ending_growth_bytes": 2040.0
+    },
+    "1": {
+      "elapsed_us": 273368.0,
+      "peak_growth_bytes": 17457759.0,
+      "ending_growth_bytes": 2040.0
+    }
+  },
+  "peak_change_percent": -30.30298717384393,
+  "cpu_change_percent": -58.624645736923966,
+  "scope": "Private derived max command tick bound,exact prefix digest and frame count derive solely from fully verified acknowledged tails; no serialized cache. Empty catch-up skips reparsing only if max<=preparation tick and actual prefix length/SHA exact. Unknown,cold,newer command or mismatched metadata uses unchanged full selector; all readback/matching/size/durability guards stay. Queue/adoption carry bounds; failed saves preserve,load invalidates,verified snapshots reset. Four alternating complete reference/current rotations recreate all30prefix frames through actual save/checkpoint,then31st append/catchup/publish. All generated8,213,290journal bytes original; foreground base retained,prepared at27166,target27194. Snapshot with only wall timestamp normalized,journal,authoritative metadata,full recovery,input/source exact. Reference full reparse1each,current fallback0each. No other native GUI/emulator/benchmark during final pairs; thread lifecycle/sampling/diskcache included. Not whole-session/physical certification.",
+  "first_measurement_scope": "Retained initial delayed-preparation case used25967preparation and omitted explicit foreground base holder; functional equivalence passed but negative ending growth reflected base release. Not used for queue heap inference. Its raw harness/results remain; near-head-held pairs are authoritative.",
+  "source_sha256": {
+    "project.godot": "7feeabae7871d6a8f9ea82c7639df9206aad0c0e8de8bf1be7625032bd258230",
+    "src/persistence/colony_capture.gd": "4f388a71f18e4340ab2b48aa5fd82935c9483202d220e7bde10ea0762229dab9",
+    "src/persistence/colony_delta.gd": "14a372a1e8c27bfe73d8feefdd032d5b43f620849e28644919d78071fb39a116",
+    "src/persistence/colony_journal.gd": "31491c991363451cdeb8fabdd5e7ed6f7f4608863730d91bdea118b21c735980",
+    "src/persistence/colony_journal_encoding.gd": "6c46d6ed0930a9659c4c3f5e52aaad9247c984b9d51519ba93e118cc34450fe0",
+    "src/persistence/colony_prepared_snapshot.gd": "62a6d025523baf2a3b128298d860f07ea12de59f81f6e17245a6652656ea0008",
+    "src/persistence/colony_save_queue.gd": "0b1d2c4347c7ece00d8eddd3270fa77750851e956dbca001a7c32613bd2a0ad9",
+    "src/persistence/colony_snapshot_encoding.gd": "0f0d16b32e5c1ecba56b21664773e31cc30ee9fc00757117c825b4b7e6d92daa",
+    "src/persistence/colony_snapshot_tree.gd": "eeefd03a4b33c1937557f887a651d29d62e47fb23d2df24cde7a2a8acce892fb",
+    "src/persistence/colony_store.gd": "06a3bf751b8b79b85689757ed588f600496f4d729587a46075101a8dd9951622",
+    "tools/prepared_bound_reference.gd": "ec66cd8cf2fe4f7868b78071571f863b864a629cd52b7ec3a0b6c024ffa88512",
+    "tools/prepared_bound_tests.gd": "d22c7d4e2c1a549ffedb139da064a2a21eb3b5aac2babbcb3a0fc6a9b9b67ffd",
+    "tools/profile_prepared_bound.gd": "d09b57e6f23be0589f4a54970796be3da7396fa021f5e322a78c61374b047cd5"
+  },
+  "validation_sha256": {
+    "prepared-bound-v74-replay-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "prepared-bound-v74-import.log": "5dc48ef3557a4fdde0d348acfdf013f97ade8bb19e5fee2161f80efb8157326f",
+    "prepared-bound-v74-replay.log": "654f7e0e34c6bdafa70454dfc8632b6919dcfc09dcb1cb1ccc21870685a449f7",
+    "prepared-bound-v74-apk.log": "01862e471a2a69c2d56af74d309adcbc750d071b5ee1037b715936261ac450ea",
+    "prepared-bound-v74-persistence-first.log": "64c1e6f42f1b6ba890a4169621ef1ec56beb425beae1ccab30af9eccb35233ca",
+    "prepared-bound-v74-final-near-head-held.json": "c244c02a5afced542a99c6ab8c4e763dfb4f21872dfc0bb704efdf552a993ce0",
+    "prepared-bound-v74-final-rotation.json": "e6e103509a55fb7e1ef7a3bbf12bf6f41cbfecfddfdadc377dc351c051fa8913",
+    "prepared-bound-v74-profile-import.log": "9abb957f37c8ea6ff2073f5c11b432e6dc152da810d5554de141d7dd2ec469cb",
+    "prepared-bound-v74-replay.json": "1b47763c1cc9c802a9ae0efa63c8863031a3e2ce28a5b23dc7223411d86b1b03",
+    "prepared-bound-v74-replay-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+    "prepared-bound-v74-replay-72000.brackenward": "122dfd6f5d050c73aefebb0fa6094329eb6083926c579fceb470e1f2cb9e20ec",
+    "prepared-bound-v74-replay-7200.brackenward": "431ba618e15ebd9e4542a6e5d6a7853d6be671af9275e410cae4dcdda58f02c9",
+    "prepared-bound-v74-content.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "prepared-bound-v74-final-rotation.log": "139181153bed0239419aa584688bd44d78add033361903b8e931362e57a421f9",
+    "prepared-bound-v74-replay-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "prepared-bound-v74-replay-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "prepared-bound-v74-final-near-head-held.log": "f8a122c011ce723beeb21834db271fc130fd63832f043074846fcf8d41a514e2",
+    "prepared-bound-v74-ui.log": "75610d78abeec0cc1b4ec9f29c4913c5d23ea76be9bca093cbe88ae191b52628",
+    "prepared-bound-v74-replay-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14"
+  },
+  "input_provenance_sha256": "596bcde714f746c4c82fcb98b751ca843fe042a1f55b3de4ddbc8a0d8fde34e9",
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "UP-TO-DATE unchanged XML inspected,not freshly rerun."
+  },
+  "apk_sha256": "10911eed13661d8f254892c53cc41ab972eff2c6fffa1c72ce8d4c46525d70e7",
+  "pending": "Current frozen10minute4x native observation,remote CI/publication,physical/human gates. Earlier failures retained."
+}

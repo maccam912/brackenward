@@ -101,7 +101,7 @@ func start(store: ColonyStore, world: ColonyWorld, full_snapshot: bool = false, 
 	request.retired=retired_payloads;retired_payloads=[]
 	var writer: CapturedStore = CapturedStore.new()
 	writer.owned_capture=request.captured
-	for field in ["directory","root_directory","slot","sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick"]:
+	for field in ["directory","root_directory","slot","sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick","_journal_last_command_tick","_journal_command_digest","_journal_command_sequence"]:
 		writer.set(field,store.get(field))
 	writer.verified_generations=store.verified_generations.duplicate()
 	writer.verified_journals=store.verified_journals.duplicate()
@@ -160,7 +160,7 @@ func poll(wait: bool = false) -> Dictionary:
 	var writer: ColonyStore = result.writer
 	if not source_store.journal_payload.is_empty() and not is_same(source_store.journal_payload,writer.journal_payload):
 		retired_payloads.append(source_store.journal_payload)
-	for field in ["sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick"]:
+	for field in ["sequence","journal_tick","journal_sequence","journal_length","journal_digest","recovered","journal_payload","journal_parent_hash","journal_size_bound","snapshot_tick","_journal_last_command_tick","_journal_command_digest","_journal_command_sequence"]:
 		source_store.set(field,writer.get(field))
 	source_store.verified_generations=writer.verified_generations
 	source_store.verified_journals=writer.verified_journals

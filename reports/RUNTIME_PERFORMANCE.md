@@ -7,6 +7,30 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.74 verified empty-command bound during snapshot rotation
+
+A derived maximum command tick is bound to the exact fully validated prefix digest
+and frame count. If no command is newer than preparation and actual file length/SHA
+match, reuse that proof of an empty selection. Unknown/cold/mismatched metadata or
+newer commands use the full selector. Failed writes preserve, verified snapshots
+reset/reestablish, and queue/adoption carry the private primitive fields. No saved
+state, validation rule, durability deadline or public recovery behavior changes.
+
+Four alternating complete9905cf2/current rotations recreate every original31-frame
+8.2MB journal byte through real verified writes. Preparation at27166 and capture
+27194 retain the foreground durable base through measurement. Current fallback
+reads zero, reference reads once. Median wall time660,702.5 to273,368 microseconds
+(58.6% lower), sampled peak25,048,073.5 to17,457,759 bytes (30.3% lower), ending
+2,040 bytes both. Journal, normalized snapshot, authoritative metadata and complete
+recovery remain exact, with unchanged source/inputs. No other GUI/emulator or
+benchmark; lifecycle/sampling/disk cache included, session/physical claims excluded.
+
+The first delayed-preparation experiment omitted that foreground owner and is
+retained with its limited scope; its negative ending growth is not a queue-heap
+result. Five new reference/guard/queue/failure checks pass within persistence496;
+UI670, replay62/old acknowledgements, content530 and Android113 export pass.
+[prepared-bound-v74-evidence.json](prepared-bound-v74-evidence.json).
+
 ## 0.7.73 immutable patch inputs in the captured writer
 
 The private writer retains changed records/whole values from its recursively
