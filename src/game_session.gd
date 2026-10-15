@@ -1410,11 +1410,11 @@ func _update_inspector() -> void:
 	if world is ColonyWorld:
 		if is_instance_valid(inspector_portrait): CitizenArt.update_portrait(inspector_portrait,citizen.appearance)
 		var job: Dictionary = world.find(world.jobs, citizen.job)
-		inspector_details.text = "%s - %s\nFood %d/1000 | Rest %d/1000\nHealth %d | %s first\n%s" % [citizen.name, citizen.activity, citizen.fullness, citizen.rest, citizen.health, citizen.preferred,
-			("Work %d/%d WU" % [job.work / 1000, job.required / 1000]) if not job.is_empty() and job.required > 0 else ("Needs take priority over ordinary work." if not job.is_empty() else "Choose orders in Work or Build.")]
+		var work: String=ColonyText.text("ui.inspector.work",{"work":job.work/1000,"required":job.required/1000}) if not job.is_empty() and job.required>0 else ColonyText.text("ui.inspector.needs_first" if not job.is_empty() else "ui.inspector.choose_orders")
+		inspector_details.text=ColonyText.text("ui.inspector.person",{"name":citizen.name,"activity":citizen.activity,"food":citizen.fullness,"rest":citizen.rest,"health":citizen.health,"preferred":ColonyText.category_name(citizen.preferred),"work":work})
 		if citizen.departure_until>world.tick: inspector_details.text+="\n"+departure_description(citizen)
 	else:
-		inspector_details.text = "%s - looking around\nM0 touch fixture movement." % citizen.name
+		inspector_details.text=ColonyText.text("ui.inspector.prototype",{"name":citizen.name})
 	inspector_details.text=ColonyFonts.display(inspector_details.text)
 
 func _submit(kind: String, args: Dictionary) -> void:
@@ -2071,17 +2071,37 @@ func show_weather() -> void:
 func show_work_preferences(id: int) -> void:
 	_tutorial_action("work_preferences",{"citizen":id})
 	var citizen: Dictionary = world.find(world.citizens,id)
-	show_details(citizen.name+" - Work")
-	label(citizen.activity+"\nCategories set to Off retain their queued jobs for other eligible workers. Hunger, sleep and taking a break come first.",sheet_body)
-	button(citizen.shift,func() -> void:
-		_submit("schedule",{"citizen":id,"shift":"Night shift" if citizen.shift == "Normal" else "Normal"}),sheet_body)
+	show_details(ColonyText.text("ui.person.work_title",{"name":citizen.name}))
+	label(ColonyText.text("ui.work.preferences_help",{"activity":citizen.activity}),sheet_body)
+	var shift_caption: String=ColonyText.shift_name(_queued_shift(id))
+	if _has_pending_shift(id):shift_caption=ColonyText.text("ui.work.shift_pending",{"shift":shift_caption})
+	sheet_body.set_meta("work_citizen",id)
+	var shift: Button=button(shift_caption,_cycle_work_shift.bind(id),sheet_body);shift.name="WorkSchedule"
 	for category in ColonyWorld.CATEGORIES:
-		var entry: Button = button(category+": "+["Off","Last","Normal","First"][_queued_preference(id,category)],Callable(),sheet_body)
+		var entry: Button = button(ColonyText.preference_row(category,_queued_preference(id,category)),Callable(),sheet_body)
 		entry.pressed.connect(func() -> void:
 			var value: int = (_queued_preference(id,category)+1)%4
 			_submit("preference",{"citizen":id,"category":category,"value":value})
-			entry.text = category+": "+["Off","Last","Normal","First"][value]+" (pending)")
+			entry.text=ColonyText.preference_row(category,value,true)
+			entry.tooltip_text=entry.text)
 	button(ColonyText.text("ui.action.all_work_orders"),func() -> void:show_sheet("Work","ui.sheet.work"),sheet_body)
+
+func _cycle_work_shift(id: int) -> void:
+	if not is_instance_valid(sheet_body) or sheet_body.get_meta("work_citizen",0)!=id:return
+	var next: String="Night shift" if _queued_shift(id)=="Normal" else "Normal"
+	_submit("schedule",{"citizen":id,"shift":next})
+	var shift: Button=sheet_body.get_node("WorkSchedule")
+	shift.text=ColonyText.text("ui.work.shift_pending",{"shift":ColonyText.shift_name(next)})
+	shift.tooltip_text=shift.text
+
+func _queued_shift(id: int) -> String:
+	var value: String=world.find(world.citizens,id).shift
+	for command in world.pending_commands:
+		if command.kind=="schedule" and command.args.citizen==id:value=command.args.shift
+	return value
+
+func _has_pending_shift(id: int) -> bool:
+	return world.pending_commands.any(func(command:Dictionary)->bool:return command.kind=="schedule" and command.args.citizen==id)
 
 func _queued_preference(id: int,category: String) -> int:
 	var value: int = world.find(world.citizens,id).preferences[category]
@@ -2092,28 +2112,28 @@ func _queued_preference(id: int,category: String) -> int:
 func show_beds(id: int) -> void:
 	var person: Dictionary = world.find(world.citizens,id)
 	if person.is_empty(): return
-	show_details("Bed: "+person.name)
+	show_details(ColonyText.text("ui.person.bed_title",{"name":person.name}))
 	label(ColonyBeds.description(world,person),sheet_body)
 	label(ColonyText.text("ui.help.beds.choose_a_free_bed_or_bedroll_assignment"),sheet_body)
 	if person.bed>0: button(ColonyText.text("ui.action.unassign_current_bed"),func()->void:show_bed_choice(id,0),sheet_body)
 	for bed in world.structures:
 		if bed.health<=0 or bed.definition not in ["bed","bedroll"]: continue
-		var owner: String = "Assigned to "+ColonyChronicle.display_name(world,bed.user) if bed.user>0 else "Free"
-		label("%s at %d,%d | %s | %s" % [ColonyChronicle.display_name(world,bed.id),bed.x,bed.y,owner,"Roofed" if world.roofed(Vector2i(bed.x,bed.y)) else "Outdoors"],sheet_body)
-		if bed.user==0: button("Choose %d,%d" % [bed.x,bed.y],func()->void:show_bed_choice(id,bed.id),sheet_body)
-	button("Back to "+person.name,func()->void:show_person(id),sheet_body)
+		var owner: String = ColonyText.text("ui.bed.assigned",{"name":ColonyChronicle.display_name(world,bed.user)}) if bed.user>0 else ColonyText.text("ui.bed.free")
+		label(ColonyText.text("ui.bed.row",{"name":ColonyChronicle.display_name(world,bed.id),"x":bed.x,"y":bed.y,"owner":owner,"cover":ColonyText.text("ui.bed.roofed" if world.roofed(Vector2i(bed.x,bed.y)) else "ui.bed.outdoors")}),sheet_body)
+		if bed.user==0: button(ColonyText.text("ui.bed.choose_tile",{"x":bed.x,"y":bed.y}),func()->void:show_bed_choice(id,bed.id),sheet_body)
+	button(ColonyText.text("ui.action.back_to_person",{"name":person.name}),func()->void:show_person(id),sheet_body)
 
 func show_bed_choice(id: int, target: int) -> void:
 	var person: Dictionary = world.find(world.citizens,id)
 	if person.is_empty(): return
-	show_details(person.name+" bed")
+	show_details(ColonyText.text("ui.person.bed_choice_title",{"name":person.name}))
 	var error: String = ColonyBeds.quote(world,id,target)
 	if not error.is_empty(): label(error,sheet_body)
 	else:
 		var bed: Dictionary = world.find(world.structures,target)
-		label(ColonyText.text("ui.help.beds.ground_rate",{"rate":ColonyRest.GROUND}) if target==0 else "%s at %d,%d" % [ColonyChronicle.display_name(world,target),bed.x,bed.y],sheet_body)
-		button("Unassign" if target==0 else "Assign this bed",func()->void:_submit("assign_bed",{"citizen":id,"target":target});close_sheet(),sheet_body)
-		label(person.name+" will sleep on safe ground without an assigned bed." if target==0 else person.name+" walks here when tired. Assignment does not move them or add rest.",sheet_body)
+		label(ColonyText.text("ui.help.beds.ground_rate",{"rate":ColonyRest.GROUND}) if target==0 else ColonyText.text("ui.bed.location",{"name":ColonyChronicle.display_name(world,target),"x":bed.x,"y":bed.y}),sheet_body)
+		button(ColonyText.text("ui.action.unassign" if target==0 else "ui.action.assign_this_bed"),func()->void:_submit("assign_bed",{"citizen":id,"target":target});close_sheet(),sheet_body)
+		label(ColonyText.text("ui.help.beds.unassigned_person" if target==0 else "ui.help.beds.assigned_person",{"name":person.name}),sheet_body)
 	button(ColonyText.text("ui.action.back_to_beds"),func()->void:show_beds(id),sheet_body)
 
 func show_appearance(id: int, draft: Dictionary = {}) -> void:
@@ -2141,7 +2161,7 @@ func show_appearance(id: int, draft: Dictionary = {}) -> void:
 	button(ColonyText.text("ui.action.cancel"),func()->void:show_person(id),sheet_body).name="CancelAppearance"
 
 func departure_description(person: Dictionary) -> String:
-	return "Departure ultimatum: %.1f game hours remaining. Reach morale 300 before the deadline. Improve bed, food, warmth or workload; inspect the active morale causes." % [maxi(0,person.departure_until-world.tick)/300.0]
+	return ColonyText.text("ui.person.departure",{"hours":"%.1f" % [maxi(0,person.departure_until-world.tick)/300.0]})
 
 func food_access_description(person: Dictionary) -> String:
 	if person.death_recorded or person.departed or person.downed or person.away or person.fullness>350: return ""
@@ -2157,7 +2177,7 @@ func show_person(id: int) -> void:
 	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.appearance"),func()->void:show_appearance(id),sheet_body)
 	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(id),sheet_body)
 	button(ColonyText.text("ui.action.remembered_moments"),func()->void:show_person_history(id),sheet_body)
-	label("%s\nFood %d/1000 | Rest %d/1000 | Health %d\nMorale %d/1000\n%s | %s\n%s work, %s food" % [citizen.activity,citizen.fullness,citizen.rest,citizen.health,citizen.morale,citizen.traits[0],citizen.traits[1],citizen.preferred,citizen.food_tag],sheet_body)
+	label(ColonyText.text("ui.person.summary",{"activity":citizen.activity,"food":citizen.fullness,"rest":citizen.rest,"health":citizen.health,"morale":citizen.morale,"trait_a":citizen.traits[0],"trait_b":citizen.traits[1],"preferred":ColonyText.category_name(citizen.preferred),"food_tag":citizen.food_tag}),sheet_body)
 	label(ColonyBeds.description(world,citizen),sheet_body)
 	var food_access: String=food_access_description(citizen)
 	if not food_access.is_empty(): label(food_access,sheet_body)
@@ -2172,7 +2192,7 @@ func show_person(id: int) -> void:
 	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.assign_bed"),func()->void:show_beds(id),sheet_body)
 	if citizen.health < 100: button(ColonyText.text("ui.action.care_and_recovery"),show_care,sheet_body)
 	label(ColonyText.text("ui.help.person.active_morale_causes"),sheet_body)
-	for term in citizen.mood_terms: label("%s: %+d" % [term,citizen.mood_terms[term]],sheet_body)
+	for term in citizen.mood_terms: label(ColonyText.text("ui.person.morale_term",{"term":term,"value":"%+d" % [citizen.mood_terms[term]]}),sheet_body)
 	if not citizen.away and not citizen.downed and not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.defend"),func()->void:show_squad([id]),sheet_body)
 	button(ColonyText.text("ui.action.equipment"),func()->void:show_equipment(id),sheet_body)
 	button(ColonyText.text("ui.action.work_preferences"),func() -> void:show_work_preferences(id),sheet_body)
@@ -2294,10 +2314,10 @@ func _catalog_name(id: String) -> String:
 
 func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
 	show_sheet("Production policy","ui.sheet.production_policy")
-	label(_catalog_name(recipe.id)+" at "+_catalog_name(station.definition),sheet_body)
+	label(ColonyText.text("ui.recipe.at",{"recipe":_catalog_name(recipe.id),"station":_catalog_name(station.definition)}),sheet_body)
 	label(ColonyText.text("ui.help.recipe_policy.repeat_counts_completed_batches_maintain_counts_available"),sheet_body)
 	var mode: CycleChoiceButton = CycleChoiceButton.new()
-	mode.add_item("Repeat batches"); mode.add_item("Maintain quantity")
+	mode.add_item(ColonyText.text("ui.recipe.repeat_batches")); mode.add_item(ColonyText.text("ui.recipe.maintain_quantity"))
 	mode.custom_minimum_size = Vector2(48,48)
 	sheet_body.add_child(mode)
 	var quantity: SpinBox = SpinBox.new()
@@ -2305,13 +2325,13 @@ func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
 	quantity.custom_minimum_size = Vector2(96,48)
 	sheet_body.add_child(quantity)
 	var priority: CycleChoiceButton = CycleChoiceButton.new()
-	for name in ["Low priority","Normal priority","Urgent priority"]: priority.add_item(name)
+	for key in ["ui.priority.low","ui.priority.normal","ui.priority.urgent"]: priority.add_item(ColonyText.text("ui.recipe.priority_choice",{"priority":ColonyText.text(key)}))
 	priority.select(1); priority.custom_minimum_size = Vector2(48,48)
 	sheet_body.add_child(priority)
 	var choices: Dictionary = {}
 	for item in recipe.alternatives:
 		var choice: CheckButton = CheckButton.new()
-		choice.text = "Allow "+_catalog_name(item)
+		choice.text=ColonyText.text("ui.recipe.allow",{"item":_catalog_name(item)})
 		choice.button_pressed = true
 		choice.custom_minimum_size = Vector2(48,48)
 		sheet_body.add_child(choice)
@@ -2319,7 +2339,7 @@ func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
 	button(ColonyText.text("ui.action.add_order"),func() -> void:
 		var filters: Array = choices.keys().filter(func(id:Variant)->bool:return choices[id].button_pressed)
 		if recipe.food_count > 0 and filters.is_empty():
-			notice = "Allow at least one food ingredient."
+			notice=ColonyText.text("ui.notice.allow_food_ingredient")
 			return
 		_submit("recipe_order",{"target":station.id,"definition":recipe.id,"mode":"Repeat" if mode.selected == 0 else "Maintain","value":int(quantity.value),"priority":priority.selected+1,"filters":filters})
 		close_sheet(),sheet_body)
@@ -2328,7 +2348,7 @@ func show_mode() -> void:
 	show_sheet("Colony mode","ui.sheet.colony_mode")
 	label(ColonyText.text("ui.help.mode.standard_allows_sustained_hunger_and_untreated_injuries"),sheet_body)
 	for mode in ["Standard","Hearthside"]:
-		button("Choose "+mode,func()->void:
+		button(ColonyText.text("ui.mode.choose",{"mode":ColonyText.text("ui.mode.hearthside" if mode=="Hearthside" else "ui.mode.standard")}),func()->void:
 			_submit("care_mode",{"mode":mode})
 			close_sheet(),sheet_body)
 

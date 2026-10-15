@@ -5,6 +5,24 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.74 ten-minute4x sampled proxy passes; late frame transient remains
+
+Frozen30db9fa completes600.009101seconds after60seconds warmup,24001ticks4204to
+28205,20residents and zero counters. Lowest one-second FPS28.564,logical time,
+invariants,source/input,roundtrip and audio drain pass. Periodic sampled peak
+13,949,006bytes and ending10,012,328 pass the unchanged20MiB proxy plus independent
+second audit. Sampling is every5seconds,denser than earlier67; this is not the
+required30-minute2x or physical case. Original67's failure stays failed.
+
+The separate frame trace reaches34,749,968bytes at tick27199/574.843seconds with
+live writer/capture27196/journal27158,no preparation worker/retired groups and
+stable navigation. This extends beyond the earlier three-minute cases; no causal
+allocation or regression ratio is assigned. Collector allocations are included.
+No other GUI/emulator runs; code/text edits,headless import/unit/message/control
+checks share host. The late transient remains unresolved. Actual same-input67/74
+endpoints compare exactly after one current tick alignment,no field normalization.
+[native-soak-v74-4x-evidence.json](native-soak-v74-4x-evidence.json).
+
 ## 0.7.72 short diagnostic trace: encoding gain does not resolve session peak
 
 This180.018198-second4x case completes7200ticks,20residents,zero counters and lowest

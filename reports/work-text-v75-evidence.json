@@ -1,0 +1,144 @@
+{
+  "passed": true,
+  "build": "0.7.75-m7",
+  "local_android_code": 114,
+  "maintained_gdscript_assertions": 2874,
+  "fresh_checks": {
+    "native_ui": 674,
+    "new_schedule_ui": 4,
+    "headless_same_real_control_subset": 4,
+    "unit": 20,
+    "python_messages": 5,
+    "ui_messages": 578
+  },
+  "core_persistence_sim_generation_scenes_unchanged_from_30db9fa": true,
+  "inherited_core_validation": "Source74persistence496/replay62/all old acknowledgements and pinned10minute4x native pass remain their exact scopes; no fresh75core or physical claim.",
+  "old_530_catalog_values_exact": true,
+  "new_ui_messages": 48,
+  "observed_original_schedule_bug": {
+    "final_shift_after_one_tick": "Night shift",
+    "first_caption": "Normal",
+    "observed_bug": true,
+    "queued_shifts": [
+      "Night shift",
+      "Night shift"
+    ],
+    "scope": "Original actual GameSession work preferences,real Button pressed callbacks and one real simulation tick,headless sandbox. No graphical/physical layout claim.",
+    "source_commit": "30db9fafb71b0d5c1101d9e217d3a5f67f153888",
+    "tick_after_clicks": 1800,
+    "tick_before": 1800
+  },
+  "final_control_checks": {
+    "cases": [
+      "WORK/UI_paused_shift_immediately_shows_queued_value_without_advancing",
+      "WORK/UI_reopening_preferences_keeps_pending_shift_and_camera",
+      "WORK/UI_repeated_paused_shift_toggles_from_latest_pending_value",
+      "WORK/UI_pending_shift_batch_applies_once_in_order_and_clears_caption"
+    ],
+    "failures": [],
+    "passed": true,
+    "scope": "Headless real Controls/callbacks and simulation proof only; full graphical suite remains separate."
+  },
+  "native_layout": {
+    "passed": true,
+    "rows": [
+      {
+        "caption": "Night shift (pending)",
+        "fits": true,
+        "horizontal_insets": 16.0,
+        "minimum": [
+          48.0,
+          48.0
+        ],
+        "pending": 1,
+        "png_sha256": "5446b7608ab11a621378e0108101244fd5fd932c41e752689ea5004fcff64248",
+        "shift": "Normal",
+        "size": [
+          320.0,
+          48.0
+        ],
+        "text_width": 249.0,
+        "tick": 1800,
+        "viewport": [
+          360,
+          640
+        ]
+      },
+      {
+        "caption": "Night shift (pending)",
+        "fits": true,
+        "horizontal_insets": 16.0,
+        "minimum": [
+          48.0,
+          48.0
+        ],
+        "pending": 1,
+        "png_sha256": "909417bd83f8df8c219c886b542719f7404591144466b5e1b4e49869cfb54306",
+        "shift": "Normal",
+        "size": [
+          600.0,
+          48.0
+        ],
+        "text_width": 249.0,
+        "tick": 1800,
+        "viewport": [
+          640,
+          360
+        ]
+      }
+    ],
+    "scope": "Native macOS Compatibility real controls/pixels at150percent text,portrait/landscape. Paused input remains queued;physical Android separate."
+  },
+  "scope": "Work shift cycles latest queued value while paused,reopen/caption/tooltip immediate,camera/tick unchanged,one real tick applies two queued shifts once in order. Common button wrapper retains tap sound; controls remain active work-pane bound.48new English templates cover citizen/inspector/preferences/bed/recipe/mode presentation,all530previous values exact. Stored shifts/categories/commands/names/facts,rest rates and basicLatin font repertoire unchanged. Remaining canonical activity/fact/trait/shared description presentation remains later audit; no translated language selector. Final674GUI proof follows wrapper/tooltip correction; prior intermediate logs/images retained. Two final150percent portrait/landscape captures place pending button visibly inside scroll bounds and verify249px text+16px inset fits320/600px widths at48px height; final pixels visually inspected; byte-identical to prior visible captures. No physical Android certification.",
+  "source_sha256": {
+    "src/game_session.gd": "d140cfcdbabb41245141b5b52e4a5c358667d9743f3c31ab08dad463d75e1137",
+    "src/presentation/colony_text.gd": "d2c7ab615d35c76ae4396522c220ac132ed44357389e166b14e8dd24d1f3a7af",
+    "data/catalogs/en_ui.json": "c23cf3fe11aa8a4bfc6102c941f911fb72743cc10700fe11b51f90a8a5e76883",
+    "tools/work_schedule_ui_tests.gd": "120d2f3f64c68198f6dfb28e6193316e40bffb54f1ba7e1c5d0d9affed19d050",
+    "tools/run_suite.gd": "9a89efb17dcada0f254cfbc9a124cf8eecdebb6321ef6f5be7fbc98c66b61936",
+    "project.godot": "6171e69222002a52b7a5a0cdcc6e68fd8f7bc6ab1ce793b277592cf82ff205e8",
+    "export_presets.cfg": "256001d816f57aa0f12e31df6b1b505e748267954e59368e0629e61276369f29"
+  },
+  "validation_sha256": {
+    "work-text-v75-preferences-final-360x640-150.png": "5446b7608ab11a621378e0108101244fd5fd932c41e752689ea5004fcff64248",
+    "work-text-v75-original-schedule.json": "427840f30a30395d897fced44f1590e1022af2507388ead47600ae56053ca4ef",
+    "work-text-v75-beds-final-360x640-150.png": "78ac6ffb99b16ea7d88e9618cb81898e38cd243f834acd3e997cc5bb93bfd078",
+    "work-text-v75-preferences-visible-640x360-150.png": "909417bd83f8df8c219c886b542719f7404591144466b5e1b4e49869cfb54306",
+    "work-text-v75-unit.log": "aa313ff5427148d853490fe4fb46bee48b5beeaa2c7f230ac81ed60dbfbb7a4a",
+    "work-text-v75-content-first.log": "a8cb1310415c150fdf01d47d377ada391dead83bf198d698da8c29da7dc6b2da",
+    "work-text-v75-fixed-schedule.json": "b3827b6e00769a5f848a008cfd55d9e5e966ebbfb4ea0fbe5463833b3c1fa00e",
+    "work-text-v75-layout-final.json": "3025d653dfea2ebeaa1a3478237e57aa819ca42580d7fff00731a805724930ed",
+    "work-text-v75-beds-640x360-150.png": "6a6b98fa99bfdb469714a1e12342156f9504f230e605e53a072c8046db978c88",
+    "work-text-v75-layout.json": "a16f2296521087db545432a2564251536626a7c4eeb4ff2418d9ba21a5da273c",
+    "work-text-v75-preferences-visible-360x640-150.png": "5446b7608ab11a621378e0108101244fd5fd932c41e752689ea5004fcff64248",
+    "work-text-v75-beds-final-640x360-150.png": "d6cd7edfd7f772f64cf6b061126e1f325f774acc3a22b8a46cc25ef9f995d362",
+    "work-text-v75-import.log": "c82ba3d7bd59df95ed0b23e4e8da4ea527e2a82c3d9aa44b969381181a519faa",
+    "work-text-v75-preferences-final-640x360-150.png": "909417bd83f8df8c219c886b542719f7404591144466b5e1b4e49869cfb54306",
+    "work-text-v75-fixed-schedule-final.json": "b3827b6e00769a5f848a008cfd55d9e5e966ebbfb4ea0fbe5463833b3c1fa00e",
+    "work-text-v75-original-schedule.log": "3d617be960904168c9a0f86a223fd7447a873e8c9c52d7d69f872c10e77cfbe5",
+    "work-text-v75-fixed-schedule.log": "65f18e5e12962f0c08856ae93dfbc4017a49c1bb526147ff6ba5ae48ebd436a3",
+    "work-text-v75-layout-visible.log": "8f18959d16c5fcdb32aa26195282c614cebf78a35d94a879455a5f1738529c47",
+    "work-text-v75-beds-360x640-150.png": "c51d61af2ea01867c381d13b2b53b53f38e689691d94fdc2703da47003c4c5cb",
+    "work-text-v75-ui-final.log": "5fd88db2b1bc4573b5fc3e0d1c02f1871d9c2be9844f6f3291cbfc8dec2dfb4e",
+    "work-text-v75-beds-visible-640x360-150.png": "d6cd7edfd7f772f64cf6b061126e1f325f774acc3a22b8a46cc25ef9f995d362",
+    "work-text-v75-ui-first.log": "18221ff741388907fea5185e255144e97f0b8c57c8144b746e243a75de4219e7",
+    "work-text-v75-message-tests.log": "888a0c0ed615e57d32cf72be501b0c355f33b8613c81dfdaa99db33d7959487e",
+    "work-text-v75-preferences-360x640-150.png": "ecf0a11ab78884e171f06a55c2e27803bd0d9e51c79fd61cc68e99277ab9acd3",
+    "work-text-v75-layout-visible.json": "3025d653dfea2ebeaa1a3478237e57aa819ca42580d7fff00731a805724930ed",
+    "work-text-v75-apk-final.log": "fc0c02c007a9e62c0fad43e4841e48a6a62c59697d221d29ae91c246305060ba",
+    "work-text-v75-fixed-schedule-final.log": "65f18e5e12962f0c08856ae93dfbc4017a49c1bb526147ff6ba5ae48ebd436a3",
+    "work-text-v75-preferences-640x360-150.png": "3c6e21ce4f3f2d480412760b5bdea68684459613cc3fb67ba7329b157610d82b",
+    "work-text-v75-apk.log": "c8339c990297809eb29b0bc81695286ba582b7f92aa1e7b8dc976405795dd556",
+    "work-text-v75-beds-visible-360x640-150.png": "78ac6ffb99b16ea7d88e9618cb81898e38cd243f834acd3e997cc5bb93bfd078",
+    "work-text-v75-layout-final.log": "8f18959d16c5fcdb32aa26195282c614cebf78a35d94a879455a5f1738529c47",
+    "work-text-v75-import-final.log": "de0cac5aa1b4607b3230488e278d2b65b180d789304b78e302df0b6773fedbef",
+    "work-text-v75-layout.log": "759fc93fcd9cff9d858b9a7bcb606bac14c2d206b3dcba1c68e8d44388bdb1b3"
+  },
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "Unchanged UP-TO-DATE XML inspected,not freshly rerun."
+  },
+  "apk_sha256": "384b91b75c79386a41ec74fd1d4a40dee0375278f99eea5661ca628bf4f6d022",
+  "pending": "Current75remote CI/publication and latest30minute native/physical/human gates remain separate."
+}

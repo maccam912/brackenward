@@ -102,6 +102,32 @@ static func catalog() -> Dictionary:
 		messages=parsed
 	return messages
 
+const WORK_CATEGORY_KEYS: Dictionary = {
+	"Care": "ui.work.category.care",
+	"Cooking": "ui.work.category.cooking",
+	"Growing": "ui.work.category.growing",
+	"Gathering": "ui.work.category.gathering",
+	"Animals": "ui.work.category.animals",
+	"Building": "ui.work.category.building",
+	"Crafting": "ui.work.category.crafting",
+	"Hauling": "ui.work.category.hauling",
+	"Research": "ui.work.category.research",
+	"Guard": "ui.work.category.guard"
+}
+
+static func category_name(category: String) -> String:
+	var key: String=WORK_CATEGORY_KEYS.get(category,"")
+	return text(key) if not key.is_empty() else category
+
+static func preference_name(value: int) -> String:
+	return text(["ui.choice.off","ui.preference.last","ui.preference.normal","ui.preference.first"][value])
+
+static func preference_row(category: String, value: int, pending: bool=false) -> String:
+	return text("ui.work.preference_pending" if pending else "ui.work.preference",{"category":category_name(category),"preference":preference_name(value)})
+
+static func shift_name(value: String) -> String:
+	return text("ui.shift.night" if value=="Night shift" else "ui.shift.normal")
+
 static func text(key: String, values: Dictionary = {}) -> String:
 	var entry: Variant = catalog().get(key)
 	if not entry is String:

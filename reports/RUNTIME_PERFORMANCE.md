@@ -7,6 +7,19 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.74 longer native observation
+
+The600.009101-second4x case completes24001ticks with20residents,zero counters,
+lowest one-second FPS28.564 and exact time/source/input/roundtrip gates. Periodic
+peak13,949,006bytes passes20MiB and independent audit; the separate late frame peak
+34,749,968bytes remains during writer ownership. This extends beyond older short
+cases,so no regression ratio is inferred. Actual67/74endpoints match every field
+after one current tick alignment. Main simulation-tick wall maximum83.913ms remains
+an investigation target; parallel save worker maximum274.911ms and snapshot worker
+268.968ms overlap foreground callbacks and are not additive CPU time. Physical
+Android and latest30-minute2x gates remain separate.
+[native-soak-v74-4x-evidence.json](native-soak-v74-4x-evidence.json).
+
 ## 0.7.74 verified empty-command bound during snapshot rotation
 
 A derived maximum command tick is bound to the exact fully validated prefix digest
