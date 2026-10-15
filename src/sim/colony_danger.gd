@@ -25,9 +25,10 @@ static func safe(world: ColonyWorld, point: Vector2i) -> bool:
 		if absi(point.x-source.x)+absi(point.y-source.y)<=8: return false
 	return true
 
-static func allowed(world: ColonyWorld, citizen: Dictionary, point: Vector2i) -> bool:
+static func allowed(world: ColonyWorld, citizen: Dictionary, point: Vector2i, route_job: Variant = null) -> bool:
 	if not world.walkable(point): return false
-	var job: Dictionary = world.find(world.jobs,citizen.job)
+	# A synchronous route may supply its stable task; ordinary callers inspect live work.
+	var job: Dictionary = world.find(world.jobs,citizen.job) if route_job==null else route_job
 	if job.get("kind")=="cart_move" and job.memo.phase=="push" and job.state=="Working" and not ColonyMaintenance.cart_position_error(world,world.find(world.structures,job.target),point).is_empty(): return false
 	if job.get("kind") == "lead_animal" and world.structures.any(func(s:Dictionary)->bool:return s.definition in ["fence","door"] and world.footprint(s).has(point)): return false
 	return job.get("emergency",false) or job.get("kind") in ["hunt","escort_hunt","escape","defend"] or safe(world,point)

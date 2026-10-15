@@ -1,0 +1,458 @@
+{
+  "passed": true,
+  "build": "0.7.76-m7",
+  "local_android_code": 115,
+  "maintained_gdscript_assertions": 2878,
+  "change": "One current task lookup and cart-pushing edge choice per synchronous citizen route; danger predicate may borrow that live task during the call. No context persists. Ordinary public danger checks and final live edge checks remain current. No world,wire,catalog or rules change.",
+  "fresh_headless_suites": [
+    {
+      "name": "unit",
+      "assertions": 24,
+      "xml_sha256": "ad3950ae55174291e3a84924266526fbd4b402e54db6b83f8b0c631db33de658",
+      "log_sha256": "94be674f7728513b5f762289e1d7183987a483e757cee745e147c0f530c6a860",
+      "wall_seconds": 1.7133742079604417
+    },
+    {
+      "name": "integration",
+      "assertions": 6,
+      "xml_sha256": "d7e2aa917c24b1702a453f6a8672dc7a6b9d8d68a77e1fbf6e7e8e7f017e1e10",
+      "log_sha256": "96bc83e1b198e009fb9281d09aecec326dce2899146a2418a1aac831cbf209ac",
+      "wall_seconds": 1.5062315000686795
+    },
+    {
+      "name": "colony",
+      "assertions": 42,
+      "xml_sha256": "d28c5aaf7e84c68036590092ad798673d43a474a8445e425649623fe4cc3142d",
+      "log_sha256": "4f6231be24448e5eac95a4dd71e4032446817b3dfaf76971a8520256f221be88",
+      "wall_seconds": 15.199092041002586
+    },
+    {
+      "name": "survival",
+      "assertions": 83,
+      "xml_sha256": "87c4cf42ba315fa4bcb6fb477852cbb932e0d4382b11b176c41f05a946e3e1dc",
+      "log_sha256": "34ca3838ad45280137b4cc0e052d1d7497d0124c5f702d5e76c8a6efab9d8b82",
+      "wall_seconds": 13.235401625046507
+    },
+    {
+      "name": "persistence",
+      "assertions": 496,
+      "xml_sha256": "6cf3405293626fa82bd4ce82c22d91f58499739dee56bf95831a86d5dac097af",
+      "log_sha256": "f59f4b795f47a8b8710deaaafb960a8c5496e48df1dcbfd71e80faea38310067",
+      "wall_seconds": 51.597957292106
+    },
+    {
+      "name": "seasons",
+      "assertions": 26,
+      "xml_sha256": "a55515d746805620e87086c4d8447fcb694b5bed619553af0533259d21b11fb7",
+      "log_sha256": "8eaab5b4bc80b907faa97b9360bca1c747921b446f046f7b86102cb9b2c0232c",
+      "wall_seconds": 2.8564720419235528
+    },
+    {
+      "name": "people",
+      "assertions": 33,
+      "xml_sha256": "5e86f7c738ace4aeba469b9eea9478ca487c91d2f2eaac4ecf01bd76b56ca55e",
+      "log_sha256": "8513fd2bfa6e1442b0d89ba9a7713d52ea23ff011a4aaf83ac3f2ef05cd3c64d",
+      "wall_seconds": 1.6073727090843022
+    },
+    {
+      "name": "production",
+      "assertions": 52,
+      "xml_sha256": "8bb24f0f18fa8a10dfe1d106ac460c4988826ab6284d3612f457c37acee9c22f",
+      "log_sha256": "3afbf85a817986d45846d7e873b61aaeca1ae559d5d0e1008b8d9078dcd787ee",
+      "wall_seconds": 7.065769667038694
+    },
+    {
+      "name": "care",
+      "assertions": 55,
+      "xml_sha256": "cc52ef30c03780c7a8917fda9c050c15e68d4133f67a16c8bca26949db5e8c66",
+      "log_sha256": "673cb6a7b4ca87c64a36f0bf9ded594ddbf216ef32bc4560a31e7e296652a058",
+      "wall_seconds": 4.995413375087082
+    },
+    {
+      "name": "generation",
+      "assertions": 169,
+      "xml_sha256": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+      "log_sha256": "adcf627454a40bd69dfd9b1895a8e19b524bd4cfc137426729dea85ff6a520f6",
+      "wall_seconds": 46.84035166702233
+    },
+    {
+      "name": "nature",
+      "assertions": 23,
+      "xml_sha256": "8287a4c7591d164afef805b48a0dce57c66bafa7b7984740ef340203efa2dbf0",
+      "log_sha256": "b649559389e55dadcab377608df7b51f917934e9560855d398015f8096913730",
+      "wall_seconds": 2.5250082910060883
+    },
+    {
+      "name": "wildlife",
+      "assertions": 63,
+      "xml_sha256": "f072cf3923d402297a640fb5390dcac357ba8f8ffb82d462230b6a5cd3bfaf30",
+      "log_sha256": "ed21fa7be3c86b61d9d6552739ecb09aa79e69f4fba94908c9293ca901a3f652",
+      "wall_seconds": 6.4046761251520365
+    },
+    {
+      "name": "domestic",
+      "assertions": 40,
+      "xml_sha256": "9d92f6f3c40b3ba5eb74e4508bd7d7ab58aab4f1bda6933b47a71bb22c326c03",
+      "log_sha256": "296e278576a408ab63c8b78d8c2aa7342c9dd213d7fb69729b907b28629700ec",
+      "wall_seconds": 5.662811458110809
+    },
+    {
+      "name": "construction",
+      "assertions": 21,
+      "xml_sha256": "5c3a8e938ee274e259c50d4abe7bd26d9b0f1d8f78c16c724e9f270b47a105cc",
+      "log_sha256": "e5f3ab670e1de9a849b48aed42e47d5c44d8a55a4039b6fe4b20e3a21039ef39",
+      "wall_seconds": 2.8443638330791146
+    },
+    {
+      "name": "equipment",
+      "assertions": 17,
+      "xml_sha256": "a0fe1d26cc74c75688029b87354998b87650eed7624e4794ec6ae1e67a123c07",
+      "log_sha256": "03b18a1d20a1abeeff7f7aada26493e589fb6ad4d3f557eecca2d576f4168dd5",
+      "wall_seconds": 1.5207902921829373
+    },
+    {
+      "name": "maintenance",
+      "assertions": 32,
+      "xml_sha256": "0e5f59e929dffef03bebd6b3bd1ba49f8db5a9f311d12c192f92739abbfda605",
+      "log_sha256": "e102d0c6dc761b11e69b94b660c8f1433eb6733a27600e7b69c7a47aba8324fe",
+      "wall_seconds": 2.7313735000789165
+    },
+    {
+      "name": "population",
+      "assertions": 57,
+      "xml_sha256": "7f28299353e4f87dd706948546c1a2a8c353798a820e1cac5217fb5626d659bb",
+      "log_sha256": "0016c5f8d9ade8acbcc1ce2f528c09e95a90d5c60bf21c175aa49e507dc4c2ee",
+      "wall_seconds": 1.9914885419420898
+    },
+    {
+      "name": "trade",
+      "assertions": 41,
+      "xml_sha256": "cfe7d1743b5ea6314397bbf5954d4b3f6963e12a9cf4b8eca6f8b0507ef4e7a4",
+      "log_sha256": "38e6e4daa15c80415dcd6f1730bffddf58ca1eea97b4f0cd86887f205d61f2fa",
+      "wall_seconds": 1.507283791899681
+    },
+    {
+      "name": "region",
+      "assertions": 107,
+      "xml_sha256": "d213642423afaf96e9933d5beeb19f5964cbdd0030be00f480474b076e7328fb",
+      "log_sha256": "e7df20436165ad44ba8413890245dcffd711d72935af17882a502c630cefa4bb",
+      "wall_seconds": 29.21544704097323
+    },
+    {
+      "name": "fire",
+      "assertions": 23,
+      "xml_sha256": "521bee2de7a6e1bb07b3b7db38b75a0e74bab6f68747a3a9c06a4bf688aa139f",
+      "log_sha256": "9e0fa040153b7fded8e16e0fd85166ebd7728eba0b2d6a226f077193b241bad8",
+      "wall_seconds": 1.5090967500582337
+    },
+    {
+      "name": "defense",
+      "assertions": 81,
+      "xml_sha256": "568ceba0ff61deb8c155f75555a34b42085b0d07597848d7303b71bca50c8342",
+      "log_sha256": "98dbe9ca0c9038da413f5e3acdd3707b333a84cc2ff47f7811d2f4e5785e5cf5",
+      "wall_seconds": 7.397060041083023
+    },
+    {
+      "name": "director",
+      "assertions": 27,
+      "xml_sha256": "2233f7e4d11970925f71422b882d5fd5222eacbe2c9d7738e99308ac867d655c",
+      "log_sha256": "6e5e952f4c549d09ad94df843de88b0276ecf6e040e461aa6ce51d8782d543fb",
+      "wall_seconds": 2.110626791836694
+    },
+    {
+      "name": "opportunity",
+      "assertions": 57,
+      "xml_sha256": "53eeb9fbf405438642fbb92932df37fd1b064e894153e946e07eccf29197ffe3",
+      "log_sha256": "d953e4c7720a5daed7a371f1e84526d175aecd4a7a73d376c95d6bcc3e673129",
+      "wall_seconds": 2.521492708940059
+    },
+    {
+      "name": "charter",
+      "assertions": 106,
+      "xml_sha256": "170a5ff7c4f42870bec75447328db9ce5e05288419562411652bd2e010a09ae4",
+      "log_sha256": "e6dee7c67e980bd10da04a4c95cca4ab98aa5a1f38760969f48990c4c3b9e147",
+      "wall_seconds": 2.934593708952889
+    },
+    {
+      "name": "chronicle",
+      "assertions": 52,
+      "xml_sha256": "24988d3a82071394b0c39875c7b65a91c73b09e9bb0d07b7cd33e386a974398b",
+      "log_sha256": "0bea75e492ea87fef7e7b86660d6e37c4af8a4193353657984961aedc88a0348",
+      "wall_seconds": 2.110278292093426
+    },
+    {
+      "name": "scheduler",
+      "assertions": 425,
+      "xml_sha256": "4350e36739fe3adad6718e360dd4bb412b27c61e1c3b2158172ed5206ff9a71b",
+      "log_sha256": "99741d771a3381ac3aff0397006eb500a14f14595ddfeebec96cad7b4e4e29fd",
+      "wall_seconds": 48.253303583012894
+    },
+    {
+      "name": "tutorial",
+      "assertions": 46,
+      "xml_sha256": "313ba038280b9e6c4f7cba38fceecbd076f26e64ff1b0e6d0daaa382d392ac6b",
+      "log_sha256": "e98dd01683f8309fc4846b4d30c33544bef9fa22200ce62a599a27952178364e",
+      "wall_seconds": 5.0576880001463
+    }
+  ],
+  "fresh_headless_assertions": 2204,
+  "new_navigation_assertions": 4,
+  "ui_validation": {
+    "inherited_source_commit": "4515ea6d9ae6bc2d8077d8e101a483544d6d25ab",
+    "assertions": 674,
+    "ui_xml_sha256": "8a336599a2ed0d67b754e1de5cf558dc1fe34c915dc2d074980190317702f772",
+    "ui_source_layout_messages_scenes_unchanged": true,
+    "fresh_graphical_run_on76": false,
+    "scope": "75 native GUI674 is carried at its original scope; no other GUI is launched during the active75 longevity probe. Current nav behavior is covered by exact complete-state original twins. Remote76full GUI remains separate."
+  },
+  "replay": {
+    "sha256": "bb273d581f9090606ec9c3ede59a0065fa358e7c5d50dcb0b6ec6f4a8c52521b",
+    "commands_verified": 62,
+    "all_old_acknowledgements": true,
+    "checkpoint_hashes": [
+      {
+        "tick": "7200",
+        "canonical_hash": "4640f173ff6aac07e49444a1cb7ffe344fa3ab52b70d66595e1d512f8f520dc0"
+      },
+      {
+        "tick": "72000",
+        "canonical_hash": "258a41e5b88bbd65cf1b119f41e8fc07bf205a81ba041bb22e67f8f56940f8db"
+      }
+    ]
+  },
+  "full_original_oracle_proof": {
+    "commit": "4515ea6d9ae6bc2d8077d8e101a483544d6d25ab",
+    "complete_original_walk_exact_except_private_safety_reference_name": true,
+    "complete_original_allowed_exact_except_private_scope_and_safe_qualification": true,
+    "original_walk_sha256": "e0f833d397a44e44ed21efb7bebe0440df96aa3286ccb3d9552932d78d716234",
+    "original_allowed_sha256": "3498bc1f54c515158d4c5c178df666bd72be0c269a13c7e262fdeb7b1fd044d3"
+  },
+  "step_profile_equivalence": {
+    "current_commit": "4515ea6d9ae6bc2d8077d8e101a483544d6d25ab",
+    "exact_step_after_unwrapping_phase_callbacks": true,
+    "domestic_wrapper": "ColonyDomestic.create_jobs(self)",
+    "sha256": {
+      "src/sim/colony_world.gd": "76c0d695bf492e34cb78861a3f64ba313f4d228d70004c9032dc01e13480f200",
+      "tools/profile_campaign.gd": "87300073b6868384cf0844d0a51a028af00103b740d0d8e6860d478a1b6795f5"
+    }
+  },
+  "authoritative_complete_tick_profiles": [
+    {
+      "file": "reports/tick-phases-v76-raw/route-fresh-versioned-final.json",
+      "sha256": "c95837bb63aac7aa800ccfca9ec4eb03d97654168e81a91c8b779f1e7e02499c",
+      "ticks": 7200,
+      "initial_tick": 1800,
+      "input_sha256": "",
+      "pairs": 4,
+      "reference_median_us": 1145977.0,
+      "current_median_us": 1137040.5,
+      "reduction_percent": 0.7798149526561216,
+      "all_unsorted_states_and_invariants_exact": true,
+      "source_still_matches_every_profile_fingerprint": true
+    },
+    {
+      "file": "reports/tick-phases-v76-raw/route-late-versioned-final.json",
+      "sha256": "923179f2e6a139d78a06b27f2c7ad57c628c3628e0fe34f4a4a5ca5b77b1cf03",
+      "ticks": 1200,
+      "initial_tick": 25967,
+      "input_sha256": "cafc0b5ca1be82608b8ab4a9002e114c2bda8312ca38988b05f4c3cf2d08b478",
+      "pairs": 4,
+      "reference_median_us": 4500362.5,
+      "current_median_us": 4447107.5,
+      "reduction_percent": 1.1833491190987422,
+      "all_unsorted_states_and_invariants_exact": true,
+      "source_still_matches_every_profile_fingerprint": true
+    }
+  ],
+  "original_subsystem_diagnosis": {
+    "late": {
+      "ticks": 2240,
+      "baseline_us": 8013600,
+      "instrumented_us": 8148977,
+      "worst_tick": {
+        "elapsed_us": 71132,
+        "jobs": 2027,
+        "path_requests": 4,
+        "phases_us": {
+          "ColonyAgriculture.advance": 65,
+          "ColonyAgriculture.create_jobs": 452,
+          "ColonyCare.advance": 53,
+          "ColonyCare.create_jobs": 4,
+          "ColonyCharter.advance": 1520,
+          "ColonyCharter.begin_tick": 0,
+          "ColonyChronicle.advance": 1,
+          "ColonyCombat.resolve": 85,
+          "ColonyConstruction.create_helpers": 97,
+          "ColonyDefense.advance": 2,
+          "ColonyDirector.advance": 0,
+          "ColonyDomestic.advance": 1,
+          "ColonyDomestic.create_jobs": 858,
+          "ColonyEquipment.create_jobs": 549,
+          "ColonyFire.create_jobs": 2,
+          "ColonyLiving.advance": 268,
+          "ColonyNature.advance": 1,
+          "ColonyNature.create_jobs": 328,
+          "ColonyOpportunities.advance": 42,
+          "ColonyPopulation.advance": 0,
+          "ColonyProduction.create_jobs": 2038,
+          "ColonyRegion.advance": 1,
+          "ColonySocial.advance": 197,
+          "ColonyTrade.advance": 0,
+          "ColonyWeather.advance": 1,
+          "ColonyWildlife.advance": 341,
+          "_assign": 52644,
+          "_create_work": 1812,
+          "_needs": 43,
+          "_work": 3857,
+          "work_budget": 5778
+        },
+        "stacks": 1440,
+        "tick": 26280
+      },
+      "report_sha256": "23a5cd720bdef485583363e4e85a96fba82e7f5e0c788f8659c49b946df4a471"
+    },
+    "fresh": {
+      "ticks": 3600,
+      "baseline_us": 500917,
+      "instrumented_us": 563765,
+      "worst_tick": {
+        "elapsed_us": 18891,
+        "jobs": 8,
+        "path_requests": 4,
+        "phases_us": {
+          "ColonyAgriculture.advance": 1,
+          "ColonyAgriculture.create_jobs": 1,
+          "ColonyCare.advance": 7,
+          "ColonyCare.create_jobs": 2,
+          "ColonyCharter.advance": 45,
+          "ColonyCharter.begin_tick": 1,
+          "ColonyChronicle.advance": 0,
+          "ColonyCombat.resolve": 23,
+          "ColonyConstruction.create_helpers": 1,
+          "ColonyDefense.advance": 1,
+          "ColonyDirector.advance": 1,
+          "ColonyDomestic.advance": 0,
+          "ColonyDomestic.create_jobs": 0,
+          "ColonyEquipment.create_jobs": 15,
+          "ColonyFire.create_jobs": 1,
+          "ColonyLiving.advance": 41,
+          "ColonyNature.advance": 1,
+          "ColonyNature.create_jobs": 3,
+          "ColonyOpportunities.advance": 1,
+          "ColonyPopulation.advance": 0,
+          "ColonyProduction.create_jobs": 13,
+          "ColonyRegion.advance": 1,
+          "ColonySocial.advance": 10,
+          "ColonyTrade.advance": 1,
+          "ColonyWeather.advance": 1,
+          "ColonyWildlife.advance": 2259,
+          "_assign": 16340,
+          "_create_work": 21,
+          "_needs": 3,
+          "_work": 20,
+          "work_budget": 50
+        },
+        "stacks": 11,
+        "tick": 5400
+      },
+      "report_sha256": "22903494e9985220aea4c95e75b6c3356c1adb1cd9f7c16a040a53ed93be56e0"
+    },
+    "scope": "Old75headless timing diagnosis includes callback/observer overhead and host scheduling; not native frame/device timing or causal proof of user freezes."
+  },
+  "android_artifact": {
+    "passed": true,
+    "apk_sha256": "5121e9ee37549f6fcda043e00a8871aa5d2f6464291490d1f54ce20d598d2cb5",
+    "local_code": 115,
+    "version": "0.7.76-m7",
+    "export_completed": true,
+    "clean_engine_error_scan": true,
+    "kotlin_tests": 4,
+    "kotlin_xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "kotlin_status": "UP-TO-DATE",
+    "adb_daemon_connection_refused_present": true,
+    "scope": "Export completion,APK metadata/hash and retained Kotlin XML audit. Host adb daemon unavailable; no emulator installed/launched and no physical Android claim. Shell exit was not retained by the initial launcher; these output/artifact checks are explicit."
+  },
+  "initial_setup_error": {
+    "log_sha256": "d9d0d25b9da496cb060eda6463ef00583819f4767887a17f780bf66666752134",
+    "description": "First direct script load lacked registration of new global reference class. Godot printed a parse error despite process exit0; no result was accepted. Headless editor import registered it,then original/current comparisons passed. Failed log retained."
+  },
+  "preliminary_profiles_retained": [
+    "route-late-edge-only.json",
+    "route-late-final-first.json",
+    "route-late-final.json"
+  ],
+  "source_sha256": {
+    "project.godot": "7b7cb889e7e25cc327d57b81ef8422be49668d9ee95465d03a62ef53eba5814d",
+    "export_presets.cfg": "f5df31b44b1fdd33388b072d97b920e0f1548a309e2c0279f6c2a9af11597a2c",
+    "src/sim/colony_world.gd": "392b2fa782d05a9a5d194fb4456cc2fca4b10a2387bbc66431913596a6894890",
+    "src/sim/colony_danger.gd": "fd455c7b630b8ef88c694b6c88c7c342b3a23d25afd7b4bbae36766dd96f7e72",
+    "tools/navigation_tests.gd": "11c46485a60d39ffaf42e1dfb58108bf5af0df13a2e07b56937b1b26f1ae6dfd",
+    "tools/route_context_reference.gd": "c878ffce7d03a870f21ae28ff0d41c762eb16824c3d96cc22b1a626bcff360c5",
+    "tools/profile_route_context.gd": "bf8ccfd4d283f26a6bc7856020704e14b8e57361e21bc439251b2dce8fb77058",
+    "tools/profile_tick_phases.gd": "23b291cc26bdb50b8ffea399e69aba7a8aae005e707319dcffc5ffa39094d4d0"
+  },
+  "raw_sha256": {
+    "apk-artifact-audit.json": "98487e2d6b4084b792954f66dea3c270d60ed9932bd37533b7b1a07d1bf83126",
+    "apk-final.log": "6fbafce4b8aca0f6cebb568b8d18ba32eaa87252da96a903e313415581b7c83c",
+    "assignment-late-first.json.log": "65025acdbe4074ed202c33672f44c2dc2948b2763d6d9421f09b59aa65502da7",
+    "care-final.log": "673cb6a7b4ca87c64a36f0bf9ded594ddbf216ef32bc4560a31e7e296652a058",
+    "charter-final.log": "e6dee7c67e980bd10da04a4c95cca4ab98aa5a1f38760969f48990c4c3b9e147",
+    "chronicle-final.log": "0bea75e492ea87fef7e7b86660d6e37c4af8a4193353657984961aedc88a0348",
+    "colony-final.log": "4f6231be24448e5eac95a4dd71e4032446817b3dfaf76971a8520256f221be88",
+    "construction-final.log": "e5f3ab670e1de9a849b48aed42e47d5c44d8a55a4039b6fe4b20e3a21039ef39",
+    "content-final.log": "a8cb1310415c150fdf01d47d377ada391dead83bf198d698da8c29da7dc6b2da",
+    "defense-final.log": "98dbe9ca0c9038da413f5e3acdd3707b333a84cc2ff47f7811d2f4e5785e5cf5",
+    "director-final.log": "6e5e952f4c549d09ad94df843de88b0276ecf6e040e461aa6ce51d8782d543fb",
+    "domestic-final.log": "296e278576a408ab63c8b78d8c2aa7342c9dd213d7fb69729b907b28629700ec",
+    "equipment-final.log": "03b18a1d20a1abeeff7f7aada26493e589fb6ad4d3f557eecca2d576f4168dd5",
+    "fire-final.log": "9e0fa040153b7fded8e16e0fd85166ebd7728eba0b2d6a226f077193b241bad8",
+    "fresh-first.json": "22903494e9985220aea4c95e75b6c3356c1adb1cd9f7c16a040a53ed93be56e0",
+    "fresh-first.log": "a7d974ae3d75e7f60446ae7fdff495f535c1ad234378044248a283f718e59ff0",
+    "generation-final.log": "adcf627454a40bd69dfd9b1895a8e19b524bd4cfc137426729dea85ff6a520f6",
+    "headless-validation-progress.json": "d7f28862f318c5fd5c8233183b69ed5ac60c7eb045ab41f073a9f411f2688b46",
+    "headless-validation.log": "8a38754b0b45224bc6f40ac3df1d7bb7f7c0ea9c393fe28a17ae6b401fcf7cfe",
+    "import-first.log": "5ea36e5fd314d1cc2d91b4351e31422dbabf7d39db11a9f4df094e440dd33ded",
+    "integration-final.log": "96bc83e1b198e009fb9281d09aecec326dce2899146a2418a1aac831cbf209ac",
+    "late-first.json": "23a5cd720bdef485583363e4e85a96fba82e7f5e0c788f8659c49b946df4a471",
+    "late-first.log": "c909d0d6a55247f8f39180b0048e8cb4b9087f055033f3d1baa8cabae320c35e",
+    "maintenance-final.log": "e102d0c6dc761b11e69b94b660c8f1433eb6733a27600e7b69c7a47aba8324fe",
+    "message-tests-final.log": "888a0c0ed615e57d32cf72be501b0c355f33b8613c81dfdaa99db33d7959487e",
+    "nature-final.log": "b649559389e55dadcab377608df7b51f917934e9560855d398015f8096913730",
+    "opportunity-final.log": "d953e4c7720a5daed7a371f1e84526d175aecd4a7a73d376c95d6bcc3e673129",
+    "people-final.log": "8513fd2bfa6e1442b0d89ba9a7713d52ea23ff011a4aaf83ac3f2ef05cd3c64d",
+    "persistence-final.log": "f59f4b795f47a8b8710deaaafb960a8c5496e48df1dcbfd71e80faea38310067",
+    "population-final.log": "0016c5f8d9ade8acbcc1ce2f528c09e95a90d5c60bf21c175aa49e507dc4c2ee",
+    "production-final.log": "3afbf85a817986d45846d7e873b61aaeca1ae559d5d0e1008b8d9078dcd787ee",
+    "region-final.log": "e7df20436165ad44ba8413890245dcffd711d72935af17882a502c630cefa4bb",
+    "replay-final-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "replay-final-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "replay-final-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "replay-final-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+    "replay-final-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "replay-final.json": "bb273d581f9090606ec9c3ede59a0065fa358e7c5d50dcb0b6ec6f4a8c52521b",
+    "replay-final.log": "14437d031a8097f1ccaed641ef42b02fe4bdaaf6f647d16d71262281e6f7c553",
+    "route-fresh-versioned-final.json": "c95837bb63aac7aa800ccfca9ec4eb03d97654168e81a91c8b779f1e7e02499c",
+    "route-fresh-versioned-final.log": "5eeab3ccfef01bb9c7f127c621476c59f8ae787e1361a7e348022281570d93a9",
+    "route-late-edge-only-after-import.log": "5eeab3ccfef01bb9c7f127c621476c59f8ae787e1361a7e348022281570d93a9",
+    "route-late-edge-only.json": "7b693c0453940ddc575f69df02a50e1b71c8b03f8f22cc003aab0cfeb097ebca",
+    "route-late-edge-only.log": "d9d0d25b9da496cb060eda6463ef00583819f4767887a17f780bf66666752134",
+    "route-late-final-first.json": "2c53180fc66e2435f938ab814d10a4db63dba87aa3e25f9f50d60998fd389be1",
+    "route-late-final-first.log": "5eeab3ccfef01bb9c7f127c621476c59f8ae787e1361a7e348022281570d93a9",
+    "route-late-final.json": "154447dd54fc5e633c36926699bef21b62dee66ac76475afbd3a1e23d84a1974",
+    "route-late-final.log": "5eeab3ccfef01bb9c7f127c621476c59f8ae787e1361a7e348022281570d93a9",
+    "route-late-versioned-final.json": "923179f2e6a139d78a06b27f2c7ad57c628c3628e0fe34f4a4a5ca5b77b1cf03",
+    "route-late-versioned-final.log": "5eeab3ccfef01bb9c7f127c621476c59f8ae787e1361a7e348022281570d93a9",
+    "route-reference-equivalence.json": "89cd0f22d684a7a217653e851845cb9080bef0001be8e5e94cd486feb71b28df",
+    "scheduler-final.log": "99741d771a3381ac3aff0397006eb500a14f14595ddfeebec96cad7b4e4e29fd",
+    "seasons-final.log": "8eaab5b4bc80b907faa97b9360bca1c747921b446f046f7b86102cb9b2c0232c",
+    "step-equivalence.json": "1692d091ce25d75457f4cacd26d27dd8accef819ed8100289a6ab1665f94c3a1",
+    "survival-final.log": "34ca3838ad45280137b4cc0e052d1d7497d0124c5f702d5e76c8a6efab9d8b82",
+    "trade-final.log": "38e6e4daa15c80415dcd6f1730bffddf58ca1eea97b4f0cd86887f205d61f2fa",
+    "tutorial-final.log": "e98dd01683f8309fc4846b4d30c33544bef9fa22200ce62a599a27952178364e",
+    "unit-final.log": "94be674f7728513b5f762289e1d7183987a483e757cee745e147c0f530c6a860",
+    "unit-first.log": "94be674f7728513b5f762289e1d7183987a483e757cee745e147c0f530c6a860",
+    "wildlife-final.log": "ed21fa7be3c86b61d9d6552739ecb09aa79e69f4fba94908c9293ca901a3f652",
+    "work-late-first.json.log": "84d40d4c1cd5773abdfca38629a20ed4b24a5bf0b19ce9a9424f20815e617312"
+  },
+  "scope": "Small measured CPU improvement with exact full original walk/danger predicates and complete future-state twins. Native75thirty-minute2x probe,headless checks/replay/import/export and75artifact downloads share host; no other GUI/emulator is launched. This does not resolve phone freezes,late frame-heap peaks or physical/PSS/thermal/human release gates. Previous failed scopes remain failed. CI76/publication pending next push."
+}

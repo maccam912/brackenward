@@ -1288,9 +1288,11 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 			var disconnected: bool = walkable(origin) and walkable(goal) and accessible(origin)!=accessible(goal)
 			var route: Array[Vector2i] = []
 			if not disconnected:
-				route=ColonyNavigation.path(origin,goal,func(p:Vector2i)->bool:return ColonyDanger.allowed(self,citizen,p),func(a:Vector2i,b:Vector2i)->bool:
-					var task: Dictionary = find(jobs,citizen.job)
-					return ColonyMaintenance.cart_edge(self,a,b) if task.get("kind")=="cart_move" and task.memo.phase=="push" and task.state=="Working" else can_step(a,b))
+				# A synchronous route search cannot change this worker's task.
+				var task: Dictionary=find(jobs,citizen.job)
+				var pushing_cart: bool=task.get("kind")=="cart_move" and task.memo.phase=="push" and task.state=="Working"
+				route=ColonyNavigation.path(origin,goal,func(p:Vector2i)->bool:return ColonyDanger.allowed(self,citizen,p,task),func(a:Vector2i,b:Vector2i)->bool:
+					return ColonyMaintenance.cart_edge(self,a,b) if pushing_cart else can_step(a,b))
 			citizen.route=route
 			citizen.route_goal = [goal.x, goal.y]
 		if citizen.route.is_empty():

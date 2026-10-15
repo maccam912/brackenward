@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.75-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.76-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -17,7 +17,7 @@ Checkpoint: `0.7.75-m7` (campaign schema 23, device settings schema 6), content 
 | Physical memory/battery/thermal baseline | Not run | The user supplied a CPH2655/Adreno 830/Android 36 CPU/frame-gap report from 0.7.24, retained in ANDROID_DEVICE_EVIDENCE.md. Android PSS, brightness-controlled battery and thermal measurements remain Not run. |
 | Native thirty-minute twenty-resident proxy | Pass at `357fa04` retry / v7; later runtime separate | Frozen2x continuation:14.618MiB sampled peak/14.611MiB ending growth,lowest one-second FPS28.134,36001ticks,twenty residents,zero counters/errors; separate second audit passes. Original same-source failure after a protective save pause remains failed. Lower-contention retry does not assign that cause. Physical Android/PSS/thermal and later runtime revisions remain separate;74's ten-minute4x pass is a shorter/different-speed case,with the latest30-minute2x rerun pending. |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `30db9fa`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38768315159) passes28 suites/2870 assertions, Kotlin4,768 maps and all four actual native replay/migration/persistence/startup targets. native-ci-v71/72/73/74-evidence.json audit actual artifacts and publication;71attempt2 passes while its original generation timeout remains a separate failure. Current75CI and physical certification remain separate. |
+| Remote CI | Pass at `4515ea6`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38776860028) passes28 suites/2874 assertions,Kotlin4,768 maps and all four actual native replay/migration/persistence/startup targets. native-ci-v75-evidence.json audits actual artifacts and publication. Current76CI and physical certification remain separate. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
@@ -26,9 +26,9 @@ Checkpoint: `0.7.75-m7` (campaign schema 23, device settings schema 6), content 
 | M3–M6 gameplay and progression | Implemented; pinned v7 Charter/Winter/raid and broader v6 evidence | Frozen current-v7 generator-2 policies pass all four 96-day Charters and separate no-barter/import audits, all 30 first-Winter maps, and 30 paired prepared-defense/physical-ransom cases. All four v7 post-Charter origins also complete96additional days (192 total), preserving original command prefixes with no zero fullness/grace violations. Four current-v7 imported-cloth economies also pass24days with exact physical purchases/sewing/delivery and eight healthy residents. The v7 ordinary twenty-person seasonal rerun now passes its full96days and separate audit:20home residents for every tick of both seasonal windows,health100 within each window and whole-campaign minimum72. Pinned generator-2 v6 ordinary twenty-resident seasonal windows, four additional 96-day post-Charter cases, first-week and merchant-material economies pass in their recorded scopes; earlier failures remain retained. M7 physical/human gates remain open. |
 | Revision-2 release map sweep | Pass, pinned current v7 | Current-v7 source `424f897` passes all30,000 maps (10,000/site), independent geometry/quantity checks and separate second audit, zero retries/fallbacks. Original v6 full sweep/boundary goldens remain untouched. Balance and physical/human gates remain separate. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `30db9fa` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-30db9fafb71b), code227 / 0.7.74-m7+30db9fa, APK SHA-256 `c764dde6b9831f3ce090963ffc870f963fa34cca1598e46ebdb89df3395223a8`. Four-host artifacts,28 suites/2870 assertions,Kotlin4 and exact published assets audited. Current75 publication and production signing/store release remain separate. |
+| Development APK publication | Pass at `4515ea6` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-4515ea6d9ae6),code228 / 0.7.75-m7+4515ea6,APK SHA-256 `1e1783a6d1fbb919634996d061630985eed43b8d1008e972aa0ebd5d4a5c84c4`. Four-host artifacts,28 suites/2874 assertions,Kotlin4 and exact published assets audited. Current76 publication and production signing/store release remain separate. |
 
-Current recorded validation: 28 GDScript suites, 2874 maintained assertions. The 0.7.75 queued-shift/text change freshly passes UI674 (four new paused-control regressions), headless control reproduction/fix checks, unit20, five Python message checks,578-key/font validation and Android114 export/metadata. Unchanged cached Kotlin4 XML is inspected. Core persistence/simulation/generation/scenes are unchanged from74; its persistence496/replay62/old acknowledgements remain their exact scopes. Frozen74passes a600.009101-second4x case:24001ticks,20residents,zero counters,lowest one-second FPS28.564 and13,949,006-byte sampled peak. A separate34,749,968-byte late frame peak remains; memory/physical certification is unresolved. Actual native endpoints match failed67after one current tick alignment,with no field normalization. Remote71attempt2/72/73/74artifacts/publications now pass full independent audits;74code227 is last fully audited. Current75CI/publication and latest30-minute2x/physical/human gates remain separate. Original71timeout and67heap failure remain retained; all45 original emulator files remain restored exactly.
+Current recorded validation: 28 GDScript suites,2878 maintained assertions. The0.7.76 route-context optimization freshly passes all27headless suites/2204 assertions,including unit24/four new route checks,persistence496,scheduler425 and real cart/reload behavior. Replay62/all retained acknowledgements,578-key/font validation,five message checks and Android115 export/artifact audit pass. Cached Kotlin4 XML is inspected. Presentation/messages/scenes are unchanged from75; its native GUI674 remains carried at that exact scope,with no new GUI during the active75thirty-minute2x probe. Four alternating complete-tick original/current pairs preserve every unsorted state/invariant: fresh7200 median1,145,977to1,137,040.5us (0.78%);late1200 median4,500,362.5to4,447,107.5us (1.18%). This modest CPU result does not resolve phone freezing or memory/device gates. Latest actual remote75artifacts and publication pass their independent audit,code228. Current76CI/publication,latest30-minute2x and physical/human gates remain separate. Earlier failed scopes remain retained;all45original emulator files remain restored exactly.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -4190,3 +4190,51 @@ assets per revision. Published codes224/225/226/227 retain their respective sour
 identities.71's earlier Intel timeout stays failed in separate evidence; the
 latest Intel artifact is selected instead of its retained earlier partial one.
 74actual artifacts and exact published APK also pass; native-ci-v74-evidence.json records code227 and its source identity.
+
+
+## 0.7.76 synchronous route task context
+
+A read-only complete-tick subsystem breakdown identified route/assignment spikes
+in the late twenty-resident input. Its instrumented late2240ticks and fresh3600ticks
+match ordinary twins in every unsorted field and invariant. Callback/observer and
+host scheduling overhead remain included; these are headless diagnostic timings,
+not native frame/phone causes. The full original step matches the phase harness
+after unwrapping timing callbacks and its equivalent domestic wrapper.
+
+Citizen A* previously found the same current task and chose its cart-edge policy
+at every examined edge. It now reads both once per synchronous search and passes
+the same live task to the danger predicate. Ordinary callers still inspect current
+work. Each new search rechecks phase/state; final live edge validation,request
+slots,no-route handling,unreachable-bed safe-ground rest and every ordering rule
+remain. Nothing survives the call or enters world/save data. Catalog7/schema23,
+all gameplay numbers,wire bytes and old acknowledgements remain unchanged.
+
+The independent reference retains complete4515ea6 walk and danger bodies,verified
+byte-for-byte apart from private qualification. Four new checks cover seven task/
+fence/cart policies,meet/push/state changes between searches,four-request and
+unreachable-bed fallback behavior,and a real1200-tick cart move plus reloaded future.
+All27headless suites/2204 assertions pass. With75's unchanged674GUI source at its
+original scope,the maintained count is2878. Replay62/all retained migrations,
+578messages/font validation and five Python message checks pass. Android115 exports;
+metadata/hash and unchanged cached Kotlin4 XML are audited. The initial launcher
+did not retain its shell return code; explicit export completion,clean engine-log
+scan and artifact metadata checks are retained. The host adb daemon connection
+refusal is recorded; no emulator/physical install is claimed.
+
+Final versioned four-pair comparisons preserve every complete unsorted state and
+invariant,all source fingerprints and input/base state. Fresh7200ticks improve
+median1,145,977to1,137,040.5us (0.78%);late1200ticks4,500,362.5to4,447,107.5us
+(1.18%). This is small,not a phone-freeze fix certificate. Native75longevity,
+bounded headless checks/replay/import/export and75artifact downloads share the
+host; no other GUI/emulator runs. Early edge-only/pre-version comparisons remain.
+The first direct load of an unregistered new reference class printed a parse error
+despite exit0; no result was accepted. After editor import,fail-closed validation
+and exact twins pass. route-context-v76-evidence.json retains source/log/proof/
+profile/APK hashes,including that initial error.
+
+Actual75remote artifacts now pass four-host replay/migrations/persistence/startup,
+28suites/2874 assertions,Kotlin4,768maps and exact three published assets.
+native-ci-v75-evidence.json records code228/APK SHA-256
+`1e1783a6d1fbb919634996d061630985eed43b8d1008e972aa0ebd5d4a5c84c4`.
+The latest thirty-minute2x75probe is still running; previous failures,late frame
+heap peaks,physical Android/PSS/thermal and human gates remain separate.
