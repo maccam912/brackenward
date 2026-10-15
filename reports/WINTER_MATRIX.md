@@ -1,5 +1,22 @@
 # Frozen first-Winter matrix
 
+## Fresh generator-2 v6 matrix — pass
+
+All **30/30** fresh generator-2 first-Winter cases pass at clean frozen
+`d8703815c43562b4ef8746446a4d0af3885da725`, content v6/schema 23. Ten specified
+seeds at each site complete 33 ordinary days, tick 1800→239400, with eight
+survivors, zero starvation-grace violations and 23,760 invariant checks. Every
+endpoint checksum/codec round trip and the explicit second audit pass. Minimum
+health is 100 in 25 cases, 92 in Meadow 1, Pine 104729 and Reed 104729/73, and
+87 in Reed 42. These are not zero-damage or physical-device claims.
+
+Raw directory: `winter-release-gen2-v6-d870381/`. Source SHA-256
+`d721d8a5f43add75f6789647d04be28fe0d762cfab4799607f155e6ee9906edb`,
+completion `d74a0cdba3561a1b5084ff3742c44f9d1a51aa83b5a8bcfccd698ea94536a96c`,
+audit `ee831a77f786c51b6e0aa58e9232b722eafa8d1fe1c6a95b1b6ff4c681ad6037`.
+The earlier generator-1 matrices and retained failures below keep their scopes.
+
+
 
 ## Clean revised-policy v6 release matrix — pass
 

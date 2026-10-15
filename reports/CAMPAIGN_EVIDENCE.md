@@ -410,3 +410,40 @@ audit `9d6bcce96e5fc7527b6abb4ffc375fc1448696661b1c6f02c5a56f5424b572e4`.
 Separate no-trade audit `charter-gen2-no-trade-v50-audit.json` SHA-256
 `aefbbb8fdfb41ad6b854135b38b6d4f615054c409929e604f8f8ee713b557e57`.
 Fresh Winter and ordinary twenty-resident seasonal results remain separate.
+
+
+## Fresh generator-2 first eight days
+
+Four cases (all three Standard sites plus Pine Hearthside, seed 104729) pass
+at frozen f0e36da64d602619f132f998cbbf094f5a5ec53a. Each begins with the exact
+inspected initial payload, runs 57600 ordinary ticks with exactly four residents,
+and ends at tick 59400 with health 100, zero beyond-grace ticks, at least three
+real improvements and a final food day. No newcomers are accepted by this policy.
+The separate read-only endpoint/golden audit preserves all retained files:
+`first-week-gen2-v6-f0e36da-independent-audit.json` SHA-256
+`3840acff621f45cfb39455e393f42c9a4b933fb3155a578fe31d1a9d70ff1380`.
+Raw commands, source/controller hash and initial/final/daily saves remain in
+`first-week-gen2-v6-f0e36da/`. This complements the longer growing-household
+Charter/Winter/economy runs; it does not replace physical/human testing.
+
+
+## Fresh generator-2 ordinary twenty-person seasons
+
+The clean frozen d8703815c43562b4ef8746446a4d0af3885da725 campaign reaches
+20 through sixteen normal newcomer admissions and completes 96 ordinary days.
+All twenty remain home for every one of the 57600 ticks in year-three Summer
+and every one of the 57600 Winter ticks. Both complete windows have minimum
+health 100 and zero zero-fullness ticks. Whole-campaign minimum health is 72;
+there are no deaths/departures or beyond-grace starvation, and final food exceeds
+one day. Independent completion and a separate second audit both pass.
+
+Raw directory `large-colony-gen2-v6-d870381-meadow/`; final canonical
+`76aa6259ede197f7d271dd4517ccb71496dc0b7fa4ecfa5862036f50733b7849`,
+final snapshot SHA-256
+`e93bff9ebfe59ef1557003a15ab8ff7c4422c8e2b7ccc5f4a6e799c9e31c5b9f`.
+Source/completion/audit SHA-256:
+`7a14e6634d6fcf7208ceb64c7a408234fde6647f80fc603ea5d30bd60831b9fc` /
+`271097d3d5de56d75167cbebf96aebde5ca2734784b8d5f118109860b9f34078` /
+`287e1a52380ce476fcebac9418a4e737867fd0279eb89eacc27f909e21f119be`.
+This closes both ordinary twenty-resident seasonal scenarios for this new-map
+case, separately from synthetic performance, physical memory and human gates.

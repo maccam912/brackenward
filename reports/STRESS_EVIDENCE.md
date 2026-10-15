@@ -5,6 +5,54 @@ campaign evidence and physical Android release requirements. The full release
 stress gate, all-alert variant, thirty-minute soak, PSS/battery/thermal measurements
 and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.53 bounded snapshot preparation: paired local evidence
+
+The in-memory preparation path now encodes sorted fields and top-level arrays
+in blocks of at most 256 items. Its private decoder rereads the actual UTF-8
+buffer, checks complete byte coverage and all key/colon/comma/bracket/span
+boundaries, and applies native JSON parsing plus the original depth/integer/map/
+tile rules to every block. Full codec schema/reference/conservation validation
+and exact capture equality still run. The private decoded tree is released
+before the full payload text/envelope is materialized. External decoding,
+64 MiB bounds, immutable capture ownership, digests and exact publish readback
+are unchanged. This does not replace verification with a success flag.
+
+A separately retained e8336e4 full-tree implementation supplies the reference.
+Four alternating pairs for each exact retained input match full payload bytes,
+canonical hash, validation and capture identity. Every pair also checks all 32
+immutable save fixtures; no source/input/expected value changes during a run.
+Twenty-seven new persistence checks include block boundaries 0/1/255/256/257/
+511/512/513, grammar/coverage corruption, depth and malformed value rejection,
+nonaliasing, full external codec, conservation and generated revision-2 saves.
+Persistence 377 and native UI 667 pass; historical replay preserves 62 commands,
+both reviewed hashes and foreign save continuation. Maintained total is 2699.
+
+| Retained input | Old median CPU ms | New median CPU ms | Old sampled temporary heap MiB | New MiB |
+| --- | ---: | ---: | ---: | ---: |
+| Synthetic native-44 endpoint | 270.283 | 274.643 | 38.961 | 29.489 |
+| Ordinary twenty-person 96-day endpoint | 2358.381 | 2415.437 | 311.573 | 239.034 |
+
+Sampled temporary peak falls about 24.3%/23.3%; CPU cost rises about 1.6%/2.4%
+on this contended Mac. Baselines include the retained reference text, and roughly
+1 ms sampling is a process engine-heap observation. Ordinary preparation still
+has a large 239 MiB temporary peak; neither result certifies Android PSS or the
+separate native thirty-minute peak/fps proxy. A new frozen native soak must earn
+that result; the failed 0.7.44 result below remains unchanged.
+
+Exact inputs: native-44 endpoint SHA-256
+`00475035bf565d9e27afc7c5e99eed28be3856c1853175f63772d1d007190fda`,
+ordinary twenty endpoint
+`41495c97032fcb2bd56317b927ba55eea16332ac0a3866c835842b781d311175`.
+Reports `snapshot-stream-v53-final-stress.json` /
+`snapshot-stream-v53-ordinary20-comparison.json` have SHA-256
+`c5cc2a7839b82bc460cb0ecdc5e09973513494bf23567f59f5bff6626a70af85` /
+`1e9f0b108d763e2e4cdd4caec36fc96f88a0b86359c1567fc8cd28db6bb466a1`.
+The compact tracked [snapshot-encoding-v53-evidence.json](snapshot-encoding-v53-evidence.json)
+retains exact medians, hashes and local check evidence; the raw reports retain
+all executed runtime/catalog/reference-source fingerprints. One trailing test-file
+blank line was removed after measurement; the evidence summary retains both
+source digests and the exact reconstructible text-only difference.
+
 ## Frozen 0.7.44 quieter-host thirty-minute result
 
 Clean source `cd5d75141fc662761ffd0acc78c3723754c581dc` uses the same

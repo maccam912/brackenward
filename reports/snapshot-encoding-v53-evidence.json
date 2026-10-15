@@ -1,0 +1,62 @@
+{
+  "scope": "Headless paired preparation evidence, not native/physical certification. The strict native peak proxy remains separate.",
+  "reference_commit": "e8336e48f1dfeb9b532957f7172a996079aaca73",
+  "comparisons": [
+    {
+      "file": "snapshot-stream-v53-final-stress.json",
+      "sha256": "c5cc2a7839b82bc460cb0ecdc5e09973513494bf23567f59f5bff6626a70af85",
+      "passed": true,
+      "input_sha256": "00475035bf565d9e27afc7c5e99eed28be3856c1853175f63772d1d007190fda",
+      "canonical_hash": "4a8fee28b0a01de385fc3bb8bfe48f7df5706c1b291760e7dca36c530303f881",
+      "fixtures_passed": 32,
+      "methods": {
+        "original": {
+          "median_us": 270282.5,
+          "median_sampled_peak_bytes": 40853248.0,
+          "all_exact": true
+        },
+        "candidate": {
+          "median_us": 274643.0,
+          "median_sampled_peak_bytes": 30921926.0,
+          "all_exact": true
+        }
+      }
+    },
+    {
+      "file": "snapshot-stream-v53-ordinary20-comparison.json",
+      "sha256": "1e9f0b108d763e2e4cdd4caec36fc96f88a0b86359c1567fc8cd28db6bb466a1",
+      "passed": true,
+      "input_sha256": "41495c97032fcb2bd56317b927ba55eea16332ac0a3866c835842b781d311175",
+      "canonical_hash": "3041d1f00daf5c0f59b78054b8ffd556e97778c227d35343a191085e3442bdfe",
+      "fixtures_passed": 32,
+      "methods": {
+        "original": {
+          "median_us": 2358381.0,
+          "median_sampled_peak_bytes": 326707928.0,
+          "all_exact": true
+        },
+        "candidate": {
+          "median_us": 2415437.0,
+          "median_sampled_peak_bytes": 250645366.0,
+          "all_exact": true
+        }
+      }
+    }
+  ],
+  "local_checks": {
+    "snapshot-encoding-v53-final-persistence.log": "528ebf30571e4f0108c631608db978e566de123ba451cd81335cfc67341127e9",
+    "snapshot-encoding-v53-ui.log": "ca12fc2b4da82ffd43b656ec3242559da589439989d1d27c29f14797b0f22c61",
+    "snapshot-encoding-v53-replay.json": "e20c53987b074d13db9ec75a93702bee4d76641a63aaf2f3b43d20eee8d310c1",
+    "snapshot-encoding-v53-content.log": "fe04fd56d29d4ed475bfee81e0cde755ebb8d962414a56a266771f4d2cbbb4ac",
+    "snapshot-encoding-v53-android.log": "a7278d50a6eb79133f417a766077fbe6da26e3eb39ac026297af671da41bd065"
+  },
+  "source_text_only_cleanup": {
+    "file": "tools/snapshot_encoding_tests.gd",
+    "tested_sha256": "6fbf5d8cee8fbbc39a9f601ae2ddc1192273ee3d7334ef89430a46442a80ecc0",
+    "committed_sha256": "feeb0197e62eeb463d503a351c964eec54714f96435f09b8a184a74e16915020",
+    "removed_trailing_newlines": 1,
+    "method_bodies_unchanged": true,
+    "local_archive": "reports/snapshot-encoding-v53-tested-source.json",
+    "archive_sha256": "e02efc22605955bb6e2301a8af4366de4967b10c14472cd27c5bded7233e821e"
+  }
+}

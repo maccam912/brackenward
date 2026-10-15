@@ -73,3 +73,30 @@ lodge and original bedrolls retain newcomer capacity. This changes the order of
 ordinary construction, keeping the original price, reserve, 24-day duration,
 material provenance, delivery and survival criteria. Trade 41 passes; another
 full frozen run is required. A staffing change alone was not a claimed fix.
+
+
+## Construction-budget revision: four ordinary cases pass
+
+Frozen `f0e36da64d602619f132f998cbbf094f5a5ec53a` now completes all four
+24-day cases and passes the independent second audit. Each keeps eight healthy
+residents, zero zero-fullness/grace ticks, sixteen cloth imported from two
+actual Riverward visits, fourteen cloth consumed by seven completed sewing
+jobs, two remaining cloth, one physical three-cloak Road delivery and Road
+reputation 30. Starting equipment remains worn; no cloth is grown, woven,
+recovered or obtained through expeditions. All three public trade commands and
+receipts, actual merchant stays, exact initial goldens and command provenance
+pass. The original criteria remain unchanged; both earlier failures remain.
+
+| Site / mode | Final stored food ticks | Final canonical hash |
+| --- | ---: | --- |
+| meadow_reach / Standard | 94,699 | `94bbf1928e4cf0585bbb5045caff6124f6003f9cbb3ab2d3f4b6e5115ef86d93` |
+| pine_shelf / Standard | 96,587 | `436f506ee89cbbf609c23111b343909169bb963307965e24d4bb857ece25f5fd` |
+| reed_bend / Standard | 77,659 | `cb14f68625d511ce53aae05f34c7f459c8935882fb9e699b0fa5039feb2f6a57` |
+| pine_shelf / Hearthside | 86,754 | `4e32d3cb1f72cd6644350e3d4f1b7f3c6a2ddca3a2f3beb4677cc2ad2c2fb0b8` |
+
+Raw directory: `merchant-release-gen2-v6-f0e36da/`. Source SHA-256
+`82965351930514ac3348cbb3ac9f1588ef341bbfde61c133c34e7d509a0252ec`,
+completion `83ac998b132f3633fbc05e89cfabd425e115847fc45cc3de8f05ae00ebbd59b9`,
+audit `8f48afcce0b32d4aa4e6c741befbf8c3926fb7bb2010e9c0bdf0176cf7dfa033`.
+This closes the ordinary merchant-material scenario; it does not certify fire
+recovery, physical performance or human comprehension.

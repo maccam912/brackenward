@@ -44,6 +44,7 @@ func run() -> void:
 			AppearanceTests.run(check)
 			PreparedSnapshotTests.run(check)
 			PreparationReadTests.run(check)
+			SnapshotEncodingTests.run(check)
 			await PreparedSnapshotTests.asynchronous(self,check)
 			CaptureTests.run(check)
 			ImmutableJournalTests.run(check)

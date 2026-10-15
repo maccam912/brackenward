@@ -7,27 +7,7 @@ var digest: String = ""
 var validated: bool = false
 
 static func prepare(captured: Dictionary, catalog: Dictionary) -> Dictionary:
-	if not captured.is_read_only():return {"error":"Snapshot preparation needs an owned immutable capture"}
-	if captured.get("content_hash")!=catalog.get("content_hash"):return {"error":"Snapshot preparation catalog differs from immutable capture"}
-	if not captured.get("session_id") is String or not captured.get("generator_version") is int:return {"error":"Invalid snapshot identity metadata"}
-	var result: ColonyPreparedSnapshot=ColonyPreparedSnapshot.new()
-	result.payload=captured;result.text=JSON.stringify(ColonyState.pack(captured),"",true);result.digest=result.text.sha256_text()
-	# Check the exact normal envelope bound, then release its temporary escaped
-	# text/bytes before parsing the payload. Nothing external supplied this header.
-	var identity: ColonyWorld=ColonyWorld.new(catalog)
-	identity.session_id=captured.session_id;identity.generator_version=captured.generator_version
-	var bytes: PackedByteArray=ColonyCodec.wrap_payload(identity,result.text)
-	if bytes.is_empty() or bytes.size()>ColonyCodec.MAX_BYTES:return {"error":"Colony snapshot is empty or exceeds 64 MiB"}
-	bytes=PackedByteArray();identity=null
-	var parser: JSON=JSON.new()
-	if parser.parse(result.text)!=OK:return {"error":"Malformed simulation payload"}
-	var data: Variant=_unpack_owned_json(parser.data)
-	parser=null
-	if not data is Dictionary:return {"error":"Invalid integer, coordinate or state encoding"}
-	var verified: Dictionary=ColonyCodec.restore(data)
-	if not verified.has("world") or verified.world.payload()!=captured:return {"error":"Snapshot preparation failed full validation: "+str(verified.get("error","state mismatch"))}
-	result.validated=true
-	return {"snapshot":result}
+	return ColonySnapshotEncoding.prepare(captured,catalog)
 
 ## Consumes fresh JSON.parse data only; never pass captures, world state or aliases.
 static func _unpack_owned_json(value: Variant, field: String="", depth: int=0) -> Variant:
