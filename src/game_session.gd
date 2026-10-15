@@ -1413,14 +1413,14 @@ func _submit(kind: String, args: Dictionary) -> void:
 	if quitting: return
 	_sync_placement_world()
 	if awaiting_first_colony:
-		notice = "Choose a site and create this colony first."
+		notice = ColonyText.text("ui.notice.choose_colony_first")
 		return
 	if submitted_command > 0 and not placement_commands.has(submitted_command) and kind not in ["preference","schedule","priority","stock_filter","food_policy"]:
-		notice = "An order is pending. Resume to apply it before another action."
+		notice = ColonyText.text("ui.notice.order_already_pending")
 		return
 	submitted_command = world.queue_command(kind, args)
 	confirm_button.disabled = true
-	notice = "Order pending. Close the panel and resume to apply it."
+	notice = ColonyText.text("ui.notice.order_pending")
 
 func _sync_placement_world() -> void:
 	if placement_world_id==world.get_instance_id(): return
@@ -1430,7 +1430,7 @@ func _sync_placement_world() -> void:
 func _resource_sheet(resource: Dictionary) -> void:
 	show_details(resource.definition.capitalize())
 	var definition: Dictionary = world.definitions.resources[resource.definition]
-	label("%d %s remaining | %d WU %s" % [resource.remaining, definition.item, definition.work_milli / 1000, "per unit" if definition.per_unit else "per harvest"], sheet_body)
+	label(ColonyText.text("ui.resource.remaining",{"count":resource.remaining,"item":definition.item,"work":int(definition.work_milli/1000),"basis":ColonyText.text("ui.resource.work.per_unit" if definition.per_unit else "ui.resource.work.per_harvest")}), sheet_body)
 	label(ColonyText.text("ui.help.resource_sheet.a_gatherer_works_beside_the_resource_the"), sheet_body)
 	if resource.definition=="tree":
 		label(ColonyText.text("ui.help.resource_sheet.tree_passage"),sheet_body)
@@ -1438,8 +1438,8 @@ func _resource_sheet(resource: Dictionary) -> void:
 			label(ColonyText.text("ui.help.resource_sheet.tree_at_door"),sheet_body)
 	if resource.definition == "tree" and resource.remaining == 0:
 		var state: Dictionary = ColonyNature.tree(world,resource.id)
-		label("Growing: %.1f of eight non-winter days. Winter pauses growth." % (float(state.age)/7200.0) if state.planted else "Stump. Replant for 4 WU; no material cost. Eight non-winter days to maturity.",sheet_body)
-		button("Clear sapling (2 WU)" if state.planted else "Replant tree (4 WU)",func()->void:
+		label(ColonyText.text("ui.resource.growing",{"days":"%.1f" % (float(state.age)/7200.0)}) if state.planted else ColonyText.text("ui.resource.stump"),sheet_body)
+		button(ColonyText.text("ui.action.clear_sapling" if state.planted else "ui.action.replant_tree"),func()->void:
 			_submit("clear_sapling" if state.planted else "replant_tree",{"target":resource.id})
 			close_sheet(),sheet_body)
 
@@ -1451,14 +1451,14 @@ func _resource_sheet(resource: Dictionary) -> void:
 
 func _job_sheet(job: Dictionary) -> void:
 	show_sheet("Work order","ui.sheet.work_order")
-	label("%s: %s\nWork %d/%d WU\n%s" % [job.kind.capitalize(), job.state, job.work / 1000, job.required / 1000, job.reason], sheet_body)
+	label(ColonyText.text("ui.work.order_details",{"kind":job.kind.capitalize(),"state":job.state,"work":int(job.work/1000),"required":int(job.required/1000),"reason":job.reason}), sheet_body)
 	if job.state=="Queued": label(ColonyText.text("ui.help.job_sheet.waiting_for_work_capacity_the_order_keeps"),sheet_body).name="QueuedOrderExplanation"
 	if not job.inputs.is_empty():
-		label("Required: " + _cost_text(job.inputs) + "\nDelivered materials remain refundable until completion.", sheet_body)
+		label(ColonyText.text("ui.work.required_materials",{"cost":_cost_text(job.inputs)}), sheet_body)
 	if job.category in ColonyWorld.CATEGORIES:
-		button("Priority: " + ["", "Low", "Normal", "Urgent"][job.priority],func() -> void: _submit("priority",{"target":job.id,"value":job.priority%3+1}),sheet_body)
+		button(ColonyText.text("ui.label.priority",{"priority":["",ColonyText.text("ui.priority.low"),ColonyText.text("ui.priority.normal"),ColonyText.text("ui.priority.urgent")][job.priority]}),func() -> void: _submit("priority",{"target":job.id,"value":job.priority%3+1}),sheet_body)
 		for citizen in world.citizens:
-			button("Do next: " + citizen.name,func() -> void:
+			button(ColonyText.text("ui.work.do_next",{"name":citizen.name}),func() -> void:
 				_submit("pin",{"target":job.id,"citizen":citizen.id})
 				close_sheet(),sheet_body)
 	button(ColonyText.text("ui.action.cancel_order"), func() -> void:
@@ -1471,33 +1471,33 @@ func _work_sheet() -> void:
 		return
 	label(ColonyText.text("ui.help.work_sheet.choose_a_resource_drag_a_rectangle_then"), sheet_body)
 	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node", "clay_bank", "iron_seam"]:
-		button("Gather " + world.definitions.resources[kind].item, func() -> void: begin_gather(kind), sheet_body)
+		button(ColonyText.text("ui.work.gather",{"item":world.definitions.resources[kind].item}), func() -> void: begin_gather(kind), sheet_body)
 	button(ColonyText.text("ui.action.paint_forest_zone"),begin_forest,sheet_body)
 	button(ColonyText.text("ui.action.research"),show_research,sheet_body)
 	button(ColonyText.text("ui.action.wildlife"),show_wildlife,sheet_body)
 	button(ColonyText.text("ui.action.livestock_pens"),show_pens,sheet_body)
 	label(ColonyText.text("ui.help.work_sheet.worker_assignments"),sheet_body)
 	for citizen in world.citizens:
-		button("%s | Gathering %s" % [citizen.name,["Off","Last","Normal","First"][citizen.preferences.Gathering]],func() -> void: show_work_preferences(citizen.id),sheet_body)
+		button(ColonyText.text("ui.work.worker_gathering",{"name":citizen.name,"preference":[ColonyText.text("ui.choice.off"),ColonyText.text("ui.preference.last"),ColonyText.text("ui.preference.normal"),ColonyText.text("ui.preference.first")][citizen.preferences.Gathering]}),func() -> void: show_work_preferences(citizen.id),sheet_body)
 	for zone in world.nature_state.forests:
-		button("Forest | Keep %d%% mature" % zone.reserve,func()->void:show_forest(zone),sheet_body)
+		button(ColonyText.text("ui.work.forest",{"percent":zone.reserve}),func()->void:show_forest(zone),sheet_body)
 	label(ColonyText.text("ui.help.work_sheet.storage"),sheet_body)
 	for store in world.stores:
-		button("Storage " + str(store.id),func() -> void: _storage_sheet(store),sheet_body)
+		button(ColonyText.text("ui.work.storage",{"id":store.id}),func() -> void: _storage_sheet(store),sheet_body)
 	var orders: Array = world.unfinished_jobs()
 	var queued: int = orders.filter(func(j:Dictionary)->bool:return j.state=="Queued").size()
-	label("Current orders: %d total; %d waiting for capacity. Every marked tile is kept." % [orders.size(),queued],sheet_body).name="WorkOrderCounts"
+	label(ColonyText.text("ui.work.order_counts",{"total":orders.size(),"queued":queued}),sheet_body).name="WorkOrderCounts"
 	var pages: int = maxi(1,(orders.size()+31)/32)
 	work_orders_page=clampi(work_orders_page,0,pages-1)
 	if pages>1:
 		var pager: HBoxContainer = HBoxContainer.new();sheet_body.add_child(pager)
 		var previous: Button = button(ColonyText.text("ui.action.previous"),func()->void:_show_work_page(work_orders_page-1),pager,96)
 		previous.name="WorkOrdersPrevious";previous.disabled=work_orders_page==0
-		label("%d / %d" % [work_orders_page+1,pages],pager)
+		label(ColonyText.text("ui.work.page",{"page":work_orders_page+1,"pages":pages}),pager)
 		var next: Button = button(ColonyText.text("ui.action.next"),func()->void:_show_work_page(work_orders_page+1),pager,72)
 		next.name="WorkOrdersNext";next.disabled=work_orders_page==pages-1
 	for job in orders.slice(work_orders_page*32,(work_orders_page+1)*32):
-		button("%s - %s" % [job.kind.capitalize(), job.state], func() -> void: _job_sheet(job), sheet_body).name="WorkOrderRow"+str(job.id)
+		button(ColonyText.text("ui.work.row",{"kind":job.kind.capitalize(),"state":job.state}), func() -> void: _job_sheet(job), sheet_body).name="WorkOrderRow"+str(job.id)
 		if not job.reason.is_empty(): label(job.reason,sheet_body)
 
 func _show_work_page(page: int) -> void:
@@ -1613,15 +1613,15 @@ func begin_field() -> void:
 	begin_placement()
 	placement_kind = "field"
 	view._update_transform()
-	notice = "Turnips: prepare 4 WU, sow 1 WU, harvest 2 WU per tile. Two days of growth gives four vegetables."
+	notice = ColonyText.text("ui.notice.field_turnips")
 
 func _field_sheet(field: Dictionary) -> void:
 	show_details(field.crop.capitalize())
 	var definition: Dictionary = world.definitions.crops[field.crop]
-	label("%s\nGrowth %d/%d | Yield %d\nSoil %d%% | %s" % [field.reason,field.growth,definition.growth,field.yield_count,field.fertility/10,"Automatic replanting" if field.replant else "Replant off"],sheet_body)
+	label(ColonyText.text("ui.field.details",{"reason":field.reason,"growth":field.growth,"required":definition.growth,"yield":field.yield_count,"percent":int(field.fertility/10),"replant":ColonyText.text("ui.field.replant_on" if field.replant else "ui.field.replant_off")}),sheet_body)
 	if field.planted:
 		if field.growth * 2 >= definition.growth:
-			label("Early harvest now: about %d units. Workers still need to reach and harvest this crop." % mini(field.yield_count,maxi(1,definition.yield_count * field.growth / definition.growth)),sheet_body)
+			label(ColonyText.plural("ui.field.early_harvest",mini(field.yield_count,maxi(1,definition.yield_count * field.growth / definition.growth))),sheet_body)
 			button(ColonyText.text("ui.action.harvest_early"),func() -> void:
 				_submit("early_harvest",{"target":field.id})
 				close_sheet(),sheet_body)
@@ -1638,8 +1638,8 @@ func _storage_sheet(storage: Dictionary) -> void:
 	for stack in world.stacks:
 		if stack.location == "store" and stack.owner == storage.id:
 			count += stack.count
-	label("%d/%d units. Each zone tile holds one stack. Goods remain here while their filter is valid; new loose goods prefer higher-priority destinations." % [count,storage.capacity],sheet_body)
-	button("Priority: " + ["","Low","Normal","High"][storage.priority],func() -> void:
+	label(ColonyText.text("ui.storage.capacity",{"count":count,"capacity":storage.capacity}),sheet_body)
+	button(ColonyText.text("ui.label.priority",{"priority":["",ColonyText.text("ui.priority.low"),ColonyText.text("ui.priority.normal"),ColonyText.text("ui.priority.high")][storage.priority]}),func() -> void:
 		_submit("stock_filter",{"target":storage.id,"filters":storage.filters,"priority":storage.priority%3+1}),sheet_body)
 	for item in world.definitions.items:
 		var stored: int = 0
@@ -1648,8 +1648,8 @@ func _storage_sheet(storage: Dictionary) -> void:
 			if stack.location == "store" and stack.owner == storage.id and stack.item == item:
 				stored += stack.count
 				reserved += world._reserved(stack)
-		label("%s: %d stored, %d reserved" % [item.capitalize(),stored,reserved],sheet_body)
-		button(item.capitalize()+": "+("On" if storage.filters.has(item) else "Off"),func() -> void:
+		label(ColonyText.text("ui.storage.item_counts",{"item":item.capitalize(),"stored":stored,"reserved":reserved}),sheet_body)
+		button(ColonyText.text("ui.storage.item_filter",{"item":item.capitalize(),"status":ColonyText.text("ui.choice.on" if storage.filters.has(item) else "ui.choice.off")}),func() -> void:
 			var filters: Array = storage.filters.duplicate()
 			if filters.has(item): filters.erase(item)
 			else: filters.append(item)
@@ -1947,15 +1947,15 @@ func choose_diagnostics() -> void:
 
 func show_accessibility() -> void:
 	show_sheet("Settings","ui.sheet.settings")
-	button("Text size: %d%%" % int(text_scale*100),func()->void:
+	button(ColonyText.text("ui.setting.text_size",{"percent":int(text_scale*100)}),func()->void:
 		text_scale=1.25 if text_scale==1.0 else (1.5 if text_scale==1.25 else 1.0)
 		_save_settings();_build_theme();show_accessibility(),sheet_body)
-	button("Hand: "+("Left" if left_handed else "Right"),func()->void:left_handed=not left_handed;_save_settings();show_accessibility(),sheet_body)
+	button(ColonyText.text("ui.setting.hand",{"hand":ColonyText.text("ui.choice.left" if left_handed else "ui.choice.right")}),func()->void:left_handed=not left_handed;_save_settings();show_accessibility(),sheet_body)
 	for key in ["reduced_motion","high_contrast","inspector_pause"]:
-		var title: String = {"reduced_motion":"Reduced motion","high_contrast":"High contrast selection","inspector_pause":"Pause on inspect"}[key]
+		var title: String = ColonyText.text({"reduced_motion":"ui.setting.reduced_motion","high_contrast":"ui.setting.high_contrast","inspector_pause":"ui.setting.inspector_pause"}[key])
 		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
 		label(title,row)
-		var toggle: Button = button("On" if settings.values[key] else "Off",func()->void:
+		var toggle: Button = button(ColonyText.text("ui.choice.on" if settings.values[key] else "ui.choice.off"),func()->void:
 			settings.values[key]=not settings.values[key];_apply_device_settings();_save_settings();show_accessibility(),row,64)
 		toggle.size_flags_horizontal=Control.SIZE_SHRINK_END;toggle.name="Setting_"+key
 	button(ColonyText.text("ui.action.quiet_sleep_on" if settings.values.quiet_sleep_speed else "ui.action.quiet_sleep_off"),func()->void:
@@ -1963,7 +1963,7 @@ func show_accessibility() -> void:
 	label(ColonyText.text("ui.help.quiet_sleep_setting"),sheet_body)
 	var graphics: HBoxContainer = HBoxContainer.new();sheet_body.add_child(graphics);label(ColonyText.text("ui.help.accessibility.graphics"),graphics)
 	var quality: CycleChoiceButton = CycleChoiceButton.new()
-	for choice in ["Battery","Balanced","Smooth"]: quality.add_item(choice)
+	for choice in ["Battery","Balanced","Smooth"]: quality.add_item(ColonyText.text({"Battery":"ui.setting.graphics.battery","Balanced":"ui.setting.graphics.balanced","Smooth":"ui.setting.graphics.smooth"}[choice]))
 	quality.selected=["Battery","Balanced","Smooth"].find(settings.values.quality);quality.custom_minimum_size=Vector2(120,48);graphics.add_child(quality)
 	quality.item_selected.connect(func(index:int)->void:settings.values.quality=["Battery","Balanced","Smooth"][index];_apply_device_settings();_save_settings())
 	label(ColonyText.text("ui.help.accessibility.battery_balanced_30_fps_smooth_60_fps"),sheet_body)
@@ -1975,19 +1975,19 @@ func show_audio_settings() -> void:
 	show_sheet("Sound","ui.sheet.sound")
 	label(ColonyText.text("ui.help.audio_settings.warnings_stay_visible_when_sound_is_muted"),sheet_body)
 	for channel in settings.values.audio:
-		var name: String = {"master":"Master","music":"Music","effects":"Effects","ui":"Interface"}[channel]
-		var title: Label = label(name+": %d%%" % roundi(settings.values.audio[channel]*100),sheet_body)
+		var name: String = ColonyText.text({"master":"ui.setting.audio.master","music":"ui.setting.audio.music","effects":"ui.setting.audio.effects","ui":"ui.setting.audio.interface"}[channel])
+		var title: Label = label(ColonyText.text("ui.setting.audio.volume",{"channel":name,"percent":roundi(settings.values.audio[channel]*100)}),sheet_body)
 		var slider: TouchVolumeSlider = TouchVolumeSlider.new();slider.name="Volume_"+channel
 		slider.min_value=0;slider.max_value=100;slider.step=1;slider.value=settings.values.audio[channel]*100
 		slider.custom_minimum_size=Vector2(48,48);slider.size_flags_horizontal=Control.SIZE_EXPAND_FILL;sheet_body.add_child(slider)
 		slider.value_changed.connect(func(value:float)->void:
-			settings.values.audio[channel]=value/100.0;title.text=name+": %d%%" % roundi(value)
+			settings.values.audio[channel]=value/100.0;title.text=ColonyText.text("ui.setting.audio.volume",{"channel":name,"percent":roundi(value)})
 			if is_instance_valid(soundscape): soundscape.apply_settings(settings.values.audio,settings.values.haptics))
 		slider.drag_ended.connect(func(changed:bool)->void:
 			if changed: _save_settings())
 		slider.focus_exited.connect(_save_settings)
 	if OS.has_feature("android"):
-		button("Vibration: "+("On" if settings.values.haptics else "Off"),func()->void:settings.values.haptics=not settings.values.haptics;_apply_device_settings();_save_settings();show_audio_settings(),sheet_body).name="Haptics"
+		button(ColonyText.text("ui.setting.vibration",{"status":ColonyText.text("ui.choice.on" if settings.values.haptics else "ui.choice.off")}),func()->void:settings.values.haptics=not settings.values.haptics;_apply_device_settings();_save_settings();show_audio_settings(),sheet_body).name="Haptics"
 	else: label(ColonyText.text("ui.help.audio_settings.vibration_is_available_on_android"),sheet_body)
 	button(ColonyText.text("ui.action.back_to_settings"),show_accessibility,sheet_body)
 
@@ -1995,9 +1995,9 @@ func show_auto_pauses() -> void:
 	show_sheet("Auto pauses","ui.sheet.auto_pauses")
 	label(ColonyText.text("ui.help.auto_pauses.each_event_pauses_once_turning_a_pause"),sheet_body)
 	for key in settings.values.auto_pauses:
-		var title: String = {"downed":"Downed resident","hostile":"Hostile arrival","fire":"New building fire","expedition":"Expedition decision","departure":"Departure ultimatum","low_food":"Food below half a day"}[key]
+		var title: String = ColonyText.text({"downed":"ui.setting.pause.downed","hostile":"ui.setting.pause.hostile","fire":"ui.setting.pause.fire","expedition":"ui.setting.pause.expedition","departure":"ui.setting.pause.departure","low_food":"ui.setting.pause.low_food"}[key])
 		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row);label(title,row)
-		var toggle: Button = button("On" if settings.values.auto_pauses[key] else "Off",func()->void:
+		var toggle: Button = button(ColonyText.text("ui.choice.on" if settings.values.auto_pauses[key] else "ui.choice.off"),func()->void:
 			settings.values.auto_pauses[key]=not settings.values.auto_pauses[key];_apply_device_settings();_save_settings();show_auto_pauses(),row,64)
 		toggle.size_flags_horizontal=Control.SIZE_SHRINK_END;toggle.name="AutoPause_"+key
 	button(ColonyText.text("ui.action.back_to_settings"),show_accessibility,sheet_body)

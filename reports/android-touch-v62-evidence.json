@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "build": "0.7.62-m7",
+  "local_android_code": 101,
+  "scope": "Android35 arm64 emulator brackenward_m0,1080x2340 density440, actual SwiftShader/ANGLE Compatibility. Real APK update/panel taps/text scale100/125/150/portrait-landscape/caption persistence and paused v6 migration. No physical phone/thermal/PSS/battery/fps certification. Original45 files isolated for all interactions then restored exactly; only task-owned sandbox removed. Emulator stopped afterward.",
+  "checks": {
+    "all45_files_identical_before_first_launch": true,
+    "original45_files_restored_exactly": true,
+    "programmatic_choice_bug_reproduced_unfixed_apk": true,
+    "corrected_caption_matches_saved_smooth_after_apk_restart": true,
+    "preference_values_exact_before_after_caption_fix": true,
+    "v6_clone_load_save_tick10734_exact_except_two_headers": true,
+    "v6_migration_original_backup_exact": true,
+    "orientation_preferences_restored": true,
+    "no_script_or_runtime_crash_observed": true
+  },
+  "fixed_local_apk_sha256": "86794d88aef89737f3cbbee9b91119ef82d002e9d74ce063d2c83b4bdfca96bc",
+  "before_fix_local_apk_sha256": "4f80958322c14bf6194861c88d439abf5cf62022f919b647d00898d3d8c5d52e",
+  "local_evidence_sha256": {
+    "before-update-manifest.json": "68222501dab400ccaba5d20212323fab5f2dec452c2ce6f92a95cfea3b844ef5",
+    "update-preservation.json": "e5e8d33d306f3eee6564386b5f790508ad56add2dc81f5bcd105c7e152dbe448",
+    "choice-caption-before-fix-evidence.json": "529bcdb7f1cc3adb5ec23de4cbd642accd98ae7bfde09ea04037353df33175a7",
+    "choice-before-fix-settings.json": "c5f758bda5cd31e36914a0387cd1c1a7a81e18111c3137f00f8bfe3a7a027175",
+    "choice-after-fix-settings.json": "c5f758bda5cd31e36914a0387cd1c1a7a81e18111c3137f00f8bfe3a7a027175",
+    "14-choice-reopened-before-fix.png": "e0a8b6d2acd85ea5259caac50dae629f3c9fcbcbce4240243a424a9e3e1163c6",
+    "16-choice-after-fix.png": "0979f6b0bf5e9a9f7c6bb5fb745ed8020ec85ca3fb0e5d39798bed6487ba4505",
+    "09-settings150-rotation-state.png": "56276d896b070347528fd270c52f4e034c247b854f147826f61df30cebb8f355",
+    "v6-migration-audit.json": "ca1c13e2dea7ced911a5c1abcdda75c66336640199485254e488437911212fb3",
+    "v6-migrated.brackenward": "82e29d0865d5d9bedb165ef9d6af41ef6a34e5750b2ab3c237e74c271783b595",
+    "restored-original-manifest.json": "7693a57d39371d0ee3459cf29dec12f9ae3fc3a8e5c5dd57d7a2b464dfc18fc7",
+    "isolation.json": "35a69d07adc6ca236e1a0489d52e3df249d8270d5e101011aa0c203a066a7a6c",
+    "final-logcat.log": "37c52c252dd46445d3e8363191f95bb90a407e4ab0716176e5f7b194d1ff2496"
+  },
+  "known_log_scope": "Retained first-launch cached shader recompilation warning; no script/parse/missing-message or Android runtime crash. Shell first attempted the non-exported template activity, then used resolved GodotAppLauncher; only the latter launched."
+}

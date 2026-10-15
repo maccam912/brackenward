@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.61-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.62-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -15,20 +15,20 @@ Checkpoint: `0.7.61-m7` (campaign schema 23, device settings schema 6), content 
 | macOS native launch | Pass | macOS 26.6.2, Apple Silicon, Apple M5 Pro, OpenGL 4.1 Compatibility via Metal 90.5; native scene/UI runner launched |
 | Physical Android installation/input/rotation/storage | User-tested subset | User installed and tried a phone build; reported oversized/clipped controls and fuzzy rendering. Smaller controls, arrow buttons, MSDF fonts and area designations are implemented and emulator-tested. Rotation/storage/performance task battery is still pending |
 | Physical memory/battery/thermal baseline | Not run | The user supplied a CPH2655/Adreno 830/Android 36 CPU/frame-gap report from 0.7.24, retained in ANDROID_DEVICE_EVIDENCE.md. Android PSS, brightness-controlled battery and thermal measurements remain Not run. |
-| Native thirty-minute twenty-resident proxy | Pass at `1270652` / v7; later runtime separate | Frozen v7 at2x: 15.763 MiB sampled heap peak, lowest one-second FPS27.765, 36000 ticks, twenty residents, zero storage/invariant errors; separate second audit passes. Host has concurrent headless jobs. Physical Android/PSS/thermal and later UTF-8 runtime remain separate. |
+| Native thirty-minute twenty-resident proxy | Pass at `487bb1d` / v7; later runtime separate | Frozen byte-backed preparation at 2x: 14.635 MiB sampled peak/ending growth, lowest one-second FPS 28.605, 36,001 ticks, twenty residents, zero counters/errors; separate second audit passes. Concurrent headless host work is recorded. Physical Android/PSS/thermal and later loader/UI revisions remain separate. |
 | Desktop export packages | Pass, build subset | macOS universal ZIP, Windows x86-64 EXE/PCK, Linux x86-64 executable/PCK exported locally; only macOS native launch exercised |
-| Remote CI | Pass at `6685958`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38694536713) passed the full suite, all four desktop replay/startup targets, exports and publication, including actual exported Linux startup from an empty directory. The earlier `3820789` Windows startup access violation passed one retry; its original log remains retained. Physical phone certification remains pending. |
+| Remote CI | Pass at `a089292`; current revision separate | [Observed workflow](https://github.com/maccam912/brackenward/actions/runs/38718329959) passes all 28 suites/2,802 assertions, Kotlin, map subset, all four actual desktop replay/migration/persistence/startup targets, exports and publication. `native-ci-v61-evidence.json` checks actual artifacts and APK metadata/checksums. Physical certification remains pending. |
 | M1 visible work loop | Pass, automated/native subset | Four actual residents, starting supplies/equipment, A* movement, atomic reservations, 8-unit hauling, build escrow, seven structures, gathering, cooking, eating and sleep; 72,000 ticks at 1x/2x/4x match; real UI orders and native screenshots inspected |
 | M1 cancellation and saves | Pass | Build/cook cancellation in Fetching/Delivering/Working; haul cancellation in Fetching/Delivering; ledger conservation, duplicate receipts, mid-edge/held-input save continuation, schema/checksum rejection |
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
-| M3–M6 gameplay and progression | Implemented; pinned v6 campaign evidence; v7 reruns pending | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Fresh v6 Standard-site and Pine Hearthside vegetarian Charters pass all four 96-day cases with eight residents, all stages, Continue and zero zero-fullness/grace-exceeded ticks; independent completion and current 0.7.32 loading audits pass. The earlier v6 29/30 failure is traced to a replanted tree blocking the lodge. The complete clean revised-policy matrix at 7059064 now passes all 30/30 cases, keeping eight residents with zero zero-fullness/grace ticks and passing 23,760 invariant checks; a current 0.7.42 pure-loading audit preserves all thirty endpoints. The revision-1 ordinary twenty-resident campaign passes both full seasonal windows with all twenty alive, zero window starvation and no campaign grace violations. The separate ninety-six additional post-Charter days now pass all four generator-1 cases with preserved origins/commands, eight survivors, no starvation/grace ticks and a final food day. Fresh revision-2 Charters now pass all four 96-day cases, including independent no-trade/vegetarian audits; revision-2 Winter now passes 30/30; the new-map ordinary twenty-resident campaign also passes both full year-three seasonal windows with twenty home residents and health 100 throughout each window. Merchant-material economies pass all four 24-day cases. Fresh revision-2 post-Charter continuation now passes all four additional 96-day cases with eight survivors, exact original command prefixes, no starvation/grace violations and a final food day. The earlier v4 matrix is 30/30. M7 and physical/human gates remain; older v2/v3/v4 results retain their pinned scopes. |
+| M3–M6 gameplay and progression | Implemented; pinned v7 Charter/Winter/raid and broader v6 evidence | Frozen current-v7 generator-2 policies pass all four 96-day Charters and separate no-barter/import audits, all 30 first-Winter maps, and 30 paired prepared-defense/physical-ransom cases. V7 post-Charter continuation remains in progress. Pinned generator-2 v6 ordinary twenty-resident seasonal windows, four additional 96-day post-Charter cases, first-week and merchant-material economies pass in their recorded scopes; earlier failures remain retained. M7 physical/human gates remain open. |
 | Revision-2 release map sweep | Pass | All 30,000/30,000 independently audited maps (10,000 per site), zero retries/fallbacks; source `d870381`. Inspected boundary goldens and separate actual native/Android initial-map checks retain their scopes. Campaign balance remains separate. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `6685958` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-6685958cc27e); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
+| Development APK publication | Pass at `a089292` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-a089292c7989), code 214 / 0.7.61-m7+a089292; published APK SHA-256 `6196e61cfa2d53aef7fa87d84f74ae318626d81230824f153e331c07d5a4f4a2`. Stable package/debug identity, source provenance and checksums verified. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,802 checks, zero failures in their recorded runs, including 667 native UI checks. Trade/economy passes 41 in 0.7.50, adding fourteen policy/physical-transaction checks; charter passes 106. All 28 suites were freshly verified in 0.7.58; 0.7.59 records persistence450 assertions but its runner rejects two empty-hash engine errors; UI667 passes, retaining defense81/generation169 and the other recorded scopes. Historical input/golden/foreign bytes and independently retained complete readers remain pinned. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained; the expanded generation suite passes 167 in 0.7.46 and scheduler passes 403 in 0.7.47. Persistence, colony, production and native UI were rerun for the storage-read optimization. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current recorded validation: 28 GDScript suites, 2,804 assertions including 669 native UI checks. Remote 0.7.61 freshly passes all 28 suites/2,802 assertions; current 0.7.62 freshly passes persistence 458 and expanded graphical UI 669. The two new UI regressions fail before the choice-caption fix and pass afterward. Content/font validation covers 526 English keys; Kotlin's four checks and the current local Android export pass. The unchanged simulation/persistence/generation source retains the exact v7 replay at 0.7.61 and every immutable older fixture. Current Android emulator update, settings/rotation and paused v6 migration checks pass with all 45 original private files restored exactly afterward. Full current CI/publication and physical Android/human release gates remain distinct. The incorrect assertion-only 0.7.59 persistence pass claim is explicitly corrected below; failed engine-error runs remain failures. Generated XML/screenshots/raw logs/builds are ignored; committed compact reports retain exact evidence hashes.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -3525,3 +3525,77 @@ persistence gate and publishes nothing. The corrected0.7.60 workflow is pending.
 
 Local Android 0.7.61 export/code 100 and four Kotlin checks pass;
 release-polish-v61-evidence.json retains exact validation/log/APK hashes.
+
+
+## 0.7.62 settings and work-panel text audit
+
+Sixty-one additional named messages bring the English UI catalog from 465 to 526 keys.
+Settings, audio percentages, graphics choices, handedness and automatic-pause
+labels now use it. Work/resource/field/storage details, priority/preference values,
+order paging/counts and pending-order notices use named parameters. Early harvest
+uses1 unit instead of1 units; other English wording and numeric truncation remain
+unchanged. Names, canonical saved activity/reason text, command/route/setting IDs,
+callbacks and all simulation/persistence/generation/catalog definitions remain
+unchanged. Every one of the465 earlier messages is byte-equivalent as a value.
+No language selector or translated content is added; other dynamic panels and
+canonical activity/fact presentation remain part of the M7 text audit.
+
+Content/font validation passes all 526 keys, named parameters and plural forms;
+the shipped99-character set stays unchanged. Five Python message-validator checks
+pass. Fresh fail-closed persistence 458 and the original graphical UI 667 pass; the expanded corrected run passes 669. Large-text
+Settings portrait360x640 and Auto pauses landscape640x360 screenshots were
+inspected: full headings, scrollable body, persistent notice and48-dp controls.
+The native screenshot generator and original control/layout/placement/speed
+regressions remain unchanged. Current Android export succeeds as localcode101;
+emulator update/interaction checks now pass in the scope recorded below, separate from physical QA.
+
+The frozen487bb1d/0.7.59 native source case and separate second audit pass:
+1800.020424 measured seconds at2x after60s warmup,36001 ticks3002→39003 against
+36000 floor nominal, twenty residents. Strict sampled peak/ending growth is
+14.635 MiB and lowest one-second FPS28.605; no below-24 streak and all five
+counters zero. Full roundtrip, source, storage/invariants and audio drain pass.
+Complete gameplay at tick39003 matches the earlier native55 endpoint after only
+the two content headers normalize; native55's heap failure stays Fail.
+native-soak-v59-evidence.json records exact inputs/source/report/comparison hashes
+and concurrent headless campaign/profile/suite/export work. No second graphical
+Godot ran during measurement. This is a native subset, not a pristine/causal
+comparison or Android PSS/thermal/battery certification. Its overall0.7.59 CI
+still fails the separately recorded empty-hash probes; all four actual native
+failure artifacts are audited in native-ci-v59-failure-evidence.json.
+
+The corrected0.7.60 prototype artifact freshly verifies all28 suites/2799
+assertions and Kotlin4, plus exact APK/code213/provenance/checksum agreement
+across both uploaded artifacts. prototype-v60-evidence.json retains those facts.
+Map and Windows/Linux/Apple Silicon native jobs pass; Intel macOS and publication
+are still pending at this checkpoint. Current0.7.61 CI is separately running.
+
+
+The Android test exposed a preexisting CycleChoiceButton defect: assigning its
+selected index did not refresh the caption. Reopening graphics displayed Battery
+while the retained setting was Smooth (initial Balanced likewise displayed
+Battery). Both native regressions reproduce it before repair:669 checks/two
+failures. The selected property now refreshes text without emitting item_selected;
+user selection still emits exactly once. The expanded669-check runner passes.
+The fixed APK shows Smooth on reopening with every device-preference value
+identical to its before-fix record. Tap-to-change help now uses the message catalog.
+
+Android0.7.62/code101 update preserves all45 existing files before first launch.
+The originals are then isolated, with a fresh task sandbox for all interactions.
+Actual taps exercise settings/text scales100/125/150 and portrait/landscape. An
+unchanged private clone of old v6 campaign5 is loaded and explicitly saved while
+paused at tick10734: every gameplay field matches after only the two content
+headers normalize, and the original migration-backup bytes match exactly. All45
+original files are restored byte-for-byte, task data removed, rotation preferences
+restored and the emulator stopped. android-touch-v62-evidence.json retains exact
+APK/before-after/frame/archive/manifest hashes. This is Android35 arm64,
+1080x2340/density440, SwiftShader/ANGLE, not a physical CPH2655/PSS/thermal test.
+
+The frozen v7 Winter matrix completes30/30, minimum health87, with23760 invariant
+checks and every original scenario/save/source/grace gate retained. Its separate
+second audit passes; winter-v58-evidence.json records the source and endpoints.
+Four v7 post-Charter continuations remain in progress. Both0.7.60 and0.7.61 now
+pass every remote job and publication. Actual native artifacts/prototype suites
+and published APKs are audited in native-ci-v60-evidence.json and
+native-ci-v61-evidence.json; code213/214 and exact source/checksum/asset agreement
+are verified. Neither those runs nor current emulator checks certify physical or
+human release gates.

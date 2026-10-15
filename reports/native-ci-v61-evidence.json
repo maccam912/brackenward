@@ -1,0 +1,288 @@
+{
+  "passed": true,
+  "source_commit": "a089292c79891bd8abd4c39c8aaf2fc467fa5e37",
+  "run_id": 38718329959,
+  "run_url": "https://github.com/maccam912/brackenward/actions/runs/38718329959",
+  "hosts": [
+    {
+      "host": "linux-x64",
+      "passed": true,
+      "counts": {
+        "generation": 169,
+        "persistence": 458
+      },
+      "software_renderer": true,
+      "renderer": [
+        "OpenGL API 4.5 (Core Profile) Mesa 25.2.8-0ubuntu0.24.04.4 - Compatibility - Using Device: Mesa - llvmpipe (LLVM 20.1.2, 256 bits)"
+      ],
+      "files_sha256": {
+        "generation.xml": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+        "persistence.xml": "f953052892a8334247b1c5632f08238a7875a6d2a981ed8e51f69ead8391b599",
+        "replay-linux-x64-7200.brackenward": "12391b3aaf8dda23e8913cc453ccf74397f16ea25ab93e875eaf5e38e29b2168",
+        "replay-linux-x64-72000.brackenward": "69323e954e7240ad8745aaf9a12f3003ba890a4b25bfd92173e2cbca523eeac0",
+        "replay-linux-x64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+        "replay-linux-x64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+        "replay-linux-x64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+        "replay-linux-x64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+        "replay-linux-x64-generation.log": "2fe5eb057323051961a9b53a2814d8f7ef112e93a5780d6645f8e8ba9860cf1e",
+        "replay-linux-x64-native-smoke.json": "05a6598d3e7470487a301f65ff052aff139673e12f9c16e4d243edc29a05eb43",
+        "replay-linux-x64-native-smoke.log": "00a3eb90a60cc68650fabdcac1466a1b065780323d0c850325e696ee99cf3773",
+        "replay-linux-x64-persistence.log": "93c73a6882192db013a0ec3bdaa4a8c5623a70ff04892152d652d172777d99a5",
+        "replay-linux-x64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+        "replay-linux-x64.json": "e3707d6657799f89bc54009f05d0886c3b9bdcf1a9b7e783b46dc1fe8ebe21fe",
+        "replay-linux-x64.log": "34a524433a6da7f3bc7fe432ee8de7f89c5207df8d7556f0256ae901c14c4b7c"
+      }
+    },
+    {
+      "host": "windows-x64",
+      "passed": true,
+      "counts": {
+        "generation": 169,
+        "persistence": 457
+      },
+      "software_renderer": true,
+      "renderer": [
+        "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Microsoft) - ANGLE (Microsoft, Microsoft Basic Render Driver (0x0000008C) Direct3D11 vs_5_0 ps_5_0, D3D11-10.0.20348.5386)"
+      ],
+      "files_sha256": {
+        "generation.xml": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+        "persistence.xml": "7db99a7f0cccee96f42652acc5e4e912645221f2b2ef7cd08a86d9e68f11a0d0",
+        "replay-windows-x64-7200.brackenward": "4d552baf2c001321ac0def64f30f76d179896a3b77ee061e56ee73187eddba8a",
+        "replay-windows-x64-72000.brackenward": "a80a83abc70247270517fcb20013a647126834b58bca178cb69638e23a9c15f1",
+        "replay-windows-x64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+        "replay-windows-x64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+        "replay-windows-x64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+        "replay-windows-x64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+        "replay-windows-x64-generation.log": "067f164b9ea3a0f3984b8c3915e7b88abc40795529863fb2d170b575e51c765f",
+        "replay-windows-x64-native-smoke.json": "5e4ec44bad160f1736d3b61cfd23be534f744c6cfd8fac57ff5e4398b98794b1",
+        "replay-windows-x64-native-smoke.log": "fc8b1857c0287280c5a862fc726693386d04e58a0bd62c8b4e069e6b2040ec06",
+        "replay-windows-x64-persistence.log": "e9ce36391a6d79b1991c946124b00db9f8b610a20366f10aa3a4c41f76bac678",
+        "replay-windows-x64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+        "replay-windows-x64.json": "f17a38968806bff466dd97af904cc0a2cc018425d75d4648366cdb1b52567c9f",
+        "replay-windows-x64.log": "4bc3a627fc5db64138c82c8be6b155dfb5f13ab6e6d31b866368feee4171ca70"
+      }
+    },
+    {
+      "host": "macos-arm64",
+      "passed": true,
+      "counts": {
+        "generation": 169,
+        "persistence": 458
+      },
+      "software_renderer": false,
+      "renderer": [
+        "OpenGL API OpenGL ES 3.0 (ANGLE 2.1.1 git hash: aaebda1c5a40) - Compatibility - Using Device: Google Inc. (Apple) - ANGLE (Apple, ANGLE Metal Renderer: Apple Paravirtual device, Version 15.7.9 (Build 24G830))"
+      ],
+      "files_sha256": {
+        "generation.xml": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+        "persistence.xml": "f953052892a8334247b1c5632f08238a7875a6d2a981ed8e51f69ead8391b599",
+        "replay-macos-arm64-7200.brackenward": "c8339c5eb2e19e1a7c27707d27abd9fc94ef500d8dba3524587a1775994263b1",
+        "replay-macos-arm64-72000.brackenward": "92938ae6c352871a89cdd9e840eec0eabc8d07ea8a0ef889f225d187ef17f370",
+        "replay-macos-arm64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+        "replay-macos-arm64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+        "replay-macos-arm64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+        "replay-macos-arm64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+        "replay-macos-arm64-generation.log": "aa30984e0025490b9c4bb038316537691b43973dbbac7f44d6a39527b20236ad",
+        "replay-macos-arm64-native-smoke.json": "ee527e1682dc0f464c13605e844023f2a42c6f5d10636447e2ef4c9136c6f1dc",
+        "replay-macos-arm64-native-smoke.log": "34d87da446c00b235514e1e89da2bd15ca864c2c04865a859887e754eb41c921",
+        "replay-macos-arm64-persistence.log": "e45a6b3fb8233a7a04af5ffc9149910412d380987adec379d5af045e35d6d66a",
+        "replay-macos-arm64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+        "replay-macos-arm64.json": "8b0b3756e294ed32fcc9617a4b66695fa97c921ca917d16b393540aa2b05eef6",
+        "replay-macos-arm64.log": "40c3474a81e819c4dfed651cca099296dbf9c34c3162e0cee427f254abfd60fe"
+      }
+    },
+    {
+      "host": "macos-x64",
+      "passed": true,
+      "counts": {
+        "generation": 169,
+        "persistence": 458
+      },
+      "software_renderer": true,
+      "renderer": [
+        "OpenGL API 4.1 APPLE-21.1.1 - Compatibility - Using Device: Apple Inc. - Apple Software Renderer"
+      ],
+      "files_sha256": {
+        "generation.xml": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+        "persistence.xml": "f953052892a8334247b1c5632f08238a7875a6d2a981ed8e51f69ead8391b599",
+        "replay-macos-x64-7200.brackenward": "465644a76d6b23eeffb34d166428d37923c5f4fbca249023c68100d117a38e7c",
+        "replay-macos-x64-72000.brackenward": "d9c1e0c2641c2aebf78ce621e549145add8d5f6ea5357328e87ff90409350297",
+        "replay-macos-x64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+        "replay-macos-x64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+        "replay-macos-x64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+        "replay-macos-x64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+        "replay-macos-x64-generation.log": "f45596a43922f4f5376740915a4f8f3d35e64345a4c21bc36c4852bbf3f2c4c8",
+        "replay-macos-x64-native-smoke.json": "d731a28f97785b73973b782bcfdd6f5bc29ff4c644c9785b7b4ac9f635e54764",
+        "replay-macos-x64-native-smoke.log": "abcbabc311e053404703ef9a447c54bfbbea6a8259d0567d570ed56f5c170a4c",
+        "replay-macos-x64-persistence.log": "fe6f0fcd02b697d3e425ebf7cdf68adcbdd652af0e96e4cce8a24ae0045232b2",
+        "replay-macos-x64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+        "replay-macos-x64.json": "2139ad80cbdb2392abd6cf342d052b1ac010586ea277bd1d031a0355160ee53d",
+        "replay-macos-x64.log": "a3341bdf575783729e3c4a03a16068e8452faa01493349e0b782be14b0035786"
+      }
+    }
+  ],
+  "prototype_suites": [
+    {
+      "suite": "care",
+      "tests": 55,
+      "sha256": "cc52ef30c03780c7a8917fda9c050c15e68d4133f67a16c8bca26949db5e8c66"
+    },
+    {
+      "suite": "charter",
+      "tests": 106,
+      "sha256": "170a5ff7c4f42870bec75447328db9ce5e05288419562411652bd2e010a09ae4"
+    },
+    {
+      "suite": "chronicle",
+      "tests": 52,
+      "sha256": "24988d3a82071394b0c39875c7b65a91c73b09e9bb0d07b7cd33e386a974398b"
+    },
+    {
+      "suite": "colony",
+      "tests": 42,
+      "sha256": "d28c5aaf7e84c68036590092ad798673d43a474a8445e425649623fe4cc3142d"
+    },
+    {
+      "suite": "construction",
+      "tests": 21,
+      "sha256": "5c3a8e938ee274e259c50d4abe7bd26d9b0f1d8f78c16c724e9f270b47a105cc"
+    },
+    {
+      "suite": "defense",
+      "tests": 81,
+      "sha256": "568ceba0ff61deb8c155f75555a34b42085b0d07597848d7303b71bca50c8342"
+    },
+    {
+      "suite": "director",
+      "tests": 27,
+      "sha256": "2233f7e4d11970925f71422b882d5fd5222eacbe2c9d7738e99308ac867d655c"
+    },
+    {
+      "suite": "domestic",
+      "tests": 40,
+      "sha256": "9d92f6f3c40b3ba5eb74e4508bd7d7ab58aab4f1bda6933b47a71bb22c326c03"
+    },
+    {
+      "suite": "equipment",
+      "tests": 17,
+      "sha256": "a0fe1d26cc74c75688029b87354998b87650eed7624e4794ec6ae1e67a123c07"
+    },
+    {
+      "suite": "fire",
+      "tests": 23,
+      "sha256": "521bee2de7a6e1bb07b3b7db38b75a0e74bab6f68747a3a9c06a4bf688aa139f"
+    },
+    {
+      "suite": "generation",
+      "tests": 169,
+      "sha256": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f"
+    },
+    {
+      "suite": "integration",
+      "tests": 6,
+      "sha256": "d7e2aa917c24b1702a453f6a8672dc7a6b9d8d68a77e1fbf6e7e8e7f017e1e10"
+    },
+    {
+      "suite": "maintenance",
+      "tests": 32,
+      "sha256": "0e5f59e929dffef03bebd6b3bd1ba49f8db5a9f311d12c192f92739abbfda605"
+    },
+    {
+      "suite": "nature",
+      "tests": 18,
+      "sha256": "437851be2042c10811f5d8de17156cf75e319c82654bdbc1541b16dd6c393ca7"
+    },
+    {
+      "suite": "opportunity",
+      "tests": 57,
+      "sha256": "53eeb9fbf405438642fbb92932df37fd1b064e894153e946e07eccf29197ffe3"
+    },
+    {
+      "suite": "people",
+      "tests": 33,
+      "sha256": "5e86f7c738ace4aeba469b9eea9478ca487c91d2f2eaac4ecf01bd76b56ca55e"
+    },
+    {
+      "suite": "persistence",
+      "tests": 458,
+      "sha256": "f953052892a8334247b1c5632f08238a7875a6d2a981ed8e51f69ead8391b599"
+    },
+    {
+      "suite": "population",
+      "tests": 57,
+      "sha256": "7f28299353e4f87dd706948546c1a2a8c353798a820e1cac5217fb5626d659bb"
+    },
+    {
+      "suite": "production",
+      "tests": 52,
+      "sha256": "8bb24f0f18fa8a10dfe1d106ac460c4988826ab6284d3612f457c37acee9c22f"
+    },
+    {
+      "suite": "region",
+      "tests": 107,
+      "sha256": "d213642423afaf96e9933d5beeb19f5964cbdd0030be00f480474b076e7328fb"
+    },
+    {
+      "suite": "scheduler",
+      "tests": 403,
+      "sha256": "6df17909cc50f86cb4ff05b835d6928fde304e97f457d0de4747d88a429517a2"
+    },
+    {
+      "suite": "seasons",
+      "tests": 26,
+      "sha256": "a55515d746805620e87086c4d8447fcb694b5bed619553af0533259d21b11fb7"
+    },
+    {
+      "suite": "survival",
+      "tests": 83,
+      "sha256": "87c4cf42ba315fa4bcb6fb477852cbb932e0d4382b11b176c41f05a946e3e1dc"
+    },
+    {
+      "suite": "trade",
+      "tests": 41,
+      "sha256": "cfe7d1743b5ea6314397bbf5954d4b3f6963e12a9cf4b8eca6f8b0507ef4e7a4"
+    },
+    {
+      "suite": "tutorial",
+      "tests": 46,
+      "sha256": "313ba038280b9e6c4f7cba38fceecbd076f26e64ff1b0e6d0daaa382d392ac6b"
+    },
+    {
+      "suite": "ui",
+      "tests": 667,
+      "sha256": "5182af83d19215d8b91790f34790d138d57be37ebc7c220cdcb44df4302699d4"
+    },
+    {
+      "suite": "unit",
+      "tests": 20,
+      "sha256": "3f5ebc7806e260d3d46a3102274310f903444552de012a994fbadfc814c92c57"
+    },
+    {
+      "suite": "wildlife",
+      "tests": 63,
+      "sha256": "f072cf3923d402297a640fb5390dcac357ba8f8ffb82d462230b6a5cd3bfaf30"
+    }
+  ],
+  "prototype_assertions": 2802,
+  "kotlin_checks": 4,
+  "apk": {
+    "tag": "dev-a089292c7989",
+    "release_url": "https://github.com/maccam912/brackenward/releases/tag/dev-a089292c7989",
+    "sha256": "6196e61cfa2d53aef7fa87d84f74ae318626d81230824f153e331c07d5a4f4a2",
+    "build": {
+      "commit": "a089292c79891bd8abd4c39c8aaf2fc467fa5e37",
+      "run_number": 114,
+      "version_code": 214,
+      "run_id": "38718329959",
+      "kind": "development_debug"
+    },
+    "metadata": "package: name='dev.brackenward.game' versionCode='214' versionName='0.7.61-m7+a089292' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+    "published_matches_prototype_artifact": true,
+    "published_files_sha256": {
+      "SHA256SUMS.txt": "2912af6ae4c19e820a8365be4c95a1400e66b052a01cc0dcec8c8bb75ee75142",
+      "brackenward-debug.apk": "6196e61cfa2d53aef7fa87d84f74ae318626d81230824f153e331c07d5a4f4a2",
+      "build.json": "fb8b2923584ab9e2c0e7e3e25f800435f2d3877c16633a84db75aa7e2b271489"
+    }
+  },
+  "scope": "All actual native/replay/migration/generation/persistence/startup/log artifacts checked; prototype28/2802 and Kotlin4 verified. All remote jobs including map subset and publication pass. Published APK/code214/source/checksum matches actual prototype export. Hosted software classifications retained; not physical Android/human certification."
+}

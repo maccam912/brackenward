@@ -55,3 +55,22 @@ in 0.7.28. Automatic 12x quiet-sleep playback, exact waking/event cutoff, retain
 selected speed, an opt-out and CPU fallback are implemented and locally checked
 in 0.7.29. Physical retesting remains distinct
 from local automated checks.
+
+
+## 0.7.62 emulator update and settings/migration subset
+
+Android35 arm64 brackenward_m0,1080x2340 at440dpi, actual SwiftShader/ANGLE
+Compatibility; local0.7.62/code101 debug APK. Update preserves all45 prior private
+files before first launch. Original files are isolated for testing, then restored
+exactly; task data is removed, rotation preferences restored and emulator stopped.
+Actual taps/settings at100/125/150% and portrait/landscape are inspected. Reopening
+graphics reproduces a Battery caption versus saved Smooth before the selection
+setter fix; the fixed APK shows Smooth with identical preferences. Two native UI
+regressions fail before and the expanded669 checks pass after. An untouched v6
+campaign5 clone loads/saves paused at10734 with every gameplay field preserved
+after only two content headers normalize; its original backup bytes remain exact.
+See android-touch-v62-evidence.json for all file/APK/frame/manifest hashes. The
+retained first-launch shader-cache recompilation warning is diagnostic; no script,
+missing-message, parse or Android runtime crash is observed. This is separate from
+physical CPH2655 performance, Android PSS/battery/thermal and the full human task
+battery; the user's original0.7.24 report remains unchanged above.

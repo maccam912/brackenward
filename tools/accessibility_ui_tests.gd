@@ -37,6 +37,11 @@ static func run(previous: GameSession, check: Callable) -> void:
 	check.call("SETTINGS/UI_inspector_pause_preserves_previous_speed",game.runner.speed==0 and game.runner.previous_speed==2)
 	game.close_inspector();game.show_accessibility()
 	var choices: Array = game.sheet_body.find_children("*","CycleChoiceButton",true,false)
+	check.call("SETTINGS/UI_reopened_graphics_caption_matches_saved_balanced_choice",game.settings.values.quality=="Balanced" and choices[0].selected==1 and choices[0].text=="Balanced  >")
+	var selection_events: Array=[0]
+	choices[0].item_selected.connect(func(_index:int)->void:selection_events[0]+=1)
+	choices[0].selected=2
+	check.call("SETTINGS/UI_programmatic_choice_updates_caption_without_user_action_or_setting_write",choices[0].text=="Smooth  >" and selection_events[0]==0 and game.settings.values.quality=="Balanced" and game.world.canonical_hash()==initial)
 	choices[0].selected=2;choices[0].item_selected.emit(2)
 	check.call("SETTINGS/UI_smooth_sets_60fps_without_changing_simulation",Engine.max_fps==60 and game.settings.values.quality=="Smooth" and game.world.canonical_hash()==initial)
 	game.show_controls();await tree.process_frame

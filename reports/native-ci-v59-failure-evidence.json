@@ -1,0 +1,111 @@
+{
+  "passed": false,
+  "source_commit": "487bb1d8172234713ce479085bde24df936fc7e0",
+  "run_id": 38715869602,
+  "run_url": "https://github.com/maccam912/brackenward/actions/runs/38715869602",
+  "run_metadata_sha256": "0785f6f64433e4bb1497a7d2c508b88d35696c89c9db88133ecacbec6343a098",
+  "publication": "skipped",
+  "hosts": [
+    {
+      "host": "linux-x64",
+      "native_job_passed": false,
+      "replay_passed": true,
+      "generation_assertions": 169,
+      "persistence_assertions": 450,
+      "persistence_assertion_failures": 0,
+      "persistence_engine_errors": 2,
+      "graphical_smoke": "skipped after persistence failed",
+      "files_sha256": {
+        "generation.xml": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+        "persistence.xml": "c6691d79d8d577f4a780ce800a4983ebc431cf6339200feb04efa338c9064bd9",
+        "replay-linux-x64-7200.brackenward": "377a634b51c2a089691ff54bce00573f45517c76432f2cb6aa3222cd4452a9b7",
+        "replay-linux-x64-72000.brackenward": "a3f32c87e6106ef1720e83e0d82643a79f9ab59a80210b53a0ab5469387249cc",
+        "replay-linux-x64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+        "replay-linux-x64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+        "replay-linux-x64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+        "replay-linux-x64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+        "replay-linux-x64-generation.log": "6cf33b0f5d099d0c4b425fc12e99413d21f3f107d9adffadb203ef4852d9e7d2",
+        "replay-linux-x64-persistence.log": "73e2fd4ae5af61a3712df4820babfaf96d74929d0e0136474d00504f833e426f",
+        "replay-linux-x64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+        "replay-linux-x64.json": "497f44ee3df11783d43f7e822ff3c0bcb327b78cb7cd04d66fa0b6c478f1c7c2",
+        "replay-linux-x64.log": "a697c9c5ee83de5d66c8b1783331ec57014ff791e7f75c8d56f84d4e4bb703b7"
+      }
+    },
+    {
+      "host": "macos-arm64",
+      "native_job_passed": false,
+      "replay_passed": true,
+      "generation_assertions": 169,
+      "persistence_assertions": 450,
+      "persistence_assertion_failures": 0,
+      "persistence_engine_errors": 2,
+      "graphical_smoke": "skipped after persistence failed",
+      "files_sha256": {
+        "generation.xml": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+        "persistence.xml": "c6691d79d8d577f4a780ce800a4983ebc431cf6339200feb04efa338c9064bd9",
+        "replay-macos-arm64-7200.brackenward": "cd7613bfed0cfd53c2513429ca6abd6983ed5f65506e374adc09bacc160a343f",
+        "replay-macos-arm64-72000.brackenward": "ab8913773ff7922101a527a3ae9b322df9de814a9b7306e66a7114563f8fe12e",
+        "replay-macos-arm64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+        "replay-macos-arm64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+        "replay-macos-arm64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+        "replay-macos-arm64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+        "replay-macos-arm64-generation.log": "609d17d16b133c5da043eb8af29cad59ddf1722f58d7fdf41e73efeca8492f64",
+        "replay-macos-arm64-persistence.log": "90faba8ef3b30a30215c4a29a9eb77a00074d66fa8cce0ddeac08b7b7e7ab992",
+        "replay-macos-arm64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+        "replay-macos-arm64.json": "4a979f009ee6ad589734963205e9a090f77a4230440b6489ab296fc9cd999b63",
+        "replay-macos-arm64.log": "2d3e31fe760d52c1e766dc9b1fd0ad42c192ee358778e340662853e156bcc773"
+      }
+    },
+    {
+      "host": "macos-x64",
+      "native_job_passed": false,
+      "replay_passed": true,
+      "generation_assertions": 169,
+      "persistence_assertions": 450,
+      "persistence_assertion_failures": 0,
+      "persistence_engine_errors": 2,
+      "graphical_smoke": "skipped after persistence failed",
+      "files_sha256": {
+        "generation.xml": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+        "persistence.xml": "c6691d79d8d577f4a780ce800a4983ebc431cf6339200feb04efa338c9064bd9",
+        "replay-macos-x64-7200.brackenward": "062e1b565ec3c9007a380ec2e7016721d5ee9f6338b77e950ef742aef86a1a90",
+        "replay-macos-x64-72000.brackenward": "594acf9ad8991cbb0eb0e2f15a2e4673f8bfa5eccb8035ec6227ce9a61cdc46f",
+        "replay-macos-x64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+        "replay-macos-x64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+        "replay-macos-x64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+        "replay-macos-x64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+        "replay-macos-x64-generation.log": "35d1d690afb42aaf4e57b7896bda4258c67865fbeb93f0c96997431efe01ed03",
+        "replay-macos-x64-persistence.log": "577e230035807e2d2a9801a32b577b1aa0988715bdd1e45a9806d5d8ec47f907",
+        "replay-macos-x64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+        "replay-macos-x64.json": "e177110d3477443429d5a0b9a11025dfe9498d9d4c6e977e9ce58ddbf220a3b8",
+        "replay-macos-x64.log": "50f2bbe9c31b42f40ec00896522518b37fdce802d9aa9ae42c444c9ab79e6d1b"
+      }
+    },
+    {
+      "host": "windows-x64",
+      "native_job_passed": false,
+      "replay_passed": true,
+      "generation_assertions": 169,
+      "persistence_assertions": 449,
+      "persistence_assertion_failures": 0,
+      "persistence_engine_errors": 2,
+      "graphical_smoke": "skipped after persistence failed",
+      "files_sha256": {
+        "generation.xml": "5cb1b6cba345ace6744b9bfa321dc3af6a8c2a6dd28308c9c39ec4a37f9e263f",
+        "persistence.xml": "0be6918d859f4f70b5afb3b71a947f9241b81661dca11308e75638291a1a28e2",
+        "replay-windows-x64-7200.brackenward": "dab49dcaea689262d4b3cdce99bc7534a1b71927350f880aeee3366ff09a4e82",
+        "replay-windows-x64-72000.brackenward": "0178a2f11bd348edf0b5622fa25cfe83981255cc4cfb6d146b3f1ff21df36424",
+        "replay-windows-x64-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+        "replay-windows-x64-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+        "replay-windows-x64-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+        "replay-windows-x64-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+        "replay-windows-x64-generation.log": "c6e31f7059e9b2c4d85b0394909ff047365c611340a63e8ca141e59455396b97",
+        "replay-windows-x64-persistence.log": "274ca2a3c727b616cab4cf662cafb29906770ae6e6d00642a38c6db2d9512fb2",
+        "replay-windows-x64-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+        "replay-windows-x64.json": "e8c6ea04fa5a0f7366f73bb0e5e0ce66d486f990b126f270502605fe44dfc74d",
+        "replay-windows-x64.log": "82e04bbd1152cd97bfd96d62468dc05047a34b72c2ea62e88480109358a03053"
+      }
+    }
+  ],
+  "scope": "Four actual native artifact sets. Replay/older acknowledgements and generation pass; persistence assertions pass but all native jobs fail closed on the same two empty-buffer SHA engine errors. Startup is skipped. This is failed CI, not published/certified evidence. The separate768-map subset passes;0.7.60 fixes empty hashing."
+}

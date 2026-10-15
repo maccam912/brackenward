@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "build": "0.7.62-m7",
+  "local_android_code": 101,
+  "checks": {
+    "english_ui_keys": 526,
+    "prior465_message_values_unchanged": true,
+    "python_message_checks": 5,
+    "persistence": 458,
+    "expanded_ui": 669,
+    "expanded_ui_before_fix_failures": 2,
+    "expanded_ui_after_fix_failures": 0,
+    "kotlin": 4,
+    "maintained_recorded_assertions": 2804
+  },
+  "authoritative_simulation_persistence_generation_and_fixture_source_unchanged_from": "a089292c79891bd8abd4c39c8aaf2fc467fa5e37",
+  "apk_metadata": "package: name='dev.brackenward.game' versionCode='101' versionName='0.7.62-m7' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "files_sha256": {
+    "DESIGN.md": "38d17135dc2f8957377874406dd5c1e9009ca694a0ec5d797cd9865fa460a449",
+    "project.godot": "034cdf792f19e5213b860e1a272d2b7124b57376cce1b43edd3098f254ae1c3c",
+    "export_presets.cfg": "5a521eaf4b46a76f753439d2b2010b6aa33286fbd482a57f4e720dce25fe1940",
+    "data/catalogs/en_ui.json": "b0e45aaa7388f3babf456b99853a4931a92aa10f4536eb030a4a148dc39c15c0",
+    "src/game_session.gd": "513c51c143d42f33f6222492aa559ea075f416f66afbb85f323caddbd09ffea1",
+    "src/ui/cycle_choice_button.gd": "e33f72cf5eff8162206121fd1885fa89344c7769c45a51d2486047436066784f",
+    "tools/accessibility_ui_tests.gd": "116cfd2bbbbaaba7ec648e44e37066a032ca61c63865bededdce4dece2369cbe",
+    "reports/settings-text-v62-persistence.log": "f611e59c9fb034267d4c87825eea447380cc6339e2fd48398b7ce5cd79ad0124",
+    "reports/settings-text-v62-choice-before-fix-ui.log": "9dc6ab2e780bedc311a38966318b7fc451f3dd214573d4e38c39625624d70deb",
+    "reports/settings-text-v62-choice-fixed-ui.log": "f569cb58ada5cbcf94912e8bd1356e2d2d8446da0fe41c5451c52ee5f472b1a7",
+    "reports/settings-text-v62-final-content.log": "25443d5dc669a810daca8152deb983139a0b8a78341df38d32fa58998a390124",
+    "reports/settings-text-v62-final-message-tests.log": "888a0c0ed615e57d32cf72be501b0c355f33b8613c81dfdaa99db33d7959487e",
+    "reports/settings-text-v62-choice-fixed-android.log": "7b0c1587b4af42694d631350fe5145d595132dab8c37239e230af8b9c0e6ea47",
+    "reports/settings-Settings-360x640-150.png": "55fd2fdb83c771e41111cd3ad206f6cc67c0b5691f24b1afe4cfeb53a7e91c10",
+    "reports/settings-Auto-pauses-640x360-150.png": "0715318341e71a9413b137c2fec156f663c55b1f906c1c09d80fd4fda27abece",
+    "reports/android-touch-v62-evidence.json": "ef5b4b48c8e3c884d3c4d52ef59ee1a78cb0aa56493e78114c4bd625a919c6e7",
+    "build/brackenward-debug.apk": "86794d88aef89737f3cbbee9b91119ef82d002e9d74ce063d2c83b4bdfca96bc"
+  },
+  "scope": "Current content/font/P458 validation; expanded nativeUI669 reproduces stale selection captions before repair and passes after. Fixed local Android export/code101/Kotlin4, actual emulator caption/rotation/update and exact paused v6 migration, originals restored, separately recorded. Authoritative source remains identical to0.7.61 replay/full-platform evidence. Current full remote workflow/publication and physical/human certification remain separate."
+}

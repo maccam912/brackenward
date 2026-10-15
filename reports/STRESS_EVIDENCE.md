@@ -5,6 +5,25 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## Frozen 0.7.59 native byte-backed preparation subset passes
+
+Clean487bb1d completes1800.020424 seconds at selected2x after60s warmup,
+36001 logical ticks3002→39003 versus36000 floor nominal, within the unchanged
+no-drop/window gate. Twenty residents remain. Peak and ending sampled engine
+heap growth are15345852 bytes (14.635 MiB), below20 MiB; lowest one-second FPS
+is28.605, with zero below-24 streak. Full final codec roundtrip, invariants,
+storage, source and audio drain pass; all five diagnostic counters are zero.
+The separate second audit passes. Its entire same-tick gameplay matches native55
+after only two content headers normalize; that earlier heap failure stays Fail.
+
+[native-soak-v59-evidence.json](native-soak-v59-evidence.json) retains all raw
+source/report/save/comparison hashes. No second graphical Godot runs during
+measurement; headless Winter, Charter then post-Charter, profile/suite/replay and
+export work share the host. This is not a pristine or causal whole-native ratio,
+constant all-alert load, physical Android/PSS/battery/thermal or full release
+certificate. Overall0.7.59 CI separately fails its empty-hash probes; the measured
+nonempty native subset remains valid. Later loader/UI revisions are separate.
+
 ## 0.7.61 avoid a private catalog-header deep copy
 
 The external decoder owns its fresh converted JSON. For exact verified v2–v6

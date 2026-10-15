@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "source_commit": "487bb1d8172234713ce479085bde24df936fc7e0",
+  "audit": {
+    "passed": true,
+    "source_commit": "487bb1d8172234713ce479085bde24df936fc7e0",
+    "standard_30min_2x_case": true,
+    "scope": "Native source probe and sampled engine-heap proxy; physical release gates remain open",
+    "measured_wall_seconds": 1800.020424,
+    "logical_ticks": 36001,
+    "peak_sampled_engine_heap_growth_bytes": 15345852,
+    "final_residents": 20,
+    "final_snapshot_sha256": "234dd21949fcb3e3fea57e713eeb0b701e6d9187b35b44cf47bad4f69abe6158",
+    "audit_tool_sha256": "662d00cb6505d9b2eddce8f001ac7f60e0d750cfdffc0050a712452cafd35862"
+  },
+  "ending_engine_heap_growth_bytes": 15345852,
+  "lowest_window_fps": 28.6054733120798,
+  "maximum_low_fps_streak_seconds": 0.0,
+  "diagnostic_counters": {
+    "backgrounds": 0,
+    "quiet_sleep_limits": 0,
+    "slow_storage_pauses": 0,
+    "speed_reductions": 0,
+    "storage_alerts": 0
+  },
+  "complete_gameplay_matches_same_tick_native55_after_only_content_headers": true,
+  "comparison_input": "reports/native-soak-v6-6685958-quiet-host/probe-final.brackenward",
+  "comparison_input_sha256": "88fef79261487c34e8e28c2ff2d17b6b612c689d1c0b8ab52ed09405d944299c",
+  "scope": "Frozen0.7.59/v7 byte-backed preparation,1800.020424s2x after60s warmup,36001 logical ticks3002\u219239003 against36000 floor nominal; within original no-drop/time-window gate. Twenty residents, strict sampled heap/FPS/source/roundtrip/storage/audio gates pass and second audit passes. Exact same-tick older endpoint preserves every gameplay field after only two content headers normalize; original native55 heap failure remains Fail. No second graphical Godot during measurement; headless Winter, Charter then post-Charter, profiling/suite/replay/export work shares host. Not a pristine or causal ratio or physical Android/PSS/thermal/battery certificate. Overall0.7.59 CI separately fails its empty-hash probes; this measured nonempty input remains a valid native subset. Later loader/UI runtimes are separate.",
+  "files_sha256": {
+    "audit.json": "d3565d9526d6360efa5e4504574ce280b322a9ea101c0b2a39f6a5794c6c2a94",
+    "completion.json": "fca3585eab2bde339b9b758308ebfc8caeedde957ab0bef203752ddc73ffd779",
+    "probe-final.brackenward": "234dd21949fcb3e3fea57e713eeb0b701e6d9187b35b44cf47bad4f69abe6158",
+    "probe-latest.json": "335732065b6e88346c042b403c2ee1d7fa45372229d5064372fb913d755bb60c",
+    "probe.json": "02f4369f0ee1ff438049ddd313db5e203c9b7728c187b6a6e4b0c2308c6a5af0",
+    "probe.log": "bc7a5908c7cb22eea214d1c3c35046ef9d7311625d3513eb26e00e892780a53e",
+    "source.json": "5033554c5b1e9044215712e5cbe108b14a1dac7282ab21b382673f3e3982418f"
+  },
+  "second_audit_log_sha256": "d7df8f03560b5e6835ade9b796c91d76e3f8d702110d1f9f10a4dd8b59588b5f"
+}
