@@ -7,6 +7,30 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.66 background-worker latency
+
+The local report adds save_worker and snapshot_worker wall timings. A timestamp
+immediately before Thread.start and a timestamp after the worker's owned-data
+cleanup measure scheduling plus worker work. Foreground capture and a delayed
+poll/join are excluded. These parallel wall timings overlap CPU callbacks and
+must not be added to them. Each operation retains its original capture tick and
+actual playback speed, including12x; pausing before polling cannot relabel it.
+Successful and failed saves and explicit preparation joins are recorded once.
+A headless queue without presentation context adds no invented speed sample.
+No owned payload, acknowledgement, durability deadline or thread policy changes.
+The collector remains bounded:13stages times5speeds=65histograms,32slow events,
+14bins and the unchanged64KiB export cap. Two keyed English stage labels are added.
+
+Seven new gated-worker tests inspect real verified saves, exact live world state,
+original timing context, failed writes and once-only collection. Early tests
+incorrectly assumed a newly created SceneTree timer represented that much real
+wall time even in a long startup frame. Retained failures show a2.258ms worker
+with no actual60ms wait. The corrected test waits against monotonic elapsed time;
+focused checks pass. Initial missing-class import failure is retained separately.
+Full current persistence472 and replay62/all older acknowledgement checks pass;
+Android105 export/metadata pass with unchanged cached Kotlin4 XML;
+current graphical validation remains separate and pending.
+
 ## 0.7.65 resource regrowth view
 
 The agriculture loop now visits only resources with positive regrowth timers during

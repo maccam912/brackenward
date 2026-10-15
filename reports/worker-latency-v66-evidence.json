@@ -1,0 +1,74 @@
+{
+  "passed": true,
+  "build": "0.7.66-m7",
+  "local_android_code": 105,
+  "content": "colony-v7",
+  "schema": 23,
+  "envelope": 5,
+  "generator": 2,
+  "maintained_gdscript_assertions": 2823,
+  "fresh_checks": {
+    "persistence": 472,
+    "unit": 20,
+    "integration": 6,
+    "focused_gated_worker": 7,
+    "replay_commands": 62,
+    "ui_messages": 530
+  },
+  "bounds": {
+    "stages": 13,
+    "speeds": [
+      0,
+      1,
+      2,
+      4,
+      12
+    ],
+    "histograms": 65,
+    "bins": 14,
+    "slow_events": 32,
+    "export_bytes": 65536
+  },
+  "scope": "Two wall-clock timestamps per worker, immediately before Thread.start through explicit worker result cleanup. Includes scheduling/work, excludes foreground capture/later poll delay; parallel wall and CPU timings overlap. Original capture tick/actual playback speed retained through pause; consumed once on success/failure/explicit preparation join. No context from headless queue fabricates no sample. Owned payloads,write/acknowledgement/durability/thread policy unchanged. Real gated writes/preparations,verified recovery and full world equality tested. Seven new assertions; replay/all39 immutable fixtures preserved. Local current GUI/native longevity/physical Android gates remain separate; earlier65 touch evidence stays pinned to its APK variants.",
+  "first_failures": "First run rejected missing global class before import. Two full runs and one focused run rejected startup-frame SceneTree timer assumption (three assertions); worker actually waited only2.258ms in focused first run. Test now gates on monotonic elapsed wall time; no production clock change. All failures retained.",
+  "source_sha256": {
+    "src/persistence/colony_save_queue.gd": "39e8e4b00a09d287e0b2eb21692eb0366ecbd501ec83837fa0d97f2fcfda8bec",
+    "src/game_session.gd": "2b8b3328afc5c52c43568c768b1bfd9a9e9679f32edd38783138c52c9d6a1a97",
+    "src/presentation/frame_diagnostics.gd": "e47fecf630f6d64d0110003f06dd5b6b86640d0f337da95838c748989133fa3e",
+    "src/presentation/colony_text.gd": "bc430c7e70389fc5fe6884895c776112390e23a36b091b9d0d59c061a683289e",
+    "data/catalogs/en_ui.json": "b9c1cadcd33f5d18b79b156d360c0f1a86a25dd9451b47b293779838e54f57a1",
+    "tools/diagnostics_tests.gd": "1679008d7ee72a968369a27871f41026fc06b94dec93be49dafd30cccc501b96",
+    "tools/worker_timing_tests.gd": "64762d66f98bc6dfb0da8e7066e8ea5c2a8991b63b662273e43ad18cda7523c3",
+    "tools/run_suite.gd": "36dbebd8c1c4c45efb2534edeb77c160e69004fdd8f3834062f6f199d792da23",
+    "project.godot": "a0d342ba7a3ce0185dcaeb7e0af78e56968c2e10613bd571a012691ef1e1b627",
+    "export_presets.cfg": "357c8e38061080d53473bb2b3a1758f162cf39e0ce32955eef00fc604813b26b"
+  },
+  "raw_sha256": {
+    "worker-latency-v66-import.log": "14ef7d457e4839b41dce35e661265bb3efe1c486da6b707a98c98b8691806430",
+    "worker-latency-v66-persistence-final.log": "187872c791e4737079c61c42958f24502cd8b0fd3652d7b677eae4554f6bce70",
+    "worker-latency-v66-replay.log": "e33c0604a35ef5f88f9fa89112aecc657e7ea9d7f47a0cd0b07df45e9a42b8b3",
+    "worker-latency-v66-unit.log": "aa313ff5427148d853490fe4fb46bee48b5beeaa2c7f230ac81ed60dbfbb7a4a",
+    "worker-latency-v66-focused-first.log": "e792c4986e813d096a76e5ba2e8c1af26efe9c6c835db0dd6e6fc85a94a58288",
+    "worker-latency-v66-focused-fixed.log": "9e551af5d8b33530fbe2bb3a04e48901e95e243e43af3c601df55bee908abc22",
+    "worker-latency-v66-content-final.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "worker-latency-v66-integration.log": "96bc83e1b198e009fb9281d09aecec326dce2899146a2418a1aac831cbf209ac",
+    "worker-latency-v66-content.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "worker-latency-v66-android.log": "688786873e0352899a05f3f59fd11c723ededad2f74bcd95c985569a03398108",
+    "worker-latency-v66-persistence-fixed.log": "5d332a43341fbb903d5267b7529b50a1e0908995027d257cfdc83cd8a9ca5c92",
+    "worker-latency-v66-persistence-first.log": "384269402eb1a7fb57ee376ddccefd1b66b5ae604df9d864e420e8a0cef6e9f9",
+    "worker-latency-v66-replay-final.log": "e33c0604a35ef5f88f9fa89112aecc657e7ea9d7f47a0cd0b07df45e9a42b8b3",
+    "worker-latency-v66-persistence-details.log": "daa61385abf6a78e72e0d7ca63a88cf5c4cedd755518e4319d27ea3daa71166c",
+    "worker-latency-v66-replay.json": "2ad19e3c92cecc1d396d3ad870e0769a33b695cc0f23df3ddcb452b3f7d52c0a",
+    "worker-latency-v66-check-status.json": "ae07c0be658c367748810cc586c15247ca43b87983292084c92ebb31c5d7005f",
+    "worker-latency-v66-raw/apk-badging.txt": "cdbf44f781d650e921ba3303cbb5bab5b74386b47ef7948812829196985ec934",
+    "worker-latency-v66-raw/brackenward-debug.apk": "24ac4a443845dad86f41cf1f118dc4a6e53ea105160a3320ed6c87e64d3e7135",
+    "worker-latency-v66-raw/focused-driver.gd": "f40505ea358a7ebc5760ccf4cbe24b664da064bf15cf6998215bd53b8a65371f",
+    "worker-latency-v66-raw/TEST-dev.brackenward.storage.BoundedDocumentsTest.xml": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0"
+  },
+  "apk_sha256": "24ac4a443845dad86f41cf1f118dc4a6e53ea105160a3320ed6c87e64d3e7135",
+  "pending": "Fresh graphical UI/native probe,remote CI/publication and physical gates remain separate. APK export/metadata,full current save tests/replay pass.",
+  "cached_checks": {
+    "kotlin_assertions": 4,
+    "scope": "Unchanged Android plugin tests are UP-TO-DATE in the current export; XML inspected,not claimed freshly rerun. Remote CI tests remain separate."
+  }
+}

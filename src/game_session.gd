@@ -393,6 +393,7 @@ func _advance_frame(delta: float) -> void:
 	save_clock+=delta
 	_finish_background_save()
 	var preparation: Dictionary = save_queue.poll_preparation()
+	_record_worker_timing("snapshot_worker",preparation)
 	if not preparation.get("error","").is_empty(): _storage_failed(preparation.error)
 	if store is ColonyStore and not _has_undurable_progress(): durable_at=save_clock
 	if _storage_wait_required() and runner.speed>0:
@@ -523,13 +524,13 @@ func _refresh_clock() -> void:
 func _start_background_save(full_snapshot: bool) -> void:
 	var started: int = Time.get_ticks_usec()
 	save_requested_at=save_clock
-	var error: String = save_queue.start(store,world,full_snapshot)
+	var error: String = save_queue.start(store,world,full_snapshot,runner.playback_speed())
 	diagnostics.record("save_capture",Time.get_ticks_usec()-started)
 	if not error.is_empty(): _storage_failed(error)
 
 func _start_snapshot_preparation() -> void:
 	var started: int = Time.get_ticks_usec()
-	var error: String = save_queue.start_preparation(world)
+	var error: String = save_queue.start_preparation(world,runner.playback_speed())
 	diagnostics.record("snapshot_capture",Time.get_ticks_usec()-started)
 	if not error.is_empty(): _storage_failed(error)
 
@@ -540,10 +541,11 @@ func _finish_background_save(wait: bool = false, report_error: bool = true) -> S
 	return error
 
 func _poll_background_save(wait: bool, report_error: bool) -> String:
-	if wait: save_queue.discard_preparation()
+	if wait: _record_worker_timing("snapshot_worker",save_queue.discard_preparation())
 	var result: Dictionary = save_queue.poll(wait)
 	if result.is_empty(): return ""
 	if result.world!=world or result.store!=store: return result.error
+	_record_worker_timing("save_worker",result)
 	if not result.error.is_empty():
 		if report_error: _storage_failed(result.error)
 		return result.error
@@ -552,6 +554,12 @@ func _poll_background_save(wait: bool, report_error: bool) -> String:
 		last_saved_tick=result.tick
 		_save_settings()
 	return ""
+
+func _record_worker_timing(stage: String, result: Dictionary) -> void:
+	# A queue started without presentation context must not inherit poll-time
+	# speed/tick. Every completion is consumed once by its normal polling path.
+	if result.get("speed",-1)<0: return
+	diagnostics.record(stage,result.worker_us,result.tick,result.speed)
 
 func _storage_wait_required() -> bool:
 	return store is ColonyStore and not saving_disabled and not recovery_failed and not awaiting_first_colony and _has_undurable_progress() and save_clock-durable_at>=1.75

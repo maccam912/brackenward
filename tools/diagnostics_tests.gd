@@ -35,7 +35,7 @@ static func run(check: Callable) -> void:
 			for index in range(100): data.record(stage,50001+index)
 	data.count("storage_alerts");data.count("arbitrary string")
 	report=data.report({"build":"fixture","model":"device"})
-	check.call("PERF/long_session_bounds_all_histograms_and_latest_slow_events",data.samples.size()==55 and data.slow_events.size()==32 and report.timings.size()==55 and report.timings.all(func(e:Dictionary)->bool:return e.count==100 and e.buckets.size()==14))
+	check.call("PERF/long_session_bounds_all_histograms_and_latest_slow_events",data.samples.size()==65 and data.slow_events.size()==32 and report.timings.size()==65 and report.timings.all(func(e:Dictionary)->bool:return e.count==100 and e.buckets.size()==14))
 	check.call("PERF/full_bounded_report_fits_64kib_export_limit",JSON.stringify(report,"\t",true).to_utf8_buffer().size()<FrameDiagnostics.MAX_EXPORT_BYTES)
 	check.call("PERF/counters_use_only_named_codes",report.counters.storage_alerts==1 and report.counters.quiet_sleep_limits==0 and report.counters.size()==5)
 	report.slow_events.clear();report.metadata.model="changed";report.timings[0].buckets.clear()

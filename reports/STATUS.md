@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.65-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.66-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ Checkpoint: `0.7.65-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `702b20b` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-702b20bb1f47), code217 / 0.7.64-m7+702b20b, APK SHA-256 `9ab6b2f765271855001c5e75bb0d30b89d40eecc05a44220f07ac54fbf6b5e9e`. Actual four-host artifacts,28 suites/2811 assertions,Kotlin4 and exact published assets audit. Current0.7.65 publication and production signing/store release remain separate. |
 
-Current recorded validation:28 GDScript suites,2816 maintained assertions including669 native UI checks. Current0.7.65 freshly passes nature23,persistence465,generation169,survival83,seasons26,graphical UI669 and exact62-command replay with all older acknowledgements. Five new nature checks include a reproduced and corrected dormant legacy-timer case. Full remote0.7.64 passes all28 suites/2811 assertions plus Kotlin4 and actual published artifacts. Current local Android code104 exports and focused emulator checks pass; all45 original files are restored byte for byte and the emulator is stopped. Content/font validation covers528 English keys. Pinned native62 passes its30-minute development proxies; native63 fails early after a protective save pause and stays a failure. Current CI/publication and physical/human gates remain separate. Generated logs/builds/raw evidence are ignored; compact reports retain exact source/input/output hashes.
+Current recorded validation:28 GDScript suites,2823 maintained assertions including669 native UI checks. Current0.7.66 freshly passes persistence472 and exact62-command replay with all older acknowledgements. Seven new gated-worker checks measure real wall latency, original tick/speed, verified recovery, failures and once-only collection. The complete65 local source checks and Android interactions retain their own scopes; its CI/publication is running. Last fully audited remote0.7.64 passes28 suites/2811 assertions plus Kotlin4 and actual published artifacts. Current66 local Android105 export and metadata pass; its unchanged Kotlin4 results are cached and inspected. Fresh graphical validation will run remotely before publication; local GUI waits for the separate native63 soak to finish. Content/font validation covers530 English keys. Pinned native62 passes its30-minute development proxies; native63's failed save-pause run and separate in-progress retry stay separate. All45 original emulator files are restored exactly and the emulator is stopped. Physical/human gates remain open.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -3783,3 +3783,31 @@ A separate same-source63 retry uses a new lower-contention report directory,
 with the emulator stopped and long scenario/generation workers completed. Any
 headless validation sharing the host is recorded separately; the failed original
 run and unchanged1.75-second protection remain. The retry is still running.
+
+
+## 0.7.66 measure background-worker wall latency
+
+The local report adds save_worker and snapshot_worker, measured immediately
+before starting the thread through completion of its explicit owned-data cleanup.
+This includes scheduling and worker work, excludes foreground capture and later
+poll delay, and overlaps CPU callback timings. Capture tick and actual playback
+speed remain attached even if polling happens paused or at a different speed.
+Successful/failed saves and explicit preparation joins are consumed once.
+Headless queues without presentation context add no invented speed sample.
+The owned payload, acknowledgements,1.75-second guard, thread policy and save
+schema/content/generator/replay expectations do not change. Collector bounds are
+13stages times5speeds=65histograms,14bins,32slow events and64KiB JSON. Two English
+stage keys bring the catalog to530messages.
+
+Seven new gated-worker checks pass. Full persistence472 and replay62/all older
+acknowledgements pass. The first invocation failed because the new global class
+had not been imported. Two later runs failed three assertions because their test
+timers could consume time from earlier in the long startup frame; actual worker
+latency could be2.258ms. Requiring monotonic elapsed wall time fixes that test
+assumption without changing production timings. All failed logs are retained.
+Android105/version0.7.66-m7 export and metadata pass; unchanged cached Kotlin4
+XML is inspected. Fresh current graphical/native checks remain separate: the
+publication workflow requires all native,prototype/UI and generation jobs to
+pass. Local GUI waits until the frozen63 probe finishes.
+The frozen63 retry shares the host with these bounded headless checks and export,
+with no other graphical game/emulator and no long scenario/generation workers.

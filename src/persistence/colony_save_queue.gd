@@ -29,6 +29,9 @@ class WorkRequest extends RefCounted:
 	var full_snapshot: bool = false
 	var retired: Array = []
 	var prepared: ColonyPreparedSnapshot
+	var enqueued_us: int = 0
+	var captured_tick: int = 0
+	var captured_speed: int = -1
 
 func busy() -> bool:
 	return thread!=null
@@ -48,13 +51,15 @@ func preparing() -> bool:
 func ready(world: ColonyWorld) -> bool:
 	return prepared!=null and preparation_world_id==world.get_instance_id()
 
-func start_preparation(world: ColonyWorld) -> String:
+func start_preparation(world: ColonyWorld, measured_speed: int = -1) -> String:
 	if preparing() or prepared!=null: return "A full snapshot is already being prepared"
 	var request: WorkRequest = WorkRequest.new()
 	request.captured=capture_cache.capture(world,retired_payloads)
 	request.catalog=world.definitions;request.retired=retired_payloads;retired_payloads=[]
+	request.captured_tick=world.tick;request.captured_speed=measured_speed
 	preparation_world_id=world.get_instance_id()
 	preparation_thread=Thread.new()
+	request.enqueued_us=Time.get_ticks_usec()
 	var error: Error = preparation_thread.start(_prepare.bind(request))
 	if error!=OK:
 		preparation_thread=null;retired_payloads=request.retired
@@ -65,6 +70,7 @@ func _prepare(request: WorkRequest) -> Dictionary:
 	request.retired=[]
 	var result: Dictionary = ColonyPreparedSnapshot.prepare(request.captured,request.catalog)
 	request.captured={};request.catalog={}
+	_worker_timing(request,result)
 	return result
 
 func poll_preparation(wait: bool = false) -> Dictionary:
@@ -72,14 +78,15 @@ func poll_preparation(wait: bool = false) -> Dictionary:
 	var result: Dictionary = preparation_thread.wait_to_finish()
 	preparation_thread=null
 	if result.has("snapshot"): prepared=result.snapshot
-	return {"error":result.get("error","")}
+	return {"error":result.get("error",""),"worker_us":result.worker_us,"tick":result.tick,"speed":result.speed}
 
-func discard_preparation() -> void:
-	poll_preparation(true)
+func discard_preparation() -> Dictionary:
+	var result: Dictionary=poll_preparation(true)
 	if prepared!=null: retired_payloads.append(prepared)
 	prepared=null;preparation_world_id=0
+	return result
 
-func start(store: ColonyStore, world: ColonyWorld, full_snapshot: bool = false) -> String:
+func start(store: ColonyStore, world: ColonyWorld, full_snapshot: bool = false, measured_speed: int = -1) -> String:
 	if busy(): return "A verified save is already in progress"
 	var request: WorkRequest = WorkRequest.new()
 	request.captured=capture_cache.capture(world,retired_payloads)
@@ -97,7 +104,9 @@ func start(store: ColonyStore, world: ColonyWorld, full_snapshot: bool = false) 
 	writer.rejected_journals=store.rejected_journals.duplicate()
 	request.writer=writer
 	source_store=store;source_world=world;captured_tick=world.tick;original_sequence=store.sequence
+	request.captured_tick=world.tick;request.captured_speed=measured_speed
 	thread=Thread.new()
+	request.enqueued_us=Time.get_ticks_usec()
 	var error: Error = thread.start(_execute.bind(request))
 	if error!=OK:
 		thread=null;source_store=null;source_world=null
@@ -111,7 +120,14 @@ func _execute(request: WorkRequest) -> Dictionary:
 	request.retired=[]
 	var result: Dictionary = _write_prepared(request.writer,request.captured,request.trace,request.catalog,request.prepared) if request.prepared!=null else _write(request.writer,request.captured,request.trace,request.catalog,request.full_snapshot)
 	request.captured={};request.trace=[];request.catalog={};request.prepared=null
+	_worker_timing(request,result)
 	return result
+
+func _worker_timing(request: WorkRequest, result: Dictionary) -> void:
+	# Wall latency includes thread scheduling, work and the cleanup above. It
+	# excludes foreground capture and a later wait before poll() joins the worker.
+	result.worker_us=Time.get_ticks_usec()-request.enqueued_us
+	result.tick=request.captured_tick;result.speed=request.captured_speed
 
 func _write_prepared(writer: ColonyStore, captured: Dictionary, trace: Array[Dictionary], catalog: Dictionary, snapshot: ColonyPreparedSnapshot) -> Dictionary:
 	var frozen: ColonyWorld = _world(captured,catalog)
@@ -150,6 +166,6 @@ func poll(wait: bool = false) -> Dictionary:
 		# checkpoint; completing an older save cannot acknowledge newer progress.
 		if not source_world.command_trace.is_empty(): retired_payloads.append(source_world.command_trace.duplicate())
 		source_world.command_trace.assign(source_world.command_trace.filter(func(entry:Dictionary)->bool:return entry.tick>captured_tick))
-	var completed: Dictionary = {"error":result.error,"world":source_world,"store":source_store,"tick":captured_tick,"snapshot":result.full_snapshot or writer.sequence!=original_sequence}
+	var completed: Dictionary = {"error":result.error,"world":source_world,"store":source_store,"tick":captured_tick,"snapshot":result.full_snapshot or writer.sequence!=original_sequence,"worker_us":result.worker_us,"speed":result.speed}
 	source_store=null;source_world=null
 	return completed

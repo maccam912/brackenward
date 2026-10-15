@@ -89,6 +89,8 @@ const PERFORMANCE_KEYS: Dictionary = {
 	"save_capture": "ui.performance.stage.save_capture",
 	"snapshot_capture": "ui.performance.stage.snapshot_capture",
 	"save_finish": "ui.performance.stage.save_finish",
+	"save_worker": "ui.performance.stage.save_worker",
+	"snapshot_worker": "ui.performance.stage.snapshot_worker",
 	"save_explicit": "ui.performance.stage.save_explicit"
 }
 static var messages: Dictionary = {}
