@@ -100,6 +100,37 @@ programs and hashes under ignored reports/preparation-v42-sources/. The separate
 frozen 0.7.41 native soak remains in progress; it does not include this change.
 
 
+## Frozen 0.7.41 result — durable guard pause
+
+The first owned-journal-base probe at clean frozen
+6f4dc91072b8e45e098de9d4c0fe9399d6d13e43 fails at 1,364.756837 measured seconds,
+not the requested 1,800. Initial/final ticks are 3,002/30,296, 27,294 logical ticks
+against 27,295 nominal: time keeps up before stopping. The durable-save guard
+pauses once while a writer is busy; there is no storage error or alert. All twenty
+residents remain alive and every sampled invariant, final codec round trip,
+source check and audio drain passes. Ending heap growth is 13,718,932 bytes,
+sampled peak 53,558,932. FPS-floor proxy passes. Duration, continuous requested
+speed and peak-memory checks fail. This does not certify a thirty-minute soak.
+
+Concurrent headless campaigns, local builds and CI artifact transfers were active;
+they are potential host contention, not a demonstrated cause. Do not relax the
+1.75-second durable-progress guard to pass. The later preparation change is not
+in this source. The next latest-source probe reduces host contention by temporarily
+suspending ordinary headless campaigns; record that scheduling in their wall times.
+
+Raw directory reports/native-soak-v6-6f4dc91-owned/. SHA-256:
+
+| Evidence | SHA-256 |
+| --- | --- |
+| source.json | `1a83142be89e2b18a99121cd5c52c87a44113b8c79d690ca26ecadabd8998573` |
+| completion.json | `14821375ed34fb2a9aff73e535801e048c96404ee94367debd1a531e9c0f3e9c` |
+| probe.json | `23a18bd3af25ff942313c9418ac1cc4ccfbbef47236de9f811f1343bccad88b5` |
+| audit.json | `35b337da7ac1665b2e018eb65c59f58f371487b549ea2d2d78a022da925889bd` |
+| Final snapshot | `2ededd60739c5a6d59b2638a1e797b67a14371d7bf9b92c483b1ea5da536730e` |
+
+Canonical endpoint c873837a869f043e75a245bd654b73d80ea4cccc0f53d4d67027f71be917bc3e.
+
+
 ## Fixture and measurement contract
 
 `tools/stress_fixture.gd` constructs an isolated synthetic object-load fixture using

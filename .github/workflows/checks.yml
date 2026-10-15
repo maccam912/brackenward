@@ -41,6 +41,7 @@ jobs:
           python3 tools/test_run_soak.py
           python3 tools/test_trade_free_audit.py
           python3 tools/test_post_charter_sweep.py
+          python3 tools/test_push_checkpoint.py
           python3 tools/validate_content.py
       - name: Install Linux UI test dependencies
         run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
@@ -204,8 +205,21 @@ jobs:
 
           build.json identifies the source and build; SHA256SUMS.txt verifies the APK.
           EOF
+          if ! gh api "repos/$GH_REPO/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            MAIN_SHA=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
+            if [ "$MAIN_SHA" != "$GITHUB_SHA" ]; then
+              echo "This older checked commit needs its exact tag reserved with tools/push_checkpoint.py; no release was published." >&2
+              exit 1
+            fi
+            gh api --method POST "repos/$GH_REPO/git/refs" -f "ref=refs/tags/$TAG" -f "sha=$GITHUB_SHA" >/dev/null
+          fi
+          TAG_SHA=$(gh api "repos/$GH_REPO/git/ref/tags/$TAG" --jq 'select(.object.type == "commit") | .object.sha')
+          if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+            echo "Development tag differs from the checked source; retained unchanged." >&2
+            exit 1
+          fi
           if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --target "$GITHUB_SHA" --title "Development ${GITHUB_SHA:0:7}" --draft --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
+            gh release create "$TAG" --verify-tag --title "Development ${GITHUB_SHA:0:7}" --draft --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
           fi
           gh release upload "$TAG" download/brackenward-debug.apk download/SHA256SUMS.txt download/build.json --clobber
           gh release edit "$TAG" --draft=false
