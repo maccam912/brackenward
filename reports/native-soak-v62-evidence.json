@@ -1,0 +1,38 @@
+{
+  "passed": true,
+  "source_commit": "424f897de1327a25bb03fefe6d5ad1ff92e8da6a",
+  "audit": {
+    "passed": true,
+    "source_commit": "424f897de1327a25bb03fefe6d5ad1ff92e8da6a",
+    "standard_30min_2x_case": true,
+    "scope": "Native source probe and sampled engine-heap proxy; physical release gates remain open",
+    "measured_wall_seconds": 1800.029161,
+    "logical_ticks": 36001,
+    "peak_sampled_engine_heap_growth_bytes": 20271140,
+    "final_residents": 20,
+    "final_snapshot_sha256": "b48fa0185540fbd1fb9c620b1b55390d82d2f93d266c1c4881800ad96f1ed1b9",
+    "audit_tool_sha256": "662d00cb6505d9b2eddce8f001ac7f60e0d750cfdffc0050a712452cafd35862"
+  },
+  "ending_engine_heap_growth_bytes": 15311524,
+  "lowest_window_fps": 28.4290996595845,
+  "maximum_low_fps_streak_seconds": 0.0,
+  "diagnostic_counters": {
+    "backgrounds": 0,
+    "quiet_sleep_limits": 0,
+    "slow_storage_pauses": 0,
+    "speed_reductions": 0,
+    "storage_alerts": 0
+  },
+  "complete_gameplay_matches_same_tick_native59": true,
+  "scope": "Frozen0.7.62/v7,1800.029161s2x after60s warmup,36001ticks3002to39003. Twenty alive; strict sampled peak heap19.332MiB below20MiB,ending14.602MiB; full source/input/storage/invariants/roundtrip/audio gates pass and separate audit passes. No second graphical Godot/emulator during measurement; headless post-Charter and full generation, suites/replay/profiles/export share host. Not pristine/causal, physical Android PSS/thermal/battery remain open. Original earlier failures retained.",
+  "files_sha256": {
+    "audit.json": "006912f84dd5a6b4040224bd40a2033344bce5f45025a6f15027ae3d796e41eb",
+    "completion.json": "5f6dae29693678ba114f91c6e8150e766413b3cae4fd3ae207beb46f77d46667",
+    "probe-final.brackenward": "b48fa0185540fbd1fb9c620b1b55390d82d2f93d266c1c4881800ad96f1ed1b9",
+    "probe-latest.json": "95aba44d908a1f3e5cd6ee1a65ce24bcc5e3cd91b82e5c70ee5fe9574fb53c4f",
+    "probe.json": "890ab0dfc1ae51088fe8ea2cd7bd53c381320f132f0ec750ecddde107e4e55d1",
+    "probe.log": "0c5f10d78156d1db7f31b3d6df1a4da60af4db8dba7aa66cd78491814843a9b0",
+    "source.json": "afeb29f7f20940c75b8c9a4d1c39a7af284964a20040cd44c88bccaab433bdd6"
+  },
+  "second_audit_log_sha256": "e56c59128edf6c8b0e6f5211113d0214cd692dd1e906a793546835a9e0ad421e"
+}

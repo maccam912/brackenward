@@ -21,6 +21,9 @@ var sleep_boost_limited: bool = false
 var frame_speed: int = 0
 # Only the presentation supplies wall time; authoritative world steps stay pure.
 var frame_clock: Callable
+# Optional presentation timing sink: elapsed microseconds, completed tick, speed.
+# No clock reads or callbacks are added to ordinary headless runners.
+var tick_observer: Callable
 
 static func default_auto_pauses() -> Dictionary:
 	return {"downed":true,"hostile":true,"fire":true,"expedition":true,"departure":true,"low_food":true}
@@ -87,11 +90,16 @@ func advance_frame(delta: float) -> int:
 	frame_speed=playback_speed()
 	accumulator += delta * float(frame_speed)
 	var started: int=_clock_usec() if sleep_fast_forward else 0
+	var observe_ticks: bool=tick_observer.is_valid() and frame_clock.is_valid()
 	var count: int = 0
 	while accumulator + 0.000000001 >= 0.1 and count < 8:
 		var charter_finished: bool = world.charter_state.ending if world is ColonyWorld else false
 		var alerts: Array = _alerts() if world is ColonyWorld else []
+		var tick_started: int=_clock_usec() if observe_ticks else 0
 		world.step()
+		if observe_ticks:
+			var elapsed: int=_clock_usec()-tick_started
+			if elapsed>=0:tick_observer.call(elapsed,world.tick,frame_speed)
 		accumulator -= 0.1
 		count += 1
 		if world is ColonyWorld:

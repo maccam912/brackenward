@@ -74,3 +74,18 @@ retained first-launch shader-cache recompilation warning is diagnostic; no scrip
 missing-message, parse or Android runtime crash is observed. This is separate from
 physical CPH2655 performance, Android PSS/battery/thermal and the full human task
 battery; the user's original0.7.24 report remains unchanged above.
+
+
+## 0.7.63 emulator diagnostics bridge and export
+
+The local code102 APK runs on the same Android35 arm64 emulator at1080x2340,
+density440, SwiftShader/ANGLE. The first actual report retains null PSS because
+Godot JNI singletons do not implement Object.has_method for plugin methods.
+That failed APK/report is retained. The packaged Kotlin method was callable;
+removing the unsupported guard yields247602176 bytes (236.132MiB), close to the
+separate near-time `dumpsys meminfo` reading247307264 bytes. The explicit query
+itself takes96312us on this emulator; no query runs on the gameplay frame path.
+The report contains472 individually timed4x ticks, with exact histogram sums.
+These are binding/unit/export checks, not phone performance measurements.
+Frozen preview reuse is covered by the native UI suite. Actual export and original-file restoration are audited in
+[android-diagnostics-v63-evidence.json](android-diagnostics-v63-evidence.json).

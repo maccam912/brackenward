@@ -5,6 +5,23 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## Frozen 0.7.62 native continuation passes
+
+Clean424f897 completes1800.029161 seconds at selected2x after60seconds warmup,
+36001 logical ticks3002 to39003. Twenty residents remain. Peak sampled engine
+heap growth is20271140 bytes (19.332 MiB), ending15311524 bytes (14.602 MiB),
+below the unchanged20MiB bound. Lowest one-second FPS is28.429; the below24
+streak is zero. All five diagnostic counters are zero; full source/input,
+invariants, storage, codec roundtrip and audio drain pass. The separate second
+audit passes, and every gameplay field equals the earlier v7 native59 endpoint
+at the same tick. Earlier failing runs retain their original outcomes.
+
+[native-soak-v62-evidence.json](native-soak-v62-evidence.json) retains exact hashes.
+There was no second graphical game or emulator during measurement; headless
+post-Charter, generation, profiling, suites, replay and exports shared the host.
+This is a desktop development proxy; Android PSS longevity, physical frame pacing,
+battery and thermals remain separate release gates.
+
 ## Frozen 0.7.59 native byte-backed preparation subset passes
 
 Clean487bb1d completes1800.020424 seconds at selected2x after60s warmup,

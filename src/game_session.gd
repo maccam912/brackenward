@@ -1883,6 +1883,7 @@ func _save_settings() -> void:
 func _apply_device_settings() -> void:
 	runner.auto_pauses=settings.values.auto_pauses.duplicate()
 	runner.frame_clock=func()->int:return Time.get_ticks_usec()
+	runner.tick_observer=func(elapsed:int,tick:int,speed:int)->void:diagnostics.record("simulation_tick",elapsed,tick,speed)
 	if runner.quiet_sleep_enabled!=settings.values.quiet_sleep_speed:
 		runner.sleep_boost_suppressed=false;runner.sleep_fast_forward=false
 	runner.quiet_sleep_enabled=settings.values.quiet_sleep_speed
@@ -1897,12 +1898,24 @@ func _performance_report() -> Dictionary:
 	var memory: int = OS.get_static_memory_usage()
 	var metadata: Dictionary = {"build":str(ProjectSettings.get_setting("application/config/version")),"engine":Engine.get_version_info().string,"platform":OS.get_name(),"os_version":OS.get_version().left(128),"device_model":OS.get_model_name().left(128),"gpu":RenderingServer.get_video_adapter_name().left(128),"renderer":RenderingServer.get_current_rendering_method(),"quality":settings.values.quality,"fps_cap":Engine.max_fps,"engine_static_memory_bytes":memory if memory>0 else null,"viewport":[get_viewport_rect().size.x,get_viewport_rect().size.y]}
 	metadata.merge({"selected_speed":runner.speed,"playback_speed":runner.playback_speed(),"quiet_sleep_accelerated":runner.sleep_fast_forward})
+	if OS.get_name()=="Android":metadata.merge(_android_pss_metadata(native_storage))
 	if world is ColonyWorld:
 		var orders: Array = world.unfinished_jobs()
 		metadata["executable_jobs"]=orders.filter(func(j:Dictionary)->bool:return ColonyWorkBudget.executable(j,world.tick)).size()
 		metadata["queued_orders"]=orders.filter(func(j:Dictionary)->bool:return j.state=="Queued").size()
 		metadata.merge({"content":world.CONTENT_VERSION,"schema":world.SCHEMA_REVISION,"site":world.site_id,"seed":str(world.seed),"tick":str(world.tick),"resident_records":world.citizens.size(),"structure_records":world.structures.size(),"nonempty_stacks":world.nonempty_stacks().size(),"unfinished_jobs":world.unfinished_jobs().size(),"pooled_extra_actors":view.extra_actors.size(),"visible_extra_actors":view.extra_actors.values().filter(func(actor:Node)->bool:return actor.visible).size(),"writer_busy":save_queue.busy(),"snapshot_preparing":save_queue.preparing(),"storage_error_present":not storage_error.is_empty(),"saving_disabled":saving_disabled})
 	return diagnostics.report(metadata)
+
+## Only an explicit report reads OS process memory; never poll it while playing.
+func _android_pss_metadata(bridge: Object) -> Dictionary:
+	var result: Dictionary={"android_process_pss_bytes":null,"android_pss_query_us":null,"android_pss_source":"android.os.Debug.MemoryInfo.totalPss","android_pss_scope":"One process PSS sample while preparing this report; no continuous memory/thermal/battery measurement"}
+	# JNI singletons dispatch plugin calls dynamically; has_method is not supported.
+	# The non-null bridge is our plugin packaged with this same APK.
+	if bridge==null:return result
+	var started: int=Time.get_ticks_usec();var kib: Variant=bridge.call("getProcessPssKiB")
+	result.android_pss_query_us=Time.get_ticks_usec()-started
+	if kib is int and kib>0 and kib<=2147483647:result.android_process_pss_bytes=kib*1024
+	return result
 
 func show_diagnostics(refresh: bool = true) -> void:
 	show_sheet("Performance report","ui.sheet.performance_report")
@@ -1918,6 +1931,8 @@ func show_diagnostics(refresh: bool = true) -> void:
 		DisplayServer.clipboard_set(bytes.get_string_from_utf8());notice=ColonyText.text("ui.notice.performance_copied"),sheet_body).name="CopyDiagnostics"
 	button(ColonyText.text("ui.action.reset_measurements"),func()->void:diagnostics.reset();show_diagnostics(),sheet_body).name="ResetDiagnostics"
 	label(ColonyText.text("ui.performance.device",{"build":diagnostic_preview.metadata.build,"platform":diagnostic_preview.metadata.platform,"model":diagnostic_preview.metadata.device_model}),sheet_body)
+	if diagnostic_preview.metadata.get("android_process_pss_bytes")!=null:
+		label(ColonyText.text("ui.performance.android_pss",{"mib":"%.1f" % (float(diagnostic_preview.metadata.android_process_pss_bytes)/1048576.0)}),sheet_body)
 	label(ColonyText.text("ui.help.diagnostics.includes_device_os_gpu_map_seed_tick"),sheet_body)
 	if diagnostic_preview.timings.is_empty(): label(ColonyText.text("ui.help.diagnostics.no_samples_yet_close_this_panel_play"),sheet_body)
 	for entry in diagnostic_preview.timings:

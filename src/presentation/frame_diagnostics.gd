@@ -1,7 +1,7 @@
 class_name FrameDiagnostics
 extends RefCounted
 ## Bounded, local presentation measurements. No files, world mutation or uploads.
-const STAGES: Array[String] = ["frame_gap","session","simulation_batch","map_update","map_draw_commands","audio_update","save_capture","snapshot_capture","save_finish","save_explicit"]
+const STAGES: Array[String] = ["frame_gap","session","simulation_batch","simulation_tick","map_update","map_draw_commands","audio_update","save_capture","snapshot_capture","save_finish","save_explicit"]
 const LIMITS_US: Array[int] = [4000,8000,16000,25000,33334,34000,36000,40000,50000,100000,250000,500000,1000000]
 const MAX_EVENTS: int = 32
 const MAX_EXPORT_BYTES: int = 65536
@@ -57,4 +57,4 @@ func report(metadata: Dictionary) -> Dictionary:
 	for key in keys:
 		var entry: Dictionary = samples[key]
 		timings.append({"stage":entry.stage,"speed":entry.speed,"count":entry.count,"mean_ms":float(entry.sum_us)/entry.count/1000.0,"max_ms":float(entry.max_us)/1000.0,"over_50ms":entry.over_50ms,"p95_bucket_upper_ms":percentile_upper(entry,95),"p99_bucket_upper_ms":percentile_upper(entry,99),"buckets":entry.buckets.duplicate()})
-	return {"format":"brackenward-performance","version":1,"scope":"Local session CPU callbacks and wall-clock frame gaps; nested callbacks overlap; excludes GPU/audio-thread/PSS/battery certification","metadata":metadata.duplicate(true),"bucket_upper_ms":Array(LIMITS_US).map(func(value:int)->float:return float(value)/1000.0)+[null],"timings":timings,"slow_events":slow_events.duplicate(true),"counters":counters.duplicate(),"slow_event_limit":MAX_EVENTS}
+	return {"format":"brackenward-performance","version":1,"scope":"Local CPU callbacks and wall-clock frame gaps; simulation_tick times world.step only; nested callbacks overlap. Optional Android PSS is one explicit report sample; excludes GPU/audio-thread, PSS longevity and battery certification","metadata":metadata.duplicate(true),"bucket_upper_ms":Array(LIMITS_US).map(func(value:int)->float:return float(value)/1000.0)+[null],"timings":timings,"slow_events":slow_events.duplicate(true),"counters":counters.duplicate(),"slow_event_limit":MAX_EVENTS}

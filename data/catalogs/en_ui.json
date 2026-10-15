@@ -356,6 +356,7 @@
   "ui.notice.performance_unavailable": "Performance report is unavailable or exceeds its 64 KiB limit.",
   "ui.notice.quiet_sleep_limited": "Quiet-sleep speed limited to keep the colony responsive. Your selected speed is retained.",
   "ui.notice.running": "Time is running. Pause to plan.",
+  "ui.performance.android_pss": "Android process PSS: {mib} MiB (one sample for this report).",
   "ui.performance.device": "{build} | {platform} | {model}",
   "ui.performance.samples": {
     "one": "{count} sample",
@@ -370,6 +371,7 @@
   "ui.performance.stage.save_finish": "save finish",
   "ui.performance.stage.session": "session",
   "ui.performance.stage.simulation_batch": "simulation batch",
+  "ui.performance.stage.simulation_tick": "simulation tick",
   "ui.performance.stage.snapshot_capture": "snapshot capture",
   "ui.performance.timing": "{stage} / {speed}: {samples}, max {max_ms} ms, {slow} over 50 ms; p95 bucket upper {upper_ms} ms.",
   "ui.placement.accepted": "Order accepted. Work is marked on the map.",

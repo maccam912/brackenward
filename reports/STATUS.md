@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.62-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.63-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -23,12 +23,12 @@ Checkpoint: `0.7.62-m7` (campaign schema 23, device settings schema 6), content 
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
-| M3–M6 gameplay and progression | Implemented; pinned v7 Charter/Winter/raid and broader v6 evidence | Frozen current-v7 generator-2 policies pass all four 96-day Charters and separate no-barter/import audits, all 30 first-Winter maps, and 30 paired prepared-defense/physical-ransom cases. V7 post-Charter continuation remains in progress. Pinned generator-2 v6 ordinary twenty-resident seasonal windows, four additional 96-day post-Charter cases, first-week and merchant-material economies pass in their recorded scopes; earlier failures remain retained. M7 physical/human gates remain open. |
+| M3–M6 gameplay and progression | Implemented; pinned v7 Charter/Winter/raid and broader v6 evidence | Frozen current-v7 generator-2 policies pass all four 96-day Charters and separate no-barter/import audits, all 30 first-Winter maps, and 30 paired prepared-defense/physical-ransom cases. All four v7 post-Charter origins also complete96additional days (192 total), preserving original command prefixes with no zero fullness/grace violations. Current v7 ordinary twenty-person seasonal rerun is in progress. Pinned generator-2 v6 ordinary twenty-resident seasonal windows, four additional 96-day post-Charter cases, first-week and merchant-material economies pass in their recorded scopes; earlier failures remain retained. M7 physical/human gates remain open. |
 | Revision-2 release map sweep | Pass | All 30,000/30,000 independently audited maps (10,000 per site), zero retries/fallbacks; source `d870381`. Inspected boundary goldens and separate actual native/Android initial-map checks retain their scopes. Campaign balance remains separate. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
-| Development APK publication | Pass at `a089292` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-a089292c7989), code 214 / 0.7.61-m7+a089292; published APK SHA-256 `6196e61cfa2d53aef7fa87d84f74ae318626d81230824f153e331c07d5a4f4a2`. Stable package/debug identity, source provenance and checksums verified. Production signing/store publication remain pending. |
+| Development APK publication | Pass at `424f897` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-424f897de132), code 215 / 0.7.62-m7+424f897; published APK SHA-256 `e30cbb6b19b820d28bdbf2a26ef47032296db2583d2579c668529e99e453460e`. All four actual native artifact sets,28 suites/2804 assertions,Kotlin4 and published assets audited. Current0.7.63 publication remains separate; production signing/store publication pending. |
 
-Current recorded validation: 28 GDScript suites, 2,804 assertions including 669 native UI checks. Remote 0.7.61 freshly passes all 28 suites/2,802 assertions; current 0.7.62 freshly passes persistence 458 and expanded graphical UI 669. The two new UI regressions fail before the choice-caption fix and pass afterward. Content/font validation covers 526 English keys; Kotlin's four checks and the current local Android export pass. The unchanged simulation/persistence/generation source retains the exact v7 replay at 0.7.61 and every immutable older fixture. Current Android emulator update, settings/rotation and paused v6 migration checks pass with all 45 original private files restored exactly afterward. Full current CI/publication and physical Android/human release gates remain distinct. The incorrect assertion-only 0.7.59 persistence pass claim is explicitly corrected below; failed engine-error runs remain failures. Generated XML/screenshots/raw logs/builds are ignored; committed compact reports retain exact evidence hashes.
+Current recorded validation:28 GDScript suites,2807 maintained assertions including669 native UI checks. Remote0.7.62 freshly passes all28 suites/2804 assertions; current0.7.63 freshly passes persistence461, graphical UI669, unit20, integration6 and scheduler403, with exact v7 replay62 plus every older acknowledgement audit. Content/font validation covers528 English keys. Kotlin4 and current local Android export pass. Android0.7.62 settings/migration interactions retain their recorded scope;0.7.63 diagnostic bridge/export verification is recorded below. Full current CI/publication and physical Android/human release gates remain distinct. The incorrect assertion-only0.7.59 persistence pass claim is explicitly corrected below; failed engine-error runs remain failures. Generated XML/screenshots/raw logs/builds are ignored; committed compact reports retain exact evidence hashes.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -3599,3 +3599,51 @@ and published APKs are audited in native-ci-v60-evidence.json and
 native-ci-v61-evidence.json; code213/214 and exact source/checksum/asset agreement
 are verified. Neither those runs nor current emulator checks certify physical or
 human release gates.
+
+
+## 0.7.63 individual tick and explicit Android memory diagnostics
+
+The report now records each completed `world.step` separately from its containing
+simulation batch/session, at the actual playback speed. Tick timing excludes
+runner alert/pause work. Headless runners without a presentation clock/observer
+perform no added clock reads. State, selected speed, backlog and every immutable
+replay expectation stay unchanged. The bounded collector grows from50 to55
+histograms, retaining32 slow events, fixed bins and the64KiB export cap.
+
+An explicit Android report queries `Debug.MemoryInfo.totalPss` once, converts
+KiB to bytes, and retains the source and query duration. Missing samples remain
+null. Preview/copy/export reuse the same frozen report; playing never polls
+process memory. One sample does not establish longevity, battery or thermals.
+Three new regressions verify exact tick counts/times and complete-world equality
+at1x/2x/4x, the missing-clock boundary, exact memory units and unavailable samples.
+Fresh persistence461 and UI669 pass; unit20/integration6/scheduler403, exact
+replay62/all old acknowledgements,528-key content validation and local APK102
+with Kotlin4 pass.
+
+The first actual APK exposed an unsupported JNI `has_method` guard that skipped
+the memory query despite the packaged method being callable. That failed report
+and APK are retained; the guard was removed before publication. Actual Android
+bridge/export and final preservation results are recorded in the compact report.
+
+The frozen0.7.62 desktop soak independently passes its30-minute2x case with
+36001ticks,20residents, peak sampled engine-heap growth20271140bytes and lowest
+one-second FPS28.429, zero diagnostic counters, full source/input/storage/codec
+checks and second audit. Every gameplay field matches the earlier v7 same-tick
+endpoint. Concurrent headless work makes this a development proxy, with no
+physical performance claim. `native-soak-v62-evidence.json` retains the details.
+All four current-v7 Charter origins also pass96additional days (192total),
+no zero fullness/grace violations, exact command prefix and final food reserves;
+`post-charter-v58-evidence.json` includes their independent second audit. The
+current-v7 ordinary20 seasonal campaign and full30000-map sweep continue.
+
+
+The fixed actual APK exports a10410-byte valid report through Android's document
+provider. PSS is247602176bytes, within0.12% of the separate near-time system
+reading247307264bytes; explicit query96312us, and472 timed4x ticks have exact
+histogram sums. This is emulator binding/export evidence only. Original45 files
+are preserved before first launch, isolated for testing and restored exactly;
+rotation preferences are restored, task files removed and emulator stopped.
+`android-diagnostics-v63-evidence.json` records the failure and fixed artifacts.
+The graphical suite separately verifies frozen preview/export reuse. All actual
+0.7.62 CI artifacts and code215 published assets now audit successfully in
+`native-ci-v62-evidence.json`. Current0.7.63 CI/publication is still pending.

@@ -82,6 +82,7 @@ const PERFORMANCE_KEYS: Dictionary = {
 	"frame_gap": "ui.performance.stage.frame_gap",
 	"session": "ui.performance.stage.session",
 	"simulation_batch": "ui.performance.stage.simulation_batch",
+	"simulation_tick": "ui.performance.stage.simulation_tick",
 	"map_update": "ui.performance.stage.map_update",
 	"map_draw_commands": "ui.performance.stage.map_draw_commands",
 	"audio_update": "ui.performance.stage.audio_update",

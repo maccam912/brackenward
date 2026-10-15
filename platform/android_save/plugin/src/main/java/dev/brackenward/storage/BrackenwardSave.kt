@@ -3,6 +3,7 @@ package dev.brackenward.storage
 import android.app.Activity
 import android.content.Intent
 import android.net.Uri
+import android.os.Debug
 import org.godotengine.godot.Godot
 import org.godotengine.godot.plugin.GodotPlugin
 import org.godotengine.godot.plugin.SignalInfo
@@ -24,6 +25,14 @@ class BrackenwardSave(godot: Godot) : GodotPlugin(godot) {
 
     @UsedByGodot
     fun getDensity(): Double = activity?.resources?.displayMetrics?.density?.toDouble() ?: 1.0
+
+    // Called only for an explicit diagnostic report, never on the frame path.
+    @UsedByGodot
+    fun getProcessPssKiB(): Int = try {
+        val info = Debug.MemoryInfo()
+        Debug.getMemoryInfo(info)
+        info.totalPss
+    } catch (_: RuntimeException) { -1 }
 
     @UsedByGodot
     fun chooseExportDestination(requestId: Int, suggestedName: String) {
