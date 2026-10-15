@@ -695,67 +695,60 @@ func _create_domestic_jobs() -> void:
 
 func _create_work() -> void:
 	if not personal_jobs_reconciled:
-		# Older snapshots can contain abandoned personal work. Retain its history
-		# and release any real supplies through the ordinary cancellation path.
+		# Releasing legacy personal work can drop real supplies. Read inventory
+		# only after that transaction, exactly as the original creation body did.
 		for job in unfinished_jobs():
 			if job.kind in PERSONAL_JOBS and job.worker==0 and job.state not in ["Complete","Canceled"]:
 				_release(job,true)
 		personal_jobs_reconciled=true
+	# Creation proposes work without reserving stock or completing transactions.
+	# These maps live only for this call; Queued proposals still prevent duplicates.
+	var fuel_targets: Dictionary={};var cook_targets: Dictionary={};var haul_sources: Dictionary={}
+	for job in (_work_jobs() if in_tick else unfinished_jobs()):
+		if job.state in ["Complete","Canceled"]: continue
+		if job.kind=="fuel": fuel_targets[job.target]=true
+		elif job.kind in ["cook","craft"]: cook_targets[job.target]=true
+		elif job.kind=="haul": haul_sources[job.source]=true
+	var inventory: Array=_work_inventory() if in_tick else nonempty_stacks()
+	var output_batches: Dictionary={};var stock: Dictionary={"wood":0,"meal":0}
+	for stack in inventory:
+		if stack.count<=0: continue
+		if stack.location=="output": output_batches[stack.owner]=output_batches.get(stack.owner,0)+1
+		if stock.has(stack.item) and stack.location in ["ground","store","output"] and ColonyFire.usable(self,stack) and accessible(Vector2i(stack.x,stack.y)):
+			stock[stack.item]+=stack.count-_reserved(stack)
+	var ordered: Dictionary={}
+	for order in production_state.orders: ordered[order.station]=true
+	var residents: int=citizens.filter(func(c:Dictionary)->bool:return not c.death_recorded and not c.departed and not c.away).size()
+	var food: Array[Dictionary]=[];var food_checked: bool=false
 	for hearth in structures:
-		if hearth.health<=0 or hearth.definition != "hearth":
-			continue
-		if hearth.fuel < 4 and ColonyLiving.temperature(self) < 8 and available("wood") >= 8 - hearth.fuel and not unfinished_jobs().any(func(job: Dictionary) -> bool: return job.kind == "fuel" and job.target == hearth.id and job.state not in ["Complete", "Canceled"]):
-			var fuel_job: Dictionary = _job("fuel", "Hauling", "", hearth.id, Vector2i(hearth.x,hearth.y), 0)
-			fuel_job.inputs = {"wood": 8 - hearth.fuel}
-		if not hearth.cooking:
-			continue
-		if production_state.orders.any(func(order:Dictionary)->bool:return order.station == hearth.id):
-			continue
-		var active: bool = false
-		var output_batches: int = 0
-		var in_progress: int = 0
-		for stack in nonempty_stacks():
-			if stack.location == "output" and stack.owner == hearth.id and stack.count > 0:
-				output_batches += 1
-		for job in unfinished_jobs():
-			if job.kind in ["cook","craft"] and job.target == hearth.id and job.state not in ["Complete", "Canceled"]:
-				active = true
-				in_progress += 2
-		if not active and output_batches < 2 and available("meal") + in_progress < citizens.filter(func(c:Dictionary)->bool:return not c.death_recorded and not c.departed and not c.away).size() * 4:
-			var recipe: Dictionary = definitions.recipes.cook_meals
-			var inputs: Dictionary = recipe.materials.duplicate()
-			var count: int = 0
-			var food: Array[Dictionary] = []
-			for stack in nonempty_stacks():
-				if recipe.alternatives.has(stack.item) and stack.location in ["ground","store","output"] and stack.count > _reserved(stack) and ColonyFire.usable(self,stack) and accessible(Vector2i(stack.x,stack.y)):
-					food.append(stack)
-			for stack in ColonyProduction.first_inputs(self,food,Vector2i(hearth.x,hearth.y),4):
-				var item: String = stack.item
-				var quantity: int = mini(4 - count, stack.count-_reserved(stack))
-				if quantity > 0:
-					inputs[item] = inputs.get(item,0)+quantity
-					count += quantity
-			if count == 4 and available("wood") >= 1:
-				var job: Dictionary = _job("cook", "Cooking", "Cooking", hearth.id, Vector2i(hearth.x, hearth.y), recipe.work_milli)
-				job.inputs = inputs
-				job.output = recipe.outputs.duplicate()
-	# Completed work remains in history; index only live hauling reservations
-	# once instead of rescanning that history for every loose stack.
-	var haul_sources: Dictionary = {}
-	for existing in unfinished_jobs():
-		if existing.kind == "haul" and existing.state not in ["Complete", "Canceled"]:
-			haul_sources[existing.source] = true
-	for stack in nonempty_stacks():
-		var invalid_store: bool = false
-		if stack.location == "store":
-			var store: Dictionary = find(stores,stack.owner)
-			invalid_store = store.is_empty() or not store.filters.has(stack.item)
-		if stack.count == 0 or (stack.location not in ["ground", "output"] and not invalid_store) or _reserved(stack) > 0:
-			continue
+		if hearth.health<=0 or hearth.definition!="hearth": continue
+		if hearth.fuel<4 and ColonyLiving.temperature(self)<8 and stock.wood>=8-hearth.fuel and not fuel_targets.has(hearth.id):
+			var fuel_job: Dictionary=_job("fuel","Hauling","",hearth.id,Vector2i(hearth.x,hearth.y),0)
+			fuel_job.inputs={"wood":8-hearth.fuel};fuel_targets[hearth.id]=true
+		if not hearth.cooking or ordered.has(hearth.id) or cook_targets.has(hearth.id) or output_batches.get(hearth.id,0)>=2 or stock.meal>=residents*4: continue
+		var recipe: Dictionary=definitions.recipes.cook_meals
+		if not food_checked:
+			for stack in inventory:
+				if stack.count>0 and recipe.alternatives.has(stack.item) and stack.location in ["ground","store","output"] and stack.count>_reserved(stack) and ColonyFire.usable(self,stack) and accessible(Vector2i(stack.x,stack.y)): food.append(stack)
+			food_checked=true
+		var inputs: Dictionary=recipe.materials.duplicate();var count: int=0
+		for stack in ColonyProduction.first_inputs(self,food,Vector2i(hearth.x,hearth.y),4):
+			var item: String=stack.item
+			var quantity: int=mini(4-count,stack.count-_reserved(stack))
+			if quantity>0: inputs[item]=inputs.get(item,0)+quantity;count+=quantity
+		if count==4 and stock.wood>=1:
+			var job: Dictionary=_job("cook","Cooking","Cooking",hearth.id,Vector2i(hearth.x,hearth.y),recipe.work_milli)
+			job.inputs=inputs;job.output=recipe.outputs.duplicate();cook_targets[hearth.id]=true
+	for stack in inventory:
+		if stack.count<=0: continue
+		var invalid_store: bool=false
+		if stack.location=="store":
+			var store: Dictionary=find(stores,stack.owner)
+			invalid_store=store.is_empty() or not store.filters.has(stack.item)
+		if (stack.location not in ["ground","output"] and not invalid_store) or _reserved(stack)>0: continue
 		if not haul_sources.has(stack.id):
-			var job: Dictionary = _job("haul", "Hauling", "", stack.id, Vector2i(stack.x, stack.y), 0)
-			job.source = stack.id
-			haul_sources[stack.id] = true
+			var job: Dictionary=_job("haul","Hauling","",stack.id,Vector2i(stack.x,stack.y),0)
+			job.source=stack.id;haul_sources[stack.id]=true
 
 func _needs(citizen: Dictionary) -> void:
 	if citizen.away:

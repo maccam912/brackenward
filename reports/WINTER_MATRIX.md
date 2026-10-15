@@ -279,3 +279,13 @@ original bytes remain unchanged and current codec round trips are exact.
 Report: winter-v4-current28-audit.json, SHA-256
 46e5ee5464c5902edfaa67070117e6352a85c16058f7af40e2c334d3ec2deb17.
 This is save compatibility; fresh v6 Winter balance remains pending.
+
+
+The retained pre-starvation save also passes a normal-command repair branch on
+0.7.36: one gather command cuts tree 2110, produces eight wood and feeds all four
+newcomers by tick 134,752, 593 ticks after branching. Minimum health remains 100,
+invariants pass and original input bytes remain untouched. Report SHA is
+99b8762d8fa8424d61e9f0e47778fe658d13e3186df5d3eddee687bdf9e58ef4.
+A fresh complete matrix now runs from clean frozen 705906424c0a1252b5286cc9b847b4f398c8620d
+with the revised public policy, in winter-release-v6-7059064. It must finish and
+pass its own source/completion/audit checks before updating the release status.
