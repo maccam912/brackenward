@@ -1,0 +1,98 @@
+{
+  "passed": true,
+  "build": "0.7.68-m7",
+  "local_android_code": 107,
+  "content": "colony-v7",
+  "schema": 23,
+  "envelope": 5,
+  "generator": 2,
+  "maintained_gdscript_assertions": 2846,
+  "fresh_checks": {
+    "scheduler": 425,
+    "persistence": 472,
+    "ui": 670,
+    "replay_commands": 62
+  },
+  "rows": [
+    {
+      "case": "ordinary20",
+      "ticks": 720,
+      "input_sha256": "e93bff9ebfe59ef1557003a15ab8ff7c4422c8e2b7ccc5f4a6e799c9e31c5b9f",
+      "initial_canonical_hash": "89347c8bc3c7ff1d4325168212d9875beeabfd0a7746a2393fe7c27a3660408b",
+      "final_canonical_hash": "4cd91d82d1855e27e326970754b48056dab8cbd5687cd7e3a1730e01c2ec07aa",
+      "original_median_us": 3117584.5,
+      "candidate_median_us": 3013387.0,
+      "report_sha256": "c8df378f929f8856b5237c635860127922b28437a8448d9b0ade1d783341d721",
+      "log_sha256": "a6803c4814c0a1a63d82800f1fb232b22765b48801ccaab842c000fb53dbb688"
+    },
+    {
+      "case": "fresh",
+      "ticks": 7200,
+      "input_sha256": "",
+      "initial_canonical_hash": "3481e8eb99dce4b6323e2873e03cc21fdd34c3f4b1d311ca046a3314b52d5578",
+      "final_canonical_hash": "c6532f0d1f37122ffe2274e559d843f2d7249958cc08d237b6210ab24bf6cfa6",
+      "original_median_us": 1143907.5,
+      "candidate_median_us": 1138812.5,
+      "report_sha256": "07e56f01d3b6a71e1c48f76bf46d0bee08dc73f20a4edb647fbf6d4dac7a69f7",
+      "log_sha256": "8ca01d8c19a7956de91efcdc9dd5d9dd308ea75309f406ad9d3d39352ec42b88"
+    },
+    {
+      "case": "stress",
+      "ticks": 720,
+      "input_sha256": "6a3d3c4636802ca2374e48c5d423bfd6d939c82e4cd3e179583b21324c76c774",
+      "initial_canonical_hash": "16bafc8950ed9a4e98688e4be9e75afdf3b97c81ebfc3ad8c8fde80a16c31c87",
+      "final_canonical_hash": "bfc2d6717182c118e4e77a37a90102a09d7badbd7ce318768ea4deb5634eace2",
+      "original_median_us": 3200260.5,
+      "candidate_median_us": 3185287.5,
+      "report_sha256": "3743069f0f4592dd226abd8011d10da9e6abe648ddbbe2a23653daff926592a1",
+      "log_sha256": "fd29f1c4bf19b1baa4391459e5c10daf36fd32d5c3e832ec9a4337267ac594e6"
+    }
+  ],
+  "scope": "Full release history loop retained. Hoist the stable keep-reservations policy and jobID after unchanged callbacks; read each live stack location once. Preserve every zero-count carry/escrow position/owner/job/reservation mutation,ordering and recursion. Full originaldefdc91 method retained as independent oracle. Twenty direct-call kind/cancel/history cases,explicit zero carry,real recursive helper cancellation and complete ordinary future/reload tests pass. Four corrected alternating complete-tick pairs preserve every unsorted payload/invariant/source/input. Desktop simulation CPU,not physical Android or isolated frame certification. Earlier prototypes overlap current67native4x probe; corrected pairs share bounded headless checks after probe ended.",
+  "earlier_failures": "First temporary prototype used mixed indentation and failed compilation. New fourth regression initially required String dictionary key order across save/load,which the unchanged sorting encoder does not preserve; raw diagnosis shows every value/canonical hash/future invariant equal. Test now keeps strict unsorted in-memory equality and every-value reload comparison. Failures retained.",
+  "release_stage_trace": {
+    "reference_median_us": 285856.5,
+    "candidate_median_us": 199035.0,
+    "calls_per720ticks": 27,
+    "scope": "Four separate instrumented prototype pairs,nested release stages may overlap; full world equality. Not the final production CPU pairing."
+  },
+  "reference_method_proof": {
+    "reference_commit": "defdc91173be693e9aad43a0e370ec9ea55d3898",
+    "full_original_method_sha256": "c17b1a95d44f785eb3992af5d9558f730915d609260ea0dab1477e37f42d9af4",
+    "full_candidate_method_sha256": "3878c9d37344537beeb8cc43f7e46d5506d2c5eab69987b91798c89545ac5e9d",
+    "candidate_matches_measured_v2": true,
+    "original_oracle_complete": true,
+    "scope": "Only loop-stable keep-policy/job-ID and one stack-location read hoisted. Entire full-history iteration and each metadata mutation remain."
+  },
+  "validation_sha256": {
+    "release-hoist-v68-corrected-ordinary20.log": "a6803c4814c0a1a63d82800f1fb232b22765b48801ccaab842c000fb53dbb688",
+    "release-hoist-v68-scheduler-first.log": "ec4ff5a91d810ee385cf3a5d6c068b2424e903eecbb2dea4ccfd260e16cd195c",
+    "release-hoist-v68-final-ordinary20.log": "ef619dc41f6089c22e95fd203f8ea1d8dbfcedd08f797dc8376a81687758c599",
+    "release-hoist-v68-corrected-fresh.log": "8ca01d8c19a7956de91efcdc9dd5d9dd308ea75309f406ad9d3d39352ec42b88",
+    "release-hoist-v68-v2-ordinary20.log": "a36e203e3790a98c094f3690d999f0cd7abd3391969098eabfcf355049befdc1",
+    "release-hoist-v68-android.log": "cd6063861d7e3dfbd9b3fedc289fbaed2e4347535beb4d1b118f6e8a77ce7921",
+    "release-hoist-v68-focused-fixed.log": "0d6f6989fdcfaccae85f26f017b71854c1c2f8c94bb8354d7aee0faeeb8d18cf",
+    "release-hoist-v68-ordinary20-fixed.log": "07b893fb30262cc3939081b7a3e847ead24023a19e15960e23f6a7eb23124cc6",
+    "release-hoist-v68-final-fresh.log": "e871e8b7b03a4a31f7e83a669dad514ba58a4be9027e74bb39b7562d7699a404",
+    "release-hoist-v68-v3-work-trace.log": "f7a8bf13474d16c729df5c7126378c113032badff822c9e8e31f0eb50f455a66",
+    "release-hoist-v68-reload-diagnosis.log": "093bfcc43134870e3eed3e33d5d7e70a477ff1efc4390c2907d99f697f742b94",
+    "release-hoist-v68-ui.log": "f4d0cf5e9f603fdf145cf0a44a666c42e13e3f055397bcfc94093055b090daa6",
+    "release-hoist-v68-persistence.log": "0d5218e50c077720d9544424f9e5e776e49de166bccc5028483441ba273b91d8",
+    "release-hoist-v68-import.log": "856ccae185549c55e04abfcf41eeb70bd2703902be841efc5b8817d8b00957ae",
+    "release-hoist-v68-corrected-stress.log": "fd29f1c4bf19b1baa4391459e5c10daf36fd32d5c3e832ec9a4337267ac594e6",
+    "release-hoist-v68-final-stress.log": "6564015428c0f71c4e5dd2ae294a40962875af86cc97a508c58e909ba2cf3e4e",
+    "release-hoist-v68-v2-fresh.log": "21dd0f26e9ee959b37ef243d593d3fe8c4cf25334333a9a2a32682be70280648",
+    "release-hoist-v68-scheduler-final.log": "1d496489db8470f3b2622fb44949e541ca80690e70b13e90295ca7b70a3a6176",
+    "release-hoist-v68-replay.log": "135f2d3af3a5a078bb963e8af5364a7e108f5ffeffcee0fb33cdee41a176ba0d",
+    "release-hoist-v68-ordinary20.log": "ae483515ec1f869c9c6f491c0934166b5d013a632c9d8f29d28ecea8ce67e71a",
+    "release-hoist-v68-v2-stress.log": "d83ee4ab7d54a2a4bbeef689b45836cb5506c6818377ccdf4a8211389ada2cb7",
+    "release-hoist-v68-content.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9"
+  },
+  "pending": "All current local source/profile/save/replay/UI/content/APK checks pass. New68CI/publication,native68longevity and physical gates remain separate. Earlier67ten-minute4x heap proxy remainsfailed.",
+  "local_apk_sha256": "9a9c9df13da480b284c72677433c10213f3ff9f5d8b48fe7c8d8b4e08e2f7ebf",
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "Unchanged plugin is UP-TO-DATE; XML inspected,not freshly rerun."
+  }
+}

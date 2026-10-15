@@ -1536,9 +1536,12 @@ func _release(job: Dictionary, cancel: bool) -> void:
 		if not animal.is_empty(): animal.handler = 0
 	ColonyFire.released(self,job)
 	ColonyCare.released(self,job)
+	var keep_reservations: bool=not cancel and job.kind in RELEASE_KEEPS_RESERVATIONS
+	var released_job: int=job.id
 	for stack in stacks:
-		if cancel or job.kind not in RELEASE_KEEPS_RESERVATIONS: stack.reservations.erase(job.id)
-		if (stack.location == "carry" and stack.job == job.id) or (cancel and stack.location == "escrow" and stack.owner == job.id):
+		if not keep_reservations: stack.reservations.erase(released_job)
+		var location: String=stack.location
+		if (location == "carry" and stack.job == released_job) or (cancel and location == "escrow" and stack.owner == released_job):
 			stack.location = "ground"
 			if stack.owner > 0 and not find(citizens, stack.owner).is_empty():
 				var carrier: Dictionary = find(citizens, stack.owner)
@@ -1546,7 +1549,7 @@ func _release(job: Dictionary, cancel: bool) -> void:
 				stack.y = carrier.y
 			stack.owner = 0
 			stack.job = 0
-			if not cancel and job.kind in RELEASE_KEEPS_RESERVATIONS and stack.count>0: stack.reservations[job.id]=stack.count
+			if keep_reservations and stack.count>0: stack.reservations[released_job]=stack.count
 	if job.worker > 0:
 		var citizen: Dictionary = find(citizens, job.worker)
 		citizen.job = 0

@@ -5,6 +5,24 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## Current0.7.67 ten-minute4x run fails transient heap growth
+
+The4x development probe completes600.02469seconds after60seconds warmup,
+24001logical ticks4205to28206,twenty residents and zero diagnostic counters.
+Lowest one-second FPS28.988,logical time,invariants,source/input,exact roundtrip
+and audio drain pass. Sampled peak heap growth25009847bytes (23.851MiB) exceeds
+the unchanged20MiB limit; ending growth9552980bytes. The peak is the first60-second
+sample at6605. Whole-run and independent second audit therefore remainfailed.
+
+Actual background worker maximums are744.073ms(save) and282.787ms(preparation),
+while foreground captures stay below17ms. The sample lacks current writer/
+preparation ownership flags,so no allocation cause is assigned. Read-only release
+prototypes and bounded headless checks share host; no other graphical game or
+emulator runs. This ten-minute4x case does not certify30-minute2x or physical
+Android/PSS/thermal/battery gates. [native-soak-v67-4x-failure-evidence.json](native-soak-v67-4x-failure-evidence.json)
+retains the strict failure and all valid subsets; later optimization remains
+separate and no memory/durability guard is relaxed.
+
 ## Same-source 0.7.63 retry passes in a separate directory
 
 The clean frozen357fa04 retry completes1800.023079seconds at2x after60seconds

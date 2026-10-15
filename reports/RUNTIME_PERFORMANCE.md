@@ -7,6 +7,31 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.68 stable job-release reads
+
+The complete full-history release loop remains. Hoist its normalized reservation
+policy/jobID after unchanged callbacks,and read each live stack location once.
+Every depleted carry/escrow coordinate/owner/job/reservation mutation remains,
+along with recursive callback order. The full originaldefdc91 method is retained.
+
+| Case | Ticks | Original median us | Hoisted median us | Result |
+| --- | ---: | ---: | ---: | --- |
+| Ordinary20 retained endpoint | 720 | 3117584.5 | 3013387 | 3.34% lower |
+| Fresh revision2 Meadow104729 | 7200 | 1143907.5 | 1138812.5 | 0.45% lower |
+| Retained stress/rations | 720 | 3200260.5 | 3185287.5 | 0.47% lower |
+
+Four alternating final pairs preserve complete unsorted values,invariants and
+unchanged source/input. The small-case differences are not material. Earlier
+separate traces show27release calls median285856.5to199035us (about30% lower),
+with complete state equality; nested traces are not added to whole-tick timings.
+Prototype/early pairs share current67's native4x probe; corrected final pairs
+share bounded headless checks after it ends. No isolated/phone/frame/heap claim.
+Four new history/recursion/future/reload regressions,scheduler425,persistence472,
+UI670,replay62/all old acknowledgements and Android107 export pass. Initial mixed-
+indentation prototype failure and a corrected unsupported reload-key-order test
+assumption remain retained. [release-hoist-v68-evidence.json](release-hoist-v68-evidence.json)
+records exact inputs,sources,medians and failure hashes.
+
 ## 0.7.67 adaptive quiet-night tiers
 
 A12x sleep boost with sustained backlog now tries8x and6x before disabling bonus

@@ -1,0 +1,78 @@
+{
+  "passed": false,
+  "source_commit": "defdc91173be693e9aad43a0e370ec9ea55d3898",
+  "case": "Ten-minute4x desktop development probe after60seconds warmup; not a standard30-minute2x pass",
+  "measured_wall_seconds": 600.02469,
+  "logical_ticks": 24001,
+  "nominal_ticks": 24000,
+  "initial_tick": 4205,
+  "final_tick": 28206,
+  "peak_sampled_engine_heap_growth_bytes": 25009847,
+  "unchanged_heap_limit_bytes": 20971520,
+  "ending_engine_heap_growth_bytes": 9552980,
+  "peak_sample": {
+    "elapsed_seconds": 60.000067,
+    "tick": 6605,
+    "growth_bytes": 25009847
+  },
+  "valid_subsets": {
+    "completed": true,
+    "logical_time_kept_up": true,
+    "fps_floor": true,
+    "lowest_window_fps": 28.9875353597953,
+    "max_consecutive_below24_seconds": 0.0,
+    "residents": 20,
+    "source_unchanged": true,
+    "roundtrip": true,
+    "audio_drained": true,
+    "counters": {
+      "backgrounds": 0,
+      "quiet_sleep_limits": 0,
+      "slow_storage_pauses": 0,
+      "speed_reductions": 0,
+      "storage_alerts": 0
+    }
+  },
+  "worker_timings": [
+    {
+      "stage": "save_capture",
+      "speed": 4,
+      "count": 602,
+      "mean_ms": 7.20277906976744,
+      "max_ms": 16.441
+    },
+    {
+      "stage": "save_worker",
+      "speed": 4,
+      "count": 602,
+      "mean_ms": 64.775988372093,
+      "max_ms": 744.073
+    },
+    {
+      "stage": "snapshot_capture",
+      "speed": 4,
+      "count": 19,
+      "mean_ms": 7.56726315789474,
+      "max_ms": 13.329
+    },
+    {
+      "stage": "snapshot_worker",
+      "speed": 4,
+      "count": 19,
+      "mean_ms": 233.128736842105,
+      "max_ms": 282.787
+    }
+  ],
+  "scope": "Strict heap proxy fails at25,009,847-byte transient sampled growth,while ending growth9,552,980bytes and CPU/FPS/time/storage/codec subsets pass. Independent second audit remainsfailed. Peak occurs first60-second sample; current sample rows do not record snapshot/writer ownership,so cause is not attributed. Read-only release prototypes,headless suites/replay/editor work share host; no other graphical game/emulator. No physical Android/PSS/thermal/battery/human certification. Original2x63pass remains separate.",
+  "raw_sha256": {
+    "audit.json": "da4743bbddca84fd0bc75435e18b74642220583ed63e1d80d359accee99c4138",
+    "probe-latest.json": "a82d6a9dc30766a79461bef54448510eb105d62b20725a020b07c4be08cbc7ad",
+    "source.json": "48d1999ba7d66cdfda5bc9c902375edece628005e12cda372f09e34907f95d29",
+    "probe-final.brackenward": "4c4cdcdf4375018845cf6c216110273a162c87b5b9e8243a7b6c52a53f37d5ba",
+    "probe.log": "ac6df0a4eb4446faff64cf4b93867e0bc27d97a4b1d29bf2bc07db4756b1e4c1",
+    "first-audit.json": "da4743bbddca84fd0bc75435e18b74642220583ed63e1d80d359accee99c4138",
+    "probe.json": "32fb07e7a4310ea15c479fa193b14ad88f81f046268606d0e06358168d2139f8",
+    "completion.json": "de3c81e9d3a19dc46e5a5148ef85ea2ce07ab97a6adb2f07601002c8904c7608"
+  },
+  "second_audit_log_sha256": "6b4d97cbfe8e9f8451a93806cccb93ce6f78d5be00a28954506daf4d91edf7c2"
+}
