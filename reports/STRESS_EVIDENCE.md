@@ -67,6 +67,39 @@ unchanged history sharing, pending command recovery/one-time continuation, prepa
 catch-up and cache replacement. Existing asynchronous failure/retry/crash checks
 also pass. A new frozen thirty-minute test remains necessary.
 
+
+## 0.7.42 lower snapshot-preparation peak
+
+Preparation still generates the exact normal envelope and enforces its existing
+64 MiB limit, then releases that temporary wrapper before parsing its own payload.
+Its private decoder consumes only the fresh, unaliased JSON tree, replacing
+encoded IDs/maps/coordinates in place. It never mutates the immutable capture
+or the live world. Public ColonyState.unpack and the external full codec remain
+unchanged. Full schema/reference/conservation checks, catalog and identity checks,
+exact payload comparison, digest checks and staged byte readback remain required.
+
+PreparationReadTests retains the complete original 6f4dc91 preparation method as
+an independent oracle. Thirteen new checks include full four/twenty-person
+preparation and external decoding, mutable/missing-identity/wrong-catalog/schema
+rejection, parsed-container ownership, scalar/map/tile/depth boundaries, four
+hundred encoded representations including Unicode, and all thirty-two immutable
+save fixtures after their normal migration. Source bytes/world state do not
+change. Persistence passes 345 including existing asynchronous crash/retry paths.
+
+On the same retained 0.7.39 endpoint, four final alternating background pairs
+produce identical payload text, digest and validated state. Median CPU is
+339,662/313,252 microseconds (original/current); sampled temporary engine-heap
+growth is 81,678,512/40,851,078 bytes, approximately halved. Sampling is every
+1 ms in a headless comparison with concurrent headless campaigns/native soak;
+these are CPU/heap observations, not whole-session memory or physical Android
+certification. Runtime/profile/oracle source hashes and unchanged input/canonical
+state are recorded. Final raw report preparation-v42-runtime-identity-final.json
+SHA-256 b420f354e583e91e8dedc96a3986165a4b3d7e1284b9caae7617898c1ed52f43.
+Earlier payload-only and owned-tree experiments retain their exact executed
+programs and hashes under ignored reports/preparation-v42-sources/. The separate
+frozen 0.7.41 native soak remains in progress; it does not include this change.
+
+
 ## Fixture and measurement contract
 
 `tools/stress_fixture.gd` constructs an isolated synthetic object-load fixture using

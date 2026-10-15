@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.41-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.42-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.41-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `ed28488` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-ed28488431b5); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,573 checks, zero failures, including 663 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.41; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,586 checks, zero failures, including 663 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.42; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2669,3 +2669,39 @@ The natural twenty-person run is frozen at 4540f9b/0.7.40 and is in progress
 revised-policy full Winter sweep remains 26/30 passing so far. Physical Android,
 other outstanding scenarios and human gates remain open. Remote current-revision
 CI is checked separately after publication. Weekly remaining last observed 63%.
+
+
+## 0.7.42 consume only owned snapshot JSON during preparation
+
+Full-snapshot preparation no longer retains/reparses its temporary escaped
+envelope while constructing a second complete decoded tree. It checks the normal
+envelope's exact size bound, releases that wrapper, and decodes its own newly
+parsed, unaliased payload containers in place. Public decoding is unchanged and
+remains nonmutating. Catalog/identity/type/depth validation, full restored-world
+schema/reference/conservation checks, exact captured-payload equality, digest
+checks and normal published envelope/byte readback are retained. No live/captured
+world tree is modified; no simulator, content or saved-format change occurs.
+
+The full original 6f4dc91 method is retained independently. Thirteen new checks
+compare exact preparation and external codec results, invalid metadata/schema,
+all encoding boundaries, four hundred generated representations with Unicode
+and all thirty-two retained save fixtures after migration, preserving their
+original bytes. Persistence passes 345; maintained total is 2,586 in 28 suites.
+The latest local native UI result is 663 passing at 0.7.41. Further graphical
+runs are deferred during that revision's isolated thirty-minute native soak;
+current CI runs the complete UI/native matrix separately. Content/media and
+Android export pass; aapt verifies 0.7.42-m7 / local code 81.
+
+Four final alternating pairs on the retained twenty-resident endpoint preserve
+all payload text/digests, input bytes, source fingerprints and world canonical
+state. Median temporary sampled heap drops from 81,678,512 to 40,851,078 bytes;
+CPU from 339,662 to 313,252 microseconds. This is a scoped headless preparation
+observation, not a passing whole-session soak/PSS/frame certificate. Exact raw
+report hashes and experimental source retention are in STRESS_EVIDENCE.md.
+
+The revised Winter sweep is 29/30 passing at last observation; the natural
+twenty-person campaign has fourteen residents around day 41 and no beyond-grace
+starvation. The 0.7.41 soak remains alive with twenty residents and clean
+invariants/storage so far. Full outcomes remain pending; physical Android and
+human gates remain open. Remote 0.7.40 CI passes; current-revision publication
+is separate. Weekly remaining last observed 63%; authorized work continues.
