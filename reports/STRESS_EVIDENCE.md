@@ -5,6 +5,18 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.70 short diagnostic trace: frame peak remains
+
+This180.022838-second4x case after60-second warmup completes7200ticks,20residents,
+zero counters and lowest one-second FPS29.413. Periodic peak growth7,660,230 bytes
+passes its20MiB proxy and independent second audit. The separate frame-boundary
+trace reaches30,358,802 bytes at tick11071 with live writer, capture tick11068,
+journal tick11028, no preparation/retired groups and stable navigation caches.
+There are5399valid frame samples; collector allocations are included. No other
+GUI/emulator runs. Bounded headless import/persistence and inspection share host.
+This retains the unresolved transient; it is not a30-minute or physical pass.
+[native-heap-v70-observation-evidence.json](native-heap-v70-observation-evidence.json).
+
 ## 0.7.69 short diagnostic trace: periodic pass, frame heap unresolved
 
 The180.0317-second4x case after60-second warmup completes7201ticks,5399valid

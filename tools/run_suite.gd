@@ -33,6 +33,7 @@ func run() -> void:
 			AgingReadTests.run(check)
 			SurvivalTests.run(check)
 		"persistence":
+			WriterBuffersTests.run(check)
 			JournalReadTests.run(check)
 			NativeHeapTraceTests.run(check)
 			await WorkerTimingTests.run(self,check)

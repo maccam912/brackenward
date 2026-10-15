@@ -1,0 +1,85 @@
+{
+  "passed": true,
+  "build": "0.7.71-m7",
+  "local_android_code": 110,
+  "maintained_gdscript_assertions": 2858,
+  "fresh_checks": {
+    "persistence": 484,
+    "new_full_writer_equivalence": 3,
+    "native_ui": 670,
+    "replay_commands": 62,
+    "ui_messages": 530
+  },
+  "complete_reference_methods_from": "7698c08e0a37aa5225c941953ab33ccc9e6d7f21",
+  "reference_sha256": "f576a2b65f79af4830a6ab65b9a2a32423cca136162d1bc0ff96d6d5bf5777f0",
+  "benchmark_medians": {
+    "0": {
+      "elapsed_us": 96676.0,
+      "peak_growth_bytes": 22327414.0,
+      "ending_growth_bytes": 1404.0
+    },
+    "1": {
+      "elapsed_us": 97689.5,
+      "peak_growth_bytes": 15881104.0,
+      "ending_growth_bytes": 1404.0
+    }
+  },
+  "peak_change_percent": -28.871726927265286,
+  "cpu_change_percent": 1.0483470561462926,
+  "scope": "Only transient worker buffer lifetimes change. Complete old checkpoint and prepared methods retained independently. Three twin tests preserve exact journal bytes/metadata/trace, snapshot envelope with only wall timestamp normalized, complete recovery/future,pending commands,failed rotation/evidence/retry. Four alternating whole checkpoint pairs use real fully validated22snapshot/12frame prefix and13th target, production-equivalent owned capture retention. All appended bytes exact to original frame; source/input unchanged. Heap sampling/thread lifecycle/disk cache included. No whole-session/physical/FPS/PSS certification. Final reference differs from prior corrected pair only by removal of an extra trailing blank line; both raw experiments remain retained.",
+  "retained_initial_profile_failure": "Initial harness used load_latest recovery metadata as an append anchor and correctly failed parent/tick validation. Corrected harness derives every in-memory verified writer anchor from checked snapshot/prefix. No production recovery rule changed.",
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "Unchanged UP-TO-DATE XML inspected,not freshly rerun."
+  },
+  "source_sha256": {
+    "project.godot": "ba7e2a85039257f5f59a407731822d9465c3e9809023a03304845d2a399984ee",
+    "src/persistence/colony_capture.gd": "4f388a71f18e4340ab2b48aa5fd82935c9483202d220e7bde10ea0762229dab9",
+    "src/persistence/colony_codec.gd": "1a6122fa3f81360db5de5e76381a1f253c783af186c1fb8c9675c323bf1d9459",
+    "src/persistence/colony_delta.gd": "79024ca74cc076104dbf77e8f3823bd923f071631da4b5a4be8bc95a5056f643",
+    "src/persistence/colony_journal.gd": "4b6966e2fdbc76520234caff2b5b89cc43379e611658f0cff0b3189e77768893",
+    "src/persistence/colony_save_queue.gd": "39e8e4b00a09d287e0b2eb21692eb0366ecbd501ec83837fa0d97f2fcfda8bec",
+    "src/persistence/colony_store.gd": "02b8062f58cce5c7325f4fe9e367af94e9c60489d9c85f42109fb735dd0f0b62",
+    "tools/profile_writer_buffers.gd": "5150387b603c07ee3b4dfb1fe1d1d5c477251fdb33377da3a0390d591bce197d",
+    "tools/writer_buffers_reference.gd": "f576a2b65f79af4830a6ab65b9a2a32423cca136162d1bc0ff96d6d5bf5777f0",
+    "tools/writer_buffers_tests.gd": "c54ff6aeb2c0a926083c4970b02333ad8ac10d8086f7e8e47b71cefbb437a13b"
+  },
+  "validation_sha256": {
+    "writer-buffers-v71-replay-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "writer-buffers-v71-replay-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "writer-buffers-v71-replay-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "writer-buffers-v71-replay-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "writer-buffers-v71-replay.json": "8b23ef38cf96436d04e44e1ececb54f2be08346c7dbe8f8d1eb7b91ac6888e47",
+    "writer-buffers-v71-final-checkpoint-trimmed.log": "9723d769192eefb486191d1ce2c2fff25f7570a27a6542b0e1a88d11f118ec2b",
+    "writer-buffers-v71-replay-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+    "writer-buffers-v71-persistence-first.log": "367def6d1c05648932caa3f2411fc7b08a4986253889d909a24271d6b673ed38",
+    "writer-buffers-v71-apk.log": "3b225fe5406dd05ada13a172ad2270328e0d1e7befabcb2f2a4311619cbc1380",
+    "writer-buffers-v71-final-checkpoint-corrected.json": "33bc8a9b2da9afad975136bf4ca5a95ad18878012dbef81ce8498d855fc9e130",
+    "writer-buffers-v71-final-checkpoint-corrected.log": "ed7de95d2907cec0ad0a11fcd072bd65aaaf1cdcccb3eb7f51f036833c133a2e",
+    "writer-buffers-v71-final-checkpoint-trimmed.json": "6abd9cafd6127f625b857421e9fc63572a8c9719116a01441219d6c6b440f951",
+    "writer-buffers-v71-replay.log": "28408b359294f18716319b8273f01944c9985ba4cbe883a2df1be9b943dd373c",
+    "writer-buffers-v71-import.log": "237fb1185c010440bc9e443cd0d04feb1076538c194a23c56152e3504a16dddc",
+    "writer-buffers-v71-final-checkpoint.log": "27945fdfb42bd8dc2349ca2c7a45acfd1732ab99e4d428ccbb4f0f64c71688fc",
+    "writer-buffers-v71-replay-72000.brackenward": "cc7909cf0bc801655f556e05d39f55fce91503d5d8a92b749bbf976d74df03ac",
+    "writer-buffers-v71-ui.log": "490b4c99c3c4be4cce11155cb9f70b71766eeef1b1623a791b2d4d849b68f51c",
+    "writer-buffers-v71-content.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "writer-buffers-v71-profile-import.log": "9abb957f37c8ea6ff2073f5c11b432e6dc152da810d5554de141d7dd2ec469cb",
+    "writer-buffers-v71-replay-7200.brackenward": "8681580abec85bf7c0b09542ee9f06c3f57af873fa53e0119f3c010d1c152f79"
+  },
+  "input_provenance_sha256": "096d6d9226075edd1cf40a8c39646b4ed9781f9b8280addce2686a764cba39af",
+  "apk_sha256": "d7b6014eee4f3607450019731bde36ead7ca051c4b9cef865bd0cbbe19ef37ab",
+  "pending": "Current frozen native whole-session trace, remote CI and physical gates remain separate.",
+  "prior_corrected_benchmark_medians": {
+    "0": {
+      "elapsed_us": 97560.5,
+      "peak_growth_bytes": 22391326.0,
+      "ending_growth_bytes": 1404.0
+    },
+    "1": {
+      "elapsed_us": 97741.0,
+      "peak_growth_bytes": 15881488.0,
+      "ending_growth_bytes": 1404.0
+    }
+  }
+}

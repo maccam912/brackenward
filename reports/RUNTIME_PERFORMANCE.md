@@ -7,6 +7,30 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.71 shorter writer buffer lifetimes
+
+The producer patch, redundant frame, checked byte buffers and parsed verification
+records are released as soon as their last use finishes. Prepared catch-up also
+releases old journal bytes and consumed command records. Shared captures, exact
+bytes, checks, acknowledgements and fallback behavior remain unchanged.
+
+Four alternating complete original7698c08/current checkpoint pairs on the checked
+real snapshot22/12-frame prefix/13th marker show median sampled peak growth
+22,327,414 to15,881,104 bytes (28.9% lower). Wall time96,676 to97,689.5 microseconds
+(+1.0%) and ending allocation1,404 bytes are essentially unchanged. Both paths
+use production-equivalent owned capture retention. Appended bytes, metadata,
+complete recovery, inputs and source match exactly. Thread lifecycle, sampling
+and disk cache remain included. This does not prove whole-session or phone gains.
+The initial benchmark's invalid recovered-store append anchor correctly failed;
+the corrected harness derives every live-writer anchor from the checked chain.
+[writer-buffers-v71-evidence.json](writer-buffers-v71-evidence.json).
+
+The70short native4x run still reaches30,358,802 bytes of frame-boundary growth,
+with live writer/no preparation and stable navigation caches. Its periodic
+7,660,230-byte proxy and separate second audit pass. Memory remains unresolved;
+the component decoder improvement does not establish a session-level reduction.
+[native-heap-v70-observation-evidence.json](native-heap-v70-observation-evidence.json).
+
 ## 0.7.70 owned writer readback
 
 Writer verification consumes only fresh private parser containers. Public recovery
