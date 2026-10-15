@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.51-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.52-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -3017,3 +3017,33 @@ publication. Its three assets were downloaded and checked: provenance names
 The separately tested local emulator build used code 88; its APK bytes differ from the CI asset. Build 50/current CI and physical-phone retesting remain separate.
 Content v6/schema 23/envelope 5/settings 6/generator 2 and all immutable
 expectations remain unchanged. Weekly remaining last observed 57%.
+
+
+## 0.7.52 merchant construction budget checkpoint
+
+The gatherer-only frozen retry also fails all four unchanged 24-day economy
+cases: all eight residents survive without starvation/grace violations, but
+construction still consumes the first visit's payment reserve. Its independent
+audit now completes without observer errors. Both failed matrices and their
+hashes remain in [MERCHANT_ECONOMY_EVIDENCE.md](MERCHANT_ECONOMY_EVIDENCE.md).
+The planner now defers its optional second lodge until the first imported cloth
+is physically paid, keeping normal original bedroll capacity and the first
+lodge. No price, reserve, required receipts, survival metric or duration changes.
+The next complete frozen matrix is pending. Trade 41 and sixteen Python observer
+checks pass; maintained GDScript count stays 2,672. The report runner now ignores
+its own generated directory immediately after checking that it was empty.
+
+The allocation diagnosis uses the exact failed-soak endpoint without advancing
+it. Two instrumented headless preparations reproduce identical payload bytes and
+all validation, with unchanged inputs/source. The largest temporary growth is
+about 39 MiB at full JSON parsing/decoding. A bounded private encoding/parsing
+prototype is preserved separately; it is not in this checkpoint's runtime and
+has not passed a native soak. The original 20 MiB peak proxy still fails.
+
+Build 50 CI completes successfully and all three downloaded assets verify;
+its APK SHA-256 is `deb19019be885b199f1355e47ba32e3fb1ad9ad63cc3530e6a04f12bebe46e22`.
+Local Android 0.7.52/code 91, catalog/media validation and all targeted checks
+pass. New remote CI/publication remains separate.
+The overheating cancellation preference remains pending, and fire rules are
+unchanged. Fresh Winter and twenty-resident seasonal runs continue. Weekly
+remaining last observed 56%; authorized work continues.

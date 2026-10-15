@@ -7,9 +7,12 @@ const WOOD_RESERVE: int = 40
 
 func _init() -> void:
 	super("merchant_economy")
+	lodge_target=1
 
 func plan(world: ColonyWorld) -> void:
 	if last_policy==world.tick:return
+	# Fund the first advertised purchase before the optional second lodge.
+	if world.ledger.traded_in.get("cloth",0)>=8:lodge_target=2
 	super.plan(world)
 	_staff_gatherer(world)
 	_buy_cloth(world)

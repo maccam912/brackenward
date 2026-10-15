@@ -121,6 +121,8 @@ def main():
     if not args.audit:
         reports.mkdir(parents=True, exist_ok=True)
         if any(reports.iterdir()): parser.error("Use a new empty report directory")
+        (reports / ".gitignore").write_text("*\n")
+        (reports / ".gdignore").touch()
         (reports / "source.json").write_text(json.dumps({"commit": commit, "source": str(source), "days": DAYS, "seed": SEED, "cases": CASES, "workers": args.workers, "started_unix": time.time(), "harness_sha256": sha(Path(__file__)), "initial_golden_sha256": sha(source / "tests/fixtures/generation-v2-goldens.json")}, indent=2) + "\n")
         def run(case):
             site, mode = case
