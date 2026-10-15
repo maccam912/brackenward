@@ -7,6 +7,11 @@ var lodge_origins: Array[Vector2i] = []
 var grow_origin: Vector2i = Vector2i(-1,-1)
 var decisions: Array[Dictionary] = []
 var last_policy: int = -1
+var resident_target: int=8
+var lodge_target: int=2
+var turnip_target: int=24
+var barley_target: int=64
+var cavecap_target: int=24
 const RESEARCH: Array[String] = ["storecraft","farming","woodcraft","weaving","masonry","herbalism","trailcraft","commonlife","metalwork","signalcraft","valley_charter"]
 
 func _init(selected: String) -> void:
@@ -72,9 +77,9 @@ func plan(world: ColonyWorld) -> void:
 		_build(world,"granary");return
 	if not long_campaign: return
 	if world.researched.has("farming"):
-		if ColonyAgriculture.season(world.tick) in [0,1]: _fields(world,"barley",64,false)
+		if ColonyAgriculture.season(world.tick) in [0,1]: _fields(world,"barley",barley_target,false)
 		_fields(world,"flax",12,false)
-		_fields(world,"turnip",24,false)
+		_fields(world,"turnip",turnip_target,false)
 	if world.researched.has("storecraft") and grow_origin.x<0:
 		grow_origin=_empty_room(world,3)
 		if grow_origin.x>=0:
@@ -86,10 +91,10 @@ func plan(world: ColonyWorld) -> void:
 			issue(world,"build_area",{"definition":"wood_wall","tiles":walls})
 		return
 	if grow_origin.x>=0 and world.roofed(grow_origin+Vector2i(1,1)):
-		_fields(world,"cavecap",24,true)
+		_fields(world,"cavecap",cavecap_target,true)
 	if world.researched.has("weaving") and not _present(world,"loom"):
 		_build(world,"loom");return
-	if lodge_origins.size()<2 and world.researched.has("farming"):
+	if lodge_origins.size()<lodge_target and world.researched.has("farming"):
 		var origin: Vector2i = _empty_room(world)
 		if origin.x>=0:
 			issue(world,"lodge",{"x":origin.x,"y":origin.y});lodge_origins.append(origin)
@@ -100,7 +105,7 @@ func plan(world: ColonyWorld) -> void:
 			if world.placement_error("hearth",point,0).is_empty(): issue(world,"build",{"definition":"hearth","x":point.x,"y":point.y,"rotation":0})
 	if world.researched.has("masonry") and not _present(world,"cellar"):
 		_build(world,"cellar");return
-	if residents.size()<8:
+	if residents.size()<resident_target:
 		for offer in world.population_state.offers:
 			if offer.state=="Offered" and ColonyPopulation.acceptance(world,offer).error.is_empty(): issue(world,"newcomer",{"target":offer.id,"accept":true});break
 	for person in residents:

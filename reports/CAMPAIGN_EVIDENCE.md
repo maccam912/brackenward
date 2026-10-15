@@ -33,6 +33,22 @@ source is checked. The current content-v6 Winter matrix is still running.
 | Current 0.7.32 loading audit | `a8301fabb2e6f2b6ffaf5d7f4bf4d81cddcbb69f259583fa6808595eaa183ac5` |
 
 
+### Independent no-external-trade coverage
+
+The same four retained v6 runs also pass tools/audit_trade_free_charters.py.
+Every original report/log/initial/final snapshot and source/completion/audit file
+keeps its bytes. All original endpoint hashes and ordinary-play Charter gates
+match. Executed commands and pending commands contain no trade/trade_cancel;
+all historical jobs contain no trade work; exchange history and traded_in are
+empty, and no opportunity has a reward receipt. Expeditions and raid tribute
+are permitted; traded_out includes tribute and is not mislabeled as barter.
+This is an additional audit of the already completed runs, not new simulations
+or ninety-six days after the Charter. Raw report charter-v6-no-trade-v40-audit.json
+SHA-256 775f4b8d763730867c8b935ad5a6823463d2cd3cf91493443eea89ec248fca10.
+Three Python checks exercise both command queues and hidden completed/canceled
+transaction records and verify that the audit does not mutate its inputs.
+
+
 ## Frozen v4 96-day vegetarian Charter matrix
 
 All **four cases pass** at clean, unchanged cf344711ad8701f5d7fe822bf6c8623d1dacda56

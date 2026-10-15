@@ -75,6 +75,7 @@ func run() -> void:
 		"charter":
 			CharterTests.run(check)
 			PolicyTests.run(check)
+			LargeColonyTests.run(check)
 		"chronicle": ChronicleTests.run(check)
 		"scheduler":
 			HearthReadTests.run(check)

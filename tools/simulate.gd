@@ -12,11 +12,11 @@ func _initialize() -> void:
 		var flag: String = args[index].trim_prefix("--")
 		if not args[index].begins_with("--") or not options.has(flag) or seen.has(flag): _usage();return
 		seen.append(flag);options[flag]=args[index+1]
-	if options.scenario not in ["first_week","first_winter","vegetarian_charter"] or not options.seed.is_valid_int() or int(options.seed)<0 or int(options.seed)>4294967295 or not options.days.is_valid_int() or int(options.days)<1 or int(options.days)>128 or not ColonyGeneration.SITES.has(options.site) or options.mode not in ["Standard","Hearthside"] or options.report.is_empty() or options.report==options.resume: _usage();return
+	if options.scenario not in ["first_week","first_winter","vegetarian_charter","twenty_colony"] or not options.seed.is_valid_int() or int(options.seed)<0 or int(options.seed)>4294967295 or not options.days.is_valid_int() or int(options.days)<1 or int(options.days)>128 or not ColonyGeneration.SITES.has(options.site) or options.mode not in ["Standard","Hearthside"] or options.report.is_empty() or options.report==options.resume: _usage();return
 	call_deferred("run")
 
 func _usage() -> void:
-	printerr("Usage: -- --scenario first_week|first_winter|vegetarian_charter --seed UINT32 --site meadow_reach|pine_shelf|reed_bend --mode Standard|Hearthside --days 1..128 --report PATH [--resume PREVIOUS_REPORT]")
+	printerr("Usage: -- --scenario first_week|first_winter|vegetarian_charter|twenty_colony --seed UINT32 --site meadow_reach|pine_shelf|reed_bend --mode Standard|Hearthside --days 1..128 --report PATH [--resume PREVIOUS_REPORT]")
 	quit(2)
 
 func run() -> void:
@@ -25,7 +25,7 @@ func run() -> void:
 	var error: String = ColonyGeneration.configure(world,int(options.seed),options.site)
 	if not error.is_empty(): printerr(error);quit(2);return
 	var previous: Dictionary = {}
-	var policy: ColonyPolicy = ColonyPolicy.new(options.scenario)
+	var policy: ColonyPolicy = LargeColonyPolicy.new() if options.scenario=="twenty_colony" else ColonyPolicy.new(options.scenario)
 	var initial: PackedByteArray
 	if not options.resume.is_empty():
 		var parsed: Variant = ColonyState.unpack(JSON.parse_string(FileAccess.get_file_as_string(options.resume)))
@@ -46,15 +46,18 @@ func run() -> void:
 	else:
 		if options.mode=="Hearthside": world.queue_command("care_mode",{"mode":"Hearthside"})
 		initial=ColonyCodec.encode(world)
+	var large_metrics: Dictionary=LargeColonyScenario.initial(previous.get("large_colony",{}))
 	var run_beginning: int = world.tick
 	var end: int = run_beginning+int(options.days)*7200
 	var metrics: Dictionary = {"start_tick":previous.get("start_tick",world.tick),"initial_structure_ids":previous.get("initial_structure_ids",world.structures.map(func(s:Dictionary)->int:return s.id)),"prior_improvements":previous.get("prior_improvements",0),"elapsed_ms":previous.get("elapsed_ms",0),"samples":previous.get("samples",[]),"minimum_health":previous.get("minimum_health",100),"zero_fullness_ticks":previous.get("zero_fullness_ticks",0),"starvation_grace_exceeded_ticks":previous.get("starvation_grace_exceeded_ticks",0),"first_week":previous.get("first_week",{}),"invariant_checks":previous.get("invariant_checks",0),"source_reports":previous.get("source_reports",[])}
 	if not previous.is_empty():
 		metrics.source_reports.append({"path":options.resume,"canonical_hash":previous.canonical_hash,"end_tick":previous.end_tick})
 		if not previous.has("initial_structure_ids"): metrics.prior_improvements=previous.completed_improvements
+	if options.scenario=="twenty_colony": metrics.large_colony=large_metrics
 	policy.plan(world)
 	while world.tick<end:
 		world.step()
+		if options.scenario=="twenty_colony": LargeColonyScenario.observe(world,large_metrics)
 		for person in world.citizens:
 			if person.death_recorded or person.departed: continue
 			metrics.minimum_health=mini(metrics.minimum_health,person.health)
@@ -79,6 +82,7 @@ func run() -> void:
 	var scenario_pass: bool = failure.is_empty()
 	if options.scenario=="first_week": scenario_pass=scenario_pass and world.tick-metrics.start_tick>=57600 and metrics.starvation_grace_exceeded_ticks==0 and result.completed_improvements>=3 and FoodForecast.calculate(world).ticks>=7200 and world.citizens.all(func(c:Dictionary)->bool:return not c.departed and not c.death_recorded)
 	elif options.scenario=="first_winter": scenario_pass=scenario_pass and world.tick>=32*7200 and metrics.starvation_grace_exceeded_ticks==0 and world.citizens.filter(func(c:Dictionary)->bool:return not c.departed and not c.death_recorded).size()>=8 and not world.citizens.any(func(c:Dictionary)->bool:return c.departed)
+	elif options.scenario=="twenty_colony": scenario_pass=scenario_pass and LargeColonyScenario.passes(world,large_metrics,metrics.starvation_grace_exceeded_ticks)
 	else: scenario_pass=scenario_pass and world.charter_state.ending and not world.researched.has("husbandry") and world.ledger.consumed.get("meat",0)==0 and world.ledger.consumed.get("leather",0)==0
 	result.scenario_pass=scenario_pass
 	if not scenario_pass and failure.is_empty(): result.invariant_failure="Policy did not meet the stated scenario goals; this is not automatically a simulation defect"

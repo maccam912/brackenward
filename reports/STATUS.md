@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.39-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.40-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -26,7 +26,7 @@ Checkpoint: `0.7.39-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `ed28488` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-ed28488431b5); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,548 checks, zero failures, including 663 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.39; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,565 checks, zero failures, including 663 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.40; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2585,3 +2585,49 @@ unchanged. A separate smoke snapshot passes, canonical
 The next frozen-source native longevity run uses a newly named input; no outcome
 is assumed yet. Physical Android and full M7 gates remain open. Current revision
 CI is separate. Weekly remaining last observed 64%; authorized work continues.
+
+
+## 0.7.40 natural twenty-resident seasonal planning and trade-free audit
+
+The new twenty_colony scenario grows through sixteen ordinary newcomer offers,
+with real bed/food acceptance checks, five actual lodges, three constructed
+roofed farm rooms and scaled public field/recipe commands. Initial population,
+inventory, weather and incident rules remain unchanged. The default eight-person
+policies retain their exact target values. Meal-order expansion first cancels
+its actual unfinished batch, then disables/replaces the old order using normal
+commands, releasing held inputs and the occupied station. Resume recovers all
+three room origins from accepted construction history.
+
+Its strict acceptance windows cover every tick of year-three Summer and Winter:
+57,600 ticks each with twenty home residents, no zero-fullness ticks, no deaths
+or departures, no campaign beyond-grace starvation and at least one final day of
+edible reserve. Ordinary recruitment cannot reach twenty before day 64. The
+runner records the complete commands, daily canonical snapshots and final codec
+round trip; run_large_colony.py requires clean frozen source and audits all
+sixteen accepted admissions. No full twenty-person campaign outcome is assumed
+at this checkpoint. The ninety-six-day post-Charter requirement remains separate.
+
+Seventeen new synthetic planning/gate checks pass: real eligible ninth admission,
+public designation of exactly seventy-two roofed crop tiles, unchanged world
+outside queued commands, room/resume protection, actual reserved-batch
+cancellation/replacement and exact seasonal boundary coverage. Charter passes
+106; persistence passes 324. Maintained 28-suite total is 2,565 including the
+unchanged 663 native UI checks. Catalog/media validation and Android export pass;
+aapt verifies 0.7.40-m7 / local code 79. Runtime gameplay/UI is unchanged from
+0.7.38, so native graphical tests are deferred while the isolated soak runs.
+
+An independent read-only audit also verifies all four retained ffdce48/v6 Charter
+endpoints as trade-free: no executed/pending barter command, historical trade
+job, exchange, imported-goods ledger entry or opportunity receipt. Their original
+audited snapshot hashes, ordinary campaign checks, complete source/completion
+provenance and unchanged input bytes pass. Three Python tests reject hidden
+transaction evidence while permitting expeditions and raid tribute. This is a
+new audit of existing ninety-six-day campaigns, not four new simulations.
+See CAMPAIGN_EVIDENCE.md for its exact digest.
+
+Remote CI and APK publication pass for both 0.7.38 and 0.7.39, with APK, build
+metadata and checksum assets explicitly verified. The revised frozen Winter
+sweep has 24/30 passing cases so far. The ration-enabled native soak retains
+twenty residents and clean invariants/storage at 27 minutes; completion and its
+strict memory audit remain pending. Physical Android, broader scenario coverage
+and human release gates remain open. Weekly remaining last observed 64%.
