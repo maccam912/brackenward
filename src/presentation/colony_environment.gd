@@ -11,6 +11,9 @@ var ground_chunks: Dictionary = {}
 var resource_index: Dictionary = {}
 var indexed_resources: Array = []
 var indexed_count: int = -1
+var resource_groups_valid: bool = false
+var resource_signature: PackedInt64Array = PackedInt64Array()
+var resource_breaks: Array[int] = []
 var last_tick: int = -1
 var last_chunks: Rect2i = Rect2i()
 var ground_root: Node2D
@@ -111,6 +114,7 @@ func update(delta: float) -> void:
 	warm_layer.queue_redraw();roof_layer.queue_redraw();feedback_layer.queue_redraw()
 
 func _index_resources() -> void:
+	resource_groups_valid=false
 	resource_index.clear();indexed_resources=world.resources;indexed_count=world.resources.size()
 	for resource in world.resources:
 		var key: Vector2i = Vector2i(resource.x/16,resource.y/16)
@@ -144,6 +148,17 @@ func _refresh_resources(chunks: Rect2i) -> void:
 			for resource in resource_index.get(Vector2i(x,y),[]):
 				if resource.remaining<=0 and resource.definition!="tree": continue
 				ordered.append(resource)
+	# Live records still redraw every changed tick. Membership, locations and
+	# depth partitions usually stay fixed, so avoid their sort/group allocations.
+	# Index refresh/world adoption invalidates this even for equal replacement IDs.
+	var signature: PackedInt64Array=PackedInt64Array()
+	for resource in ordered:
+		signature.append(resource.id);signature.append(resource.x);signature.append(resource.y)
+	if resource_groups_valid and signature==resource_signature and breaks==resource_breaks:
+		for row in resource_rows.values():
+			row.tint=tint;row.selected_bounds=selected_bounds;row.queue_redraw()
+		return
+	resource_signature=signature;resource_breaks=breaks;resource_groups_valid=true
 	ordered.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.y<b.y if a.y!=b.y else a.id<b.id)
 	var previous: String = "";var group_key: String = ""
 	for resource in ordered:

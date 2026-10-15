@@ -740,3 +740,20 @@ performance budget is still missed. The independent four-pair full-body CPU
 comparison and exact-state checks are recorded in STATUS.md. These observations
 were made on Apple M5 Pro/macOS 26.6.2/Balanced30 alongside headless validation;
 they are neither uncontended benchmarks nor Android improvement certification.
+
+
+## 0.7.37 fresh-colony map rendering
+
+Resource refresh was measured separately through a presentation-only observer:
+in a fresh generated Meadow colony at the widest 2-unit zoom, 3,031 resources
+form 1,192 row/depth groups. Reusing unchanged membership reduces the native
+18-second/4x map-update median/p95 from 12.228/12.639 to 1.868/1.972 ms;
+resource refresh median drops 11.858 to 1.521 ms. Final close-camera map update
+is 0.314/0.355 ms median/p95. These are Apple M5 Pro/macOS/Balanced30 observations
+with concurrent headless validation, 541 callbacks each, ticks 1,800–2,521,
+unchanged source per run and clean invariants. They do not predict a phone ratio.
+Four alternating 100-call CPU pairs against the complete 603c1d0 refresh retain
+exact world/row data; eleven real image-buffer comparisons remain identical across
+membership, growth, tint, selection, camera and adoption changes. STATUS.md records
+full source hashes, validation and retained first-test failures. No simulation
+rules, target graphics quality, or authoritative ticks were changed.

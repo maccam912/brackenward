@@ -86,11 +86,14 @@ func setup(state: RefCounted) -> void:
 	carried_overlay = Node2D.new()
 	add_child(carried_overlay)
 	carried_overlay.draw.connect(_draw_carried_items)
-	if world is ColonyWorld: environment=ColonyEnvironment.new(self)
+	if world is ColonyWorld: environment=_make_environment()
 	refresh_terrain()
 	for index in range(4): _add_actor(index)
 	resized.connect(_update_transform)
 	_update_transform()
+
+func _make_environment() -> ColonyEnvironment:
+	return ColonyEnvironment.new(self)
 
 func _process(delta: float) -> void:
 	var started: int = Time.get_ticks_usec()

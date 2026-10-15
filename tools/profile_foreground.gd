@@ -40,9 +40,28 @@ class ProfileAudio extends ColonyAudio:
 	func _process(delta: float) -> void:
 		var started: int = Time.get_ticks_usec();super(delta);update_us.append(Time.get_ticks_usec()-started)
 
+class ProfileEnvironment extends ColonyEnvironment:
+	var timings: Dictionary={}
+	func _init(owner: Node) -> void: super(owner)
+	func record_stage(stage: String, started: int) -> void:
+		if not timings.has(stage): timings[stage]=[]
+		timings[stage].append(Time.get_ticks_usec()-started)
+	func _refresh_props() -> void:
+		var started: int=Time.get_ticks_usec();super();record_stage("refresh_props",started)
+	func _refresh_resources(chunks: Rect2i) -> void:
+		var started: int=Time.get_ticks_usec();super(chunks);record_stage("refresh_resources",started)
+	func _refresh_ground(chunks: Rect2i) -> void:
+		var started: int=Time.get_ticks_usec();super(chunks);record_stage("refresh_ground",started)
+	func _update_rooms() -> void:
+		var started: int=Time.get_ticks_usec();super();record_stage("update_rooms",started)
+	func _update_props() -> void:
+		var started: int=Time.get_ticks_usec();super();record_stage("update_props",started)
+
 class ProfileView extends WorldView:
 	var update_us: Array[int] = []
 	var draw_us: Array[int] = []
+	func _make_environment() -> ColonyEnvironment:
+		return ProfileEnvironment.new(self)
 	func _process(delta: float) -> void:
 		if draw_command_us>0: draw_us.append(draw_command_us)
 		var started: int = Time.get_ticks_usec();super(delta);update_us.append(Time.get_ticks_usec()-started)
@@ -213,6 +232,7 @@ func run() -> void:
 	game.phase_peaks.clear();game.phase_peak_ticks.clear();game.slow_frames.clear();game.worst_frames.clear()
 	if trace_spikes: world.tick_us.clear();world.slow_jobs.clear();world.phases.clear()
 	game.view.update_us.clear();game.view.draw_us.clear();game.view.draw_command_us=0;game.soundscape.update_us.clear()
+	game.view.environment.timings.clear()
 	game.diagnostics.reset()
 	game.quiet_sleep_frames=0;game.quiet_sleep_ticks=0;game.quiet_sleep_first_stop.clear()
 	game.processed_delta_seconds=0.0
@@ -251,6 +271,10 @@ func run() -> void:
 	if not result.source_unchanged: result.storage_error="Profile source changed during measurement"
 	result["view_update_frames"]=stats(game.view.update_us)
 	result["view_draw_frames"]=stats(game.view.draw_us)
+	result["environment_stages"]={}
+	for stage in game.view.environment.timings:
+		var values: Array[int]=[];values.assign(game.view.environment.timings[stage])
+		result.environment_stages[stage]=stats(values)
 	result["in_game_diagnostics"]=measured_diagnostics
 	if not await game.soundscape.drain(): result.storage_error="Audio streaming shutdown did not drain"
 	DirAccess.make_dir_recursive_absolute(report_path.get_base_dir())

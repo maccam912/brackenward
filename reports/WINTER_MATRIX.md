@@ -289,3 +289,22 @@ invariants pass and original input bytes remain untouched. Report SHA is
 A fresh complete matrix now runs from clean frozen 705906424c0a1252b5286cc9b847b4f398c8620d
 with the revised public policy, in winter-release-v6-7059064. It must finish and
 pass its own source/completion/audit checks before updating the release status.
+
+
+### Fresh targeted Pine Shelf seed-73 repeat: pass
+
+Clean frozen 705906424c0a1252b5286cc9b847b4f398c8620d repeats the complete
+33-day Winter with the revised public-command policy. It reaches tick 239,400
+with eight residents, minimum health 100, zero zero-fullness/grace-exceeded ticks,
+792 invariant checks, successful round trip and scenario_pass:true. The process
+exits 0; source/completion remain unchanged/clean. This is a targeted run, separate
+from the full still-running thirty-case matrix and the retained earlier failure.
+Raw evidence: winter-pine73-7059064/ (ignored generated output).
+
+| Evidence | SHA-256 |
+| --- | --- |
+| source.json | fe11eb505532d537b5f405c8d9d338d27086e0ee4adb190b053ef18ecf679c0f |
+| completion.json | 684245e63084fb5d99cdc7e1a428075f0d00fd362a3b716a6f06ebe931bb3157 |
+| report | d2bb4468a5386812325316d8a29e2e22b807bd9ad9ddd644ba4f14a8d5968cbc |
+| final snapshot | 17bbd6a83d496f4419d1c6655adc10ce7b070590d08be723d1a37428ae3bef53 |
+| final canonical state | 1603980be0243a8bee5b5a61184b08d4967202e5cc29ddaff6248ae70b914ad0 |
