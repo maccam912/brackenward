@@ -66,5 +66,21 @@ class SoakAuditTests(unittest.TestCase):
         (self.root/'probe.json').write_text('{}')
         self.assertFalse(audit(self.root,'frozen')['passed'])
 
+    def trace(self):
+        return {'format':'brackenward-native-frame-heap','version':1,'baseline_bytes':1000000,'max_bytes':1300000,'peak_growth_bytes':300000,'valid_frame_samples':20,'unavailable_frame_samples':0,'highwater_changes':2,'event_limit':32,'events':[{'heap_bytes':1100000,'context':{'tick':1820}},{'heap_bytes':1300000,'context':{'tick':1840}}],'peak_context':{'tick':1840}}
+
+    def test_frame_heap_diagnostics_do_not_replace_periodic_memory_guard(self):
+        result=copy.deepcopy(self.result);result['frame_heap_trace']=self.trace();self.write(result)
+        self.assertTrue(audit(self.root,'frozen')['passed'])
+        result['samples'][1]['engine_heap_bytes']=30*1024*1024;self.write(result)
+        self.assertFalse(audit(self.root,'frozen')['passed'])
+
+    def test_invalid_frame_heap_diagnostics_are_rejected_and_older_reports_stay_valid(self):
+        self.assertTrue(audit(self.root,'frozen')['passed'])
+        for field,value in [('max_bytes',999999),('peak_growth_bytes',0),('valid_frame_samples',True),('highwater_changes',0),('unavailable_frame_samples',-1),('event_limit',64),('baseline_bytes',0),('version',2),('events',[]),('peak_context',{})]:
+            with self.subTest(field=field):
+                result=copy.deepcopy(self.result);result['frame_heap_trace']=self.trace();result['frame_heap_trace'][field]=value;self.write(result)
+                self.assertFalse(audit(self.root,'frozen')['passed'])
+
 
 if __name__=='__main__': unittest.main()

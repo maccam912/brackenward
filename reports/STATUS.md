@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.68-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.69-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -28,7 +28,7 @@ Checkpoint: `0.7.68-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `defdc91` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-defdc91173be),code220 / 0.7.67-m7+defdc91,APK SHA-256 `84a3a69e7066baa89802c25835032079634bdde34a6b2084669c3b12c7538ec4`. Actual four-host artifacts,28 suites/2842 assertions,Kotlin4 and exact published assets audited. Current68 publication and production signing/store release remain separate. |
 
-Current recorded validation:28 GDScript suites,2846 maintained assertions including670 native UI checks. Current0.7.68 freshly passes scheduler425,persistence472,graphical UI670 and exact62-command replay/all older acknowledgements; content/font validation covers530 English keys. Android107 export/version metadata pass with unchanged cached Kotlin4 XML inspected. Last fully audited remote0.7.67 passes28 suites/2842 assertions,Kotlin4,all four native targets and exact published assets; code220 is published. Failed66 prototype timeout remains retained;67's corrected180-second CI bound passes. Same-source63 desktop retry passes30minutes and separate audit with14.618MiB sampled peak growth; its earlier failure remains failed. Current67 ten-minute4x completes/FPS/time/storage subsets pass,but23.851MiB transient sampled heap growth fails the unchanged20MiB bound. New68CI/native/physical/human gates remain separate. All45 original emulator files remain restored exactly and the emulator is stopped.
+Current recorded validation:28 GDScript suites,2851 maintained assertions including670 native UI checks. Current0.7.69 changes development measurement tooling; src,data and scenes are unchanged from68. Fresh persistence477 (five new collector checks),eight Python native-auditor tests,graphical-only compile guard,530-key content validation and Android108 export/metadata pass; unchanged cached Kotlin4 XML is inspected. Source68 freshly passed scheduler425,persistence472,UI670 and replay62/all older acknowledgements. Last fully audited remote67 passes28 suites/2842 assertions,Kotlin4,all four native targets and exact published assets; code220 is published. Later68CI and new69native/publication remain separate. Same-source63's30-minute2x retry passes its pinned scope; current67ten-minute4x remainsfailed at23.851MiB transient sampled heap growth despite valid FPS/time/storage subsets. Physical/human gates remain open; all45 original emulator files remain restored exactly.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -3910,3 +3910,27 @@ All67remote jobs and publication pass. Actual four-host artifacts,28suite XMLs
 totaling2842,Kotlin4,768map subset and exact three published assets are audited
 in native-ci-v67-evidence.json; code220 APK SHA-256 is
 `84a3a69e7066baa89802c25835032079634bdde34a6b2084669c3b12c7538ec4`.
+
+
+## 0.7.69 trace frame-boundary heap ownership in the native probe
+
+This checkpoint changes development tooling; src,data and scenes are unchanged
+from007c70b. Native samples add writer/alive/preparation/ready flags,capture and
+journal ticks,retired payload groups and navigation-cache sizes. A separate
+observer reads process heap at frame boundaries and retains only the last32new
+high-water contexts,creating private context data only when the maximum rises.
+Its source is fingerprinted. Unknown baselines/unsupported reads stay null;
+reports cannot alias or mutate source contexts. Collector allocations are part
+of the declared scope. These observations describe concurrent ownership,not
+causal allocation or physical Android/PSS/thermal certification. The existing
+periodic20MiB proxy,1.75-second game protection,world state and all save rules
+remain unchanged. New trace schema/count/maximum/history checks reject malformed
+additive data while retaining older audit compatibility.
+
+Five new collector checks and full persistence477 pass; eight native-auditor
+Python tests pass. The native harness compiles and still rejects headless use
+with exit2/no output report. Current Android108 export/metadata and530-key content
+checks pass; unchanged cached Kotlin4 XML is inspected. Maintained total is2851
+GDScript assertions. Application UI/replay behavior retains the previous source
+scope; first frozen-source native tracing and69remote publication are pending.
+heap-trace-v69-evidence.json retains exact source/log/APK hashes.

@@ -10,6 +10,8 @@ var speed: int = 2
 var samples: Array[Dictionary] = []
 var sampler_max_us: int = 0
 var scratch: String = ""
+var frame_heap: NativeHeapTrace=NativeHeapTrace.new()
+var heap_started_us: int=0
 
 func _initialize() -> void:
 	var args: PackedStringArray = OS.get_cmdline_user_args()
@@ -41,12 +43,17 @@ func resident_bytes() -> Variant:
 	if code!=0 or output.is_empty() or not str(output[0]).strip_edges().is_valid_int(): return null
 	return int(str(output[0]).strip_edges())*1024
 
+func heap_context(game: GameSession) -> Dictionary:
+	var queue: ColonySaveQueue=game.save_queue
+	return {"elapsed_us":Time.get_ticks_usec()-heap_started_us if heap_started_us>0 else 0,"tick":game.world.tick,"speed":game.runner.speed,"writer_busy":queue.busy(),"writer_alive":queue.thread!=null and queue.thread.is_alive(),"snapshot_preparing":queue.preparing(),"snapshot_worker_alive":queue.preparation_thread!=null and queue.preparation_thread.is_alive(),"snapshot_ready":queue.ready(game.world),"writer_captured_tick":queue.captured_tick,"capture_cache_tick":queue.capture_cache.previous.get("tick",0),"retired_payload_groups":queue.retired_payloads.size(),"journal_tick":game.store.journal_tick,"navigation_dirty":game.world.navigation_dirty,"reachability_dirty":game.world.reachability_dirty,"solid_tiles":game.world.solid_tiles.size(),"reachable_cells":game.world.reachable_cells.size(),"record_index_tables":game.world.record_indexes.size()}
+
 func sample(game: GameSession, elapsed: float, phase: String = "running") -> Dictionary:
 	var started: int=Time.get_ticks_usec()
 	var errors: Array[String]=game.world.invariant_errors()
 	var rss: Variant=resident_bytes()
 	var heap: int=OS.get_static_memory_usage()
 	var result: Dictionary={"phase":phase,"elapsed_seconds":elapsed,"tick":game.world.tick,"speed":game.runner.speed,"engine_heap_bytes":heap if heap>0 else null,"rss_bytes":rss,"counts":StressFixture.counts(game.world),"job_records":game.world.jobs.size(),"stack_records":game.world.stacks.size(),"invariants":errors,"storage_error":game.storage_error,"saving_disabled":game.saving_disabled}
+	result.merge(heap_context(game))
 	result["sampler_us"]=Time.get_ticks_usec()-started
 	sampler_max_us=maxi(sampler_max_us,result.sampler_us)
 	samples.append(result)
@@ -99,17 +106,21 @@ func run() -> void:
 	var warmup_diagnostics: Dictionary=game._performance_report() if not stop_reason.is_empty() else {}
 	game.diagnostics.reset()
 	var started: int=Time.get_ticks_usec()
+	heap_started_us=started
 	var initial_tick: int=world.tick
 	var frames_before: int=Engine.get_frames_drawn()
 	var fps_window_frames: int=frames_before;var fps_window_us: int=started
 	var fps_windows: int=0;var lowest_window_fps: Variant=null
 	var low_fps_streak: float=0.0;var max_low_fps_streak: float=0.0
 	var first: Dictionary=sample(game,0.0,"start")
+	frame_heap.reset(first.engine_heap_bytes if first.engine_heap_bytes!=null else 0)
+	var context_producer: Callable=heap_context.bind(game)
 	if not first.invariants.is_empty(): stop_reason="Initial invariant failure"
 	var next_sample: int=started+sample_seconds*1000000
 	var last: Dictionary=first
 	while stop_reason.is_empty() and Time.get_ticks_usec()-started<seconds*1000000:
 		await process_frame
+		frame_heap.observe(OS.get_static_memory_usage(),context_producer)
 		var now: int=Time.get_ticks_usec()
 		if now-fps_window_us>=1000000:
 			var window_seconds: float=float(now-fps_window_us)/1000000.0
@@ -125,7 +136,7 @@ func run() -> void:
 		if Time.get_ticks_usec()>=next_sample:
 			last=sample(game,float(Time.get_ticks_usec()-started)/1000000.0)
 			if not last.invariants.is_empty(): stop_reason="Sampled invariant failure"
-			if not write_json(report_path.get_basename()+"-latest.json",{"probe_pass":false,"completed":false,"release_gate_pass":false,"scope":"Partial native longevity evidence; not a completed soak","requested_seconds":seconds,"samples":samples,"stop_reason":stop_reason}): stop_reason="Progress report failed"
+			if not write_json(report_path.get_basename()+"-latest.json",{"probe_pass":false,"completed":false,"release_gate_pass":false,"scope":"Partial native longevity evidence; not a completed soak","requested_seconds":seconds,"samples":samples,"frame_heap_trace":frame_heap.report(),"stop_reason":stop_reason}): stop_reason="Progress report failed"
 			print(JSON.stringify({"soak_elapsed_seconds":last.elapsed_seconds,"tick":last.tick,"engine_heap_bytes":last.engine_heap_bytes,"rss_bytes":last.rss_bytes,"residents":last.counts.residents}))
 			next_sample=Time.get_ticks_usec()+sample_seconds*1000000
 	var elapsed: float=float(Time.get_ticks_usec()-started)/1000000.0
@@ -158,7 +169,7 @@ func run() -> void:
 	var nominal_ticks: int=floori(elapsed*speed*10)
 	var logical_time_kept_up: bool=logical_ticks>=nominal_ticks-2
 	var passed: bool=completed and fps_floor_proxy_pass and population_kept and logical_time_kept_up and final_speed==speed and last.invariants.is_empty() and game.storage_error.is_empty() and not game.saving_disabled and roundtrip and snapshot_written and drained and source_unchanged and memory_proxy_pass
-	var result: Dictionary={"format":"brackenward-native-soak","version":1,"scope":"Native source longevity and sampled engine-heap/RSS proxies; no Android PSS, GPU, battery, thermal, all-alert or physical release certification","probe_pass":passed,"completed":completed,"release_gate_pass":false,"standard_30min_2x_case":seconds==1800 and speed==2 and warmup_seconds>=60,"requested_seconds":seconds,"measured_wall_seconds":elapsed,"warmup_seconds":warmup_seconds,"bootstrap":bootstrap,"warmup_failure_diagnostics":warmup_diagnostics,"sample_seconds":sample_seconds,"requested_speed":speed,"final_speed":final_speed,"logical_ticks":logical_ticks,"nominal_ticks":nominal_ticks,"logical_time_kept_up":logical_time_kept_up,"initial_tick":initial_tick,"final_tick":world.tick,"remaining_logical_backlog_seconds":backlog,"snapshot":snapshot,"snapshot_sha256":input_sha,"input_canonical_hash":input_canonical,"input_counts":input_counts,"final_canonical_hash":final_hash,"final_snapshot":save_path,"final_snapshot_sha256":FileAccess.get_sha256(save_path) if snapshot_written else null,"roundtrip_verified":roundtrip,"samples":samples,"engine_heap_growth_bytes":heap_growth,"peak_sampled_engine_heap_growth_bytes":peak_growth,"engine_heap_proxy_within_20_mib":memory_proxy_pass,"population_kept":population_kept,"drawn_frames":drawn_frames,"fps_windows":fps_windows,"lowest_window_fps":lowest_window_fps,"max_consecutive_low_fps_window_seconds":max_low_fps_streak,"fps_floor_proxy_pass":fps_floor_proxy_pass,"sampler_max_us":sampler_max_us,"diagnostics":diagnostics,"source_evidence":source_before,"harness_sha256":harness_sha,"source_unchanged":source_unchanged,"audio_drained":drained,"stop_reason":stop_reason,"scratch_retained":null if passed else ProjectSettings.globalize_path(scratch)}
+	var result: Dictionary={"format":"brackenward-native-soak","version":1,"scope":"Native source longevity and sampled engine-heap/RSS proxies; no Android PSS, GPU, battery, thermal, all-alert or physical release certification","probe_pass":passed,"completed":completed,"release_gate_pass":false,"standard_30min_2x_case":seconds==1800 and speed==2 and warmup_seconds>=60,"requested_seconds":seconds,"measured_wall_seconds":elapsed,"warmup_seconds":warmup_seconds,"bootstrap":bootstrap,"warmup_failure_diagnostics":warmup_diagnostics,"sample_seconds":sample_seconds,"requested_speed":speed,"final_speed":final_speed,"logical_ticks":logical_ticks,"nominal_ticks":nominal_ticks,"logical_time_kept_up":logical_time_kept_up,"initial_tick":initial_tick,"final_tick":world.tick,"remaining_logical_backlog_seconds":backlog,"snapshot":snapshot,"snapshot_sha256":input_sha,"input_canonical_hash":input_canonical,"input_counts":input_counts,"final_canonical_hash":final_hash,"final_snapshot":save_path,"final_snapshot_sha256":FileAccess.get_sha256(save_path) if snapshot_written else null,"roundtrip_verified":roundtrip,"samples":samples,"frame_heap_trace":frame_heap.report(),"engine_heap_growth_bytes":heap_growth,"peak_sampled_engine_heap_growth_bytes":peak_growth,"engine_heap_proxy_within_20_mib":memory_proxy_pass,"population_kept":population_kept,"drawn_frames":drawn_frames,"fps_windows":fps_windows,"lowest_window_fps":lowest_window_fps,"max_consecutive_low_fps_window_seconds":max_low_fps_streak,"fps_floor_proxy_pass":fps_floor_proxy_pass,"sampler_max_us":sampler_max_us,"diagnostics":diagnostics,"source_evidence":source_before,"harness_sha256":harness_sha,"source_unchanged":source_unchanged,"audio_drained":drained,"stop_reason":stop_reason,"scratch_retained":null if passed else ProjectSettings.globalize_path(scratch)}
 	if not write_json(report_path,result): passed=false
 	print(JSON.stringify({"probe_pass":passed,"completed":completed,"report":report_path,"elapsed":elapsed,"heap_growth":heap_growth,"peak_heap_growth":peak_growth,"logical_time_kept_up":logical_time_kept_up,"stop_reason":stop_reason}))
 	game.queue_free();await process_frame
@@ -168,7 +179,7 @@ func run() -> void:
 func source_evidence() -> Dictionary:
 	var files: Dictionary = {}
 	for directory in ["src","data","scenes","assets/exported"]: source_directory(directory,files)
-	for path in ["project.godot","tools/profile_foreground.gd","tools/profile_campaign.gd","tools/stress_fixture.gd"]:
+	for path in ["project.godot","tools/profile_foreground.gd","tools/profile_campaign.gd","tools/stress_fixture.gd","tools/native_heap_trace.gd"]:
 		files[path]=FileAccess.get_sha256("res://"+path)
 	files["executed_soak_script"]=FileAccess.get_sha256(get_script().resource_path)
 	return {"sha256":JSON.stringify(files,"",true).sha256_text(),"files":files.size(),"scope":"src, data, scenes, exported media, project settings, profiling/fixture sources and exact executed soak bytes"}

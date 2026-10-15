@@ -17,6 +17,29 @@ def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
+def valid_frame_heap_trace(value):
+    if not isinstance(value,dict) or value.get('format')!='brackenward-native-frame-heap' or type(value.get('version')) is not int or value['version']!=1 or value.get('event_limit')!=32:
+        return False
+    for name in ['valid_frame_samples','unavailable_frame_samples','highwater_changes']:
+        if type(value.get(name)) is not int or value[name]<0: return False
+    frames,changes=value['valid_frame_samples'],value['highwater_changes']
+    events=value.get('events');context=value.get('peak_context')
+    if not isinstance(events,list) or len(events)!=min(changes,32) or changes>frames or not isinstance(context,dict): return False
+    baseline,maximum,growth=(value.get(name) for name in ['baseline_bytes','max_bytes','peak_growth_bytes'])
+    if baseline is not None and (type(baseline) is not int or baseline<=0): return False
+    if maximum is None: return baseline is None and frames==0 and changes==0 and growth is None and not context
+    if type(maximum) is not int or maximum<=0: return False
+    if baseline is None:
+        if growth is not None or frames==0 or changes==0: return False
+    elif maximum<baseline or type(growth) is not int or growth!=maximum-baseline: return False
+    previous=baseline or 0
+    for event in events:
+        if not isinstance(event,dict) or set(event)!= {'heap_bytes','context'} or type(event['heap_bytes']) is not int or event['heap_bytes']<=previous or not isinstance(event['context'],dict): return False
+        previous=event['heap_bytes']
+    if events: return maximum==events[-1]['heap_bytes'] and context==events[-1]['context']
+    return maximum==baseline and not context
+
+
 def audit(reports, commit):
     try:
         source = json.loads((reports / "source.json").read_text())
@@ -40,6 +63,7 @@ def audit(reports, commit):
             and samples[0]["tick"]==result["initial_tick"] and samples[-1]["tick"]==result["final_tick"]
             and all(a["elapsed_seconds"] <= b["elapsed_seconds"] and a["tick"] <= b["tick"] for a,b in zip(samples,samples[1:])))
         enough = len(samples) >= max(2,source["seconds"]//source["sample_seconds"])
+        trace_valid = 'frame_heap_trace' not in result or valid_frame_heap_trace(result['frame_heap_trace'])
         passed = (result["format"]=="brackenward-native-soak" and result["version"]==1 and clean and done["exit_code"] == 0 and done["source_unchanged"] is True and not done.get("error","") and source["commit"] == commit
             and done["report_sha256"] == sha(path) and result["probe_pass"] is True and result["completed"] is True
             and result["release_gate_pass"] is False and result["requested_seconds"] == source["seconds"]
@@ -52,7 +76,7 @@ def audit(reports, commit):
             and result["population_kept"] is True and result["engine_heap_proxy_within_20_mib"] is True
             and result["fps_floor_proxy_pass"] is True and result["fps_windows"]>0 and result["max_consecutive_low_fps_window_seconds"]<=30
             and result["peak_sampled_engine_heap_growth_bytes"] == max(heaps)-heaps[0]
-            and result["engine_heap_growth_bytes"] == heaps[-1]-heaps[0])
+            and result["engine_heap_growth_bytes"] == heaps[-1]-heaps[0] and trace_valid)
         return {"passed":bool(passed),"source_commit":commit,"standard_30min_2x_case":source["seconds"]==1800 and source["speed"]==2 and source["warmup"]>=60,"scope":"Native source probe and sampled engine-heap proxy; physical release gates remain open","measured_wall_seconds":result["measured_wall_seconds"],"logical_ticks":logical,"peak_sampled_engine_heap_growth_bytes":max(heaps)-heaps[0] if heaps else None,"final_residents":samples[-1]["counts"]["residents"],"final_snapshot_sha256":sha(save),"audit_tool_sha256":sha(Path(__file__))}
     except (OSError,ValueError,KeyError,TypeError,IndexError) as error:
         return {"passed":False,"error":str(error),"audit_tool_sha256":sha(Path(__file__))}

@@ -7,6 +7,19 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.69 diagnostic heap ownership
+
+The native development probe adds a separate bounded frame-boundary heap trace
+and snapshot/writer ownership flags. Context is privately captured only on a new
+maximum;32high-water events remain. Initial baseline or unsupported values stay
+null. Context includes source/capture/journal ticks,retired groups and cache sizes.
+Collector allocations are included. Concurrent ownership does not assign an
+allocation cause; this is separate from the unchanged periodic20MiB proxy and
+physical memory gates. No application src,data,scene or save rule changes.
+Five collector regressions,persistence477,eight Python audit tests,graphical-only
+compile guard and Android108 export pass. The first frozen native trace remains
+pending; later evidence must retain any failure and original67peak unchanged.
+
 ## 0.7.68 stable job-release reads
 
 The complete full-history release loop remains. Hoist its normalized reservation

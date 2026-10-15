@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "build": "0.7.69-m7",
+  "local_android_code": 108,
+  "maintained_gdscript_assertions": 2851,
+  "fresh_checks": {
+    "persistence": 477,
+    "new_collector_checks": 5,
+    "python_native_auditor": 8,
+    "ui_messages": 530,
+    "headless_guard": "Expected exit2/no report; complete native harness compiles and remains graphical-only"
+  },
+  "application_src_data_scenes_unchanged_from_007c70b": true,
+  "scope": "Development harness only:frame-boundary heap reads,at most32 new highwater contexts and lazy private copies. Context includes live/join-pending save/preparation ownership,capture ticks,retired groups and cache sizes. Immutable world data never changes. Bounded collector allocations included. Null unknown baselines/unavailable reads; observer data and periodic20MiB heap proxy remain separate. Malformed additive traces reject audit; old reports without them remain valid. No causal/physical/PSS/thermal/battery claims.",
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "Unchanged UP-TO-DATE results inspected,not freshly rerun."
+  },
+  "source_sha256": {
+    "tools/native_heap_trace.gd": "158771c68e48856c5deeb8e89f2ff30fce1e2d76a5cef633909352ab0a9ae7c0",
+    "tools/native_heap_trace_tests.gd": "335e36233598a26a5790b9494f910e93f2480888f6d1535c28a9f05d5107888d",
+    "tools/soak_foreground.gd": "c3b6c20ee46ddca1ff6b98685d9ebe9a47062caadcc1552168537273db3a564a",
+    "tools/run_soak.py": "f23664f97bb4975001e8407b073ef2f4d72d0035635a3be8bc45359626601b33",
+    "tools/test_run_soak.py": "2529ad7584a8c18e1baae31d66456ac9927b90903602d306a60cef2c17c358e9",
+    "tools/run_suite.gd": "8fa5822c61a3cfb531dd1886d6e805b35a40b958d5157351f0c2351fa5f1f987",
+    "project.godot": "cfd930b7347e69f277194283182d37de81812be7d8a196de8159c87f8640f944",
+    "export_presets.cfg": "d1b7d87ac49e69d2dfb4a841db79c8d3db417982b0bce73195de779c36c25a7d"
+  },
+  "validation_sha256": {
+    "heap-trace-v69-persistence-first.log": "69df484adb2e81310dcc47f846ff4d3a1af7e69db607242240e21b878cb50a10",
+    "heap-trace-v69-content.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "heap-trace-v69-android.log": "eabc32400a514a201e84b33e687ccfc39648844194ccc1f095147d9684d650b2",
+    "heap-trace-v69-auditor-tests.log": "274f6bac38cd9c543013527ca3004ec792d15edc09b5a81dc5a505bd86dbbc90",
+    "heap-trace-v69-import.log": "5df5611ae3b713b26268b50e63d8411809830764e79e4dbfe55097421d677410",
+    "heap-trace-v69-headless-guard.log": "426549b9836f671f893564cab224bc164cdb3ed3846db034b03788f8c514059e"
+  },
+  "apk_sha256": "8ed611629f9495884889126a217b89717822609edc6b71f6134e3665001a72d0",
+  "pending": "First frozen-source native trace still pending. Unchanged application runtime retains source68 scopes; new69CI/publication and physical gates remain separate."
+}
