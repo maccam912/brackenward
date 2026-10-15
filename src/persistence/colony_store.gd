@@ -197,10 +197,9 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 		var old_path: String = directory.path_join("journal-%010d.frames" % sequence)
 		var original: PackedByteArray = FileAccess.get_file_as_bytes(old_path)
 		if original.size()!=journal_length or original.is_empty() or FileAccess.get_sha256(old_path)!=journal_digest: return "Snapshot catch-up journal changed; original durable state retained"
-		var parsed: Dictionary = ColonyJournal.read(original)
-		if parsed.has("error") or parsed.get("torn_tail",false) or parsed.records.size()!=journal_sequence: return "Snapshot catch-up journal failed verification"
-		for record in parsed.records:
-			if record.kind!="command" or record.tick<=prepared.payload.tick: continue
+		var parsed: Dictionary = ColonyJournal.commands_after(original,prepared.payload.tick)
+		if parsed.has("error") or parsed.get("torn_tail",false) or parsed.total_records!=journal_sequence: return "Snapshot catch-up journal failed verification"
+		for record in parsed.commands:
 			count+=1
 			frames.append_array(ColonyJournal.frame({"sequence":str(count),"kind":"command","tick":record.tick,"command":record.command}))
 		count+=1

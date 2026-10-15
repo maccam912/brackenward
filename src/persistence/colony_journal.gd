@@ -20,6 +20,19 @@ static func _hash(bytes: PackedByteArray) -> PackedByteArray:
 	return context.finish()
 
 static func read(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
+	return _read(bytes,first_sequence,-1)
+
+static func commands_after(bytes: PackedByteArray, tick: int) -> Dictionary:
+	# Rotation needs only newer command evidence. Validate every original frame
+	# before discarding its private decoded tick tree; never skip checksums/schema.
+	if tick<1800:return {"error":"Invalid command-selection tick"}
+	return _read(bytes,1,tick)
+
+static func _read_result(records: Array[Dictionary], digests: Array[String], torn_tail: bool, selected_after: int, total: int) -> Dictionary:
+	if selected_after>=0:return {"commands":records,"total_records":total,"torn_tail":torn_tail}
+	return {"records":records,"digests":digests,"torn_tail":torn_tail}
+
+static func _read(bytes: PackedByteArray, first_sequence: int, selected_after: int) -> Dictionary:
 	if first_sequence<1: return {"error":"Invalid initial journal sequence"}
 	if bytes.size() > MAX_JOURNAL:
 		return {"error": "Journal exceeds recovery bound"}
@@ -29,12 +42,12 @@ static func read(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
 	var sequence: int = first_sequence
 	while offset < bytes.size():
 		if bytes.size() - offset < 4:
-			return {"records": records, "digests":digests, "torn_tail": true}
+			return _read_result(records,digests,true,selected_after,sequence-first_sequence)
 		var length: int = bytes.decode_u32(offset)
 		if length == 0 or length > MAX_RECORD:
 			return {"error": "Invalid journal frame length"}
 		if offset + 4 + length + 32 > bytes.size():
-			return {"records": records, "digests":digests, "torn_tail": true}
+			return _read_result(records,digests,true,selected_after,sequence-first_sequence)
 		var payload: PackedByteArray = bytes.slice(offset + 4, offset + 4 + length)
 		var digest: PackedByteArray = bytes.slice(offset + 4 + length, offset + 4 + length + 32)
 		if _hash(payload) != digest:
@@ -42,7 +55,10 @@ static func read(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
 		var parser: JSON = JSON.new()
 		if parser.parse(payload.get_string_from_utf8()) != OK:
 			return {"error": "Malformed journal record"}
-		var value: Variant = ColonyState.unpack(parser.data)
+		# Selection owns fresh parser data, so consume it in place using the
+		# already checked integer/map/tile/depth rules. Public recovery keeps its
+		# unchanged nonmutating decoder; captures/live state never enter this path.
+		var value: Variant = ColonyPreparedSnapshot._unpack_owned_json(parser.data) if selected_after>=0 else ColonyState.unpack(parser.data)
 		if not value is Dictionary or value.get("sequence", "") != str(sequence) or value.get("kind", "") not in ["command", "tick"] or not value.get("tick") is int:
 			return {"error": "Journal sequence/schema mismatch"}
 		if value.kind == "command" and (value.size() != 4 or not value.get("command") is Dictionary):
@@ -52,11 +68,14 @@ static func read(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
 				if not ColonyCodec._keys(value,["sequence","kind","tick","delta"]) or not _delta_header(value.delta,value.tick): return {"error":"Invalid delta checkpoint marker"}
 			elif value.size() != (4 if value.has("state") else 3) or (value.has("state") and not value.state is Dictionary):
 				return {"error": "Invalid complete-tick marker"}
-		records.append(value)
-		digests.append(digest.hex_encode())
+		if selected_after<0 or (value.kind=="command" and value.tick>selected_after):records.append(value)
+		if selected_after<0:digests.append(digest.hex_encode())
+		# An unselected tick must die before parsing/unpacking the next frame.
+		# Retained records own their data independently of the parser and bytes.
+		value=null;parser=null;payload=PackedByteArray()
 		sequence += 1
 		offset += 4 + length + 32
-	return {"records": records, "digests":digests, "torn_tail": false}
+	return _read_result(records,digests,false,selected_after,sequence-first_sequence)
 
 static func _digest_valid(value: Variant) -> bool:
 	if not value is String or value.length()!=64: return false

@@ -19,7 +19,7 @@ Both solutions load the same exact announced snapshot:
 
 | Branch | Public orders | Required outcome |
 | --- | --- | --- |
-| Defend | At tick 8700, Shelter and draft original residents 2, 3 and 4 at the supply cart, without Stand fast. Resident 1 shelters through the ordinary civilian system. | Normal boundary arrival at 9000; real movement, shelter and combat down at least one thief; retreat before the six-hour timer and with no theft or payment. All four survive and stand down. |
+| Defend | At tick 8700, Shelter and draft original residents 2, 3 and 4 at the midpoint of the announced boundary-to-cart approach, without Stand fast. Resident 1 shelters at the cart through the ordinary civilian system. | Normal boundary arrival at 9000; real movement, shelter and combat down at least one thief; retreat before the six-hour timer and with no theft or payment. All four survive and stand down. |
 | Ransom | After actual arrival at 9000, offer the listed 16 wood; ordinary workers reserve and carry it to the announced meeting. | Real completed `raid_pay` job and exactly 16 wood traded out; no theft or injury; the same party retreats before the timer and the colony stands down. |
 
 At tick 9120 each branch saves, fully decodes and resumes its active incident.
@@ -40,21 +40,39 @@ The prototype CI job also runs the Meadow/104729 pair and its independent
 raw-save audit, retaining every incident save/log. That single case cannot stand
 in for the separate thirty-map release sweep.
 
+The interception audit also uses independent BFS distances and terrain/solid/
+bridge rules: the recorded approach must be a contiguous shortest route and the
+issued rally its midpoint. A teleport, invented bridge, detour, blocked tile or
+cart rally cannot stand in for that plan.
+
 The synthetic Python audit tests cover false successes such as timer/quota
 escape, missing shelter, rejected/changed orders, incomplete delivery, extra
 residents, swapped weapons, early arrival, changed warning history, resource
 grants and missing evidence. Those tests are not thirty-map gameplay evidence.
 
-## Current result
+## Frozen first attempt: cart defense fails 9 of 30
 
-The draft harness and its 19 Python audit checks are prepared. The GDScript
-parses. The exploratory Meadow/104729 pair and its independent raw-save audit
-pass: both branches retain health 100; defense retreats at 10770 (only 30 ticks
-before the six-hour limit), ransom pays physically at 10297. The final hashes are
-`159e4914a1cc2e522ec92a97ee1a327fd9c600c8c67c23cf2961d386d9c16677`
-and `4e098166641d140b53b282b55b6a9ea016183f8dc522dcb700919e6d14af601f`.
-This mutable-source pilot is **not** a completed frozen 30-map result. Preserve
-the first policy failure rather than changing the acceptance conditions to fit it.
+Clean source `a23033150de2bc6eb2c1581df6c84cce9c43f210` completed
+all thirty distinct maps/entries. The original cart-rally plan passes **21/30**
+armed defenses; exact physical ransom delivery passes **30/30**. All sixty
+branches keep all four residents at health 100, with no zero-fullness ticks or
+theft and accepted public commands. All initial geometry and eighteen inspected
+goldens verify; the independent second audit retains the overall Fail result.
+
+Every failed defense first retreats at tick 10800, the six-hour timer, with no
+enemy downed at that point. Reed/max-seed later downs one while the party is
+already retreating; this cannot satisfy the before-timer gate. No acceptance
+condition, combat rule, damage, supplies or clock is changed to make that pass.
+Raw evidence remains `defense-release-gen2-v6-a230331/`, with source/completion/
+audit hashes and all thirty endpoint hashes in
+[prepared-defense-v54-evidence.json](prepared-defense-v54-evidence.json).
+
+The revised plan above intercepts the advertised approach. Its Pine/0 pilot
+(previously a timer failure) and independent route/raw-save audit now pass:
+defense retreats at 9958 with all four residents at health 100; ransom commits
+at 10317. This mutable-source pilot is **not** a frozen thirty-map pass. The
+25 Python audit checks pass, including six independent route counterexamples.
+The complete revised sweep must earn its own result after source publication.
 
 Run and independently audit from the same frozen checkout, using a new empty
 report directory:

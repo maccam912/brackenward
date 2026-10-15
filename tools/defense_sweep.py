@@ -9,7 +9,7 @@ import re
 import subprocess
 import time
 
-from validate_raw_map import validate as validate_map
+from validate_raw_map import validate as validate_map, distances, tile, footprint
 
 SEEDS = [0, 1, 42, 104729, 2147483647, 4294967295, 73, 4567, 1357911, 3000000001]
 SITES = ["meadow_reach", "pine_shelf", "reed_bend"]
@@ -37,7 +37,7 @@ def snapshot(path):
     return envelope, json.loads(envelope["payload"])
 
 
-def geometry(normal):
+def raw_geometry(normal):
     """Translate the saved geography to the independent raw-map validator's ABI."""
     terrain = normal["terrain_state"]
     data = {"format": "brackenward-raw-map", "version": 1, "seed": int(normal["seed"]), "site": normal["site_id"], "generator": normal["generator_version"], "weather": normal["weather"], **{k: terrain[k] for k in ("transform", "attempt", "fallback", "diagnostics", "elevation", "fertility")}}
@@ -47,8 +47,31 @@ def geometry(normal):
     for name, records, keys in (("resources", normal["resources"], ("id", "definition", "x", "y", "remaining")), ("structures", normal["structures"], ("id", "definition", "x", "y", "rotation", "health", "user")), ("citizens", normal["citizens"], ("id", "x", "y", "bed")), ("animals", normal["wildlife_state"]["animals"], ("id", "definition", "x", "y"))):
         data[name] = [{k: int(r[k]) if k in ("id", "bed") else r[k] for k in keys} for r in records]
     data["regions"] = normal["region_state"]["nodes"]
+    return data
+
+
+def geometry(normal):
     catalog = read(Path(__file__).resolve().parents[1] / "data/catalogs/colony_v6.json")
-    return validate_map(data, catalog)
+    return validate_map(raw_geometry(normal), catalog)
+
+
+def route_valid(points, entry, cart, rally, elevations, solid, bridges):
+    if len(points) < 30 or len(points) != len(set(points)) or points[-1] != cart or rally != points[len(points) // 2]: return False
+    walked = [entry] + points
+    reached = distances(entry, elevations, solid, bridges)
+    if reached.get(cart) != len(points): return False
+    return all(b in reached and abs(a[0]-b[0])+abs(a[1]-b[1]) == 1 and (a in bridges or b in bridges or abs(elevations[a[1]*128+a[0]]-elevations[b[1]*128+b[0]]) <= 1) for a, b in zip(walked, walked[1:]))
+
+
+def interception(normal, row, entry):
+    data = raw_geometry(normal)
+    catalog = read(Path(__file__).resolve().parents[1] / "data/catalogs/colony_v6.json")
+    resources = {r["id"]: r for r in catalog["resources"]};buildings = {b["id"]: b for b in catalog["buildings"]}
+    solid = {(r["x"], r["y"]) for r in data["resources"] if resources[r["definition"]]["solid"]}
+    for building in data["structures"]:
+        if building["definition"] != "supply_cart" and buildings[building["definition"]]["solid"]: solid |= footprint(building, buildings)
+    cart = next(s for s in data["structures"] if s["definition"] == "supply_cart")
+    return route_valid([tile(v["$tile"]) for v in row["approach_route"]], tile(entry["$tile"]), (cart["x"], cart["y"]), tile(row["rally"]["$tile"]), data["elevation"], solid, {tile(p) for p in data["bridges"]})
 
 
 def setup_checks(normal, prepared):
@@ -88,8 +111,7 @@ def branch_checks(row, world, walking, announced_hash, action):
         "no_resource_grants_equipment_swaps_or_other_incidents": world["ledger"]["traded_in"] == {} and world["ledger"]["expedition_gain"] == {} and not world["region_state"]["trips"] and not world["trade_state"]["exchanges"] and not world["director_state"]["history"] and world["care_state"]["mode"] == "Standard",
     }
     if action == "defend":
-        cart = next(s for s in world["structures"] if s["definition"] == "supply_cart")
-        checks["armed_defense_and_real_civilian_shelter"] = decisions[0]["args"] == {"enabled": True} and decisions[1]["args"] == {"citizens": [2, 3, 4], "rally": {"$tile": [cart["x"], cart["y"]]}, "stand_fast": False} and int(decisions[0]["tick_queued"]) == int(decisions[1]["tick_queued"]) == 8700 and row["saw_shelter"] is True and row["saw_downed"] is True and int(row["enemy_tile_steps"]) >= 30 and any(e["health"] <= 10 for e in enemies) and sum(e["state"] in ("Downed", "Retreating", "Leaving", "Gone") for e in retreat["enemies"]) * 2 >= 2 and paid == 0 and int(raid["pay_job"]) == 0
+        checks["armed_defense_and_real_civilian_shelter"] = decisions[0]["args"] == {"enabled": True} and decisions[1]["args"] == {"citizens": [2, 3, 4], "rally": row["rally"], "stand_fast": False} and int(decisions[0]["tick_queued"]) == int(decisions[1]["tick_queued"]) == 8700 and row["saw_shelter"] is True and row["saw_downed"] is True and int(row["enemy_tile_steps"]) >= 30 and any(e["health"] <= 10 for e in enemies) and sum(e["state"] in ("Downed", "Retreating", "Leaving", "Gone") for e in retreat["enemies"]) * 2 >= 2 and paid == 0 and int(raid["pay_job"]) == 0
     else:
         jobs = [j for j in world["jobs"] if int(j["id"]) == int(raid["pay_job"])]
         checks["exact_listed_ransom_physically_delivered"] = decisions[0]["args"] == {"target": raid["id"], "pay": {"wood": 16}} and int(decisions[0]["tick_queued"]) == 9000 and paid == 16 and len(jobs) == 1 and jobs[0]["kind"] == "raid_pay" and jobs[0]["state"] == "Complete" and jobs[0]["inputs"] == {"wood": 16} and row["minimum_health"] == 100 and all(c["health"] == 100 for c in world["citizens"]) and all(e["health"] == 40 for e in enemies) and "arrived physically" in retreat["reason"]
@@ -118,12 +140,13 @@ def verify(path, code, site, seed):
             env, world = snapshot(end_path);walk_env, walking = snapshot(walking_path)
             detail = report["branches"][action]
             found = branch_checks(detail, world, walking, prepared_env["sha256"], action)
+            found["interception_is_midpoint_of_real_shortest_approach"] = interception(normal, detail, prepared["defense_state"]["raids"][0]["entry"])
             fixed = ("id", "budget", "party", "entry", "meeting", "due")
             found["announced_identity_and_route_unchanged"] = all(world["defense_state"]["raids"][0][k] == prepared["defense_state"]["raids"][0][k] for k in fixed)
             found["exact_written_snapshot_identity"] = detail["passed"] is True and detail["final"]["roundtrip_verified"] is True and detail["final"]["canonical_hash"] == env["sha256"] and detail["final"]["sha256"] == sha(end_path) and detail["reloads"][0]["canonical_hash"] == walk_env["sha256"] and detail["reloads"][0]["sha256"] == sha(walking_path)
             branches[action] = {"passed": all(found.values()), "checks": found, "canonical_hash": env["sha256"], "minimum_health": detail["minimum_health"], "retreat_tick": detail["first_retreat"]["tick"], "end_tick": world["tick"]}
         row.update({"passed": all(checks.values()) and all(b["passed"] for b in branches.values()), "checks": checks, "geometry": map_check, "branches": branches, "entry": report["entry"], "normal_canonical_hash": normal_env["sha256"]})
-    except (OSError, ValueError, KeyError, TypeError, IndexError) as error:
+    except (OSError, ValueError, KeyError, TypeError, IndexError, StopIteration) as error:
         row["error"] = str(error)
     return row
 
@@ -170,7 +193,7 @@ def main():
         manifest = {p.name: sha(p) for p in reports.iterdir() if p.is_file() and not p.name.startswith(".")}
         (reports / "completion.json").write_text(json.dumps({"source_unchanged": git("rev-parse", "HEAD") == commit and not git("status", "--porcelain"), "finished_unix": time.time(), "artifacts_sha256": manifest}, indent=2) + "\n")
     try: result = audit(reports, commit)
-    except (OSError, ValueError, KeyError, TypeError, IndexError) as error: result = {"passed": False, "error": str(error), "source_commit": commit}
+    except (OSError, ValueError, KeyError, TypeError, IndexError, StopIteration) as error: result = {"passed": False, "error": str(error), "source_commit": commit}
     (reports / "audit.json").write_text(json.dumps(result, indent=2) + "\n")
     print(json.dumps({k: v for k, v in result.items() if k != "rows"}))
     raise SystemExit(0 if result["passed"] else 1)

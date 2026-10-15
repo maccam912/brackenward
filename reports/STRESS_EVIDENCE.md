@@ -5,6 +5,47 @@ campaign evidence and physical Android release requirements. The full release
 stress gate, all-alert variant, thirty-minute soak, PSS/battery/thermal measurements
 and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.55 bounded retention while rebasing journals
+
+Prepared rotation previously parsed and retained every decoded historical tick
+frame in the old journal merely to collect its newer command evidence. It now
+validates **every** checksum, sequence, JSON value and frame schema, counts every
+frame, and retains only commands strictly after the preparation tick, in original
+order. Its fresh private JSON may be consumed in place under the original depth/
+integer/map/tile rules; unselected trees/parser buffers are released before the
+next frame. Original bytes, size bounds, exact publication verification and
+complete external recovery remain unchanged.
+
+The retained a230331 complete reader is the independent reference. Twelve new
+persistence checks cover exact result/ownership, strict cutoff, complete counts,
+torn prefixes at each frame boundary, malformed unselected checksums/schema/
+delta/values/JSON/length/depth, starting sequences and all four immutable historic
+journals. Persistence 404 and UI 667 pass; maintained count is 2726 in 28 suites.
+
+All three journals from the completed frozen native-53 scratch campaign were
+copied without modifying their original bytes. Four alternating background pairs
+per input compare complete retention against the final selector:
+
+| Retained journal | Frames | Bytes | Complete peak MiB | Selected peak MiB | Complete CPU ms | Selected CPU ms |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 61 | 31 | 5866708 | 64.672 | 11.863 | 294.439 | 300.816 |
+| 62 | 32 | 5234922 | 60.446 | 11.396 | 252.922 | 260.296 |
+| 63 | 14 | 3404355 | 42.085 | 11.997 | 162.936 | 167.914 |
+
+Medians use roughly 1-ms process engine-heap sampling. Heap retention falls about
+71–82%; CPU is slightly higher in these observations. Two ordinary campaign
+workers and persistence validation also ran; CPU is descriptive and no precise
+phone speed ratio is inferred. These particular journals contain no intervening
+commands; separate command-bearing synthetic and historical tests verify selection.
+Intermediate retained-tree/early-release comparisons remain preserved and are
+not substituted for these final-source results. Exact inputs, runtime/reference
+fingerprints, report hashes, medians and caveats are tracked in
+[journal-selection-v55-evidence.json](journal-selection-v55-evidence.json).
+
+The strict live native peak proxy still requires a new complete frozen run.
+Physical Android PSS/frame times, battery/thermals and the large ordinary
+full-snapshot preparation cost remain separate; no failed result below is relabeled.
+
 ## 0.7.54 read-only journal verification
 
 The writer now verifies its actual reparsed journal patch directly against the

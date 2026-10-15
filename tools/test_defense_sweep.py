@@ -17,7 +17,7 @@ def fixture(action):
     tick = 10500 if action == "defend" else 9360
     world = {"tick": str(tick), "citizens": people, "defense_state": {"raids": [raid], "enemies": enemies}, "receipts": {"$map": [[d["id"], "accepted"] for d in decisions]}, "pending_commands": [], "structures": [{"definition": "supply_cart", "x": 66, "y": 63}], "ledger": {"traded_out": {"wood": 16} if action == "ransom" else {}, "looted": {}, "traded_in": {}, "expedition_gain": {}}, "jobs": [{"id": "501", "kind": "raid_pay", "state": "Complete", "inputs": {"wood": 16}}] if action == "ransom" else [], "region_state": {"trips": []}, "trade_state": {"exchanges": []}, "director_state": {"history": []}, "care_state": {"mode": "Standard"}}
     retreat = {"tick": 10200 if action == "defend" else 9300, "state": "Retreating", "loot_units": 0, "reason": "The quoted supplies arrived physically" if action == "ransom" else "Half stopped", "enemies": copy.deepcopy(enemies)}
-    row = {"initial_canonical_hash": "same", "raid": copy.deepcopy(raid), "boundary_spawn": True, "all_four_living_home_undrafted": True, "decisions": decisions, "commands": trace, "commands_accepted": True, "end_tick": tick, "zero_fullness_ticks": 0, "invariant_checks": tick // 60 - 30, "reloads": [{"roundtrip_verified": True}], "first_retreat": retreat, "saw_shelter": True, "saw_downed": action == "defend", "enemy_tile_steps": 70, "minimum_health": 100}
+    row = {"rally": {"$tile": [66, 63]}, "initial_canonical_hash": "same", "raid": copy.deepcopy(raid), "boundary_spawn": True, "all_four_living_home_undrafted": True, "decisions": decisions, "commands": trace, "commands_accepted": True, "end_tick": tick, "zero_fullness_ticks": 0, "invariant_checks": tick // 60 - 30, "reloads": [{"roundtrip_verified": True}], "first_retreat": retreat, "saw_shelter": True, "saw_downed": action == "defend", "enemy_tile_steps": 70, "minimum_health": 100}
     walking = {"tick": "9120", "defense_state": {"enemies": copy.deepcopy(enemies), "raids": [{"state": "Active" if action == "defend" else "Payment"}]}}
     return row, world, walking
 
@@ -108,6 +108,34 @@ class DefenseAuditTests(unittest.TestCase):
         self.assertFalse(sweep.setup_checks(normal, prepared)["only_one_actual_warning_fact"])
         normal, prepared = self.setup_pair();prepared["chronicle_state"]["settlement"] = "Changed"
         self.assertFalse(sweep.setup_checks(normal, prepared)["only_one_actual_warning_fact"])
+
+    def route(self):
+        return [[(x, 40) for x in range(1, 65)], (0, 40), (64, 40), (33, 40), [2] * 16384, set(), set()]
+
+    def test_real_contiguous_shortest_approach_accepts_midpoint(self):
+        self.assertTrue(sweep.route_valid(*self.route()))
+
+    def test_waiting_at_cart_is_not_the_interception_plan(self):
+        args = self.route();args[3] = args[2]
+        self.assertFalse(sweep.route_valid(*args))
+
+    def test_route_cannot_walk_through_solid_nature(self):
+        args = self.route();args[5].add((20, 40))
+        self.assertFalse(sweep.route_valid(*args))
+
+    def test_height_jump_needs_a_real_bridge(self):
+        args = self.route();args[4][40 * 128 + 20] = 4
+        self.assertFalse(sweep.route_valid(*args))
+        args[6].add((20, 40))
+        self.assertTrue(sweep.route_valid(*args))
+
+    def test_detour_cannot_forge_the_midpoint_of_a_shortest_approach(self):
+        args = self.route();args[0] = [(1, 40), (1, 39), (2, 39)] + [(x, 40) for x in range(2, 65)];args[3] = args[0][len(args[0]) // 2]
+        self.assertFalse(sweep.route_valid(*args))
+
+    def test_route_cannot_skip_a_walking_edge(self):
+        args = self.route();args[0].pop(10);args[3] = args[0][len(args[0]) // 2]
+        self.assertFalse(sweep.route_valid(*args))
 
 
 if __name__ == "__main__":

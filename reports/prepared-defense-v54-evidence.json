@@ -1,0 +1,469 @@
+{
+  "passed": false,
+  "source_commit": "a23033150de2bc6eb2c1581df6c84cce9c43f210",
+  "maps": 30,
+  "defend_passed": 21,
+  "ransom_passed": 30,
+  "all_sixty_branches_four_residents_health_100_no_zero_fullness_or_theft": true,
+  "distinct_entries": 30,
+  "original_artifact_manifest_unchanged": true,
+  "evidence_sha256": {
+    "source.json": "8530095ad65e15f52d514474b8d51416a4204158b38972746a3cab94cada79bd",
+    "completion.json": "133c0ae1a4ca363ef533f209ab8bb2b57e2a3bb206fbf5f0038ed9ddaac34f4d",
+    "audit.json": "3b750ac3970f468baaab24c1324ae53a52e46039d4146ba87308212b913ff5a0"
+  },
+  "rows": [
+    {
+      "site": "meadow_reach",
+      "seed": 0,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10766",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "a1f86627435e6636c8d32ee2b214a375b465717657047e87335018b817c92ad3",
+      "defend_final_canonical_hash": "a7fa2151cfbefb8b40cfd48c80e520b8c77ade9da54e11b437f32eb755a41c31",
+      "ransom_final_canonical_hash": "59b9472b7bec0d443991ad3ee54bb2aa8c6bfd08a826b312f6e6d2ebe86dfdd7"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 1,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10742",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "80de0cade8588f7e1b1150919ee23cf028455c07c7414daf2ca5f9e6da82a710",
+      "defend_final_canonical_hash": "89e90f1a0702a0b52d4c7c153d3b86089119eb9d9ebf088d2d1e753124badd83",
+      "ransom_final_canonical_hash": "e9ef8fc537bb654e537fc830eefdbe341c8d9edcffdd260abae29f3154f02992"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 42,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10669",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "0994d663745a68f8b5289ace5ec9e1bdd593209e448c9aab63f5ea75f54931a4",
+      "defend_final_canonical_hash": "9476782b08560fe3b604e11fbb56f5b391ea271cf7e62902145a0ea01a561a75",
+      "ransom_final_canonical_hash": "e6a47f990093b7ef9003dd6eb13df32d3d2391e0aa4fb29955cd671cf917cd5e"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 104729,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10770",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "0ecd4b3675fe4b910d4003cd51f599b9b0bb8d9612c42a3fa9c28b63d105bf26",
+      "defend_final_canonical_hash": "159e4914a1cc2e522ec92a97ee1a327fd9c600c8c67c23cf2961d386d9c16677",
+      "ransom_final_canonical_hash": "4e098166641d140b53b282b55b6a9ea016183f8dc522dcb700919e6d14af601f"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 2147483647,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        40,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": false,
+      "normal_canonical_hash": "0eecce69e43e31551a91881c0269aa708c8de5d656055bdcacdb177e80e83b9e",
+      "defend_final_canonical_hash": "4ba98fa73fdd1c7466c55cca42d2a1d779b053ce63cc6fbe2b5189adb7327a37",
+      "ransom_final_canonical_hash": "58e3a871178919da4d39b2ee6b28c9fa8d956f2fd75ca3b850c46cd46a54de5c"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 4294967295,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        40,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": false,
+      "normal_canonical_hash": "3755d4b296be1a0ae3eeaf08c1321f3d4237a0b7831aa6c6944a6d57a7266c74",
+      "defend_final_canonical_hash": "62a41b06f2d5207838426e2f120776110eb9ac6763b6b9c64b2b07874c34e826",
+      "ransom_final_canonical_hash": "98457544a595da7631b1e17b2af59d5b1eef975f8bdb0987bf02596b66780a0b"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 73,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10445",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "3d17a1162d622ab5c97d3e9fd28fc9788835a98ca0511d9564e8def3c765fd26",
+      "defend_final_canonical_hash": "bd59633564e9bb077409d212ffaf73540711c95d5bf4e37255f4f5b23f25413e",
+      "ransom_final_canonical_hash": "191ad800d6c6c3b325cc39c9a32d78baf1147a1270565d711d81f1e1e8e11727"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 4567,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10629",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "914ac5abe44dafa5bde64cefadf8a702bc8cbfbea0d92a5f8790d99f505b2549",
+      "defend_final_canonical_hash": "4877e3420eded423afe5bf2248899b9731768b66edc5c52b24fb30cc82edc441",
+      "ransom_final_canonical_hash": "be3ea3094cf85ea13dd2e14bdfc33209cefed5c7d8dab87d65acf68feac4d332"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 1357911,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10754",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "f6c8d710c57353237aaeb183dc55a84feb20809c79852f2ae0274100dcd0141f",
+      "defend_final_canonical_hash": "b12473cfb08a03c7e51cf888116f3319f99e1fafbcbc8b3681dc52ddbcca658e",
+      "ransom_final_canonical_hash": "af67e741bb5722fe17b14a8f9825a93802df7339522c179c7943a047e3961280"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 3000000001,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        40,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": false,
+      "normal_canonical_hash": "5145df23dbe5201d448d0d061ec081521bbc8370b3f48d4119372b2cef2591a2",
+      "defend_final_canonical_hash": "078aa553f509e18dd3148e2e61a6dd37618a435b1bca9a4c6208a7c69a655ecc",
+      "ransom_final_canonical_hash": "4c1afc683c2e4a4fb386839791b34b552ae5b5527284c624819ebacc1f426a7d"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 0,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        40,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": false,
+      "normal_canonical_hash": "83fa08d115f8470205786bace40c893406f632ed5a45be256dc2f777822b223d",
+      "defend_final_canonical_hash": "f45c21335e72e28d66e23184d0ff6b4339053ea864dc5544a97cb98c19166aad",
+      "ransom_final_canonical_hash": "1385b86d0a424fc13eafbb72a5e6c764f001f01e56d5681d38833a4009f37516"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 1,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "9714",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "aa3f21960ab712742034effdd579b493abaf6af5debca9f849008fea75bcb4c4",
+      "defend_final_canonical_hash": "2d300f9ab125c6b03c93ec2c1bdbd8b4c966260a712d0ed2a6302898d8808f5d",
+      "ransom_final_canonical_hash": "b31d4978f5706522eb0beabee2f992ff311cc317f8af164c7e7d6f14d6d1cfd2"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 42,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10545",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "d110fe709ae7ae17e0600cd6537c4845f299a31b114db9fa3f1241da18ee3f0e",
+      "defend_final_canonical_hash": "be4225ba2c73c56c624e0fa7c7bc83167cc3c38ea641e2eb247260e650fee935",
+      "ransom_final_canonical_hash": "0b311d55ec883f6393f109ae0cce700ac819d61e28d328ea6b853307ca3026f4"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 104729,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        40,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": false,
+      "normal_canonical_hash": "19df7b531e71d2bdf1f84d6ef039a92ab2407527fbfa31e51c1fd7fbb5df6a1b",
+      "defend_final_canonical_hash": "9dbd720036f5389cf7fdf65da9cfa94075fdce4515d636f2de05546a1c1de7f9",
+      "ransom_final_canonical_hash": "9dbe52b6e6a0bce4643a3ab01909644fdb3cc685672e03109147685504a4ef7b"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 2147483647,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "9860",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "bf5787201e51d9f054801ecf70b181f3c16437e8bc7f685094fb2f645ca75290",
+      "defend_final_canonical_hash": "92315d22097948b9e5fab56dc1b68f77fdc2049e0915bd46e090f688eba275d0",
+      "ransom_final_canonical_hash": "40494264a09bf38ab2b456c8b733224289eb20d6ddae9dee994cd40d4f244e26"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 4294967295,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        40,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": false,
+      "normal_canonical_hash": "a43d8cf18dd794808d04d8f3c44eb1d74f4831c2dc8bcd2c5e3977f3660a8189",
+      "defend_final_canonical_hash": "89d6114925a6390fbce65c58e3eb4647487d1f85cc2d5b4c453705c64b37c6a3",
+      "ransom_final_canonical_hash": "5259a184a7b54d3ab53b311c8e90b988040e736e026bdea19ad625627f6bc59a"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 73,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10214",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "42d8dc19dcba976c8b1ed12d123431d0b76d7360c0fe32af8f12ecc1302cb6cd",
+      "defend_final_canonical_hash": "e59843fc283c2b5248bcb8884a4de94fb61b52514f45733f4ba641a41744f6f3",
+      "ransom_final_canonical_hash": "d139ba5812211518da981dcf084ec3a4829bfca6a3c2eff1360aa5baec4de387"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 4567,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "9738",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "3824490db3decc8972dc04e161dca0d419c93e4e707742935ec68d7dc3890d8b",
+      "defend_final_canonical_hash": "99b2dfad3d4baea57298a9505354da2c872f77716f492eb0bb03c4e42dce12f7",
+      "ransom_final_canonical_hash": "f8dfcce9bd4beaf450bdf8e3052af8acee6fb099dd25dcb4001f0518ccfd80c6"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 1357911,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10638",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "bc6f1709fda818f329b50106c69524fe751543773d3566239b1b72c461960acb",
+      "defend_final_canonical_hash": "88117b062e654609a60036f24a4f44de5dfb18b5a4fa7219700d8ae60bedea0e",
+      "ransom_final_canonical_hash": "ec304c558fcbaaf61b20fd594c8d40ce2dc4968a31a86dbba4a6bd961c1f4fbe"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 3000000001,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10084",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "1793aa33f8a282d4364b1df7c846acfcb030de92c2bf05e6701cf41077d8443b",
+      "defend_final_canonical_hash": "e4833a4ebc6297517441ad5c5d61cf3ab5ae6b9899cdf4401ff2dba0a4d2ed09",
+      "ransom_final_canonical_hash": "7c4c2495681cc6267dbb95d78e5cda2ab56d5ca481f2efc3d79fe90069ebdf46"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 0,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "9860",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "08930a88c6a1ad2629b350f77df3f4d1410c9a917cb0f77d4dff2c7a1ada3fa2",
+      "defend_final_canonical_hash": "7b1e8666a1d347cb6cfab7abbe4b586ffcadb80100c1f95931122b03850dad9c",
+      "ransom_final_canonical_hash": "477cbb69c325cf9c847213836f5f54c4a1e937480893f91b5ca01b088f006254"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 1,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10552",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "48d75a54104cdad8c6e156781c59f1a42725cb5ce66c1924c49b2ac241a4a040",
+      "defend_final_canonical_hash": "f4533873b0a03c7b0c7ec569e230505d04ae07f156237ffb264dcfea67271447",
+      "ransom_final_canonical_hash": "229b83d89150f3434487b1117157c5ca31ad4cb4063807b3f1eaf2c3aef5cb07"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 42,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10461",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "3f3901c77d0d77963dfe06d82c918010d3d8aea4e4f8c871ef3fdbe250d25050",
+      "defend_final_canonical_hash": "86573b85f33feda7c6805ad95175e3767600adebdbaa18eccc2ec98fcf9b7ccd",
+      "ransom_final_canonical_hash": "6fc555172adbb9ac7c3b1e647f1b5167125cc5e45cbe178d1b452ba62d303a7c"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 104729,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10640",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "328aaeeda39fad8b4029a0402472795079a90ed6d89135c4f6bb9268e82d6572",
+      "defend_final_canonical_hash": "283b79bf4c7a2e893b5c77d495b103dbee7a52f2f1691df64fe42f64cf1758e7",
+      "ransom_final_canonical_hash": "c9d419bd2672233bb4e5746ba94c089cfcb77b001989e8d3e2b3e088bd0f3633"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 2147483647,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10333",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "c34d3ea36c6271f13caaf54d34323dd74b44e8d87ffb0fe7313a86a51228a6b9",
+      "defend_final_canonical_hash": "b5f95e24f35174ce793c618b507ad0d8aafbad9ff566ed593d23194afbe0dce9",
+      "ransom_final_canonical_hash": "caa936b4288c4e1a1ffc359366592510b296fe5695077c4e4a7822f038e590e9"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 4294967295,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        21,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "08d01c213998f74b25e189b656d8e4588ced4ad2269b842929b2192497c5af6c",
+      "defend_final_canonical_hash": "3476a109dd5d6c61a03b9b489782a41dda4e0b4f3d7f053f4ddda30113a4cd93",
+      "ransom_final_canonical_hash": "9971d82fdd9e4fdba08069c34273a12242884a8c0fdbb6dcecd9cd8cdee98b00"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 73,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10169",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "4286c94422281c655ead5848a791d241bede96748d6f433e30f245196a045fc7",
+      "defend_final_canonical_hash": "8b8abfae24e7db893b36100a352f76925d8ed7ba76ec3095dd6b31979f9f5631",
+      "ransom_final_canonical_hash": "2c7e36d8d67fb60b1781ea1fdc8067a735992a16461680d7b2429080f33137fe"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 4567,
+      "defend_passed": true,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10729",
+      "enemy_health_at_retreat": [
+        2,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": true,
+      "normal_canonical_hash": "8714a89b5277696d8f82a92258c2698d2bf25f8ad631090aae143c57125dccb6",
+      "defend_final_canonical_hash": "e1976cf4bbc098b48316c7481346dc085331ef953e23a324f9ad3bfc1bff87ff",
+      "ransom_final_canonical_hash": "2516b058b608451858cb4620bbadc9c9162f2cd8f23903fe12d4b3b746598fdb"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 1357911,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        40,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": false,
+      "normal_canonical_hash": "698c36dc548c6c7c7577601a898f8bed5dbfaae91abfedc272f6efaa7a990b25",
+      "defend_final_canonical_hash": "0f02357b5bb841830b942cd1cf6cdbc995cf9e2626b1fda3b7c5b6c9c7057e25",
+      "ransom_final_canonical_hash": "4c76a2b4fb0ba0c56f29edb8a9e59a75c785dc104755896826d3c888ed6f4d60"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 3000000001,
+      "defend_passed": false,
+      "ransom_passed": true,
+      "defend_retreat_tick": "10800",
+      "enemy_health_at_retreat": [
+        40,
+        40
+      ],
+      "saw_downed_any_time_including_after_retreat": false,
+      "normal_canonical_hash": "fafc72071db137c3bb0e64bde9377f332df985c9756d82a3075b63ce7e0dfbed",
+      "defend_final_canonical_hash": "0bd8a9795a22f2233ea6b0c92f97fd979aff41023346f58fb742dfaef7a883fc",
+      "ransom_final_canonical_hash": "a6230e47993ced5f8e98007bd1dbb1a6d5d0d4e8cd37eab25d34f18d2f39bc3d"
+    }
+  ],
+  "scope": "First frozen prepared matrix and independent second audit. All nine cart-defense failures first retreat at tick10800 without a downed enemy then. Reed/max-seed later downs one while the party is already retreating; that cannot satisfy the pre-timer gate. New interception orders require their own frozen sweep. The old audit combines policy success with its snapshot-identity check; a false combined field on a failed policy does not mean corruption. All actual branch save hashes and full-codec roundtrip flags independently verify.",
+  "all_actual_branch_snapshots_have_exact_hashes_and_full_codec_roundtrip": true
+}

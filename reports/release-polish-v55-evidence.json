@@ -1,0 +1,54 @@
+{
+  "passed": true,
+  "version": "0.7.55-m7",
+  "content": "colony-v6",
+  "maintained_gd_suites": 28,
+  "maintained_gd_checks": 2726,
+  "fresh_checks": {
+    "persistence": {
+      "passed": true,
+      "checks": 404,
+      "elapsed_ms": 23249,
+      "log_sha256": "8cfec1d5ebc22ee67296ada051e2bd6c611838f9fa4afa02e0eb4102bd4102a0"
+    },
+    "ui": {
+      "passed": true,
+      "checks": 667,
+      "elapsed_ms": 22858,
+      "log_sha256": "6ed248ee8568a4eaec089407f6bc6d50a337885ffdb7b5024beb31a73f817a40"
+    },
+    "historical_replay": {
+      "passed": true,
+      "commands": 62,
+      "report_sha256": "15ab1a3c8a3303f5633c6ef7ddc8e9a30a9860c4e5473108cf22de4850c92805",
+      "elapsed_ms": 65668,
+      "checkpoints": [
+        {
+          "canonical_hash": "50bb80a8c127473adf03f8882bef3f0ac6b09844c42c14bc0cce3816cf7b920e",
+          "snapshot_roundtrip": true,
+          "tick": "7200"
+        },
+        {
+          "canonical_hash": "b996c5f4e4d953d234b3d967fc931582dbd426fc527e410e6dc92af5bee707d6",
+          "snapshot_roundtrip": true,
+          "tick": "72000"
+        }
+      ]
+    },
+    "android": {
+      "passed": true,
+      "local_version": "0.7.55-m7",
+      "local_code": 94,
+      "kotlin_tests": 4,
+      "apk_sha256": "c40bccdf3a3bc9b84bf33823394aff7de48139141ca11b2bbf846e9303b48753",
+      "log_sha256": "784ca6089c6d166cc3c2127ebd9bed77e36dbf7bfa213a3076dec0ce5ba0b5b3"
+    },
+    "defense_audit": {
+      "passed": true,
+      "checks": 25,
+      "log_sha256": "7cfa4780fdbc70bf3dcd0bbf5620f7469940f21cca0d2c26d95ffe59d2edb3f6"
+    }
+  },
+  "component_reports_match_current_source": true,
+  "scope": "Fresh affected local checks. Build/export is separate from actual APK execution. Other suites retain their recorded earlier scope; current remote CI and the full revised raid/native/physical gates are separate."
+}

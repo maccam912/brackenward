@@ -66,7 +66,12 @@ func branch(prepared: PackedByteArray, action: String) -> Dictionary:
 	var minimum_health: int=100;var zero_fullness: int=0;var checks: int=0;var enemy_steps: int=0
 	var prior_positions: Dictionary={};var prior_state: String=raid.state;var first_retreat: Dictionary={}
 	var saw_shelter: bool=false;var saw_downed: bool=false;var boundary_spawn: bool=false
-	var rally: Vector2i=Vector2i(ColonyTrade.cart(world).x,ColonyTrade.cart(world).y)
+	var cart: Vector2i=Vector2i(ColonyTrade.cart(world).x,ColonyTrade.cart(world).y)
+	var approach: Array[Vector2i]=ColonyNavigation.path(raid.entry,cart,world.walkable,world.can_step)
+	if approach.size()<30:failure="Announced approach route is missing or too short";return {"passed":false}
+	# Intercept a visible announced approach. Waiting at the cart can let a
+	# distant party hit its six-hour limit before contact, which proves no combat.
+	var rally: Vector2i=approach[approach.size()/2]
 	var limit: int=raid.due+7200;var finished_at: int=0
 	while world.tick<limit and failure.is_empty():
 		if action=="defend" and world.tick==raid.due-300:
@@ -117,4 +122,4 @@ func branch(prepared: PackedByteArray, action: String) -> Dictionary:
 	else:
 		var payment: Dictionary=world.find(world.jobs,raid.pay_job)
 		objective=minimum_health==100 and raid.loot_units==0 and world.ledger.traded_out.get("wood",0)==16 and payment.get("state")=="Complete" and payment.get("kind")=="raid_pay" and payment.get("inputs")=={"wood":16} and first_retreat.get("tick",limit)<raid.arrival+1800 and world.defense_state.enemies.all(func(e:Dictionary)->bool:return e.health==40)
-	return {"passed":common and objective,"action":action,"initial_canonical_hash":JSON.parse_string(prepared.get_string_from_utf8()).sha256,"end_tick":world.tick,"minimum_health":minimum_health,"zero_fullness_ticks":zero_fullness,"invariant_checks":checks,"enemy_tile_steps":enemy_steps,"saw_shelter":saw_shelter,"saw_downed":saw_downed,"boundary_spawn":boundary_spawn,"commands_accepted":commands_accepted,"all_four_living_home_undrafted":living,"first_retreat":first_retreat,"transitions":transitions,"reloads":reloads,"samples":samples,"decisions":decisions,"commands":world.command_trace,"final":final,"raid":raid.duplicate(true),"ledger":world.ledger.duplicate(true)}
+	return {"passed":common and objective,"action":action,"rally":rally,"approach_route":approach,"initial_canonical_hash":JSON.parse_string(prepared.get_string_from_utf8()).sha256,"end_tick":world.tick,"minimum_health":minimum_health,"zero_fullness_ticks":zero_fullness,"invariant_checks":checks,"enemy_tile_steps":enemy_steps,"saw_shelter":saw_shelter,"saw_downed":saw_downed,"boundary_spawn":boundary_spawn,"commands_accepted":commands_accepted,"all_four_living_home_undrafted":living,"first_retreat":first_retreat,"transitions":transitions,"reloads":reloads,"samples":samples,"decisions":decisions,"commands":world.command_trace,"final":final,"raid":raid.duplicate(true),"ledger":world.ledger.duplicate(true)}
