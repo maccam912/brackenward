@@ -26,7 +26,9 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
 	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
 		return {"error":"Unsupported save version %s / content %s. This build supports envelope 5, content %s and earlier colony migration. Original files retained." % [str(envelope.get("version","?")).left(16),str(envelope.get("content","?")).left(64),ColonyWorld.CONTENT_VERSION]}
-	if not envelope.generator_version is float or (envelope.generator_version != 0 and envelope.generator_version != 1) or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
+	if envelope.generator_version is float and envelope.generator_version==floor(envelope.generator_version) and envelope.generator_version>ColonyGeneration.VERSION:
+		return {"error":"Campaign uses generator version %d; this build supports up to %d. Update Brackenward to open it. Original files retained." % [int(envelope.generator_version),ColonyGeneration.VERSION]}
+	if not envelope.generator_version is float or (envelope.generator_version != 0 and envelope.generator_version != 1 and envelope.generator_version != 2) or not envelope.campaign_id is String or not envelope.sequence is String or not envelope.sequence.is_valid_int() or envelope.sequence.length() > 15 or envelope.sequence.begins_with("-") or not envelope.timestamp is String or envelope.timestamp.length() > 40:
 		return {"error":"Invalid snapshot metadata"}
 	if not envelope.payload is String or not envelope.sha256 is String or envelope.payload.sha256_text() != envelope.sha256:
 		return {"error": "Snapshot checksum mismatch"}
@@ -104,7 +106,7 @@ static func _record(value: Variant, template: Dictionary) -> bool:
 	return true
 
 static func _validate(data: Dictionary, world: ColonyWorld) -> String:
-	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80 or data.schema_revision != ColonyWorld.SCHEMA_REVISION or data.generator_version not in [0,1] or not ColonyGeneration.SITES.has(data.site_id) or not ColonyWeather.validate(data.weather_state,data.tick):
+	if not _record(data, world.payload()) or data.content != ColonyWorld.CONTENT_VERSION or data.content_hash != world.definitions.content_hash or data.tick < 1800 or data.seed < 0 or data.seed > 4294967295 or data.next_id > 1000000000 or data.next_command_id > 1000000000 or data.session_id.length() > 80 or data.schema_revision != ColonyWorld.SCHEMA_REVISION or data.generator_version not in [0,1,2] or not ColonyGeneration.SITES.has(data.site_id) or not ColonyWeather.validate(data.weather_state,data.tick):
 		return "Invalid world header or unknown fields"
 	# Job validators refer to the supper bank before the full cross-record charter check.
 	if not ColonyCodec._keys(data.charter_state,ColonyCharter.initial_state().keys()) or not data.charter_state.supper is Dictionary: return "Invalid charter header"

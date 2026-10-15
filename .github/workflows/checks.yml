@@ -42,6 +42,8 @@ jobs:
           python3 tools/test_trade_free_audit.py
           python3 tools/test_post_charter_sweep.py
           python3 tools/test_push_checkpoint.py
+          python3 tools/test_validate_raw_map.py
+          python3 tools/test_map_sweep.py
           python3 tools/validate_content.py
       - name: Install Linux UI test dependencies
         run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
@@ -124,6 +126,35 @@ jobs:
             build/
           if-no-files-found: warn
 
+  generation-sweep:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      BRACKENWARD_GODOT: /home/runner/.local/share/brackenward/toolchain/4.7.2/Godot_v4.7.2-stable_linux.x86_64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/brackenward/toolchain/*.zip
+          key: native-editor-linux-x64-${{ hashFiles('toolchain.lock.json') }}
+      - name: Install checksum-verified editor
+        run: python3 tools/bootstrap.py --editor-only
+      - name: Import map export scripts
+        run: python3 tools/checked_godot.py -- --headless --editor --import
+      - name: Independently validate 256 hashed seeds per site
+        run: python3 tools/map_sweep.py --source "$GITHUB_WORKSPACE" --report-dir reports/generation-ci-sweep --start 6 --count 256 --workers 2
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: independent-generation-subset
+          path: reports/generation-ci-sweep
+          if-no-files-found: warn
+
   native-replay:
     name: Native replay (${{ matrix.name }})
     runs-on: ${{ matrix.runner }}
@@ -181,7 +212,7 @@ jobs:
 
   publish:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [prototype, native-replay]
+    needs: [prototype, native-replay, generation-sweep]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

@@ -58,7 +58,9 @@ func run() -> void:
 		"care":
 			CareReadTests.run(check)
 			CareTests.run(check)
-		"generation": GenerationTests.run(check)
+		"generation":
+			GenerationTests.run(check)
+			GenerationRevisionTests.run(check)
 		"nature": NatureTests.run(check)
 		"wildlife": WildlifeTests.run(check)
 		"domestic":
@@ -666,7 +668,7 @@ func ui() -> void:
 	for frame in range(180):
 		await process_frame
 		if colony_game.creation_thread == null: break
-	check("GEN/UI_new_site_seed_mode_and_independent_slot",colony_game.creation_thread == null and colony_game.store.slot == 3 and colony_game.world.seed == 1 and colony_game.world.site_id == "pine_shelf" and colony_game.world.care_state.mode == "Hearthside" and colony_game.world.generator_version == 1 and ColonyStore.occupied(2,ui_colony_directory))
+	check("GEN/UI_new_site_seed_mode_and_independent_slot",colony_game.creation_thread == null and colony_game.store.slot == 3 and colony_game.world.seed == 1 and colony_game.world.site_id == "pine_shelf" and colony_game.world.care_state.mode == "Hearthside" and colony_game.world.generator_version == ColonyGeneration.VERSION and ColonyStore.occupied(2,ui_colony_directory))
 	colony_game.begin_field()
 	check("GEN/UI_field_preview_starts_at_current_camera",colony_game.view.preview_tiles()==[colony_game.view.screen_to_tile(colony_game.view.size*0.5)])
 	colony_game.cancel_placement()

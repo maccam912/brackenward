@@ -1,6 +1,6 @@
 class_name ColonyGeneration
 extends RefCounted
-const VERSION: int = 1
+const VERSION: int = 2
 const SITES: Dictionary = {
  "meadow_reach":{"weights":[15,65,20],"trees":22,"flood":4,"extra":"","extra_count":0},
  "pine_shelf":{"weights":[30,60,10],"trees":36,"flood":3,"extra":"stone_node","extra_count":4},
@@ -11,19 +11,23 @@ const WILDLIFE: Dictionary = {"hare":6,"deer":4,"boar":2,"marsh_goose":4}
 static func empty_state() -> Dictionary:
  return {"elevation":[],"fertility":[],"paths":[],"bridges":[],"starter_field":[],"habitats":{},"transform":0,"attempt":0,"fallback":false,"diagnostics":[]}
 
-static func configure(world: ColonyWorld, entered_seed: int, site: String) -> String:
+static func configure(world: ColonyWorld, entered_seed: int, site: String, revision: int = VERSION) -> String:
  if not SITES.has(site) or entered_seed < 0 or entered_seed > 4294967295: return "Unknown site or invalid 32-bit seed"
- world.seed = entered_seed; world.site_id = site; world.generator_version = VERSION
+ if revision not in [1,2]: return "Unsupported generator revision; current world retained"
+ world.seed = entered_seed; world.site_id = site; world.generator_version = revision
  var failures: Array = []
  for attempt in range(33):
   var effective: int = entered_seed
   if attempt > 0:
    var digest: PackedByteArray = ("%d|attempt|%d" % [entered_seed,attempt]).sha256_buffer()
    effective = (int(digest[0])<<24)|(int(digest[1])<<16)|(int(digest[2])<<8)|int(digest[3])
-  var generated: Dictionary = _generate(world,effective,site,attempt == 32)
+  var generated: Dictionary = _generate(world,effective,site,attempt == 32,revision)
   generated.state.attempt = attempt; generated.state.diagnostics = failures.duplicate()
-  var errors: Array = validate_map(generated)
-  if not errors.is_empty(): failures.append("Attempt %d: %s" % [attempt,", ".join(errors)]); continue
+  var errors: Array = validate_map(generated,revision)
+  if not errors.is_empty():
+   var diagnostic: String = "Attempt %d: %s" % [attempt,", ".join(errors)]
+   failures.append(diagnostic.left(256) if revision>=2 else diagnostic)
+   continue
   world.terrain_state = generated.state
   world.resources.clear()
   for r in generated.resources:
@@ -57,20 +61,20 @@ static func configure(world: ColonyWorld, entered_seed: int, site: String) -> St
 static func transformed(point: Vector2i, transform: int) -> Vector2i:
  return Vector2i(127-point.x if transform in [1,3] else point.x,127-point.y if transform in [2,3] else point.y)
 
-static func _rng(seed: int, site: String, name: String) -> ParkMiller:
- return ParkMiller.new(ParkMiller.derive(seed,VERSION,site,name))
+static func _rng(seed: int, site: String, name: String, revision: int = VERSION) -> ParkMiller:
+ return ParkMiller.new(ParkMiller.derive(seed,revision,site,name))
 
 static func _shuffle(items: Array, rng: ParkMiller) -> void:
  for index in range(items.size()-1,0,-1):
   var other: int = rng.bounded(index+1)
   var value: Variant = items[index]; items[index] = items[other]; items[other] = value
 
-static func _generate(world: ColonyWorld, seed: int, site: String, fallback: bool) -> Dictionary:
+static func _generate(world: ColonyWorld, seed: int, site: String, fallback: bool, revision: int = VERSION) -> Dictionary:
  var state: Dictionary = empty_state()
  state.fallback = fallback
  state.elevation.resize(16384); state.elevation.fill(2)
  state.fertility.resize(16384); state.fertility.fill(1000)
- var ground: ParkMiller = _rng(seed,site,"ground")
+ var ground: ParkMiller = _rng(seed,site,"ground",revision)
  var spec: Dictionary = SITES[site]
  for cy in range(16):
   for cx in range(16):
@@ -78,7 +82,7 @@ static func _generate(world: ColonyWorld, seed: int, site: String, fallback: boo
    var fertility: int = 750 if draw < spec.weights[0] else (1000 if draw < spec.weights[0]+spec.weights[1] else 1250)
    for y in range(cy*8,cy*8+8):
     for x in range(cx*8,cx*8+8): state.fertility[y*128+x] = 1000 if fallback else fertility
- var river: ParkMiller = _rng(seed,site,"river")
+ var river: ParkMiller = _rng(seed,site,"river",revision)
  var anchors: Array = []
  for index in range(9): anchors.append(33 if fallback else 28+river.bounded(13))
  for y in range(128):
@@ -87,7 +91,7 @@ static func _generate(world: ColonyWorld, seed: int, site: String, fallback: boo
   for x in range(center-1-band,center+3+band): state.elevation[y*128+x] = 0 if x >= center-1 and x <= center+2 else 1
   for x in range(96,128): state.elevation[y*128+x] = 3 if x < 112 else 4
  if not fallback:
-  var ridges: ParkMiller = _rng(seed,site,"ridges")
+  var ridges: ParkMiller = _rng(seed,site,"ridges",revision)
   for index in range(6):
    var center: Vector2i = Vector2i(84+ridges.bounded(27),12+ridges.bounded(104))
    var radius: int = 3+ridges.bounded(5)
@@ -114,7 +118,7 @@ static func _generate(world: ColonyWorld, seed: int, site: String, fallback: boo
   for x in range(67,128):
    var index: int = y*128+x
    if state.elevation[index] > state.elevation[index-1]+1: state.elevation[index] = state.elevation[index-1]+1
- var result: Dictionary = {"state":state,"resources":[],"solid":{},"cart":Vector2i(66,63)}
+ var result: Dictionary = {"state":state,"resources":[],"solid":{},"cart":Vector2i(66,63),"cart_cells":_cart_cells(0),"revision":revision,"site":site}
  var distance: Dictionary = _reachable(result)
  var eligible: Array = []
  for y in range(128):
@@ -125,18 +129,18 @@ static func _generate(world: ColonyWorld, seed: int, site: String, fallback: boo
   eligible.sort_custom(func(a:Vector2i,b:Vector2i)->bool:
    var ar: int = maxi(absi(a.x-66),absi(a.y-63)); var br: int = maxi(absi(b.x-66),absi(b.y-63))
    return ar < br or (ar == br and a.y*128+a.x < b.y*128+b.x))
- else: _shuffle(eligible,_rng(seed,site,"resources"))
+ else: _shuffle(eligible,_rng(seed,site,"resources",revision))
  var occupied: Dictionary = {}
  var work_tiles: Dictionary = {}
  for kind in COUNTS:
   for index in range(COUNTS[kind]):
-   if not _place(result,eligible,kind,occupied,work_tiles,true): result["placement_failed"] = true
+   if not _place(result,eligible,kind,occupied,work_tiles,true,24 if revision>=2 else 0): result["placement_failed"] = true
  if not spec.extra.is_empty():
   var extras: Array = distance.keys().filter(func(p:Vector2i)->bool:return distance[p] <= 40 and not reserved.has(p) and state.elevation[p.y*128+p.x] > 0)
-  _shuffle(extras,_rng(seed,site,"extras"))
+  _shuffle(extras,_rng(seed,site,"extras",revision))
   for i in range(spec.extra_count):
-   if not _place(result,extras,spec.extra,occupied,work_tiles,true): result["placement_failed"] = true
- var woodland: ParkMiller = _rng(seed,site,"woodland")
+   if not _place(result,extras,spec.extra,occupied,work_tiles,true,40 if revision>=2 else 0): result["placement_failed"] = true
+ var woodland: ParkMiller = _rng(seed,site,"woodland",revision)
  if fallback:
   var extras: Array = []
   for y in range(128):
@@ -167,7 +171,7 @@ static func _generate(world: ColonyWorld, seed: int, site: String, fallback: boo
     _shuffle(candidates,woodland)
     _place(result,candidates,["berry_bush","herb_patch","mushroom_patch"][(cy*16+cx)%3],occupied,work_tiles)
   var upland: Array = distance.keys().filter(func(p:Vector2i)->bool:return state.elevation[p.y*128+p.x] >= 3 and not reserved.has(p))
-  _shuffle(upland,_rng(seed,site,"deposits"))
+  _shuffle(upland,_rng(seed,site,"deposits",revision))
   for kind in ["stone_node","clay_bank","iron_seam"]:
    for i in range(4 if kind == "stone_node" else 3): _place(result,upland,kind,occupied,work_tiles)
  distance = _reachable(result)
@@ -194,10 +198,10 @@ static func _generate(world: ColonyWorld, seed: int, site: String, fallback: boo
      if ColonyWorld.inside(tile) and state.elevation[tile.y*128+tile.x] == 0: near_water = true
    if (species == "marsh_goose" and near_water) or (species == "boar" and near_tree and state.elevation[p.y*128+p.x] >= 3) or (species in ["hare","deer"] and near_tree and state.elevation[p.y*128+p.x] == 2): habitats.append(p)
   habitats.sort_custom(func(a:Vector2i,b:Vector2i)->bool:return a.y*128+a.x < b.y*128+b.x)
-  _shuffle(habitats,_rng(seed,site,"wildlife_"+species))
+  _shuffle(habitats,_rng(seed,site,"wildlife_"+species,revision))
   state.habitats[species] = habitats.slice(0,WILDLIFE[species])
   for p in state.habitats[species]: spawn_used[p] = true
- var transform: int = _rng(seed,site,"transform").bounded(4)
+ var transform: int = _rng(seed,site,"transform",revision).bounded(4)
  state.transform = transform
  var elevations: Array = state.elevation.duplicate(); var fertilities: Array = state.fertility.duplicate()
  for y in range(128):
@@ -211,27 +215,74 @@ static func _generate(world: ColonyWorld, seed: int, site: String, fallback: boo
   resource.point = transformed(resource.point,transform)
   if resource.definition in ["tree","stone_node","clay_bank","iron_seam"]: result.solid[resource.point] = true
  result.cart = transformed(result.cart,transform)
+ result.cart_cells = _cart_cells(transform)
  return result
 
-static func _place(map: Dictionary, candidates: Array, kind: String, occupied: Dictionary, work_tiles: Dictionary, guaranteed: bool = false) -> bool:
+static func _cart_cells(transform: int) -> Array:
+ var result: Array = []
+ for y in range(63,65):
+  for x in range(66,68): result.append(transformed(Vector2i(x,y),transform))
+ return result
+
+static func _place(map: Dictionary, candidates: Array, kind: String, occupied: Dictionary, work_tiles: Dictionary, guaranteed: bool = false, maximum_distance: int = 0) -> bool:
  for point in candidates:
   if occupied.has(point) or work_tiles.has(point) or map.state.elevation[point.y*128+point.x] == 0: continue
   var work: Vector2i = Vector2i(-1,-1)
-  for delta in ColonyNavigation.NEIGHBORS:
-   var neighbor: Vector2i = point+delta
-   if ColonyWorld.inside(neighbor) and not map.solid.has(neighbor) and map.state.elevation[neighbor.y*128+neighbor.x] > 0: work = neighbor; break
+  var route: Array = []
+  if maximum_distance>0:
+   var approach: Dictionary = _short_route(map,point,maximum_distance)
+   if not approach.found: continue
+   work=approach.work;route=approach.path
+  else:
+   for delta in ColonyNavigation.NEIGHBORS:
+    var neighbor: Vector2i = point+delta
+    if ColonyWorld.inside(neighbor) and not map.solid.has(neighbor) and map.state.elevation[neighbor.y*128+neighbor.x] > 0: work = neighbor; break
   if work.x < 0: continue
   occupied[point] = true
   map.resources.append({"definition":kind,"point":point,"guaranteed":guaranteed})
   work_tiles[work] = true
+  for step in route: work_tiles[step]=true
   for delta in ColonyNavigation.NEIGHBORS: work_tiles[work+delta] = true
   if kind in ["tree","stone_node","clay_bank","iron_seam"]: map.solid[point] = true
   return true
  return false
 
+static func _short_route(map: Dictionary, target: Vector2i, maximum: int) -> Dictionary:
+ # Multi-source bounded A* to an adjacent work tile. Excluding the proposed
+ # solid target and protecting this path makes the guarantee survive every
+ # later guaranteed deposit, ambient tree and fallback woodland placement.
+ var frontier: Array[Vector4i] = [];var costs: Dictionary = {};var parents: Dictionary = {};var visited: Dictionary = {}
+ var bridges: Dictionary = {}
+ for point in map.state.bridges: bridges[point]=true
+ for point in map.cart_cells:
+  var h: int=maxi(0,absi(point.x-target.x)+absi(point.y-target.y)-1)
+  costs[point]=0;ColonyNavigation._push(frontier,Vector4i(point.x,point.y,0,h))
+ while not frontier.is_empty():
+  var entry: Vector4i=ColonyNavigation._pop(frontier);var point: Vector2i=Vector2i(entry.x,entry.y)
+  if visited.has(point) or costs[point]!=entry.z:continue
+  if entry.z+entry.w>maximum:break
+  if point!=target and absi(point.x-target.x)+absi(point.y-target.y)==1:
+   var work: Vector2i=point;var route: Array=[]
+   while parents.has(point):route.append(point);point=parents[point]
+   route.reverse()
+   return {"found":true,"work":work,"path":route}
+  visited[point]=true
+  for direction in ColonyNavigation.NEIGHBORS:
+   var next: Vector2i=point+direction
+   if not ColonyWorld.inside(next) or next==target or visited.has(next) or map.solid.has(next):continue
+   if map.state.elevation[next.y*128+next.x]==0 and not bridges.has(next):continue
+   if absi(map.state.elevation[next.y*128+next.x]-map.state.elevation[point.y*128+point.x])>1 and not bridges.has(point) and not bridges.has(next):continue
+   var cost: int=entry.z+1;var h: int=maxi(0,absi(next.x-target.x)+absi(next.y-target.y)-1)
+   if cost+h>maximum:continue
+   if not costs.has(next) or cost<costs[next]:
+    costs[next]=cost;parents[next]=point;ColonyNavigation._push(frontier,Vector4i(next.x,next.y,cost,h))
+ return {"found":false}
+
 static func _reachable(map: Dictionary) -> Dictionary:
- var distances: Dictionary = {map.cart:0}
- var queue: Array = [map.cart]
+ var distances: Dictionary = {}
+ var queue: Array = []
+ var starts: Array = map.cart_cells if map.get("revision",1)>=2 else [map.cart]
+ for point in starts: distances[point]=0;queue.append(point)
  var cursor: int = 0
  var bridges: Dictionary = {}
  for p in map.state.bridges: bridges[p] = true
@@ -245,9 +296,13 @@ static func _reachable(map: Dictionary) -> Dictionary:
    distances[p] = distances[point]+1; queue.append(p)
  return distances
 
-static func validate_map(map: Dictionary) -> Array:
+static func validate_map(map: Dictionary, revision: int = VERSION) -> Array:
+ if revision not in [1,2]: return ["unknown generator revision"]
  var errors: Array = []
- var reachable: Dictionary = _reachable(map)
+ var query: Dictionary = map
+ if map.get("revision",1)!=revision:
+  query=map.duplicate();query.revision=revision;query.cart_cells=_cart_cells(map.state.transform)
+ var reachable: Dictionary = _reachable(query)
  if map.get("placement_failed",false): errors.append("guaranteed resource placement")
  if reachable.keys().filter(func(p:Vector2i)->bool:return map.state.elevation[p.y*128+p.x] >= 2).size() < 1024: errors.append("safe buildable ground")
  for field in map.state.starter_field:
@@ -270,6 +325,18 @@ static func validate_map(map: Dictionary) -> Array:
    if ColonyWorld.inside(n) and map.state.elevation[n.y*128+n.x] == 0: water = true
  if not water: errors.append("river water access")
  if not reachable.keys().any(func(p:Vector2i)->bool:return p.x in [0,127] or p.y in [0,127]): errors.append("boundary route")
+ if revision>=2:
+  var near: Dictionary = {};var extra: Dictionary = {}
+  for resource in map.resources:
+   var distance: int = 100000
+   for direction in ColonyNavigation.NEIGHBORS: distance=mini(distance,reachable.get(resource.point+direction,100000))
+   if distance<=24: near[resource.definition]=near.get(resource.definition,0)+1
+   if distance<=40: extra[resource.definition]=extra.get(resource.definition,0)+1
+  for definition in COUNTS:
+   if near.get(definition,0)<COUNTS[definition]: errors.append("start-ring access: "+definition)
+  var site: String = map.get("site","")
+  if not SITES.has(site): errors.append("missing site access contract")
+  elif not SITES[site].extra.is_empty() and extra.get(SITES[site].extra,0)<COUNTS[SITES[site].extra]+SITES[site].extra_count: errors.append("site-extra access: "+SITES[site].extra)
  return errors
 
 static func validate_state(state: Variant, version: int) -> bool:
@@ -278,7 +345,7 @@ static func validate_state(state: Variant, version: int) -> bool:
   if not state[field] is Array: return false
  if not state.transform is int or state.transform not in [0,1,2,3] or not state.attempt is int or state.attempt < 0 or state.attempt > 32 or not state.fallback is bool or not state.habitats is Dictionary: return false
  if version == 0: return state == empty_state()
- if version != VERSION or state.elevation.size() != 16384 or state.fertility.size() != 16384 or state.starter_field.size() != 64 or state.paths.size() > 16384 or state.bridges.size() > 16384: return false
+ if version not in [1,2] or state.elevation.size() != 16384 or state.fertility.size() != 16384 or state.starter_field.size() != 64 or state.paths.size() > 16384 or state.bridges.size() > 16384: return false
  if not state.elevation.all(func(n:Variant)->bool:return n is int and n >= 0 and n <= 4) or not state.fertility.all(func(n:Variant)->bool:return n is int and n in [750,1000,1250]): return false
  for field in ["paths","bridges","starter_field"]:
   if not state[field].all(func(p:Variant)->bool:return p is Vector2i): return false

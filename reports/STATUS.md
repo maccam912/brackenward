@@ -1,6 +1,6 @@
 # Implementation evidence
 
-Checkpoint: `0.7.44-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. The M0 touch fixture and its separate saves remain available to the regression suite. New campaigns use checked deterministic three-site terrain generation; older campaigns retain their saved authored geography. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Checkpoint: `0.7.45-m7` (campaign schema 23, device settings schema 6), content `colony-v6`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -22,11 +22,11 @@ Checkpoint: `0.7.44-m7` (campaign schema 23, device settings schema 6), content 
 | M2 durable journal foundation | Pass, filesystem/replay subset | Commands and complete-tick markers checkpoint every 2 foreground seconds, frames verify length/checksum/sequence; exact replay, torn-tail retention and damaged-latest fallback tests pass. Background still freezes and snapshots. Five campaign slots, ten named snapshots, verified staged import/replacement and storage-failure choices are implemented |
 | M2 sustainable food / storage / rooms | Pass, automated subset | Four residents survive eight days without starvation damage using 16 actual turnip tiles and default cooking; crop rates at 75/100/125% and dormancy, food aging through transfers, granary/cellar ratios, door-bounded rooms and wall removal, food runway with spoilage and reserve policy pass |
 | M1 to M2 save continuity | Pass | Original committed M1 fixture migrates; old journals replay under frozen M1 code before migration; verified untouched backups precede subsequent snapshots |
-| M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Fresh v6 Standard-site and Pine Hearthside vegetarian Charters pass all four 96-day cases with eight residents, all stages, Continue and zero zero-fullness/grace-exceeded ticks; independent completion and current 0.7.32 loading audits pass. The earlier v6 29/30 failure is traced to a replanted tree blocking the lodge. The complete clean revised-policy matrix at 7059064 now passes all 30/30 cases, keeping eight residents with zero zero-fullness/grace ticks and passing 23,760 invariant checks; a current 0.7.42 pure-loading audit preserves all thirty endpoints. The natural twenty-resident seasonal and ninety-six-day post-Charter runs are in progress. The earlier v4 matrix is 30/30. M7 and physical/human gates remain; older v2/v3/v4 results retain their pinned scopes. |
+| M3–M6 gameplay and progression | Implemented; pinned campaign evidence | Three-site generation, production, wildlife/domestic animals, care, fire, defense, trade, expeditions, incidents, Chronicle, all Charter stages and onboarding have automated coverage. Fresh v6 Standard-site and Pine Hearthside vegetarian Charters pass all four 96-day cases with eight residents, all stages, Continue and zero zero-fullness/grace-exceeded ticks; independent completion and current 0.7.32 loading audits pass. The earlier v6 29/30 failure is traced to a replanted tree blocking the lodge. The complete clean revised-policy matrix at 7059064 now passes all 30/30 cases, keeping eight residents with zero zero-fullness/grace ticks and passing 23,760 invariant checks; a current 0.7.42 pure-loading audit preserves all thirty endpoints. The revision-1 ordinary twenty-resident campaign passes both full seasonal windows with all twenty alive, zero window starvation and no campaign grace violations. The separate ninety-six additional post-Charter days are still running. Revision-2 fresh-map balance evidence remains pending. The earlier v4 matrix is 30/30. M7 and physical/human gates remain; older v2/v3/v4 results retain their pinned scopes. |
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `4042af1` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-4042af1cdd66); checked commits publish stable-identity APKs, provenance and checksums. Production signing/store publication remain pending. |
 
-Current local validation: 28 GDScript suites, 2,586 checks, zero failures, including 663 native UI checks. All suites were freshly run at the content-v6 checkpoint, followed by affected-suite reruns through 0.7.42; original failures and exact targeted repairs/reruns remain recorded. Three real tutorial flows pass 22 checks each. Catalog/media validation passes. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
+Current local validation: 28 GDScript suites, 2,622 checks, zero failures, including 663 native UI checks. All suites were freshly run for 0.7.45, with the original survival fixture mismatch and its explicit revision-1 rerun retained. Three real tutorial flows pass 22 checks each. Catalog/media validation, native source launch and local Android export pass. Frozen replay and save-continuation evidence is recorded in the latest checkpoint below. Tests fail closed on script errors, timeout, missing results or zero tests. Acceptance IDs cover only their stated scope; they do not imply complete release certification. Generated JUnit/XML/screenshots/logs/builds are ignored; committed reports describe the observed results.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
@@ -2784,3 +2784,50 @@ Local 0.7.44 checks: all five Git-publication tests, six post-Charter verifier
 tests and three trade-free verifier tests pass, as do content/media validation
 and Android export (aapt 0.7.44-m7 / local code 83). The 28-suite GDScript
 maintained total remains 2,586. New source has no runtime game changes.
+
+## 0.7.45 final resource-distance guarantees and independent map validation
+
+Fresh colonies now use generator revision 2. Independent raw-map BFS found
+Pine Shelf seed 1's fourth extra stone 41 legal work-approach steps from the
+cart; only 1,400 of the promised 1,600 stone units were within 40. Revision 2
+protects actual short resource approaches against later solids and checks the
+final 24/40-step quantities. Revision-1 generation matches the retained full
+reference across eighteen boundary maps and all three fallbacks. Saved maps
+and historical replay remain unchanged. See [GENERATION_EVIDENCE.md](GENERATION_EVIDENCE.md)
+for exact scope, initial failed diagnostics, observer correction and commands.
+The independent eighteen-map working-tree diagnostic passes; full frozen sweep,
+inspected new golden hashes and revision-2 campaign balance are still pending.
+
+All 28 suites were freshly run: 2,622 checks, including 663 graphical UI checks,
+zero remaining failures after explicitly retaining revision 1 in old geometry
+fixtures. Three tutorial flows, 234 historical replay checks, native launch,
+catalog/media validation and Android export pass (local code 84 / 0.7.45-m7).
+The 22 new Python observer/sweep-contract checks pass. A separate CI generation
+job adds 256 hashed seeds at each site and gates APK publication; it is not the
+30,000-map release certificate. Content/schema/envelope/settings are unchanged.
+
+The clean ordinary revision-1 twenty-colony campaign at
+`4540f9b0aea0169723b602354bfe5b49fb414c9a` completes all 96 days and audits Pass.
+Sixteen normal newcomer acceptances grow four residents to twenty. Both full
+year-three summer/winter windows have 57,600 home ticks with twenty living,
+zero zero-fullness ticks and minimum health 100/76; whole-campaign minimum is
+73, with no beyond-grace starvation or replacements. Final canonical hash is
+`3041d1f00daf5c0f59b78054b8ffd556e97778c227d35343a191085e3442bdfe`,
+snapshot SHA-256 `41495c97032fcb2bd56317b927ba55eea16332ac0a3866c835842b781d311175`.
+Directory `large-colony-v6-4540f9b-meadow/`: source SHA-256
+`70b7dcc3905ec84746948d6d3f8226b02300fef01b3d19f9f969006131a66c47`,
+completion `8d2e91e120a1b5438ce98531d0edbe616a1a311ce416207faf1099625c88c76b`,
+audit `01e3ff68ad75b8b951c9278430ed9d69cb7381926909dc4523e9f6f8c96e5e54`.
+This is one ordinary seed/site, separate from native stress and new-map balance.
+
+The complete native 0.7.44 quiet-host soak runs 1,800.03343 measured seconds,
+all 36,000 nominal ticks, twenty survivors, no diagnostic counter increments,
+clean invariants/storage and exact final save round trip. Ending heap growth
+is 15,303,720 bytes, sampled peak 23,889,077. The unchanged conservative peak
+proxy still fails, so the probe/audit remain Fail. Concurrent campaign processes
+were suspended and resumed around measurement; the scheduling record is kept.
+Full hashes and limits are in [STRESS_EVIDENCE.md](STRESS_EVIDENCE.md).
+Remote 0.7.44 CI and all three published assets were verified; the
+[checked APK](https://github.com/maccam912/brackenward/releases/tag/dev-cd5d75141fc6)
+has SHA-256 `e920288dc542f89ff08b9383155dd0295479198f39fe73be91c9fe72a1bc1b84`.
+Current physical Android behavior/PSS/battery/thermals remain unmeasured.

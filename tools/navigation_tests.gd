@@ -23,7 +23,7 @@ static func reachability(check: Callable) -> void:
 	}
 	for site in goldens:
 		var world: ColonyWorld = ColonyTests.world()
-		if site!="authored": ColonyGeneration.configure(world,104729,site)
+		if site!="authored": ColonyGeneration.configure(world,104729,site,1)
 		world.accessible(Vector2i(66,63))
 		check.call("NAV/frozen_reachable_cells_%s" % site,ColonyJournal._hash(world.reachable_cells).hex_encode()==goldens[site])
 	var world: ColonyWorld = ColonyTests.world()

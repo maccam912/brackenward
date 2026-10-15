@@ -7,7 +7,7 @@ func _initialize() -> void:
 	var input: Dictionary = ColonyState.unpack(JSON.parse_string(FileAccess.get_file_as_string("res://tests/fixtures/campaign-replay-input.json")))
 	var header: Dictionary = {"content":"colony-v2","content_hash":golden.content_hash,"schema_revision":22}
 	var initial: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data(),input.campaign_id)
-	var error: String = ColonyGeneration.configure(initial,input.seed,input.site)
+	var error: String = ColonyGeneration.configure(initial,input.seed,input.site,1)
 	if not error.is_empty(): printerr(error);quit(1);return
 	var rows: Array = [];var passed: bool = normalized_hash(initial,header)==golden.initial_hash
 	for checkpoint in golden.checkpoints:

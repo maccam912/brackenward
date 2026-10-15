@@ -7,7 +7,7 @@ static func fixtures() -> Array[Dictionary]:
 	for site in ["authored","meadow_reach","pine_shelf","reed_bend"]:
 		var base: ColonyWorld = ColonyTests.world()
 		if site!="authored":
-			var error: String = ColonyGeneration.configure(base,104729,site)
+			var error: String = ColonyGeneration.configure(base,104729,site,1)
 			if not error.is_empty(): printerr(error);return []
 		for pattern in PATTERNS:
 			var restored: Dictionary = ColonyCodec.restore(base.payload().duplicate(true))

@@ -1,5 +1,7 @@
 extends SceneTree
 ## SAVE10: frozen player commands, canonical checkpoints and a foreign-host save.
+## Historical v6 replay keeps its reviewed generator-1 world.
+const GENERATOR_REVISION: int = 1
 const INPUT: String = "res://tests/fixtures/campaign-replay-v6-input.json"
 const GOLDEN: String = "res://tests/fixtures/campaign-replay-v6-golden.json"
 const SAVED: String = "res://tests/fixtures/campaign-replay-v6-7200.brackenward"
@@ -29,7 +31,7 @@ func run() -> void:
 		if not parsed is Dictionary or parsed.get("version")!=1 or parsed.get("input_sha256")!=_hash(bytes): _fail("Golden is missing or does not match the exact frozen input bytes");return
 		golden=parsed
 	var world: ColonyWorld = ColonyWorld.new(ColonyCatalog.load_data(),input.campaign_id)
-	var error: String = ColonyGeneration.configure(world,input.seed,input.site)
+	var error: String = ColonyGeneration.configure(world,input.seed,input.site,GENERATOR_REVISION)
 	if not error.is_empty() or world.tick!=input.start_tick: _fail("Initial map failed: "+error);return
 	var initial_hash: String = world.canonical_hash()
 	if not record_golden and (golden.get("content_hash")!=world.definitions.content_hash or golden.get("schema_revision")!=world.schema_revision or golden.get("initial_hash")!=initial_hash): _fail("Initial canonical world/content differs from the reviewed golden");return

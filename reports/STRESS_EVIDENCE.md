@@ -5,6 +5,41 @@ campaign evidence and physical Android release requirements. The full release
 stress gate, all-alert variant, thirty-minute soak, PSS/battery/thermal measurements
 and low-tier/Mali phone matrix remain incomplete.
 
+## Frozen 0.7.44 quieter-host thirty-minute result
+
+Clean source `cd5d75141fc662761ffd0acc78c3723754c581dc` uses the same
+ration-enabled input retained below, with both save-memory improvements.
+After sixty seconds of warmup, the probe runs 1,800.03343 measured seconds at
+selected 2x and completes all 36,000 nominal logical ticks. Twenty residents
+survive; sampled invariants/storage, final exact snapshot round trip, unchanged
+source and audio drain pass. Every diagnostic counter is zero. Lowest one-second
+FPS is 28.117, with no below-24 streak. The ending synthetic load remains 569
+structures, 1,058 positive stacks, 2,264 job records and 99 active targets.
+
+Ending heap growth is 15,303,720 bytes (14.6 MiB); sampled peak is 23,889,077
+(22.8 MiB). **The unchanged strict 20 MiB peak proxy fails**, so the complete
+probe and independent audit remain Fail. Ending growth alone does not satisfy
+that proxy. This macOS engine-heap observation does not measure Android PSS,
+battery, thermals, current phone frame times or the separate full stress gate.
+Headless ordinary campaign processes were SIGSTOP/SIGCONT around measurement;
+their source and reports were preserved. Exact PIDs and resume time are retained
+in `native-soak-v6-cd5d751-campaign-scheduling.json`. Short tool/unit checks still
+ran on the same host; this was not a pristine OS benchmark.
+
+Raw directory: `native-soak-v6-cd5d751-quiet-host/`. SHA-256:
+
+| Evidence | SHA-256 |
+| --- | --- |
+| source.json | `fc0d4115ae11e4f8f58869b4113dc1c33d4a95f8dbd0c17bfe44b06fe4a6145a` |
+| completion.json | `1dd53f7e59fcd94084ec3f0f1a9da61b1db8d6063c86e7a174595889177543b9` |
+| probe.json | `f9552d7d4252430fda3a205843d0c2658987021cb32ac6d689e653fb8522c8dc` |
+| audit.json | `993a23ebe5bb4b4cf27e5bc87daf2bc53d153026c1a980892893c8d64ddf638e` |
+| Final snapshot | `00475035bf565d9e27afc7c5e99eed28be3856c1853175f63772d1d007190fda` |
+
+Final canonical hash:
+`4a8fee28b0a01de385fc3bb8bfe48f7df5706c1b291760e7dca36c530303f881`.
+Earlier failed storage, starvation and heap results below remain unchanged.
+
 ## Frozen 0.7.39 ration-enabled thirty-minute result
 
 The new input queues the ordinary food-policy command so that residents can eat
