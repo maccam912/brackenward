@@ -1,0 +1,70 @@
+{
+  "passed": true,
+  "build": "0.7.70-m7",
+  "local_android_code": 109,
+  "maintained_gdscript_assertions": 2855,
+  "fresh_checks": {
+    "persistence": 481,
+    "new_owned_reader": 4,
+    "native_ui": 670,
+    "replay_commands": 62,
+    "ui_messages": 530
+  },
+  "reference_commit": "126407a942569cd96579695fbb8a32ae21e0962b",
+  "reference_is_complete_original_journal_except_class_name": true,
+  "reference_source_sha256": "ca0c80ba4117a3ae00888875f361f35b2ce8817d883508d4d425ed1e9ac7ec5a",
+  "benchmark_medians": {
+    "0": {
+      "elapsed_us": 33580.5,
+      "peak_growth_bytes": 18914044.0,
+      "ending_growth_bytes": 9345160.0
+    },
+    "1": {
+      "elapsed_us": 33842.5,
+      "peak_growth_bytes": 14275700.0,
+      "ending_growth_bytes": 9345160.0
+    }
+  },
+  "peak_change_percent": -24.523280161556137,
+  "cpu_change_percent": 0.7802147079406296,
+  "scope": "Only writer verification consumes fresh private parser containers; public recovery unchanged. Four alternating pairs on the same actual786536-byte frame, exact unsorted output hash/order/types/input and source. Thread lifecycle and sampled heap included. Decoder component only; no whole-writer, FPS, physical Android or memory-gate claim. Earlier undrained prototype has invalid ending allocation and remains retained; corrected drained prototype used only for candidate choice. Final production medians are authoritative.",
+  "cached_kotlin": {
+    "tests": 4,
+    "xml_sha256": "a903aea6d3d65c1069a4cf062e47250bcb38037912a0e6ca9fe06de1b43abff0",
+    "scope": "UP-TO-DATE unchanged results inspected, not rerun."
+  },
+  "source_sha256": {
+    "project.godot": "71886ff37ad84ebc79c78f235fdec703f547d303e393ddbe4c690c78e072a26b",
+    "src/persistence/colony_journal.gd": "4b6966e2fdbc76520234caff2b5b89cc43379e611658f0cff0b3189e77768893",
+    "src/persistence/colony_prepared_snapshot.gd": "62a6d025523baf2a3b128298d860f07ea12de59f81f6e17245a6652656ea0008",
+    "src/persistence/colony_store.gd": "561fbf870ab8d0584546570c81f1e66f464ea29a071d66baeafa0ed8e4ea9043",
+    "src/sim/colony_state.gd": "dc5ec49d0ebc3bc82ba3fdf1417ebe21db58eff69ef2b69f705e14a9b265b664",
+    "tools/journal_read_reference.gd": "02a9e1cd66a3068fd70c055803278dfc121017bfa41e36ba4a639eb4f00677ec",
+    "tools/journal_read_tests.gd": "44b3ff1af8b6b94859ac654b28d655962a080cf95c9ee34f6a4e3effb5513f6b",
+    "tools/profile_journal_readback.gd": "81ec1a0f46a786f1b76cf975694bbcf3eb0b7185ddbbb04561f47cf4654f8a80"
+  },
+  "validation_sha256": {
+    "journal-read-v70-final-frame.json": "f18a809b7f0150efeb4268aec9ec2e4b62b6468f3e2f5cde008b69b0f2c9619b",
+    "journal-read-v70-replay-schema22-audit.json": "ecb85cc4609598abc16e7ce5d0cf2f928adb7aa27e89664688491117e70fd8f7",
+    "journal-read-v70-prototype.log": "59ec07c9b563897d6cbc965ce1fe7a1b952417cde6afe348737a25fd1fc828d1",
+    "journal-read-v70-final-frame.log": "1b902bd745cb2dd49b5513a84a8e885f86cd9e380385d427b83b2d214edadc7a",
+    "journal-read-v70-prototype-drained.log": "df824822042c67ea0153527a9512ea28577baf7fb3b30048406ae746603199fe",
+    "journal-read-v70-replay-7200.brackenward": "50729dd13b82e57daa4d714670b2149360cd50c8733d90ef1dfa7a0d7b0544f0",
+    "journal-read-v70-import.log": "ac62b26a1f7f8f682a31348dfea65c7ff6c30c9411ddfa9afeb9cdf220737fa8",
+    "journal-read-v70-replay.log": "8e62103f47f6000e465654c7b2c8997636da225e059449b976e391a97d62b346",
+    "journal-read-v70-replay.json": "990c90b21b75e9ff2abb64a2249dd7f5b592d6e72b27f4bb03ac7ee23f826e15",
+    "journal-read-v70-replay-content6-migration.json": "826670ff839d9c0a83bf791764a24517f77996ae592cbc1479bb6f4e3aad88a3",
+    "journal-read-v70-prototype-drained.json": "830419d868d197d3795ec0c7c8781ba2975e783a85b5c9a2f437719917bb832b",
+    "journal-read-v70-content.log": "d6cf4b176fae6502827c851452a6d8aad62695e1c0c6f1cabb2e3a26d654e1f9",
+    "journal-read-v70-apk.log": "ec9a9b2f9a3255145d709b71f5cf57ed058fba93daf9e6266d205d31c3d89397",
+    "journal-read-v70-replay-72000.brackenward": "c15002f269ac2cab5521746ed2bec0f7498ba5d2db7123e710b75e084a4ea846",
+    "journal-read-v70-replay-content5-migration.json": "858cf7140324faa6a839c77ccdf4926da8c11852e89d7c8bd2e24890c22ff910",
+    "journal-read-v70-replay-content3-migration.json": "e2bca5b6ae5f86c105a8dad5477b118fae54ee29cc7da3104ee361cecd1822b3",
+    "journal-read-v70-prototype.json": "a9222d9afef70550caf4e9a4401445b24cf1721613dd57e30e8489f99e5b9ed5",
+    "journal-read-v70-persistence-first.log": "c7c1b60a790eab24817e75f886e4433beadc68cb19605d98fb8d022eb443d741",
+    "journal-read-v70-replay-content4-migration.json": "2d71ef434debcd49e51bfc3460f68b7a430c0b783f500841b6cbda7310b68a14",
+    "journal-read-v70-ui.log": "ce976abf390458ff1ccd88b4939abeaf03319a64886858813525f159d011c578"
+  },
+  "apk_sha256": "96d37104f7b215f4d16c587d4934117dfb5a5540408b1fbbeb0b15c6f869d692",
+  "pending": "Frozen native whole-writer trace, current remote CI and physical gates remain separate."
+}

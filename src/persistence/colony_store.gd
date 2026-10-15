@@ -145,7 +145,7 @@ func checkpoint(world: ColonyWorld) -> String:
 		return "Journal write failed: " + error_string(error)
 	# Previously verified frames are protected by the prefix digest. Reparse
 	# only the newly written tail instead of every prior full-state checkpoint.
-	var verified: Dictionary = ColonyJournal.read(appended,journal_sequence+1)
+	var verified: Dictionary = ColonyJournal._read_owned(appended,journal_sequence+1)
 	if appended!=records or complete_length!=prior_length+records.size() or verified.has("error") or verified.get("torn_tail", false):
 		recovered = true
 		return "Journal verification failed; current state retained in memory"
@@ -206,7 +206,7 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 		var marker: PackedByteArray = ColonyJournal.frame({"sequence":str(count),"kind":"tick","tick":world.tick,"delta":{"version":1,"base_tick":prepared.payload.tick,"campaign_id":world.session_id,"parent":parent,"patch":ColonyDelta.make(prepared.payload,world.payload())}})
 		if marker.decode_u32(0)>ColonyJournal.MAX_RECORD or frames.size()+marker.size()>ColonyJournal.MAX_JOURNAL or bytes.size()+2*(frames.size()+marker.size())>ColonyCodec.MAX_BYTES-4096: return save(world)
 		frames.append_array(marker)
-		var verified: Dictionary = ColonyJournal.read(frames)
+		var verified: Dictionary = ColonyJournal._read_owned(frames)
 		if verified.has("error") or verified.get("torn_tail",false) or verified.records.size()!=count: return "Prepared catch-up marker failed verification"
 		if not ColonyDelta.matches(prepared.payload,verified.records[-1].delta.patch,world.payload()): return "Prepared catch-up marker differs from the current capture"
 		parent=marker.slice(marker.size()-32).hex_encode()

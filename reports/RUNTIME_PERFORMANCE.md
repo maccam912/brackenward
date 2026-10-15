@@ -7,6 +7,25 @@ build. They do not establish current physical Android frame times or memory.
 Long campaign/generation workers were active on the same host, so the paired
 complete-tick CPU measurements are distinct from an isolated frame-rate gate.
 
+## 0.7.70 owned writer readback
+
+Writer verification consumes only fresh private parser containers. Public recovery
+is unchanged. Four alternating original126407a/private-reader pairs on a real
+786,536-byte frame produce identical unsorted output hash, types, order and ending
+allocation. Median sampled peak growth falls18,914,044 to14,275,700 bytes (24.5%);
+CPU33,580.5 to33,842.5 microseconds is essentially unchanged (+0.8%). Three-frame
+holder draining precedes each pair. Thread lifecycle and sampling are included.
+This is a component comparison, not a whole-writer/FPS/PSS or physical claim.
+The initial undrained prototype remains retained with invalid ending allocation;
+final production pairs supply these figures. Four regression additions and all
+persistence481, UI670, replay62/old acknowledgements, content530 and Android109
+export checks pass. [journal-read-v70-evidence.json](journal-read-v70-evidence.json).
+
+The69whole-session trace separately reports30,205,169 bytes frame-boundary growth
+during live writer ownership, no preparation and stable navigation caches. Its
+periodic14,858,736-byte proxy passes, but this does not resolve memory or identify
+the allocation. [native-heap-v69-observation-evidence.json](native-heap-v69-observation-evidence.json).
+
 ## 0.7.69 diagnostic heap ownership
 
 The native development probe adds a separate bounded frame-boundary heap trace
@@ -17,8 +36,8 @@ Collector allocations are included. Concurrent ownership does not assign an
 allocation cause; this is separate from the unchanged periodic20MiB proxy and
 physical memory gates. No application src,data,scene or save rule changes.
 Five collector regressions,persistence477,eight Python audit tests,graphical-only
-compile guard and Android108 export pass. The first frozen native trace remains
-pending; later evidence must retain any failure and original67peak unchanged.
+compile guard and Android108 export pass. The first frozen native trace is recorded above; it does not resolve memory.
+The original67peak and failed audit remain unchanged.
 
 ## 0.7.68 stable job-release reads
 

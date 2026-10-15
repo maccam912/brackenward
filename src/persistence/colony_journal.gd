@@ -22,6 +22,11 @@ static func _hash(bytes: PackedByteArray) -> PackedByteArray:
 static func read(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
 	return _read(bytes,first_sequence,-1)
 
+static func _read_owned(bytes: PackedByteArray, first_sequence: int = 1) -> Dictionary:
+	# Internal writer verification: only fresh private parser containers are
+	# consumed. Input bytes, checksums, sequence/schema checks and recovery stay.
+	return _read(bytes,first_sequence,-1,true)
+
 static func commands_after(bytes: PackedByteArray, tick: int) -> Dictionary:
 	# Rotation needs only newer command evidence. Validate every original frame
 	# before discarding its private decoded tick tree; never skip checksums/schema.
@@ -32,7 +37,7 @@ static func _read_result(records: Array[Dictionary], digests: Array[String], tor
 	if selected_after>=0:return {"commands":records,"total_records":total,"torn_tail":torn_tail}
 	return {"records":records,"digests":digests,"torn_tail":torn_tail}
 
-static func _read(bytes: PackedByteArray, first_sequence: int, selected_after: int) -> Dictionary:
+static func _read(bytes: PackedByteArray, first_sequence: int, selected_after: int, owned_parser: bool=false) -> Dictionary:
 	if first_sequence<1: return {"error":"Invalid initial journal sequence"}
 	if bytes.size() > MAX_JOURNAL:
 		return {"error": "Journal exceeds recovery bound"}
@@ -55,10 +60,10 @@ static func _read(bytes: PackedByteArray, first_sequence: int, selected_after: i
 		var parser: JSON = JSON.new()
 		if parser.parse(payload.get_string_from_utf8()) != OK:
 			return {"error": "Malformed journal record"}
-		# Selection owns fresh parser data, so consume it in place using the
-		# already checked integer/map/tile/depth rules. Public recovery keeps its
+		# Selection and writer verification own fresh parser data, so consume
+		# it with the checked integer/map/tile/depth rules. Public recovery keeps its
 		# unchanged nonmutating decoder; captures/live state never enter this path.
-		var value: Variant = ColonyPreparedSnapshot._unpack_owned_json(parser.data) if selected_after>=0 else ColonyState.unpack(parser.data)
+		var value: Variant = ColonyPreparedSnapshot._unpack_owned_json(parser.data) if selected_after>=0 or owned_parser else ColonyState.unpack(parser.data)
 		if not value is Dictionary or value.get("sequence", "") != str(sequence) or value.get("kind", "") not in ["command", "tick"] or not value.get("tick") is int:
 			return {"error": "Journal sequence/schema mismatch"}
 		if value.kind == "command" and (value.size() != 4 or not value.get("command") is Dictionary):

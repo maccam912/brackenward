@@ -5,6 +5,20 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.69 short diagnostic trace: periodic pass, frame heap unresolved
+
+The180.0317-second4x case after60-second warmup completes7201ticks,5399valid
+frame observations and its unchanged periodic20MiB proxy plus independent audit.
+Periodic peak growth is14,858,736 bytes; separate frame-boundary growth reaches
+30,205,169 bytes at tick11055, with writer busy/alive, captured tick11051,
+journal tick11009, no preparation/retired groups and stable navigation caches.
+This concurrent ownership narrows measurement targets without assigning cause.
+Collector allocations remain included. No other graphical game/emulator runs;
+read-only inspection shares the host. Memory remains unresolved. This is not the
+required30-minute2x or physical gate. Earlier failures remain failed;70's decoder
+component comparison requires a new whole-writer trace.
+[native-heap-v69-observation-evidence.json](native-heap-v69-observation-evidence.json).
+
 ## Current0.7.67 ten-minute4x run fails transient heap growth
 
 The4x development probe completes600.02469seconds after60seconds warmup,
