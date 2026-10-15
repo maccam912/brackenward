@@ -41,5 +41,5 @@ func run() -> void:
 
 func fingerprint() -> Dictionary:
 	var result: Dictionary={}
-	for path in ["src/persistence/colony_prepared_snapshot.gd","src/persistence/colony_codec.gd","tools/preparation_read_tests.gd","tools/profile_snapshot_preparation.gd"]:result[path]=FileAccess.get_sha256("res://"+path)
+	for path in ["src/persistence/colony_prepared_snapshot.gd","src/persistence/colony_codec.gd","tools/preparation_read_tests.gd","tools/legacy_prepared_snapshot.gd","tools/profile_snapshot_preparation.gd"]:result[path]=FileAccess.get_sha256("res://"+path)
 	return result

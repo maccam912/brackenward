@@ -1,0 +1,49 @@
+{
+  "passed": true,
+  "source_commit": "1270652c81acee62113db422c5785a7a4974201a",
+  "content": "colony-v7",
+  "input_sha256": "6a3d3c4636802ca2374e48c5d423bfd6d939c82e4cd3e179583b21324c76c774",
+  "duration_seconds": 1800.011566,
+  "logical_ticks": 36000,
+  "nominal_ticks": 36000,
+  "initial_tick": 3002,
+  "final_tick": 39002,
+  "final_residents": 20,
+  "minimum_one_second_fps": 27.7649970648432,
+  "engine_heap_peak_growth_bytes": 16528220,
+  "engine_heap_ending_growth_bytes": 15296912,
+  "strict_peak_limit_bytes": 20971520,
+  "checks": {
+    "audio_drained": true,
+    "completed": true,
+    "engine_heap_proxy_within_20_mib": true,
+    "fps_floor_proxy_pass": true,
+    "logical_time_kept_up": true,
+    "population_kept": true,
+    "probe_pass": true,
+    "release_gate_pass": false,
+    "roundtrip_verified": true,
+    "source_unchanged": true,
+    "standard_30min_2x_case": true
+  },
+  "all_diagnostic_counters": {
+    "backgrounds": 0,
+    "quiet_sleep_limits": 0,
+    "slow_storage_pauses": 0,
+    "speed_reductions": 0,
+    "storage_alerts": 0
+  },
+  "final_canonical_hash": "eb445aee7be3005d8d9457f90ff899456acc77f525ac18f9a1ff850546347e93",
+  "same_complete_gameplay_as_native56_after_only_content_headers_normalize": true,
+  "different_gameplay_fields": [],
+  "files_sha256": {
+    "source.json": "531a6be804c2abc9071aba5802fb8de8734233ef0faea6c80e6937bccab985af",
+    "completion.json": "38e5813aae5e60d9aacccefe920032c56c0f67b195c218dd7398ee8244bea011",
+    "probe.json": "84802113adb11450ae87f1d666389702a29fde2fbce4ae6618b9eb497e569c4a",
+    "audit.json": "308dca92f7fda5165352e7e55a39a7d760efcb378a760563d653a96efa800bde",
+    "probe.log": "e8a5fab4310692e189b05f7d7fce7dc2dd9db9585d52c447103fb0b3ad8b5e03",
+    "probe-final.brackenward": "67b204a19d7bb019a70acbb61ac5091a254194e48bc28b8c563fe8cc0b320aa4"
+  },
+  "independent_second_audit_log_sha256": "7c8d019d09a1ade2a82fafb7b204754f85a648f5d640492186c5a8e3b50bf3fa",
+  "scope": "Frozen current-v7 native synthetic30-minute2x source probe and separate second audit pass strict sampled engine-heap/fps proxies. No second graphical Godot during measurement. Two Charter workers, two raid/then-Winter workers and separate main source/profile/export work ran concurrently; not a pristine-host or causal before/after comparison. Not physical Android PSS/frame-time/battery/thermal/human or complete release certification."
+}

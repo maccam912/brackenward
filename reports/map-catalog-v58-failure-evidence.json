@@ -1,0 +1,32 @@
+{
+  "passed": false,
+  "source_commit": "1270652c81acee62113db422c5785a7a4974201a",
+  "run_id": 38709737264,
+  "job_id": 116337862001,
+  "failure": "Map sweep loaded hardcoded v6 catalog while actual v7 exporters correctly declared the new catalog hash; identity validation aborted before counting any map.",
+  "original_errors": [
+    [
+      "Exported case/catalog/generator identity mismatch"
+    ],
+    [
+      "Stopped after another shard failed"
+    ],
+    [
+      "Exported case/catalog/generator identity mismatch"
+    ]
+  ],
+  "files_sha256": {
+    "audit.json": "33013a9490eb2e0312ff17005cd85627325c15baa5b6fa9ba4c2563683ee6284",
+    "completion.json": "b3850df22e570aae0ddc01c5a06deb79f8b9621a3329b04179bac7bac95a57b4",
+    "meadow_reach-00006-00261.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "meadow_reach-00006-00261.log": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e",
+    "pine_shelf-00006-00261.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "pine_shelf-00006-00261.log": "6d1c065383a27c36804949b6ffa4b09714470b112e5dacc0bd5aeb7b9c147c4e",
+    "reed_bend-00006-00261.jsonl": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "reed_bend-00006-00261.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source.json": "02b8ce279af55be7740479f37f858fb69ab154a6da61693962a09e5817d454d9",
+    "summary.json": "7d57e0ff4daca81def59a502c3ea8bd95214d73471266e3cf69f5082f52cfcc6"
+  },
+  "job_log_sha256": "03ce191e05d0f291dfcfc3927e431d62580f1395f42ac693870fe156a23fc154",
+  "scope": "Original failed batch/audit retained. Definitions and inspected maps were not changed to fit the old hash. A source-declared catalog lookup, coherent version check, sixteen Python tests and actual six-map independent smoke now pass locally; full fixed-source CI remains required."
+}

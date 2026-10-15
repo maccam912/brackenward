@@ -20,11 +20,11 @@ static func prepare(captured: Dictionary, catalog: Dictionary) -> Dictionary:
 	if compared.has("error"):return compared
 	encoded.tree={}
 	var result: ColonyPreparedSnapshot=ColonyPreparedSnapshot.new()
-	result.payload=captured;result.text=encoded.bytes.get_string_from_utf8();encoded={}
-	result.digest=result.text.sha256_text()
+	result.payload=captured;result.encoded_payload=encoded.bytes;encoded={}
+	result.digest=ColonySnapshotEnvelope.hash_payload(result.encoded_payload)
 	var identity: ColonyWorld=ColonyWorld.new(catalog)
 	identity.session_id=captured.session_id;identity.generator_version=captured.generator_version
-	var bytes: PackedByteArray=ColonySnapshotEnvelope.wrap(identity,result.text)
+	var bytes: PackedByteArray=ColonySnapshotEnvelope.wrap_bytes(identity,result.encoded_payload)
 	if bytes.is_empty() or bytes.size()>ColonyCodec.MAX_BYTES:return {"error":"Colony snapshot is empty or exceeds 64 MiB"}
 	result.validated=true
 	return {"snapshot":result}

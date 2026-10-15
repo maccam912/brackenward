@@ -45,7 +45,7 @@ func run() -> void:
 
 func fingerprints() -> Dictionary:
 	var result: Dictionary={}
-	for path in ["project.godot","toolchain.lock.json","tools/profile_snapshot_stream.gd","tools/snapshot_encoding_tests.gd"]:result[path]=FileAccess.get_sha256("res://"+path)
+	for path in ["project.godot","toolchain.lock.json","tools/legacy_prepared_snapshot.gd","tools/profile_snapshot_stream.gd","tools/snapshot_encoding_tests.gd"]:result[path]=FileAccess.get_sha256("res://"+path)
 	for folder in ["src","data/catalogs"]:collect("res://"+folder,result)
 	return result
 

@@ -1,6 +1,6 @@
 class_name PreparationReadTests
 extends RefCounted
-## Unmodified preparation body from 6f4dc91; independent validation oracle.
+## Retained 6f4dc91 body; only the record class alias preserves original String storage.
 ## Original method SHA-256 51b5a11baafa4db5a709858bc4463a091f27322a613314b65258039c85b4be3e
 static func original(captured: Dictionary, catalog: Dictionary) -> Dictionary:
 	if not captured.is_read_only(): return {"error":"Snapshot preparation needs an owned immutable capture"}
@@ -10,7 +10,7 @@ static func original(captured: Dictionary, catalog: Dictionary) -> Dictionary:
 		if captured[field] is Array: frozen.get(field).assign(captured[field])
 		else: frozen.set(field,captured[field])
 	frozen.reset_stack_queries()
-	var result: ColonyPreparedSnapshot = ColonyPreparedSnapshot.new()
+	var result: LegacyPreparedSnapshot = LegacyPreparedSnapshot.new()
 	result.payload=captured
 	result.text=JSON.stringify(ColonyState.pack(captured),"",true)
 	result.digest=result.text.sha256_text()

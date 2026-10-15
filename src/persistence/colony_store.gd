@@ -188,7 +188,7 @@ func commit_prepared(world: ColonyWorld, prepared: ColonyPreparedSnapshot) -> St
 	var next: int = _next_sequence()
 	var snapshot_path: String = directory.path_join("snapshot-%010d.brackenward" % next)
 	var journal_path: String = directory.path_join("journal-%010d.frames" % next)
-	var bytes: PackedByteArray = ColonySnapshotEnvelope.wrap(world,prepared.text,"",next)
+	var bytes: PackedByteArray = ColonySnapshotEnvelope.wrap_bytes(world,prepared.encoded_payload,"",next)
 	if bytes.is_empty() or bytes.size()>ColonyCodec.MAX_BYTES: return "Prepared snapshot exceeds the recovery size limit"
 	var frames: PackedByteArray = PackedByteArray()
 	var count: int = 0

@@ -5,6 +5,65 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.59 retain validated UTF-8 prepared payloads
+
+Preparation and prepared publication now keep the exact verified UTF-8 buffer
+instead of retaining a full UTF-32 String between the two stages. The digest is
+computed directly from those bytes and rechecked before publication. A legacy
+text view remains available for tools/tests; production uses bytes directly.
+The envelope builder handles at most4096 UTF-8 bytes per fragment, moves cuts to
+complete Unicode code points, checks native decode/encode roundtrip, and uses
+native JSON string escaping. Metadata, payload checksum and every output byte
+match the unchanged String/native-envelope references at a fixed timestamp.
+The original64-MiB input/output limits, full validation, immutable ownership,
+wire format and exact publish readback remain unchanged.
+
+The complete1270652 factory and original String-backed record/matcher are the
+independent references. Older retained factories now use that same scalar record
+through an explicit class alias, so their storage/performance behavior does not
+silently change with the production class. Source checks verify the complete
+factory body, record fields/matcher, String envelope and unchanged external codec.
+Six new persistence checks cover multibyte cuts/escaping/headers, actual size caps,
+exact bytes/text view/digest/capture identity, byte/text tampering, and all39
+recursive immutable save fixtures including new v6/v7 acknowledgements. Full
+persistence450 passes; current UI/replay/export have separate recorded results.
+
+| Retained input | String CPU ms | UTF-8 CPU ms | String sampled peak MiB | UTF-8 peak MiB | String ending growth MiB | UTF-8 ending MiB |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Native-44 synthetic endpoint | 290.262 | 288.697 | 11.384 | 10.061 | 8.155 | 2.931 |
+| Fresh-generator-2 ordinary twenty endpoint | 4611.336 | 4595.805 | 172.492 | 80.303 | 125.220 | 33.016 |
+
+Four alternating background pairs reproduce complete payload text, digest,
+validation and capture identity; all39 recursive fixtures agree per run. Roughly
+1-ms sampling measures process engine heap. Ending growth is read immediately
+after the worker, before the diagnostic text view/equality check. Baselines
+retain reference text. Peak falls about11.6% /53.4%, and ending growth falls
+64.1% /73.6%; CPU is within about1% on this contended host. Frozen raid/then-Winter,
+Charter and native jobs run concurrently; these are component observations,
+not physical Android or a causal comparison of native end-to-end runs.
+[snapshot-bytes-v59-evidence.json](snapshot-bytes-v59-evidence.json) retains exact
+inputs, original/current runtime/reference fingerprints, reports/logs and medians.
+
+## Frozen 0.7.58 current-v7 native and raid gates pass
+
+The separate1270652 native source run and independent second audit complete
+1800.011566 seconds at2x with exactly36000 ticks and twenty residents. The strict
+20-MiB sampled proxy passes at15.763 MiB; lowest one-second FPS is27.765. Source,
+roundtrip, invariants/storage, audio drain and logical time pass; all five
+counters are zero. Its complete final gameplay equals native56 after only the
+two content headers normalize. No second graphical Godot runs during measurement;
+two Charter workers, two raid/then-Winter workers and main headless/profile/export
+work share the host. This is not physical Android/PSS/battery/thermal/human or
+complete release certification. Exact evidence is
+[native-soak-v58-evidence.json](native-soak-v58-evidence.json).
+
+The frozen v7 paired raid matrix and second audit also pass30/30 defense and
+30/30 physical ransom on thirty distinct maps/entries, retaining every initial
+geometry/header/inspected-map, order/receipt, walking, reload and outcome check.
+[prepared-defense-v58-evidence.json](prepared-defense-v58-evidence.json) retains
+the detailed rows and manifest hashes. V7 Winter/Charter and the new UTF-8 runtime
+have separate ongoing validation; older failed native/cart results stay intact.
+
 ## Frozen 0.7.56 thirty-minute native proxy passes
 
 Clean unchanged `e4003fb1eb532f76b2d747975075244f09a221d4` completes

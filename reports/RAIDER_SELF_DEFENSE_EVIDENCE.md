@@ -50,3 +50,11 @@ audit also passes every unchanged initial/geometry/order/combat/payment gate.
 It is in `defense-self-defense-v58-pilot/`; the full frozen v7 thirty-map matrix,
 current long campaigns, platform CI and physical/human gates remain separate.
 Earlier v6 matrix successes and cart-plan failures keep their source scopes.
+
+
+The full frozen1270652 v7 matrix now passes all30 defense and30 physical ransom
+cases, with a separate second audit. Every unchanged initial-map/header/geometry,
+command receipt, walking/incident reload/save and pre-timer outcome gate passes.
+`prepared-defense-v58-evidence.json` retains exact rows/manifests. The separately
+frozen current-v7 native thirty-minute memory/FPS proxy also passes, as described
+in STRESS_EVIDENCE.md. Long campaign/physical/human gates retain separate scopes.

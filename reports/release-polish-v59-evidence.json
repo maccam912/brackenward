@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "build": "0.7.59-m7",
+  "local_android_code": 98,
+  "reference_commit": "1270652c81acee62113db422c5785a7a4974201a",
+  "source_reference_body_fields_string_envelope_and_complete_codec_verified": true,
+  "checks": {
+    "persistence": 450,
+    "ui": 667,
+    "replay_commands": 62,
+    "kotlin": 4,
+    "python_map_sweep": 16,
+    "native_map_smoke": 6,
+    "maintained_recorded_gdscript_total": 2794
+  },
+  "scope": "Persistence/UI/replay freshly run; all28 suites freshly run at0.7.58. Local debug export and metadata verified; no fresh physical Android run. The full current fixed-source workflow and native byte-backed soak remain pending.",
+  "files_sha256": {
+    "reports/snapshot-bytes-v59-persistence.log": "a0a49f72f879124ce1b474fe0b83cbfa1bf937432652ddd55cf2b8fef907d888",
+    "reports/snapshot-bytes-v59-ui.log": "1e8a382593d27ad9c738c1a424af49e67ce658fb4d601ff85beaaf43b081fd87",
+    "reports/snapshot-bytes-v59-replay.json": "e4cb85a4852c30dec556f17716fa8b9032401f3e1279cf97d9e368edaa47fe9d",
+    "reports/snapshot-bytes-v59-replay.log": "f2c4d207b4a084aaca1048b52b52fba68db4bb3bf752c22e96867f33ce806e0c",
+    "reports/snapshot-bytes-v59-android.log": "b98e1a40b7910482709338753b7c89a1a872a6a31f9ec11759d0ca2ef75a848a",
+    "reports/map-catalog-v59-smoke/report.json": "835a0f5b8c2b86b665d097aaaf0a305c6d7c45e1059eb1f6b742d0af8c998ca3",
+    "build/brackenward-debug.apk": "718d13b1c02c5f464b9ae609c9fd3ceaee01692c409b4b2dcd721f950b8d6b08"
+  }
+}

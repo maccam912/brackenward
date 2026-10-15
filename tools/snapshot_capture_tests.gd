@@ -16,7 +16,7 @@ static func original(captured: Dictionary, catalog: Dictionary) -> Dictionary:
 	# UTF-32 payload/envelope. Each serialized component and punctuation byte
 	# has already been read from the actual encoded buffer and checked above.
 	verified={};decoded={};encoded.fields=[]
-	var result: ColonyPreparedSnapshot=ColonyPreparedSnapshot.new()
+	var result: LegacyPreparedSnapshot=LegacyPreparedSnapshot.new()
 	result.payload=captured;result.text=encoded.bytes.get_string_from_utf8();encoded={}
 	result.digest=result.text.sha256_text()
 	var identity: ColonyWorld=ColonyWorld.new(catalog)

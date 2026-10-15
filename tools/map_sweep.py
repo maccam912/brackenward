@@ -31,7 +31,21 @@ def git(source, *args):
 
 
 def fingerprints(source):
-    return {name: sha(source / name) for name in ["tools/export_map_batch.gd", "tools/map_sweep.py", "tools/validate_raw_map.py", "src/generation/colony_generation.gd", "data/catalogs/colony_v6.json", "tools/godot.sh", "toolchain.lock.json"]}
+    return {name: sha(source / name) for name in ["tools/export_map_batch.gd", "tools/map_sweep.py", "tools/validate_raw_map.py", "src/generation/colony_generation.gd", "src/sim/colony_world.gd", "src/sim/colony_catalog.gd", catalog_path(source), "tools/godot.sh", "toolchain.lock.json"]}
+
+
+def catalog_path(source):
+    matches = re.findall(r'(?m)^const CONTENT_VERSION: String = "(colony-v[1-9][0-9]*)"$', (source / "src/sim/colony_world.gd").read_text())
+    if len(matches) != 1: raise ValueError("Cannot identify exact content version")
+    return "data/catalogs/" + matches[0].replace("-", "_") + ".json"
+
+
+def load_catalog(source):
+    path = catalog_path(source)
+    catalog = json.loads((source / path).read_text())
+    if catalog.get("version") != Path(path).stem.replace("_", "-"):
+        raise ValueError("Catalog does not match the declared content version")
+    return catalog
 
 
 def generator_revision(source):
@@ -124,7 +138,7 @@ def main():
     (reports / ".gdignore").write_text("")
     (reports / "raw").mkdir()
     before = fingerprints(source)
-    catalog = json.loads((source / "data/catalogs/colony_v6.json").read_text())
+    catalog = load_catalog(source)
     catalog_hash = hashlib.sha256(json.dumps(catalog, sort_keys=True, ensure_ascii=False, separators=(",", ":")).encode()).hexdigest()
     revision = generator_revision(source)
     (reports / "source.json").write_text(json.dumps({"commit": commit, "source": str(source), "generator_version": revision, "start": args.start, "count": args.count, "sites": SITES, "workers": args.workers, "seed_algorithm": "brackenward-map-sweep-v1", "tools_sha256": before, "catalog_hash": catalog_hash, "started_unix": time.time()}, indent=2)+"\n")

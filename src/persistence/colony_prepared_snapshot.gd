@@ -2,7 +2,11 @@ class_name ColonyPreparedSnapshot
 extends RefCounted
 ## In-memory preparation only. No disk writes or live-world mutation.
 var payload: Dictionary = {}
-var text: String = ""
+var encoded_payload: PackedByteArray = PackedByteArray()
+## Compatibility view for diagnostics/tests; production keeps the UTF-8 bytes.
+var text: String:
+	get:return encoded_payload.get_string_from_utf8()
+	set(value):encoded_payload=value.to_utf8_buffer()
 var digest: String = ""
 var validated: bool = false
 
@@ -40,4 +44,4 @@ static func _unpack_owned_json(value: Variant, field: String="", depth: int=0) -
 	return ColonyState.unpack(value,field,depth)
 
 func matches(world: ColonyWorld) -> bool:
-	return validated and payload.is_read_only() and digest==text.sha256_text() and payload.session_id==world.session_id and payload.content_hash==world.definitions.content_hash and payload.schema_revision==world.schema_revision and payload.generator_version==world.generator_version and payload.tick<=world.tick
+	return validated and payload.is_read_only() and digest==ColonySnapshotEnvelope.hash_payload(encoded_payload) and payload.session_id==world.session_id and payload.content_hash==world.definitions.content_hash and payload.schema_revision==world.schema_revision and payload.generator_version==world.generator_version and payload.tick<=world.tick

@@ -1,0 +1,3248 @@
+{
+  "passed": true,
+  "source_commit": "1270652c81acee62113db422c5785a7a4974201a",
+  "content": "colony-v7",
+  "total_maps": 30,
+  "defense_passed": 30,
+  "ransom_passed": 30,
+  "distinct_maps": 30,
+  "distinct_entries": 30,
+  "rows": [
+    {
+      "site": "meadow_reach",
+      "seed": 0,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12223,
+        "reachable_tiles": 13066,
+        "dry_reachable_tiles": 9334,
+        "wild_food_units": 630,
+        "start_ring_quantities": {
+          "berry_bush": 48,
+          "herb_patch": 18,
+          "mushroom_patch": 21,
+          "tree": 640,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 88,
+          "herb_patch": 44,
+          "mushroom_patch": 69,
+          "tree": 3496,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 88,
+          "mushroom_patch": 86,
+          "tree": 2763,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "6475741dec0072f2385f7d3379813af5608da21355a20e9493a9827a71f2cef3",
+          "minimum_health": 100,
+          "retreat_tick": "9994",
+          "end_tick": "10114"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "78e05f276685be848ddc5c91a234263df3bbe8ea497930e1746f49d444907550",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          0,
+          18
+        ]
+      },
+      "normal_canonical_hash": "dd6cef38e27bf8e62237075adc880bb0e9392d16fe1bb9d8968d51e3a7a2870f"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 1,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12158,
+        "reachable_tiles": 13003,
+        "dry_reachable_tiles": 9067,
+        "wild_food_units": 631,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 16,
+          "mushroom_patch": 21,
+          "tree": 560,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 104,
+          "herb_patch": 42,
+          "mushroom_patch": 66,
+          "tree": 3432,
+          "stone_node": 1000,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 87,
+          "mushroom_patch": 85,
+          "tree": 2832,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "93c1eb35bcbf3fd77da4de7900290c54f0ba30a4233a00a453b005381c22422b",
+          "minimum_health": 100,
+          "retreat_tick": "9976",
+          "end_tick": "10096"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "070f50a5f3538a4cf201f519672129f16340e34e1df813b898d160860747b8ac",
+          "minimum_health": 100,
+          "retreat_tick": "10442",
+          "end_tick": "10538"
+        }
+      },
+      "entry": {
+        "$tile": [
+          0,
+          13
+        ]
+      },
+      "normal_canonical_hash": "a4ad79a95155895bd5771cb2ce915f152fc7e673090f267184d70f7f2320c182"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 42,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12255,
+        "reachable_tiles": 13120,
+        "dry_reachable_tiles": 9080,
+        "wild_food_units": 630,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 16,
+          "mushroom_patch": 21,
+          "tree": 608,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 88,
+          "herb_patch": 40,
+          "mushroom_patch": 63,
+          "tree": 3400,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 86,
+          "mushroom_patch": 86,
+          "tree": 2714,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "ee78875cccfb1da6676a4acab0027c72d75abacbf18bd46834075362e38944d8",
+          "minimum_health": 100,
+          "retreat_tick": "9958",
+          "end_tick": "10078"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "5b7470dbb727da50c74d0f6fb36223cef3e2b3dba7b1edc0ce901de0ebbb3b3b",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          34,
+          127
+        ]
+      },
+      "normal_canonical_hash": "85246f09c8386aaeadbf32247946ca7f56a0e7e290ac362e3faf2229393626d6"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 104729,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12190,
+        "reachable_tiles": 13039,
+        "dry_reachable_tiles": 9126,
+        "wild_food_units": 629,
+        "start_ring_quantities": {
+          "berry_bush": 48,
+          "herb_patch": 14,
+          "mushroom_patch": 24,
+          "tree": 608,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 88,
+          "herb_patch": 42,
+          "mushroom_patch": 60,
+          "tree": 3440,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 92,
+          "herb_patch": 86,
+          "mushroom_patch": 87,
+          "tree": 2794,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "5a42532a1db0c70c962d38ecb96b0232cf3a128707288fe84e4b606e457935c8",
+          "minimum_health": 100,
+          "retreat_tick": "10067",
+          "end_tick": "10187"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "802774f96d78cb89a3e65b4fd23aa61794a91ded0c9e137d2f36cc25182052b1",
+          "minimum_health": 100,
+          "retreat_tick": "10297",
+          "end_tick": "10393"
+        }
+      },
+      "entry": {
+        "$tile": [
+          127,
+          117
+        ]
+      },
+      "normal_canonical_hash": "3481e8eb99dce4b6323e2873e03cc21fdd34c3f4b1d311ca046a3314b52d5578"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 2147483647,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12114,
+        "reachable_tiles": 12958,
+        "dry_reachable_tiles": 9292,
+        "wild_food_units": 631,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 14,
+          "mushroom_patch": 21,
+          "tree": 680,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 100,
+          "herb_patch": 38,
+          "mushroom_patch": 57,
+          "tree": 3560,
+          "stone_node": 1000,
+          "clay_bank": 360,
+          "iron_seam": 320
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 87,
+          "mushroom_patch": 85,
+          "tree": 2874,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "70789d89b0dbd863f88075eb1078b2c3392c835c36704d981afa256a0228cb35",
+          "minimum_health": 100,
+          "retreat_tick": "10049",
+          "end_tick": "10169"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "122ec5653d2412613f016d452724997c9b62d469ba369847a371099da35ac120",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          127,
+          5
+        ]
+      },
+      "normal_canonical_hash": "5a4b2205581d9d937e239aa81b5f8c63125390fad8e3a16a0e58a65f2441fc67"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 4294967295,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12219,
+        "reachable_tiles": 13063,
+        "dry_reachable_tiles": 9346,
+        "wild_food_units": 634,
+        "start_ring_quantities": {
+          "berry_bush": 52,
+          "herb_patch": 16,
+          "mushroom_patch": 21,
+          "tree": 640,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 96,
+          "herb_patch": 36,
+          "mushroom_patch": 60,
+          "tree": 3360,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 87,
+          "mushroom_patch": 86,
+          "tree": 2766,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "5f042e0b348bb83f93c5ab27ef4475161dfe4b28ebacfe140f82ae3f54cda847",
+          "minimum_health": 100,
+          "retreat_tick": "10103",
+          "end_tick": "10223"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "940646a324a26b68eec4f7f4ed43b3d0f4046d8b027d1305bf2c39e131b27b05",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          126,
+          127
+        ]
+      },
+      "normal_canonical_hash": "0fcb0dc5f6f72f31e4cc35bbebd725cfe1fa177199016399903898913d8dbfb8"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 73,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12189,
+        "reachable_tiles": 13020,
+        "dry_reachable_tiles": 9405,
+        "wild_food_units": 634,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 14,
+          "mushroom_patch": 24,
+          "tree": 624,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 100,
+          "herb_patch": 38,
+          "mushroom_patch": 60,
+          "tree": 3552,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 87,
+          "mushroom_patch": 86,
+          "tree": 2812,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "05698321aa3e6201e6b68d3bf02df445fe54f21a4fc4f2e0297127e3328eeb7d",
+          "minimum_health": 100,
+          "retreat_tick": "9812",
+          "end_tick": "9932"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "cca51cfefedc2b8b71cfb4e4a6234e2f5f8a076659f24105c39f96a488e1588a",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          0,
+          36
+        ]
+      },
+      "normal_canonical_hash": "340863264a4d41f6d9d999a4f16b5a253b4646864b6b8fb4da0d96af9dfa5b9b"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 4567,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12120,
+        "reachable_tiles": 12983,
+        "dry_reachable_tiles": 9141,
+        "wild_food_units": 633,
+        "start_ring_quantities": {
+          "berry_bush": 48,
+          "herb_patch": 12,
+          "mushroom_patch": 21,
+          "tree": 712,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 92,
+          "herb_patch": 40,
+          "mushroom_patch": 66,
+          "tree": 3736,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 86,
+          "mushroom_patch": 87,
+          "tree": 2852,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "f7902ee6d028ccc79f03ba9c6283ba9ac4748db054cd9a7fbfcf9cefb92b9f1c",
+          "minimum_health": 100,
+          "retreat_tick": "9849",
+          "end_tick": "9969"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "7c5cbacadb733643f7d566c272a15ffb6f7cdc2f1f2b80b554f5a1eed2b0d75e",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          99,
+          127
+        ]
+      },
+      "normal_canonical_hash": "e9f3de9f46187bcfebd1a45cee12f5b9981a75e902da87d6daef70f67d2538e0"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 1357911,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12148,
+        "reachable_tiles": 13005,
+        "dry_reachable_tiles": 9058,
+        "wild_food_units": 634,
+        "start_ring_quantities": {
+          "berry_bush": 52,
+          "herb_patch": 16,
+          "mushroom_patch": 24,
+          "tree": 576,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 104,
+          "herb_patch": 36,
+          "mushroom_patch": 66,
+          "tree": 3480,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 86,
+          "mushroom_patch": 86,
+          "tree": 2826,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "1af582ba850b1048fc054d3edd6427739bff396ab0b4954815916f69ee09205d",
+          "minimum_health": 100,
+          "retreat_tick": "9958",
+          "end_tick": "10078"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "8faa11abe209c23bf25168162e01eed9c99b5f3b452e122c4a5e81fa120f67a5",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          0,
+          25
+        ]
+      },
+      "normal_canonical_hash": "df0ef79a7efade97e0cf050075c89bb25b6096007c704ae4d0f8054677f37294"
+    },
+    {
+      "site": "meadow_reach",
+      "seed": 3000000001,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12210,
+        "reachable_tiles": 13059,
+        "dry_reachable_tiles": 9500,
+        "wild_food_units": 633,
+        "start_ring_quantities": {
+          "berry_bush": 44,
+          "herb_patch": 16,
+          "mushroom_patch": 18,
+          "tree": 616,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 96,
+          "herb_patch": 44,
+          "mushroom_patch": 63,
+          "tree": 3488,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 86,
+          "mushroom_patch": 87,
+          "tree": 2784,
+          "stone_node": 8,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "a00dd14716897f08b969db09b722e20fc2ef08ac02dfd7a4384a0f36c5c49232",
+          "minimum_health": 100,
+          "retreat_tick": "10049",
+          "end_tick": "10169"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "fc2e7a2efa5508ffda67c8d42852351c085cba55907fcfff898ec39f9a0323e5",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          29,
+          127
+        ]
+      },
+      "normal_canonical_hash": "042e49ac6f26b5784457bb45780a69a8953c24c1f543b03283058af6c4d9f06f"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 0,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11240,
+        "reachable_tiles": 11812,
+        "dry_reachable_tiles": 8333,
+        "wild_food_units": 614,
+        "start_ring_quantities": {
+          "berry_bush": 48,
+          "herb_patch": 22,
+          "mushroom_patch": 21,
+          "tree": 688,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 80,
+          "herb_patch": 34,
+          "mushroom_patch": 66,
+          "tree": 4664,
+          "stone_node": 1600,
+          "clay_bank": 480,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 89,
+          "herb_patch": 87,
+          "mushroom_patch": 86,
+          "tree": 3924,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "91e0a2d35d536f4458442ac15f91aa6ae35a2cdb80bbc635ca57ad4c60150262",
+          "minimum_health": 100,
+          "retreat_tick": "9958",
+          "end_tick": "10078"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "ee62b8ed85151e756895c79501469066f30d2bbb83a681ddd7f4734a2cb29327",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          31,
+          127
+        ]
+      },
+      "normal_canonical_hash": "db48701f81f25bc7c1b4f82d614ab3c0eca8b37bfdb19f8d4e067ff363bc987c"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 1,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11305,
+        "reachable_tiles": 11882,
+        "dry_reachable_tiles": 8492,
+        "wild_food_units": 619,
+        "start_ring_quantities": {
+          "berry_bush": 44,
+          "herb_patch": 14,
+          "mushroom_patch": 21,
+          "tree": 768,
+          "stone_node": 1200,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 88,
+          "herb_patch": 34,
+          "mushroom_patch": 66,
+          "tree": 4736,
+          "stone_node": 1600,
+          "clay_bank": 480,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 91,
+          "herb_patch": 86,
+          "mushroom_patch": 85,
+          "tree": 3896,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "6266f6e674135a9d4eefcecc084fcd139e397e0c9f030d131fb82c90a8b4a343",
+          "minimum_health": 100,
+          "retreat_tick": "9378",
+          "end_tick": "9834"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "df1852916ea21bcc755f5487d6eafc1009db4bdd7ee572670068d044782e1e0b",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10477"
+        }
+      },
+      "entry": {
+        "$tile": [
+          68,
+          0
+        ]
+      },
+      "normal_canonical_hash": "50e540f0306e39c4940915a575f38448e73957cdc4bae87ca7fb09ba502d1ce9"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 42,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11251,
+        "reachable_tiles": 11807,
+        "dry_reachable_tiles": 8610,
+        "wild_food_units": 610,
+        "start_ring_quantities": {
+          "berry_bush": 48,
+          "herb_patch": 18,
+          "mushroom_patch": 24,
+          "tree": 680,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 88,
+          "herb_patch": 40,
+          "mushroom_patch": 63,
+          "tree": 4744,
+          "stone_node": 1600,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 88,
+          "herb_patch": 87,
+          "mushroom_patch": 86,
+          "tree": 3965,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "b92d79362a2376ef349ad4f52f6ac1a612cd26d2aa1d45dbc28f933feeb00bc0",
+          "minimum_health": 100,
+          "retreat_tick": "9776",
+          "end_tick": "9896"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "f756c8295377af398df53e2c07ac4128508a6766b10dccd7bb2d0d7f83a7eac8",
+          "minimum_health": 100,
+          "retreat_tick": "10327",
+          "end_tick": "10423"
+        }
+      },
+      "entry": {
+        "$tile": [
+          127,
+          35
+        ]
+      },
+      "normal_canonical_hash": "49ce49b81333d830693716ae1dc0f5494401e4d11e89255cfb407589b4406730"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 104729,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11238,
+        "reachable_tiles": 11780,
+        "dry_reachable_tiles": 8499,
+        "wild_food_units": 606,
+        "start_ring_quantities": {
+          "berry_bush": 44,
+          "herb_patch": 14,
+          "mushroom_patch": 18,
+          "tree": 808,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 84,
+          "herb_patch": 40,
+          "mushroom_patch": 57,
+          "tree": 4912,
+          "stone_node": 1600,
+          "clay_bank": 360,
+          "iron_seam": 320
+        },
+        "resource_counts": {
+          "berry_bush": 90,
+          "herb_patch": 86,
+          "mushroom_patch": 82,
+          "tree": 3982,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "d24ecf74cf96eff216c4e70eebb9b733f84747857b41a61e49fa20952609aa1b",
+          "minimum_health": 100,
+          "retreat_tick": "10158",
+          "end_tick": "10278"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "3285c2883a0cc98c293df6ae3928bf72b46b964982d197768f515d159f961712",
+          "minimum_health": 100,
+          "retreat_tick": "10297",
+          "end_tick": "10393"
+        }
+      },
+      "entry": {
+        "$tile": [
+          127,
+          124
+        ]
+      },
+      "normal_canonical_hash": "f41cb5303cec709f9def7ef2e0054f85975430b42f9026fc01a02b776db0d5b4"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 2147483647,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11231,
+        "reachable_tiles": 11752,
+        "dry_reachable_tiles": 8571,
+        "wild_food_units": 619,
+        "start_ring_quantities": {
+          "berry_bush": 52,
+          "herb_patch": 12,
+          "mushroom_patch": 18,
+          "tree": 704,
+          "stone_node": 1200,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 80,
+          "herb_patch": 32,
+          "mushroom_patch": 60,
+          "tree": 4968,
+          "stone_node": 1800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 91,
+          "herb_patch": 84,
+          "mushroom_patch": 85,
+          "tree": 3997,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "f8af92f58cb6f8f51f30fe07e85a855a7558d2b4fac0c73b3e4c378f2360aa57",
+          "minimum_health": 100,
+          "retreat_tick": "9452",
+          "end_tick": "9980"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "e5a4c011ebf6c948a76aed7dd6116b3f7eb24075f9fc234935ea7b6e43527707",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          59,
+          0
+        ]
+      },
+      "normal_canonical_hash": "f472a0dd843fea7dc6fff4645f3790142926be1829a59b68402ffc77c931ece2"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 4294967295,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11270,
+        "reachable_tiles": 11818,
+        "dry_reachable_tiles": 8593,
+        "wild_food_units": 612,
+        "start_ring_quantities": {
+          "berry_bush": 44,
+          "herb_patch": 12,
+          "mushroom_patch": 18,
+          "tree": 776,
+          "stone_node": 1000,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 92,
+          "herb_patch": 32,
+          "mushroom_patch": 63,
+          "tree": 4848,
+          "stone_node": 1600,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 90,
+          "herb_patch": 85,
+          "mushroom_patch": 84,
+          "tree": 3955,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "3382e95585b84304b4442969ac0a0574337a975e097764d9ab2aa3e185c12e0b",
+          "minimum_health": 100,
+          "retreat_tick": "10158",
+          "end_tick": "10278"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "38b89250c5f69ec9327a83168e7ed4d5ef2d06b0ba1572abcc802b6a3aaccf25",
+          "minimum_health": 100,
+          "retreat_tick": "10297",
+          "end_tick": "10393"
+        }
+      },
+      "entry": {
+        "$tile": [
+          127,
+          1
+        ]
+      },
+      "normal_canonical_hash": "9d48d21be94b63afca62513374185739ca09ea7e81250e0b811cdc98b67835f1"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 73,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11280,
+        "reachable_tiles": 11826,
+        "dry_reachable_tiles": 8428,
+        "wild_food_units": 616,
+        "start_ring_quantities": {
+          "berry_bush": 48,
+          "herb_patch": 14,
+          "mushroom_patch": 24,
+          "tree": 832,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 88,
+          "herb_patch": 36,
+          "mushroom_patch": 60,
+          "tree": 4664,
+          "stone_node": 1600,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 91,
+          "herb_patch": 85,
+          "mushroom_patch": 84,
+          "tree": 3948,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "1ba16c4eb472f9944b5ff29bc592ce3c984af776535a587e190f305ff278f5b0",
+          "minimum_health": 100,
+          "retreat_tick": "9703",
+          "end_tick": "9823"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "69030419e78052a6278c7858435c85eab6ffa9e437fae74d25e48b0200435ddf",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          0,
+          51
+        ]
+      },
+      "normal_canonical_hash": "497a9e18962d5e3b7f69f0ef2ecd23f80703ca75beb5ff59f1566208e7c02736"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 4567,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11263,
+        "reachable_tiles": 11816,
+        "dry_reachable_tiles": 8471,
+        "wild_food_units": 619,
+        "start_ring_quantities": {
+          "berry_bush": 44,
+          "herb_patch": 14,
+          "mushroom_patch": 21,
+          "tree": 784,
+          "stone_node": 1000,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 92,
+          "herb_patch": 34,
+          "mushroom_patch": 63,
+          "tree": 4976,
+          "stone_node": 1600,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 91,
+          "herb_patch": 85,
+          "mushroom_patch": 85,
+          "tree": 3962,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "4f8236ee9e08553d64b5ce39dd6d7990dd3ade1089e09a9bbde538f0dd21b59b",
+          "minimum_health": 100,
+          "retreat_tick": "9366",
+          "end_tick": "9803"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "fad57dce266f9a6c97028c56593706230ea73620714bf33dcc41b89695890e99",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10400"
+        }
+      },
+      "entry": {
+        "$tile": [
+          66,
+          0
+        ]
+      },
+      "normal_canonical_hash": "65131f6cf260cb6f567cfad6cb931583a94e19c959e8c008c7fc551a9a990877"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 1357911,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11229,
+        "reachable_tiles": 11776,
+        "dry_reachable_tiles": 8185,
+        "wild_food_units": 624,
+        "start_ring_quantities": {
+          "berry_bush": 48,
+          "herb_patch": 18,
+          "mushroom_patch": 18,
+          "tree": 760,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 100,
+          "herb_patch": 40,
+          "mushroom_patch": 60,
+          "tree": 4768,
+          "stone_node": 1800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 86,
+          "mushroom_patch": 84,
+          "tree": 3953,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "7876cfa99fb04d75db8a35fb6497a629abd0a16b04ad294aa61912138d92901e",
+          "minimum_health": 100,
+          "retreat_tick": "9940",
+          "end_tick": "10950"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "c8535aea15699046d926cb2c9efefbc878a0509780394d848958c73dc7df584d",
+          "minimum_health": 100,
+          "retreat_tick": "10357",
+          "end_tick": "10453"
+        }
+      },
+      "entry": {
+        "$tile": [
+          0,
+          109
+        ]
+      },
+      "normal_canonical_hash": "16e7c6f28b9eb68189712af8a9ad07c4d64dea24418b1002e0f5c81a6f82dbc7"
+    },
+    {
+      "site": "pine_shelf",
+      "seed": 3000000001,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 11188,
+        "reachable_tiles": 11736,
+        "dry_reachable_tiles": 8500,
+        "wild_food_units": 626,
+        "start_ring_quantities": {
+          "berry_bush": 40,
+          "herb_patch": 20,
+          "mushroom_patch": 21,
+          "tree": 768,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 92,
+          "herb_patch": 32,
+          "mushroom_patch": 60,
+          "tree": 4864,
+          "stone_node": 1600,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 92,
+          "herb_patch": 85,
+          "mushroom_patch": 86,
+          "tree": 4002,
+          "stone_node": 12,
+          "clay_bank": 6,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "10a1d521b23c6d60fcb93599eb915c523babc24d6037cd3bfe8b5cc038928e4d",
+          "minimum_health": 100,
+          "retreat_tick": "9604",
+          "end_tick": "10285"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "7fe25b24e8af4146915941869e0878fa34d00a720c04e2b509781e9a90a91db4",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          127,
+          83
+        ]
+      },
+      "normal_canonical_hash": "16183ad9737f79d20817113055d44070389b53365cc7ea9d88bb756e7d0c71c5"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 0,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12143,
+        "reachable_tiles": 13446,
+        "dry_reachable_tiles": 9138,
+        "wild_food_units": 626,
+        "start_ring_quantities": {
+          "berry_bush": 48,
+          "herb_patch": 18,
+          "mushroom_patch": 21,
+          "tree": 552,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 88,
+          "herb_patch": 44,
+          "mushroom_patch": 63,
+          "tree": 3304,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 92,
+          "herb_patch": 88,
+          "mushroom_patch": 86,
+          "tree": 2395,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "1c4813fab1d4e792dacd1d6adc59b55767cbd03d1173fb4cc58ede6a3c52a738",
+          "minimum_health": 100,
+          "retreat_tick": "9452",
+          "end_tick": "9981"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "7924f0fb9044fec67895182e895e3426ea4b90406b0d7cbb61ab9a72d67624df",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          60,
+          0
+        ]
+      },
+      "normal_canonical_hash": "122e9d0d34a10375f429ea941bf31c5e4ceff49097d98189b2e3aa0b01351979"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 1,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12184,
+        "reachable_tiles": 13490,
+        "dry_reachable_tiles": 9303,
+        "wild_food_units": 630,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 18,
+          "mushroom_patch": 21,
+          "tree": 480,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 88,
+          "herb_patch": 44,
+          "mushroom_patch": 69,
+          "tree": 2736,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 88,
+          "mushroom_patch": 86,
+          "tree": 2358,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "8955669b755d34f28710796e3e945edcc5ddf5369c484e0f5ba206fbd7074574",
+          "minimum_health": 100,
+          "retreat_tick": "9921",
+          "end_tick": "10041"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "e515aac9bb147cbfed4f3cf2e06ffe8acc7e6a94274ef9582ea9c05be5b95ae9",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          0,
+          101
+        ]
+      },
+      "normal_canonical_hash": "b2978fd87921dd0e4f26be116f1c464aee74136d19d0671f99cba216982b8ff2"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 42,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12199,
+        "reachable_tiles": 13505,
+        "dry_reachable_tiles": 9398,
+        "wild_food_units": 630,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 20,
+          "mushroom_patch": 21,
+          "tree": 568,
+          "stone_node": 800,
+          "clay_bank": 480,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 96,
+          "herb_patch": 48,
+          "mushroom_patch": 60,
+          "tree": 3256,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 89,
+          "mushroom_patch": 86,
+          "tree": 2334,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "ad70631dfc93adb826c54277ac6eaa5d3512333cd8ccec8d0a3fe0403e29c5bd",
+          "minimum_health": 100,
+          "retreat_tick": "9897",
+          "end_tick": "10870"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "b1a0ad699a6bd2ee692577924b3d25aa28cfed884d3d2a515520d84a37effe35",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          107,
+          0
+        ]
+      },
+      "normal_canonical_hash": "91254da00e7922bc86e0d1913faec772a8581d5e500ba88546816aa4ee350249"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 104729,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12177,
+        "reachable_tiles": 13477,
+        "dry_reachable_tiles": 9114,
+        "wild_food_units": 633,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 18,
+          "mushroom_patch": 24,
+          "tree": 488,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 96,
+          "herb_patch": 40,
+          "mushroom_patch": 66,
+          "tree": 3000,
+          "stone_node": 800,
+          "clay_bank": 840,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 87,
+          "mushroom_patch": 87,
+          "tree": 2360,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "9770db82122a78c8c67a0f13e62dc345bd17d2695ea229f747dbcdef99c245e6",
+          "minimum_health": 100,
+          "retreat_tick": "9885",
+          "end_tick": "10005"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "f3c007a7cae12bf406e57421fdd1bbb10b70400fa4673ca8ed5361d15875f4f4",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          102,
+          127
+        ]
+      },
+      "normal_canonical_hash": "9f97b149ecf53ed2a3f51326d79a6837e3cfeee1bba3adcca69f2b0c8d0d7b7f"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 2147483647,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12188,
+        "reachable_tiles": 13499,
+        "dry_reachable_tiles": 9250,
+        "wild_food_units": 634,
+        "start_ring_quantities": {
+          "berry_bush": 52,
+          "herb_patch": 14,
+          "mushroom_patch": 21,
+          "tree": 520,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 96,
+          "herb_patch": 40,
+          "mushroom_patch": 60,
+          "tree": 2888,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 320
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 86,
+          "mushroom_patch": 86,
+          "tree": 2333,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "6f0bc9b27bee705910b9469f980a93f4549d77a9487b251f6aca1c108a714522",
+          "minimum_health": 100,
+          "retreat_tick": "9703",
+          "end_tick": "9823"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "7a1790b26323066740c71da7dc336e6d4fa7b3604ea0e84222a602af0ea60845",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          49,
+          127
+        ]
+      },
+      "normal_canonical_hash": "c9aa3872d9c50ed7538f19040ed8fe9ba993e25e3fa73067f0de4a660ca5a8bf"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 4294967295,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true,
+        "inspected_initial_boundary_unchanged": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12121,
+        "reachable_tiles": 13463,
+        "dry_reachable_tiles": 8950,
+        "wild_food_units": 633,
+        "start_ring_quantities": {
+          "berry_bush": 44,
+          "herb_patch": 16,
+          "mushroom_patch": 24,
+          "tree": 640,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 92,
+          "herb_patch": 44,
+          "mushroom_patch": 66,
+          "tree": 3072,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 320
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 87,
+          "mushroom_patch": 87,
+          "tree": 2379,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "4e1a4471f4d4270240bf15c90d912e7c61233136621c6aa6a124be677506f9b9",
+          "minimum_health": 100,
+          "retreat_tick": "10067",
+          "end_tick": "10187"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "72969fd658c905dc09a033a602fd205c46db01579ae5dcf99c580f8495d67aff",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          123,
+          0
+        ]
+      },
+      "normal_canonical_hash": "bb4eee21bcdd75cae81504a50415de16813521d80284b23fcbae99e0ccb2ac28"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 73,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12133,
+        "reachable_tiles": 13457,
+        "dry_reachable_tiles": 9439,
+        "wild_food_units": 633,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 20,
+          "mushroom_patch": 21,
+          "tree": 576,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 92,
+          "herb_patch": 42,
+          "mushroom_patch": 69,
+          "tree": 3056,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 93,
+          "herb_patch": 88,
+          "mushroom_patch": 87,
+          "tree": 2385,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "2542a5e4c0a3887f500c2ffe7bf323f17146406830ae858384e156a38923bbbd",
+          "minimum_health": 100,
+          "retreat_tick": "9665",
+          "end_tick": "10407"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "ab878599e1b29ad58eb5b9010d7195ba16841744598f5f05b0676f6e618e309b",
+          "minimum_health": 100,
+          "retreat_tick": "10357",
+          "end_tick": "10453"
+        }
+      },
+      "entry": {
+        "$tile": [
+          37,
+          0
+        ]
+      },
+      "normal_canonical_hash": "acd0cd8ede054609ccb06aa703abe69fdbf4169ba51bb8bcfa76c80029c26cb4"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 4567,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12140,
+        "reachable_tiles": 13471,
+        "dry_reachable_tiles": 9342,
+        "wild_food_units": 634,
+        "start_ring_quantities": {
+          "berry_bush": 44,
+          "herb_patch": 20,
+          "mushroom_patch": 18,
+          "tree": 520,
+          "stone_node": 800,
+          "clay_bank": 360,
+          "iron_seam": 320
+        },
+        "site_ring_quantities": {
+          "berry_bush": 96,
+          "herb_patch": 40,
+          "mushroom_patch": 69,
+          "tree": 3080,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 320
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 88,
+          "mushroom_patch": 86,
+          "tree": 2373,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "c5fe20a3f09ba644f204f7c1ab3458afbc1ef362750ed41a9a0bd2db46641092",
+          "minimum_health": 100,
+          "retreat_tick": "10012",
+          "end_tick": "10132"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "bcaeaa31c48aff0c937af77c1b18f07b336c9634427888a1ec5dcfc623ac8892",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          118,
+          0
+        ]
+      },
+      "normal_canonical_hash": "d07b5939905d8f3379dc65d00cb29b3a604afdba66ad9e357927bebf49ceb531"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 1357911,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12183,
+        "reachable_tiles": 13471,
+        "dry_reachable_tiles": 9360,
+        "wild_food_units": 634,
+        "start_ring_quantities": {
+          "berry_bush": 56,
+          "herb_patch": 14,
+          "mushroom_patch": 21,
+          "tree": 568,
+          "stone_node": 800,
+          "clay_bank": 480,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 104,
+          "herb_patch": 42,
+          "mushroom_patch": 63,
+          "tree": 3024,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 87,
+          "mushroom_patch": 86,
+          "tree": 2365,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "d3636999770f0746f8bb19081380413e5802d6da963f7f808ff55150601061ad",
+          "minimum_health": 100,
+          "retreat_tick": "10012",
+          "end_tick": "10132"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "32be734a7924c819eb58713c74a9dec35e0cd46da7abdd279e1f8d0b1b3f8ff1",
+          "minimum_health": 100,
+          "retreat_tick": "10387",
+          "end_tick": "10483"
+        }
+      },
+      "entry": {
+        "$tile": [
+          0,
+          14
+        ]
+      },
+      "normal_canonical_hash": "6472e130978554103407288c15b36e0d8d2255383fa576db71ab2370bfd29cab"
+    },
+    {
+      "site": "reed_bend",
+      "seed": 3000000001,
+      "passed": true,
+      "checks": {
+        "only_one_explicit_announcement_changes_initial_state": true,
+        "full_24_hour_warning_with_fixed_two_thief_party": true,
+        "only_one_actual_warning_fact": true,
+        "normal_starting_four_with_original_weapons_and_supplies": true,
+        "independent_initial_geometry": true,
+        "complete_prepared_report": true,
+        "no_engine_errors": true,
+        "initial_headers_match_inspected_catalog": true
+      },
+      "geometry": {
+        "passed": true,
+        "errors": [],
+        "safe_buildable": 12207,
+        "reachable_tiles": 13512,
+        "dry_reachable_tiles": 9280,
+        "wild_food_units": 634,
+        "start_ring_quantities": {
+          "berry_bush": 64,
+          "herb_patch": 14,
+          "mushroom_patch": 21,
+          "tree": 624,
+          "stone_node": 800,
+          "clay_bank": 480,
+          "iron_seam": 240
+        },
+        "site_ring_quantities": {
+          "berry_bush": 104,
+          "herb_patch": 48,
+          "mushroom_patch": 69,
+          "tree": 3080,
+          "stone_node": 800,
+          "clay_bank": 720,
+          "iron_seam": 240
+        },
+        "resource_counts": {
+          "berry_bush": 94,
+          "herb_patch": 87,
+          "mushroom_patch": 86,
+          "tree": 2326,
+          "stone_node": 8,
+          "clay_bank": 9,
+          "iron_seam": 6
+        },
+        "wildlife_counts": {
+          "hare": 6,
+          "deer": 4,
+          "boar": 2,
+          "marsh_goose": 4
+        }
+      },
+      "branches": {
+        "defend": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "armed_defense_and_real_civilian_shelter": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "ea414f0adbe3408896789d10a2f5cb37922fb7dc044ec716d6e0834ebd446843",
+          "minimum_health": 100,
+          "retreat_tick": "10176",
+          "end_tick": "10296"
+        },
+        "ransom": {
+          "passed": true,
+          "checks": {
+            "same_announced_input": true,
+            "resolved_same_party_after_normal_boundary_arrival": true,
+            "four_living_undrafted_home_residents_with_starting_weapons": true,
+            "only_exact_accepted_public_orders": true,
+            "normal_time_no_starvation_or_theft": true,
+            "active_incident_snapshot_fully_validated_and_continued": true,
+            "retreated_before_theft_quota_or_time_limit": true,
+            "no_resource_grants_equipment_swaps_or_other_incidents": true,
+            "exact_listed_ransom_physically_delivered": true,
+            "interception_is_midpoint_of_real_shortest_approach": true,
+            "announced_identity_and_route_unchanged": true,
+            "exact_written_snapshot_identity": true
+          },
+          "canonical_hash": "a2a10d7bbea3cb242ad9da72bc45d9c383b4935201c037f89512c0f80ff0eb12",
+          "minimum_health": 100,
+          "retreat_tick": "10317",
+          "end_tick": "10413"
+        }
+      },
+      "entry": {
+        "$tile": [
+          3,
+          127
+        ]
+      },
+      "normal_canonical_hash": "d39b14f82245613d1ce805f48a251bfaa5de060d94515af20f7636267ccf7061"
+    }
+  ],
+  "files_sha256": {
+    "source.json": "86e359bea5d182b52b79a3d57b414fb816a0436ba41ff9d1b05738418fe5ab47",
+    "completion.json": "200dc444db30014f47728a38e25f3179cc8504d7e86a04b2d67694faf7e991f9",
+    "summary.json": "021a6396f7f1f39016c2829924386a6ff8226d2cdd1d230730fd32c600b7308a",
+    "audit.json": "841f33dddec06af5f48b821b442da1dbac06a4cc8cf9a7822c4fb8b2b8854386"
+  },
+  "audit_tool_sha256": "fa4c0a5610cdbaaad865239db9f13f0e812be23fceb133afc167502e9ae99dae",
+  "scope": "Frozen thirty-map current-v7 prepared defense/physical-ransom matrix and independent second audit. Exactly one explicit two-thief announcement per initial world, then ordinary commands/movement/needs/combat/payment and active-incident reloads. Full initial catalog/header/geometry/inspected expectations, command receipts, actual walking, saves and outcome gates unchanged. Not ordinary incident-frequency or physical/human certification; prior v6 matrices keep their source scopes."
+}

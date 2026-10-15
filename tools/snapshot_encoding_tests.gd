@@ -6,7 +6,7 @@ static func original(captured: Dictionary, catalog: Dictionary) -> Dictionary:
 	if not captured.is_read_only():return {"error":"Snapshot preparation needs an owned immutable capture"}
 	if captured.get("content_hash")!=catalog.get("content_hash"):return {"error":"Snapshot preparation catalog differs from immutable capture"}
 	if not captured.get("session_id") is String or not captured.get("generator_version") is int:return {"error":"Invalid snapshot identity metadata"}
-	var result: ColonyPreparedSnapshot=ColonyPreparedSnapshot.new()
+	var result: LegacyPreparedSnapshot=LegacyPreparedSnapshot.new()
 	result.payload=captured;result.text=JSON.stringify(ColonyState.pack(captured),"",true);result.digest=result.text.sha256_text()
 	# Check the exact normal envelope bound, then release its temporary escaped
 	# text/bytes before parsing the payload. Nothing external supplied this header.

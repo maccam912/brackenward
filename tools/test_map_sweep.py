@@ -5,10 +5,35 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from map_sweep import ANSI, GOLDEN_SEEDS, SITES, audit, coverage, ranges, seed, sha
+from map_sweep import ANSI, GOLDEN_SEEDS, SITES, audit, catalog_path, coverage, load_catalog, ranges, seed, sha
 
 
 class SweepChecks(unittest.TestCase):
+    def test_uses_declared_content_catalog_instead_of_an_older_available_version(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = Path(root);(source / 'src/sim').mkdir(parents=True);(source / 'data/catalogs').mkdir(parents=True)
+            (source / 'src/sim/colony_world.gd').write_text('const CONTENT_VERSION: String = "colony-v7"\n')
+            (source / 'data/catalogs/colony_v6.json').write_text('{"version":"colony-v6","wrong":true}')
+            expected = {'version': 'colony-v7', 'items': []}
+            (source / 'data/catalogs/colony_v7.json').write_text(json.dumps(expected))
+            self.assertEqual(catalog_path(source), 'data/catalogs/colony_v7.json')
+            self.assertEqual(load_catalog(source), expected)
+
+    def test_missing_or_ambiguous_content_declarations_fail_closed(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = Path(root);(source / 'src/sim').mkdir(parents=True)
+            declaration = 'const CONTENT_VERSION: String = "colony-v7"\n'
+            for content in ['', declaration * 2]:
+                (source / 'src/sim/colony_world.gd').write_text(content)
+                with self.assertRaises(ValueError):catalog_path(source)
+
+    def test_mislabelled_catalog_cannot_validate_exported_identity(self):
+        with tempfile.TemporaryDirectory() as root:
+            source = Path(root);(source / 'src/sim').mkdir(parents=True);(source / 'data/catalogs').mkdir(parents=True)
+            (source / 'src/sim/colony_world.gd').write_text('const CONTENT_VERSION: String = "colony-v7"\n')
+            (source / 'data/catalogs/colony_v7.json').write_text('{"version":"colony-v6"}')
+            with self.assertRaises(ValueError):load_catalog(source)
+
     def test_boundary_seeds_then_ten_thousand_unique_uint32_cases(self):
         values = [seed(index) for index in range(10000)]
         self.assertEqual(values[:6], GOLDEN_SEEDS)
