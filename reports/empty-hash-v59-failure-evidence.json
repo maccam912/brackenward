@@ -1,0 +1,18 @@
+{
+  "passed": false,
+  "source_commit": "487bb1d8172234713ce479085bde24df936fc7e0",
+  "run_id": 38715869602,
+  "prototype_job_id": 116358285515,
+  "scope": "Observed local and remote fail-closed persistence rejection, not a passed build. Original raw logs retained. Other CI jobs were still pending when recorded; publication cannot pass the failed prototype gate.",
+  "persistence_assertions": 450,
+  "assertion_failures": 0,
+  "engine_errors": 2,
+  "reason": "HashingContext.update rejects an empty byte array. Empty-payload compatibility probes triggered the engine errors, so the runner returned failure despite all assertions passing.0.7.59 local reporting incorrectly used the assertion summary; that summary has been explicitly corrected.",
+  "fix": "0.7.60 skips update for empty input, finishes the initialized SHA256 context and keeps the exact native empty digest; existing empty-envelope regression plus full fail-closed455-check persistence run pass.",
+  "files_sha256": {
+    "reports/snapshot-bytes-v59-persistence.log": "a0a49f72f879124ce1b474fe0b83cbfa1bf937432652ddd55cf2b8fef907d888",
+    "reports/snapshot-bytes-v59-prototype-failure.log": "165c2e768dad16837d1071a8a67325d405dd2088b2ba27b488651a3b90d5717b",
+    "reports/snapshot-load-v60-persistence-first.log": "4d2f6c9f4f71c97ae697f7b26a416efc87132ffa54735208697d0e74dd6bfac7",
+    "reports/snapshot-load-v60-persistence.log": "5d52acc7d05b3b49d4cf8c901ca4059fc842c8d7538cee53820b00d75cc159b1"
+  }
+}

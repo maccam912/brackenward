@@ -1,5 +1,5 @@
 {
-  "passed": true,
+  "passed": false,
   "build": "0.7.59-m7",
   "local_android_code": 98,
   "reference_commit": "1270652c81acee62113db422c5785a7a4974201a",
@@ -22,5 +22,14 @@
     "reports/snapshot-bytes-v59-android.log": "b98e1a40b7910482709338753b7c89a1a872a6a31f9ec11759d0ca2ef75a848a",
     "reports/map-catalog-v59-smoke/report.json": "835a0f5b8c2b86b665d097aaaf0a305c6d7c45e1059eb1f6b742d0af8c998ca3",
     "build/brackenward-debug.apk": "718d13b1c02c5f464b9ae609c9fd3ceaee01692c409b4b2dcd721f950b8d6b08"
+  },
+  "correction": {
+    "observed_in": "0.7.60 investigation",
+    "persistence_assertions": 450,
+    "persistence_assertion_failures": 0,
+    "persistence_runner_passed": false,
+    "engine_errors": 2,
+    "reason": "hash_payload called HashingContext.update with an empty buffer; the engine logs an error. The fail-closed runner rejected it locally and in CI. The original0.7.59 summary incorrectly counted assertions alone as success. Raw logs/hashes remain unchanged.",
+    "other_recorded_checks": "UI667, replay62, Kotlin4, local APK and component byte-preparation pairs retain their separately verified scope."
   }
 }

@@ -20,6 +20,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		return {"error": "Malformed colony snapshot"}
 	var envelope: Dictionary = parser.data
 	if (envelope.get("version") == 1 or envelope.get("version") == 2):
+		envelope={};parser=null
 		var legacy: Dictionary = M2Codec.decode(bytes)
 		if legacy.has("error"): return legacy
 		return restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
@@ -36,13 +37,20 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		return {"error":"Invalid snapshot name"}
 	if parser.parse(envelope.payload) != OK:
 		return {"error": "Malformed simulation payload"}
-	var decoded: Variant = ColonyState.unpack(parser.data)
+	# Only this fresh parser owns the JSON containers. Release the checked text
+	# before unpacking, then reuse those containers without a second full tree.
+	# restore() still accepts ordinary callers' data without consuming it.
+	envelope.erase("payload")
+	var decoded: Variant = ColonyPreparedSnapshot._unpack_owned_json(parser.data)
+	parser=null
 	if not decoded is Dictionary:
 		return {"error": "Invalid integer, coordinate or state encoding"}
 	var data: Dictionary = decoded
 	if envelope.content_hash != data.get("content_hash") or data.get("session_id") != envelope.campaign_id or data.get("generator_version") != int(envelope.generator_version):
 		return {"error":"Catalog or campaign identity mismatch; original save retained"}
-	return restore(data,envelope.get("snapshot_name",""))
+	var snapshot_name: String=envelope.get("snapshot_name","")
+	envelope={};decoded=null
+	return restore(data,snapshot_name)
 
 static func restore(data: Dictionary, snapshot_name: String = "", initialize_weather: bool = false) -> Dictionary:
 	if data.get("schema_revision") is int and data.schema_revision > ColonyWorld.SCHEMA_REVISION:

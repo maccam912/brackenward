@@ -20,7 +20,8 @@ static func wrap(world: ColonyWorld, payload: String, snapshot_name: String="", 
 	return bytes if bytes.size()<=ColonyCodec.MAX_BYTES else PackedByteArray()
 
 static func hash_payload(payload: PackedByteArray) -> String:
-	var context: HashingContext=HashingContext.new();context.start(HashingContext.HASH_SHA256);context.update(payload)
+	var context: HashingContext=HashingContext.new();context.start(HashingContext.HASH_SHA256)
+	if not payload.is_empty():context.update(payload)
 	return context.finish().hex_encode()
 
 static func wrap_bytes(world: ColonyWorld, payload: PackedByteArray, snapshot_name: String="", sequence: int=0, timestamp: String="") -> PackedByteArray:

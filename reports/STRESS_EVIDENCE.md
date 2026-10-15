@@ -5,6 +5,38 @@ campaign evidence and physical Android release requirements. The frozen v6 thirt
 engine-heap/FPS proxies. The full physical release stress gate, all-alert variant,
 PSS/battery/thermal measurements and low-tier/Mali phone matrix remain incomplete.
 
+## 0.7.60 reduce external decode peak
+
+The loader releases checked payload text, converts only fresh owned parser
+containers in place using the existing integer/map/tile/depth rules, then
+releases parser/envelope references before full restoration. The complete prior
+decoder and independent ColonyState.unpack remain the reference; restoration,
+migrations, external encoding and all validation are unchanged. All 39 recursive
+fixtures restore identical complete state and bytes remain unchanged. Persistence
+455 and the exact 62-command replay pass; later graphical/physical runs remain
+separate.
+
+| Retained input | Original CPU ms | Owned CPU ms | Original peak MiB | Owned peak MiB | Ending world MiB (both) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Synthetic native44 endpoint | 201.536 | 201.333 | 81.507 | 52.827 | 26.138 |
+| Ordinary20 generator2 endpoint | 3356.286 | 3387.676 | 1243.165 | 805.392 | 393.496 |
+
+Four alternating background pairs, roughly 1-ms sampled engine heap, ending read
+before diagnostic state comparison. This contended host also runs frozen native,
+Winter and Charter/post-Charter work. CPU differs by less than one percent; the peak decrease
+is about 35 percent on both inputs. The ordinary endpoint remains expensive:
+49,894 retained jobs and 41,618 stack records. No history is dropped, save bound
+raised or phone improvement inferred. [snapshot-load-v60-evidence.json](snapshot-load-v60-evidence.json)
+retains exact source/input/report fingerprints.
+
+The original 0.7.59 persistence pass claim is corrected: 450 assertions passed,
+but two empty-buffer hash engine errors made the runner fail locally and in CI.
+[empty-hash-v59-failure-evidence.json](empty-hash-v59-failure-evidence.json) retains
+that failure. The empty-buffer SHA helper now skips update and finishes the
+initialized context, preserving its native digest; current persistence passes
+without engine errors. Other independently measured nonempty preparation scopes
+remain intact.
+
 ## 0.7.59 retain validated UTF-8 prepared payloads
 
 Preparation and prepared publication now keep the exact verified UTF-8 buffer
@@ -26,7 +58,9 @@ factory body, record fields/matcher, String envelope and unchanged external code
 Six new persistence checks cover multibyte cuts/escaping/headers, actual size caps,
 exact bytes/text view/digest/capture identity, byte/text tampering, and all39
 recursive immutable save fixtures including new v6/v7 acknowledgements. Full
-persistence450 passes; current UI/replay/export have separate recorded results.
+persistence records 450 passing assertions but its runner rejects two empty-hash
+engine errors. The original pass claim is corrected in STATUS.md and
+release-polish-v59-evidence.json; UI/replay/export have separate recorded results.
 
 | Retained input | String CPU ms | UTF-8 CPU ms | String sampled peak MiB | UTF-8 peak MiB | String ending growth MiB | UTF-8 ending MiB |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |

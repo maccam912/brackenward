@@ -1,0 +1,22 @@
+{
+  "passed": true,
+  "build": "0.7.60-m7",
+  "local_android_code": 99,
+  "checks": {
+    "persistence": 455,
+    "engine_errors": 0,
+    "replay_commands": 62,
+    "kotlin": 4,
+    "maintained_recorded_assertions": 2799,
+    "prior_ui_0_7_59": 667
+  },
+  "apk_metadata": "package: name='dev.brackenward.game' versionCode='99' versionName='0.7.60-m7' platformBuildVersionName='16' platformBuildVersionCode='36' compileSdkVersion='36' compileSdkVersionCodename='16'",
+  "files_sha256": {
+    "reports/snapshot-load-v60-persistence.log": "5d52acc7d05b3b49d4cf8c901ca4059fc842c8d7538cee53820b00d75cc159b1",
+    "reports/snapshot-load-v60-replay.json": "cb2b9224a6dbf999bd9ca814683ee2586ed5fc791b8ad6be40e08a18c31302bf",
+    "reports/snapshot-load-v60-replay.log": "fbd86bb3da8a5bb02dc668a4391d50723f01156aafb1c6bf53bbc06638c6877a",
+    "reports/snapshot-load-v60-android.log": "9766d80f95e9529ea63b5b75f1bc5a3e9de9e2f7677e5e8f45994d0fa17b4af0",
+    "build/brackenward-debug.apk": "c58277bcdf099c8f239f839b9eb3b552c6aa5f75dcde9864194212d760dd3d37"
+  },
+  "scope": "Fresh fail-closed persistence, replay and local Android export/metadata/Kotlin. Prior native UI667 scope is0.7.59; fresh GUI waits for the isolated native soak. Full current workflow/publication and physical Android remain separate.0.7.59 assertion-only pass report explicitly corrected."
+}
