@@ -909,6 +909,8 @@ Resident details (0.7.91) pair a compact portrait with labeled Food, Rest, Healt
 
 Site selection (0.7.92) includes a static atlas vignette for meadow, pine forest and river bend. These are decorative site illustrations, independent of the entered seed and actual generated terrain. They reuse existing art, ignore pointer input, clip to the sheet width and do not create a world or change any simulation state. Site descriptions and selection remain authoritative.
 
+Workshop and landmark art (0.7.93) gives the cart a recessed bed, canvas bundles and bound wheels; kilns/smelters/forges have distinct masonry bodies. The bench is slatted, the bell hangs from a frame, the memorial uses a stone plinth, and the beacon has a stepped base and cloth pennants. Baked shadows and all silhouettes remain inside the original regions and footprints. Static equipment is decorative; quantities and active fire remain driven by existing state. `tools/visual_review_workshop.gd` renders an isolated native gallery.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

@@ -495,7 +495,7 @@
     "source": "tools/author_environment.py; inspected components in data/environment_sources.json",
     "author": "Brackenward project and Kenney",
     "license": "Original project asset",
-    "sha256": "be1f1691f3630babdb362b02615439d4c757e5ec75d65010c7617efbecf745be",
+    "sha256": "d40a6c9e4b19d9a11e3320502d26ffb79b05b016ab707ae1a9d0453e72959884",
     "edited": true,
     "evidence": "assets/licenses/environment_art.md",
     "semantic_layout": "data/environment_art.json"

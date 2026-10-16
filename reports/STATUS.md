@@ -1,5 +1,19 @@
 # Implementation evidence
 
+Workshop and landmark silhouettes (16 October 2026): `0.7.93-m7`, unchanged
+content/schema/envelope. Original drawing code improves the cart, four industrial
+stations, garden bench, bell, memorial and beacon. The editable atlas/contact sheet
+and asset manifest were regenerated; all 284 regions, footprint sizes and anchors
+remain unchanged. Native full-building gallery and labeled contact sheet were
+inspected. Checked native capture reports no engine errors. Pinned persistence/art
+checks pass 510, native UI passes 746, and content/font validation passes. Evidence
+is in `reports/visual-polish/workshop-*`; the new capture tool uses a disposable
+fixture and never opens player saves.
+
+Build 251 completed all remote jobs successfully, including Windows, Intel/ARM Mac
+and Linux replays plus the complete generation sweep. Later builds are separate.
+Physical Android remains unverified. Weekly usage is 63% remaining; work continues.
+
 Illustrated site selection (16 October 2026): `0.7.92-m7`, unchanged content,
 schema and envelope. New Colony shows a static meadow/forest/river vignette using
 the actual atlas. Selecting a site updates the illustration with its description.
@@ -404,7 +418,7 @@ Prior 0.7.80 recorded validation: 28 maintained GDScript suites / 2,902 assertio
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 
-Current weekly quota policy (user updated 13 October): continue implementing and polishing against DESIGN.md until weekly remaining usage is below 50%, checking live limits periodically and at checkpoint boundaries. Starting remaining usage is 99%. If the game is complete earlier, continue useful polish to the cutoff. Physical-device and human release gates remain distinct from implementation. Earlier thresholds in historical checkpoint notes are superseded.
+Current weekly quota policy (user updated 16 October): continue polishing against DESIGN.md, prioritizing visuals, until the weekly reset occurs or weekly remaining usage falls below 25%, checking live limits periodically and at checkpoint boundaries. Starting remaining usage for this run was 73%. If the game is complete earlier, continue useful polish to the cutoff. Physical-device and human release gates remain distinct from implementation. Earlier thresholds in historical checkpoint notes are superseded.
 
 Local generated APKs are ignored and may predate the source tree. Use the versioned development release and its published checksum for a specific build; build success, emulator execution and physical-phone behavior are separate evidence.
 

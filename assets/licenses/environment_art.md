@@ -36,3 +36,9 @@ branches and shades the retained round-canopy silhouette with original leaf
 clusters. The approved conifer source tiles remain retained for provenance.
 The stone hearth ring and folded/striped blankets are original project drawing
 code. Atlas layout, source dimensions and foot anchors remain unchanged.
+
+The 0.7.93 pass adds original open-cart timber, wheels and bundled canvas; distinct
+masonry kiln/smelter/forge bodies; a slatted bench; and separate bell, memorial
+and beacon silhouettes. Ground contact shadows stay inside existing sprite bounds.
+The beacon basket is static brass-colored metal, not an additional fire effect.
+All source components, 284 regions, dimensions and gameplay anchors are retained.

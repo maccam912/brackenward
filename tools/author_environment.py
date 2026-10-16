@@ -204,6 +204,102 @@ def structure(kind, width, height, rotation, roof=False):
         d.line((cx-5,cy+2,cx+5,cy+7),fill=WOOD,width=3)
         d.line((cx-5,cy+6,cx+5,cy+1),fill="#A47B52",width=2)
         return image
+    if kind == "supply_cart":
+        # Open wooden wagon: recessed bed, iron-bound wheels and bundled canvas.
+        # Cargo is decorative equipment, never a claim about stored quantities.
+        d.ellipse((1,h-10,w-2,h-1), fill=(38,60,59,48))
+        for x in [1,w-7]:
+            d.ellipse((x,h-15,x+5,h-2),fill=INK)
+            d.ellipse((x+1,h-13,x+4,h-4),fill=WOOD)
+            d.line((x+2,h-12,x+2,h-5),fill="#C4966B")
+            d.point((x+3,h-9),fill=STONE)
+        d.rectangle((4,10,w-5,h-10),fill=INK)
+        d.rectangle((6,12,w-7,h-12),fill=WOOD)
+        for y in range(14,h-12,5):d.line((6,y,w-7,y),fill="#A47B52")
+        d.rectangle((5,7,8,h-8),fill="#C4966B",outline=INK)
+        d.rectangle((w-9,7,w-6,h-8),fill=WOOD,outline=INK)
+        d.line((w-8,8,w-8,h-10),fill="#C4966B")
+        d.rectangle((8,13,17,25),fill="#BDB49A",outline=INK)
+        d.rectangle((9,12,16,15),fill=CREAM,outline=INK)
+        d.line((13,16,13,24),fill=WOOD)
+        d.rectangle((18,18,w-10,29),fill=ROOF,outline=INK)
+        d.line((19,20,w-11,20),fill="#BDB8C6")
+        d.line((21,19,21,28),fill=CREAM)
+        d.rectangle((4,h-14,w-5,h-8),fill=WOOD,outline=INK)
+        d.line((5,h-13,w-6,h-13),fill="#D3A77D")
+        d.line((6,h-10,w-7,h-10),fill="#A47B52")
+        for x in [5,w-7]:d.rectangle((x,h-14,x+1,h-8),fill=SHADE)
+        return image
+    if kind in ("charcoal_kiln", "brick_kiln", "smelter", "smithy"):
+        # Masonry bodies have their own silhouette instead of a generic table.
+        cx=w//2
+        d.ellipse((1,h-10,w-2,h-1),fill=(38,60,59,48))
+        color=CLAY if kind=="brick_kiln" else SHADE
+        if kind=="charcoal_kiln":
+            d.ellipse((3,12,w-4,h-4),fill=INK)
+            d.ellipse((4,12,w-5,h-7),fill=SHADE,outline=INK)
+            d.arc((6,14,w-7,h-9),190,290,fill=STONE,width=2)
+            for y in [23,29]:d.line((5,y,w-6,y),fill="#52645F")
+            d.rectangle((cx-3,8,cx+3,14),fill=STONE,outline=INK)
+            d.rectangle((cx-2,8,cx+2,10),fill=INK)
+        else:
+            top=7 if kind=="smelter" else 15
+            left=4;right=w-5
+            d.rounded_rectangle((left,top,right,h-4),radius=6,fill=color,outline=INK)
+            d.line((left+2,top+5,left+2,h-8),fill="#D3A77D" if kind=="brick_kiln" else STONE)
+            for y in range(top+8,h-7,6):
+                d.line((left+2,y,right-2,y),fill=WOOD if kind=="brick_kiln" else "#52645F")
+                for x in range(left+5+(3 if y%12 else 0),right-2,8):d.line((x,y-4,x,y-1),fill=INK)
+            d.rectangle((w-13,3,w-6,top+10),fill=color,outline=INK)
+            d.rectangle((w-14,2,w-5,5),fill=STONE,outline=INK)
+            d.line((w-12,3,w-7,3),fill=INK)
+        # Opening sits under the existing state-driven flame anchor.
+        d.rounded_rectangle((cx-6,h-21,cx+6,h-6),radius=5,fill=INK)
+        d.line((cx-6,h-6,cx+6,h-6),fill=STONE)
+        d.line((cx-4,h-9,cx+4,h-9),fill=WOOD,width=2)
+        if kind=="smithy":
+            # A small separate anvil reads at normal zoom beside the forge.
+            d.rectangle((3,h-11,11,h-4),fill=WOOD,outline=INK)
+            d.polygon([(2,h-17),(15,h-17),(12,h-13),(9,h-12),(10,h-10),(4,h-10),(5,h-14)],fill=SHADE,outline=INK)
+            d.line((3,h-16,13,h-16),fill=STONE)
+        return image
+    if kind in ("bell", "memorial", "beacon"):
+        cx=w//2
+        d.ellipse((1,h-7,w-2,h-1),fill=(38,60,59,48))
+        if kind=="bell":
+            d.rectangle((2,h-6,w-3,h-3),fill=SHADE,outline=INK)
+            for x in [2,w-4]:d.rectangle((x,6,x+1,h-6),fill=WOOD)
+            d.rectangle((1,5,w-2,7),fill="#C4966B",outline=INK)
+            d.polygon([(cx-2,9),(cx+2,9),(cx+3,16),(cx+5,18),(cx-5,18),(cx-3,16)],fill=LIGHT,outline=INK)
+            d.line((cx-1,10,cx-2,16),fill=CREAM)
+            d.line((cx,19,cx,21),fill=INK)
+        elif kind=="memorial":
+            d.rectangle((2,h-7,w-3,h-3),fill=SHADE,outline=INK)
+            d.line((3,h-6,w-4,h-6),fill=STONE)
+            d.rounded_rectangle((4,5,w-5,h-7),radius=3,fill=STONE,outline=INK)
+            d.line((5,9,5,h-9),fill="#CCD1BC")
+            d.line((7,11,w-7,11),fill=SHADE)
+            d.line((7,14,w-7,14),fill=SHADE)
+            d.line((w-6,h-6,w-4,h-9),fill=MOSS)
+            d.point((w-4,h-10),fill=CREAM)
+        else:
+            # A stepped masonry landmark with iron basket and cloth pennants.
+            # The brass-colored basket is static metal, never a simulated fire.
+            d.rectangle((3,h-12,w-4,h-3),fill=SHADE,outline=INK)
+            d.rectangle((6,h-15,w-7,h-8),fill=STONE,outline=INK)
+            d.line((7,h-14,w-8,h-14),fill="#CCD1BC")
+            d.polygon([(cx-7,15),(cx+7,15),(cx+9,h-15),(cx-9,h-15)],fill=STONE,outline=INK)
+            d.polygon([(cx+2,16),(cx+7,16),(cx+8,h-16),(cx+2,h-16)],fill=SHADE)
+            for y in range(24,h-17,7):d.line((cx-6,y,cx+7,y),fill=SHADE)
+            d.line((cx-5,17,cx-6,h-17),fill="#CCD1BC")
+            d.rectangle((cx-13,10,cx+13,12),fill=INK)
+            for x,flip in [(cx-12,False),(cx+8,True)]:
+                d.polygon([(x,13),(x+4,13),(x+4,30),(x+2,27),(x,30)],fill=ROOF,outline=INK)
+                d.line((x+1,14,x+1,24),fill="#BDB8C6")
+            d.polygon([(cx-8,3),(cx+8,3),(cx+5,14),(cx-5,14)],fill=LIGHT,outline=INK)
+            d.line((cx-7,4,cx+7,4),fill=CREAM)
+            for x in [cx-4,cx,cx+4]:d.line((x,5,x,12),fill=WOOD)
+        return image
     # Furniture and stations have a visible front apron and top work surface.
     d.rectangle((2,14,w-3,h-3), fill=WOOD, outline=INK)
     d.rectangle((2,12,w-3,h-8), fill="#C4966B", outline=INK)
@@ -230,19 +326,10 @@ def structure(kind, width, height, rotation, roof=False):
     elif kind in ("table", "garden_bench"):
         if kind == "table": d.rectangle((cx-3,cy-2,cx+3,cy+2), fill=CREAM);d.ellipse((cx-2,cy-2,cx+2,cy+2), fill=MOSS)
         else:
-            d.rectangle((2,8,w-3,13), fill=MOSS, outline=INK);d.line((4,9,w-5,9), fill=LIGHT)
-    elif kind == "supply_cart":
-        d.rectangle((2,12,w-3,h-5), fill=CLAY, outline=INK)
-        for y in range(16,h-6,6): d.line((3,y,w-4,y), fill=WOOD)
-        for x in [2,w-7]: d.ellipse((x,h-10,x+5,h-1), fill=INK);d.line((x+2,h-8,x+2,h-3), fill=STONE)
-        d.rectangle((6,16,14,24), fill=CREAM, outline=INK)
-    elif kind in ("charcoal_kiln", "brick_kiln", "smelter", "smithy"):
-        d.ellipse((3,12,w-4,h-3), fill=SHADE, outline=INK)
-        d.ellipse((6,15,w-7,h-7), fill=INK)
-        d.rectangle((w-12,2,w-5,18), fill=STONE, outline=INK)
-        # Flame is a separate effect driven by actual fire/fuel/work state.
-        d.line((cx-4,h-10,cx+4,h-10),fill=WOOD,width=2)
-        if kind == "smithy": image.alpha_composite(tile("hammer"), (2,12))
+            d.rectangle((2,7,w-3,13), fill=WOOD, outline=INK)
+            for y in [8,11]:d.line((3,y,w-4,y),fill="#C4966B")
+            d.rectangle((3,15,w-4,h-8),fill="#A47B52",outline=INK)
+            d.line((4,16,w-5,16),fill="#D3A77D")
     elif kind in ("rack", "granary", "barn"):
         for y in range(14,h-6,9):
             d.rectangle((3,y,w-4,y+3), fill=CLAY, outline=INK)
@@ -278,18 +365,6 @@ def structure(kind, width, height, rotation, roof=False):
         for x in [3,w-6]: d.rectangle((x,4,x+2,h-3), fill=WOOD, outline=INK)
         d.rectangle((1,9,w-2,16), fill=CLAY, outline=INK)
         for y in range(19,h-3,5): d.line((cx-3,y,cx+3,y), fill=CREAM)
-    elif kind in ("bell", "memorial", "beacon"):
-        d.rectangle((3,h-9,w-4,h-3), fill=STONE, outline=INK)
-        if kind == "memorial":
-            d.rounded_rectangle((4,6,w-5,h-8), radius=3, fill=STONE, outline=INK);d.line((6,12,w-7,12), fill=CREAM)
-        elif kind == "bell":
-            d.arc((3,5,w-4,h-8),180,360,fill=INK,width=2)
-            d.polygon([(cx-2,8),(cx+2,8),(cx+5,h-10),(cx-5,h-10)], fill=LIGHT, outline=INK)
-            d.line((cx,h-10,cx,h-7), fill=INK)
-        else:
-            d.rectangle((cx-5,8,cx+5,h-10), fill=STONE, outline=INK)
-            d.polygon([(cx-8,9),(cx,0),(cx+8,9),(cx+5,17),(cx-5,17)], fill=LIGHT, outline=INK)
-            d.line((cx,3,cx,14), fill=CREAM)
     else: raise AssertionError("Missing original building artwork: " + kind)
     return image
 
