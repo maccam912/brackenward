@@ -284,3 +284,8 @@ needs_catalog=json.loads((root / "data/catalogs/colony_v10.json").read_text())
 assert needs_catalog["version"]=="colony-v10"
 assert {**needs_catalog,"version":"colony-v9"}==priority_catalog
 print("Validated needs/construction content v10; catalog definitions retained exactly.")
+
+sleep_catalog=json.loads((root / "data/catalogs/colony_v11.json").read_text())
+assert sleep_catalog["version"]=="colony-v11"
+assert {**sleep_catalog,"version":"colony-v10"}==needs_catalog
+print("Validated uninterrupted-sleep content v11; catalog definitions retained exactly.")

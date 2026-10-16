@@ -104,6 +104,7 @@ func run() -> void:
 			LargeColonyTests.run(check)
 		"chronicle": ChronicleTests.run(check)
 		"scheduler":
+			BedtimeTests.run(check)
 			NeedsPriorityTests.run(check)
 			AssignmentProbeTests.run(check)
 			FoodCandidatesTests.run(check)

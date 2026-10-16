@@ -53,6 +53,7 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 		# Release for sleep only when the same search can actually start sleeping.
 		var sleep_eligible: bool = needs_sleep
 		var current: Dictionary = find(jobs, citizen.job)
+		food_threshold=ColonyRest.food_threshold(citizen,needs_sleep,preparing,current)
 		# Recover an old collapse sleep in place as soon as an assigned bed exists.
 		# An explicitly unreachable bed keeps its explained safe-ground fallback.
 		if current.get("kind")=="sleep" and current.target==0 and (current.reason.is_empty() or current.reason.begins_with("Exhausted:")):
@@ -62,7 +63,7 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 				current.work_x=assigned_bed.x;current.work_y=assigned_bed.y;current.state="Moving"
 				citizen.route.clear();citizen.route_goal.clear()
 		var hunger_food: Dictionary = {};var hunger_food_checked: bool = false
-		var food_work_only: bool = citizen.fullness<=food_threshold
+		var food_work_only: bool = citizen.fullness<=(500 if preparing else 350)
 		# A hungry cook/forager may finish making food while above critical rest.
 		# Unrelated work never postpones sleep just because the food stores are empty.
 		var food_work_available: bool = food_work_only and open_jobs.any(func(j:Dictionary)->bool:return (j.worker==0 or j.worker==citizen.id) and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _food_supply_work(j))
@@ -76,7 +77,7 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 			return
 		if not current.is_empty():
 			var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
-			var ordinary_food: bool = not draft_ready and not current.emergency and citizen.fullness<=food_threshold and current.kind!="eat" and (current.kind!="sleep" or citizen.rest>=ColonyRest.TIRED)
+			var ordinary_food: bool = not draft_ready and not current.emergency and citizen.fullness<=food_threshold and current.kind!="eat"
 			if ordinary_food or (citizen.fullness==0 and current.kind!="eat"):
 				# Query the exact food that releasing this job would expose, without
 				# dropping its cargo unless a reachable meal can actually be taken.
@@ -90,7 +91,7 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 				if current.state=="Fetching": current.state="Delivering"
 				needs_food=false
 			var seek_food_work: bool = food_work_only and hunger_food.is_empty() and current.kind not in PERSONAL_JOBS and not _food_supply_work(current)
-			var hungry_sleeper: bool = current.kind=="sleep" and food_work_available and citizen.rest>=ColonyRest.TIRED
+			var hungry_sleeper: bool = current.kind=="sleep" and food_work_available and citizen.rest>=ColonyRest.TIRED and ColonyRest.food_wakes_sleeper(citizen)
 			var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or seek_food_work or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 			var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
 			if urgent_self_care or break_interrupt or (emergency and not current.emergency) or change_to_defense or ordinary_needs:

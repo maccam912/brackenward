@@ -351,14 +351,16 @@ static func needs(world: ColonyWorld, person: Dictionary) -> void:
 	if trip.is_empty(): return
 	var protected_wait: bool = waiting_for_raid(world,trip)
 	if not protected_wait:
-		person.hunger_rem+=1000;person.fullness=maxi(0,person.fullness-person.hunger_rem/7200);person.hunger_rem%=7200
-	if not protected_wait and person.fullness<=350 and cargo(world,trip).get("travel_ration",0)>0:
+		person.hunger_rem+=ColonyRest.hunger_rate(person.camp_sleeping);person.fullness=maxi(0,person.fullness-person.hunger_rem/7200);person.hunger_rem%=7200
+	var needs_sleep: bool=ColonyRest.wants_sleep(person,world.tick)
+	var food_threshold: int=ColonyRest.food_threshold(person,needs_sleep,false,{"kind":"sleep" if person.camp_sleeping else ""})
+	if not protected_wait and person.fullness<=food_threshold and cargo(world,trip).get("travel_ration",0)>0:
 		consume(world,trip,"travel_ration",1);trip.eaten+=1;person.fullness=mini(1000,person.fullness+500);person.starving_ticks=0
-	if not person.camp_sleeping and ColonyRest.wants_sleep(person,world.tick) and (person.fullness>350 or person.rest<=100): person.camp_sleeping=true
-	elif person.camp_sleeping and (person.rest>=ColonyRest.RESTED or (person.fullness<=350 and person.rest>=ColonyRest.TIRED)): person.camp_sleeping=false
+	if not person.camp_sleeping and needs_sleep: person.camp_sleeping=true
+	elif person.camp_sleeping and person.rest>=ColonyRest.RESTED: person.camp_sleeping=false
 	person.rest_rem+=ColonyRest.BEDROLL if person.camp_sleeping else ColonyRest.awake_rate(world.tick)
 	var change: int = person.rest_rem/300;person.rest_rem%=300;person.rest=clampi(person.rest+(change if person.camp_sleeping else -change),0,1000)
-	if person.camp_sleeping and (person.rest>=ColonyRest.RESTED or (person.fullness<=350 and person.rest>=ColonyRest.TIRED)): person.camp_sleeping=false
+	if person.camp_sleeping and person.rest>=ColonyRest.RESTED: person.camp_sleeping=false
 	if not protected_wait and person.fullness==0:
 		person.starving_ticks+=1
 		if person.starving_ticks>1800 and (person.starving_ticks-1800)%300==0: ColonyCare.hurt(world,person,5)

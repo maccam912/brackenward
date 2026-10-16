@@ -1,6 +1,45 @@
 # Implementation evidence
 
 
+Bedtime hunger follow-up (15 October 2026): `0.7.84-m7`, content `colony-v11`,
+unchanged schema 24 / envelope 5. Actual Working sleep halves hunger drain,
+using the existing saved integer remainder; awake metabolism and zero-fullness
+starvation timing are unchanged. This follows sleeping activity, including
+Night shift/daytime sleepers, rather than rewarding residents working at night.
+Before needed sleep, residents above critical rest seek reachable allowed food
+below 650 fullness. Extra raw portions can top up to that threshold; missing
+supplies do not create a wait for nonessential food production. Routine hunger
+waits until rest 700; fullness 100 or below can wake someone for available food.
+With no ready portion, critical hungry sleepers can prepare food after rest 300.
+Camp sleep follows the same hunger rate/food thresholds and retains real cargo
+consumption. Stored runway remains conservative at awake demand.
+
+Controlled tests cover a real bedtime meal, one uninterrupted bedroll sleep to
+900 rest, exact half-rate/remainder continuation across reload and both shifts,
+raw portions, absent supplies, ordinary/critical waking, starvation damage and
+camp rations. No acknowledged v10 needs/jobs/maps/IDs are rewritten on load;
+only validated content headers change. The v10 trace and goldens remain intact.
+A fresh ten-day ordinary first-week run passes 72,000 ticks with zero
+zero-fullness ticks and minimum health 100; its original 69 accepted commands
+supply the separate v11 replay and save-continuation baseline. The old timed
+v10 research request no longer follows Farming completion under new sleep
+scheduling; its expected receipt was not changed.
+
+Final sequential validation passes all 28 core suites / 3,067 checks
+(27 headless / 2,335 and native GUI / 732), plus tutorial flows on all three
+sites. The 500 scheduler checks include 19 new bedtime cases. All 49 recursive
+snapshot fixtures pass the independent codec/writer comparisons. Python 142,
+content/font/messages, the Android 0.7.84-m7 APK export/metadata and four cached
+Kotlin results pass. A fresh 69-command replay matches canonical checkpoints at
+7,200 and 72,000 with exact saved continuation and all older acknowledgement
+audits. The exported macOS app starts its real Compatibility renderer and exits
+after 60 smoke frames with audio drained. `reports/bedtime-v84-evidence.json`
+and `bedtime-final-*` logs retain those scopes.
+
+Commit/push this verified follow-up and check its numbered development APK
+publication. Physical Android and M7 performance/human release gates remain
+separate.
+
 Player survival/building feedback (15 October 2026): `0.7.83-m7`, content
 `colony-v10`, schema 24 / envelope 5. Hungry residents stop unrelated work
 when no reachable portion is available, prefer enabled food supply tasks over

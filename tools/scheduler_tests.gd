@@ -165,19 +165,19 @@ static func hungry_sleepers(check: Callable) -> void:
 	sleeping.worker=person.id;sleeping.state="Working";person.job=sleeping.id
 	world._assign(person)
 	check.call("SCHED/critical_sleep_precedes_ordinary_hunger",person.job==sleeping.id)
-	person.rest=500
+	person.rest=700
 	world._assign(person)
-	check.call("SCHED/sleepers_seek_available_food_at_350",world.find(world.jobs,person.job).get("kind")=="eat")
+	check.call("SCHED/fairly_rested_sleepers_seek_available_food_at_350",world.find(world.jobs,person.job).get("kind")=="eat")
 	check.call("SCHED/interrupted_sleep_retires_its_personal_job",sleeping.state=="Canceled" and sleeping.worker==0)
 	var ate: bool = false
 	var resumed_sleep: bool = false
 	var minimum_fullness: int = person.fullness
-	for index in range(1800):
+	for index in range(500):
 		world.step()
 		minimum_fullness=mini(minimum_fullness,person.fullness)
 		ate=ate or person.fullness>350
 		resumed_sleep=resumed_sleep or (ate and world.find(world.jobs,person.job).get("kind")=="sleep")
-	check.call("SCHED/night_meal_finishes_and_sleep_resumes_without_starvation",ate and resumed_sleep and minimum_fullness>0 and person.health==100,"minimum fullness=%d, ate=%s, slept=%s" % [minimum_fullness,ate,resumed_sleep])
+	check.call("SCHED/night_meal_finishes_without_immediate_return_to_bed",ate and not resumed_sleep and minimum_fullness>0 and person.health==100,"minimum fullness=%d, ate=%s, slept=%s" % [minimum_fullness,ate,resumed_sleep])
 	check.call("SCHED/night_meal_preserves_material_accounting",world.invariant_errors().is_empty(),str(world.invariant_errors()))
 
 static func unreachable_bed(check: Callable) -> void:

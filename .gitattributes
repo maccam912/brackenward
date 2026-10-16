@@ -36,3 +36,6 @@ tests/fixtures/content7/campaign-replay-golden.json text eol=lf
 tests/fixtures/content10/*.brackenward -text
 tests/fixtures/content10/campaign-replay-input.json text eol=lf
 tests/fixtures/content10/campaign-replay-golden.json text eol=lf
+tests/fixtures/content11/*.brackenward -text
+tests/fixtures/content11/campaign-replay-input.json text eol=lf
+tests/fixtures/content11/campaign-replay-golden.json text eol=lf
