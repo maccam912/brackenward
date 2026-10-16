@@ -1,5 +1,17 @@
 # Implementation evidence
 
+Isolated desktop output fix (15 October 2026): run `38847287321` failed the
+first Windows export because its `build/` output directory did not exist.
+The former sequential job obtained that directory from the Android build;
+the split desktop job now creates it explicitly before exporting. The
+parallel release gate and all existing checks remain intact.
+
+Local clean-source validation reproduces the missing-directory failure, then
+passes Windows, macOS and Linux exports after creating the directory, without
+any generated Android build state. Logs are in `reports/desktop-clean-*.log`.
+Actionlint and whitespace checks pass. Remote desktop launch/publication for
+this correction remain pending separately from these local export checks.
+
 Parallel core CI (15 October 2026): the previous successful prototype job in
 run `38814033122` took 16m48s: sequential simulation suites 12m07s,
 Android/Kotlin 2m03s, graphical UI 50s, desktop exports 22s, plus setup and

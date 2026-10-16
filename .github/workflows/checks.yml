@@ -256,6 +256,7 @@ jobs:
           python3 tools/checked_godot.py -- --headless --editor --import
       - name: Export desktop prototypes
         run: |
+          mkdir -p build
           python3 tools/checked_godot.py -- --headless --export-debug Windows build/brackenward.exe
           python3 tools/checked_godot.py -- --headless --export-debug macOS build/brackenward-macos.zip
           python3 tools/checked_godot.py -- --headless --export-debug Linux build/brackenward-linux
