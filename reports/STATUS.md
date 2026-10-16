@@ -1,5 +1,23 @@
 # Implementation evidence
 
+Foliage and camp materials (16 October 2026): `0.7.87-m7`, unchanged content,
+schema and envelope. Evergreen branches now form a readable tiered silhouette;
+broadleaf crowns use clustered shading inside the retained CC0 silhouette.
+Hearths have an original ground-level stone ring with separate live flames.
+Blankets have folds and woven stripes, and wooden work surfaces catch a small
+edge highlight. These baked edits retain all 284 atlas rectangles, dimensions,
+foot anchors, runtime nodes and fuel/animation logic. Original source files stay
+retained; the provenance note distinguishes the newly authored evergreen.
+
+Pinned native UI 735, persistence/asset checks 510 and content/font validation
+pass. Actual camp and river views were inspected in the native renderer; the
+atlas contact sheets are regenerated alongside the exported texture. Local logs
+and captures are in `reports/visual-polish/foliage-*` and `camp-*`. Physical
+Android appearance/performance is unverified. Builds 247 and 248 have published
+APK/build-metadata/checksum assets; their extended CI was still running when
+last checked. Weekly usage is 70% remaining; visual polishing continues.
+
+
 Illustrated action menus (16 October 2026): `0.7.86-m7`, unchanged content,
 schema and save envelope. Build and gathering rows now show the actual atlas art
 with a consistent square thumbnail column and left-aligned labels. Pictures shrink

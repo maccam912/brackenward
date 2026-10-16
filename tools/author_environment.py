@@ -7,7 +7,7 @@ editable in the repository. Gameplay never runs this authoring pipeline.
 from pathlib import Path
 import hashlib
 import json
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 import math
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -64,6 +64,26 @@ def ground(kind, variant):
     return image
 
 
+def leafy_crown(variant):
+    """Original clustered shading inside the retained CC0 crown silhouette."""
+    source = tile("round_canopy")
+    mask = source.getchannel("A")
+    interior = mask.filter(ImageFilter.MinFilter(3))
+    painted = Image.new("RGBA", source.size, DEEP)
+    d = ImageDraw.Draw(painted)
+    mid = "#7F995F" if variant == 1 else "#8C9F64"
+    light = "#A3B578" if variant == 1 else "#B2BA7D"
+    d.polygon([(2,6),(4,3),(8,2),(12,4),(14,8),(12,11),(8,13),(3,10)], fill=mid)
+    d.polygon([(3,5),(5,3),(9,3),(12,5),(10,7),(6,8),(3,7)], fill=light)
+    d.polygon([(3,10),(6,9),(9,10),(8,12),(5,12)], fill=MOSS)
+    for x,y in [(5,4),(8,4),(4,6),(10,8),(12,9)]:
+        d.line((x,y,x+1,y),fill=light if y>7 else "#BDC48B")
+    crown = Image.composite(painted, source, interior)
+    crown.putalpha(mask)
+    if variant == 2: crown=crown.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    return crown.resize((24,24),Image.Resampling.NEAREST)
+
+
 def resource(kind, variant):
     image = Image.new("RGBA", (32 if kind == "tree" else 24, 40 if kind == "tree" else 24))
     d = ImageDraw.Draw(image)
@@ -73,12 +93,20 @@ def resource(kind, variant):
               fill=(38, 60, 59, 48))
     if kind == "tree":
         if variant == 0:
-            image.alpha_composite(tile("conifer_top"), (8, 8));image.alpha_composite(tile("conifer_base"), (8, 24))
+            # Tiered original branches keep the evergreen silhouette readable
+            # beside round crowns, without repeating pale circular leaf marks.
+            d.rectangle((14,25,17,38),fill=WOOD,outline=INK)
+            d.line((15,28,15,37),fill="#C4966B")
+            for top, bottom, radius in [(6,19,7),(12,27,10),(20,34,12)]:
+                d.polygon([(16,top),(16-radius,bottom-2),(11,bottom-1),
+                           (16,bottom+1),(22,bottom-1),(16+radius,bottom-2)],fill=DEEP,outline=INK)
+                d.polygon([(16,top+2),(18,bottom-4),(15,bottom-2),
+                           (18-radius,bottom-3)],fill="#638354")
+                d.line((15,top+5,13,bottom-5),fill=MOSS)
         else:
             base = tile("conifer_base").crop((0, 8, 16, 16));image.alpha_composite(base, (8, 32))
-            canopy = tile("round_canopy").resize((24, 24), Image.Resampling.NEAREST)
+            canopy = leafy_crown(variant)
             image.alpha_composite(canopy, (4, 8))
-            if variant == 2: image = image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
     elif kind == "sapling": image.alpha_composite(tile("sapling"), (4, 8))
     elif kind == "stump":
         d.ellipse((7, 16, 17, 22), fill=WOOD, outline=INK);d.ellipse((8, 15, 16, 19), fill="#D3A77D", outline=INK)
@@ -161,9 +189,25 @@ def structure(kind, width, height, rotation, roof=False):
         image.alpha_composite(part, (0,h-16))
         if kind == "pen_gate": d.line((4,h-9,13,h-3), fill=CREAM)
         return image
+    if kind == "hearth":
+        # A stone fire ring rests on the ground, rather than a wooden table.
+        cx, cy = w//2, (h+12)//2
+        d.ellipse((2,15,w-2,h-1),fill=(38,60,59,48))
+        d.ellipse((4,16,w-5,h-5),fill=INK)
+        for index in range(10):
+            angle=index*math.tau/10
+            x=round(cx+math.cos(angle)*(w/2-6))
+            y=round(cy+math.sin(angle)*((h-12)/2-5))
+            d.polygon([(x-3,y-2),(x,y-3),(x+3,y-1),(x+3,y+2),
+                       (x,y+3),(x-3,y+1)],fill=STONE if index%2 else SHADE,outline=INK)
+            d.line((x-2,y-1,x+1,y-2),fill="#CCD1BC")
+        d.line((cx-5,cy+2,cx+5,cy+7),fill=WOOD,width=3)
+        d.line((cx-5,cy+6,cx+5,cy+1),fill="#A47B52",width=2)
+        return image
     # Furniture and stations have a visible front apron and top work surface.
     d.rectangle((2,14,w-3,h-3), fill=WOOD, outline=INK)
     d.rectangle((2,12,w-3,h-8), fill="#C4966B", outline=INK)
+    d.line((3,13,w-4,13),fill="#D3A77D")
     for x in [3,w-5]: d.rectangle((x,h-7,x+2,h-1), fill=INK)
     cx, cy = w//2, (h+8)//2
     if kind in ("bed", "bedroll"):
@@ -172,6 +216,14 @@ def structure(kind, width, height, rotation, roof=False):
         d.rectangle((3,14,w-4,h-4), fill=ROOF, outline=INK)
         pillow = (4,15,min(w-5,11),h-6) if rotation%2==0 else (4,15,w-5,min(h-5,23))
         d.rectangle(pillow, fill=CREAM)
+        if rotation%2==0:
+            d.line((12,15,12,h-5),fill="#BDB8C6")
+            d.line((13,h-5,w-5,h-5),fill="#555668")
+            for x in [w-10,w-8]:d.line((x,15,x,h-6),fill="#9B96AA")
+        else:
+            d.line((4,24,w-5,24),fill="#BDB8C6")
+            d.line((w-5,25,w-5,h-5),fill="#555668")
+            for y in [h-10,h-8]:d.line((4,y,w-6,y),fill="#9B96AA")
         if kind == "bedroll":d.line((3,h-4,w-4,h-4), fill=LIGHT)
         elif rotation%2==0:d.rectangle((1,10,4,h-2),fill=WOOD,outline=INK)
         else:d.rectangle((2,11,w-3,14),fill=WOOD,outline=INK)
@@ -184,10 +236,10 @@ def structure(kind, width, height, rotation, roof=False):
         for y in range(16,h-6,6): d.line((3,y,w-4,y), fill=WOOD)
         for x in [2,w-7]: d.ellipse((x,h-10,x+5,h-1), fill=INK);d.line((x+2,h-8,x+2,h-3), fill=STONE)
         d.rectangle((6,16,14,24), fill=CREAM, outline=INK)
-    elif kind in ("hearth", "charcoal_kiln", "brick_kiln", "smelter", "smithy"):
+    elif kind in ("charcoal_kiln", "brick_kiln", "smelter", "smithy"):
         d.ellipse((3,12,w-4,h-3), fill=SHADE, outline=INK)
         d.ellipse((6,15,w-7,h-7), fill=INK)
-        if kind != "hearth": d.rectangle((w-12,2,w-5,18), fill=STONE, outline=INK)
+        d.rectangle((w-12,2,w-5,18), fill=STONE, outline=INK)
         # Flame is a separate effect driven by actual fire/fuel/work state.
         d.line((cx-4,h-10,cx+4,h-10),fill=WOOD,width=2)
         if kind == "smithy": image.alpha_composite(tile("hammer"), (2,12))

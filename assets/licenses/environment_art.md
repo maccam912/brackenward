@@ -30,3 +30,9 @@ reduces poor/rich soil contrast and bakes original translucent contact shadows
 inside natural-resource sprite bounds. Source component bytes stay unchanged.
 River-bank geometry is original presentation code in `ColonyEnvironment`; it
 follows existing water boundaries and adds no media dependencies.
+
+The 0.7.87 pass replaces the narrow evergreen composition with original tiered
+branches and shades the retained round-canopy silhouette with original leaf
+clusters. The approved conifer source tiles remain retained for provenance.
+The stone hearth ring and folded/striped blankets are original project drawing
+code. Atlas layout, source dimensions and foot anchors remain unchanged.
