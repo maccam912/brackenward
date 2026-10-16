@@ -939,6 +939,8 @@ Forecast cards (0.7.106): the weather sheet groups today and each future date in
 
 Flood preview camera (0.7.107): the explicit View flood area action centers the closest tile in that forecast's actual mask, measured from the current camera center, at the retained preview zoom. It clears resident-follow mode so later rendering cannot pull the view away. Selection of the target uses stable mask order for equal distances. Closing the forecast still restores its prior running speed. No forecast data, simulation field or save schema changes.
 
+Resident card hierarchy (0.7.108): Work preferences and View on map precede appearance/rename/history actions. Assign bed sits beside the current bed and recovery rate. The long general food/rest policy starts collapsed under Food and rest details, with a toggle that reveals the unchanged exact rules. Current food-access failures, combined low-food/rest priority warnings and departure explanations remain outside that disclosure. Expansion is local presentation state and does not change time, camera, commands or the campaign.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

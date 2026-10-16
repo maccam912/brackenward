@@ -1,5 +1,16 @@
 # Implementation evidence
 
+Resident card hierarchy (16 October 2026): `0.7.108-m7`, unchanged content/
+schema/envelope. Work preferences/map access now precede cosmetic actions, bed
+assignment accompanies bed information, and the long exact food/rest policy uses
+a reversible disclosure. Current access/priority/departure warnings remain visible.
+Native phone views were inspected; UI passes 823 checks, including expansion,
+collapse, exact rule values, primary action order and unchanged state/camera at
+100/150% text. The prior rest-text test now expands the disclosure before checking
+visible rules. Content/font and string/message checks pass. Evidence:
+`person-*` and `person-details-*` in visual-polish. Physical-device review of this
+card remains unverified. Polishing continues.
+
 Generated flood preview (16 October 2026): `0.7.107-m7`, unchanged content/schema/
 envelope. View flood area now targets the nearest actual forecast-mask tile and
 clears resident follow. It uses the pre-sheet visible center when following,

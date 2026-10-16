@@ -40,6 +40,7 @@ static func run(game: GameSession, check: Callable) -> void:
 		var skin: Color = tree.root.get_texture().get_image().get_pixelv(Vector2i(point))
 		check.call("ART/UI_palette_shader_renders_selected_skin_on_GPU",skin.is_equal_approx(Color(CitizenArt.SKINS[expected.skin])),str([skin,Color(CitizenArt.SKINS[expected.skin])]))
 	needs_card(game,check)
+	await rest_disclosure(game,check)
 	for viewport in [Vector2i(360,640),Vector2i(640,360)]:
 		tree.root.size=viewport;game.text_scale=1.5;game._build_theme();game.show_appearance(1)
 		await tree.process_frame;await tree.process_frame
@@ -68,3 +69,22 @@ static func needs_card(game: GameSession, check: Callable) -> void:
 			exact=exact and meter!=null and meter.value==values[index] and meter.max_value==[1000,1000,100,1000][index]
 		check.call("ART/UI_resident_needs_show_exact_values_and_distinct_health_range_%d" % values[0],exact and game.runner.speed==0 and game.world.canonical_hash()==canonical)
 	for index in range(fields.size()): person[fields[index]]=original[index]
+
+static func rest_disclosure(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree()
+	var person: Dictionary=game.world.citizens[0]
+	var baseline: String=game.world.canonical_hash()
+	var camera: Vector2=game.view.camera_center()
+	for scale in [1.0,1.5]:
+		tree.root.size=Vector2i(390,844);game.text_scale=scale;game._build_theme();game.show_person(person.id)
+		await tree.process_frame;await tree.process_frame
+		var toggle: Button=game.sheet_body.get_node("RestPolicyToggle")
+		var details: VBoxContainer=game.sheet_body.get_node("RestPolicyDetails")
+		var buttons: Array=game.sheet_body.get_children().filter(func(node:Node)->bool:return node is Button)
+		var names: Array=buttons.map(func(node:Button)->String:return node.text)
+		check.call("PERSON/UI_%d_common_actions_precede_cosmetics_and_rest_help_starts_collapsed" % roundi(scale*100),not details.visible and names.find("Work preferences")<names.find("Appearance") and names.find("View on map")<names.find("Appearance") and toggle.size.x<=game.sheet_body.size.x+1)
+		toggle.button_pressed=true;await tree.process_frame
+		var expected: String=ColonyText.text("ui.help.person.rest_policy",{"tired":ColonyRest.TIRED,"preferred":ColonyRest.PREFERRED_TIRED,"rested":ColonyRest.RESTED,"bed":ColonyRest.BED,"bedroll":ColonyRest.BEDROLL,"ground":ColonyRest.GROUND})
+		check.call("PERSON/UI_%d_expansion_reveals_full_exact_rest_policy_without_world_or_camera_change" % roundi(scale*100),details.visible and details.get_child(0).text==ColonyFonts.display(expected) and game.runner.speed==0 and game.world.canonical_hash()==baseline and game.view.camera_center().is_equal_approx(camera))
+		toggle.button_pressed=false;await tree.process_frame
+		check.call("PERSON/UI_%d_rest_help_can_collapse_again" % roundi(scale*100),not details.visible and game.world.canonical_hash()==baseline)

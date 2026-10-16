@@ -35,6 +35,8 @@ func capture() -> void:
 		await save_view("people-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.show_person(game.world.citizens[0].id)
 		await save_view("person-%dx%d" % [viewport_size.x,viewport_size.y])
+		game.sheet_body.get_node("RestPolicyToggle").button_pressed=true
+		await save_view("person-rest-expanded-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.close_sheet(false)
 		game.select_citizen(game.world.citizens[0].id)
 		await save_view("resident-%dx%d" % [viewport_size.x,viewport_size.y])

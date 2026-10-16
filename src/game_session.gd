@@ -2309,13 +2309,21 @@ func show_person(id: int) -> void:
 	portrait.size_flags_vertical=Control.SIZE_SHRINK_CENTER;overview.add_child(portrait)
 	overview.add_child(ResidentNeeds.new(citizen))
 	label(ColonyText.text("ui.person.summary",{"activity":ColonyText.activity_name(citizen.activity),"trait_a":ColonyText.trait_name(citizen.traits[0]),"trait_b":ColonyText.trait_name(citizen.traits[1]),"preferred":ColonyText.category_name(citizen.preferred),"food_tag":ColonyText.food_tag_name(citizen.food_tag)}),sheet_body)
-	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.appearance"),func()->void:show_appearance(id),sheet_body)
-	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(id),sheet_body)
-	button(ColonyText.text("ui.action.remembered_moments"),func()->void:show_person_history(id),sheet_body)
+	button(ColonyText.text("ui.action.work_preferences"),func() -> void:show_work_preferences(id),sheet_body)
+	button(ColonyText.text("ui.action.view_on_map"),func() -> void:
+		close_sheet()
+		select_citizen(id)
+		view.camera_tile = Vector2(citizen.x,citizen.y),sheet_body)
 	label(ColonyText.bed_description(world,citizen),sheet_body)
+	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.assign_bed"),func()->void:show_beds(id),sheet_body)
 	var food_access: String=food_access_description(citizen)
 	if not food_access.is_empty(): label(food_access,sheet_body)
-	label(ColonyText.text("ui.help.person.rest_policy",{"tired":ColonyRest.TIRED,"preferred":ColonyRest.PREFERRED_TIRED,"rested":ColonyRest.RESTED,"bed":ColonyRest.BED,"bedroll":ColonyRest.BEDROLL,"ground":ColonyRest.GROUND}),sheet_body)
+	var rest_toggle: Button=button(ColonyText.text("ui.action.food_and_rest_details"),Callable(),sheet_body)
+	rest_toggle.name="RestPolicyToggle";rest_toggle.toggle_mode=true
+	var rest_details: VBoxContainer=VBoxContainer.new();rest_details.name="RestPolicyDetails"
+	sheet_body.add_child(rest_details);rest_details.hide()
+	rest_toggle.toggled.connect(func(expanded:bool)->void:rest_details.visible=expanded)
+	label(ColonyText.text("ui.help.person.rest_policy",{"tired":ColonyRest.TIRED,"preferred":ColonyRest.PREFERRED_TIRED,"rested":ColonyRest.RESTED,"bed":ColonyRest.BED,"bedroll":ColonyRest.BEDROLL,"ground":ColonyRest.GROUND}),rest_details)
 	if not citizen.death_recorded and not citizen.departed and not citizen.downed and not citizen.away and citizen.fullness<=350 and citizen.rest<=300:
 		label(ColonyText.text("ui.help.person.food_and_rest_priority"),sheet_body)
 	if citizen.departure_until>world.tick: label(departure_description(citizen),sheet_body)
@@ -2323,17 +2331,14 @@ func show_person(id: int) -> void:
 		var row: HBoxContainer = HBoxContainer.new();sheet_body.add_child(row)
 		var icon: TextureRect = TextureRect.new();icon.texture=load("res://assets/exported/ui/traits/%s.svg" % trait_name.to_lower());icon.custom_minimum_size=Vector2(48,48);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;row.add_child(icon)
 		label(ColonyText.trait_name(trait_name),row)
-	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.assign_bed"),func()->void:show_beds(id),sheet_body)
 	if citizen.health < 100: button(ColonyText.text("ui.action.care_and_recovery"),show_care,sheet_body)
 	label(ColonyText.text("ui.help.person.active_morale_causes"),sheet_body)
 	for term in citizen.mood_terms: label(ColonyText.text("ui.person.morale_term",{"term":term,"value":"%+d" % [citizen.mood_terms[term]]}),sheet_body)
 	if not citizen.away and not citizen.downed and not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.defend"),func()->void:show_squad([id]),sheet_body)
 	button(ColonyText.text("ui.action.equipment"),func()->void:show_equipment(id),sheet_body)
-	button(ColonyText.text("ui.action.work_preferences"),func() -> void:show_work_preferences(id),sheet_body)
-	button(ColonyText.text("ui.action.view_on_map"),func() -> void:
-		close_sheet()
-		select_citizen(id)
-		view.camera_tile = Vector2(citizen.x,citizen.y),sheet_body)
+	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.appearance"),func()->void:show_appearance(id),sheet_body)
+	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(id),sheet_body)
+	button(ColonyText.text("ui.action.remembered_moments"),func()->void:show_person_history(id),sheet_body)
 	label(ColonyText.text("ui.help.person.relationships"),sheet_body)
 	for other in world.citizens:
 		if other.id == id: continue
