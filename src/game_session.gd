@@ -2480,15 +2480,19 @@ func show_station(station: Dictionary) -> void:
 		button(ColonyText.text("ui.action.research_projects"),show_research,sheet_body)
 	for recipe in world.definitions.recipes.values():
 		if recipe.station != station.definition: continue
-		label("%s\n%s -> %s | %d WU" % [recipe.id.replace("_"," ").capitalize(),_cost_text(recipe.materials)+(" + %d allowed food units" % recipe.food_count if recipe.food_count > 0 else ""),_cost_text(recipe.outputs),recipe.work_milli/1000],sheet_body)
+		var panel: PanelContainer=PanelContainer.new();panel.name="Recipe_"+recipe.id;sheet_body.add_child(panel)
+		var background: StyleBoxFlat=_box(Color("2C4440"),Color("4D6656"));background.content_margin_top=10;background.content_margin_bottom=10
+		panel.add_theme_stylebox_override("panel",background)
+		var body: VBoxContainer=VBoxContainer.new();panel.add_child(body)
+		illustrated_summary("%s\n%s -> %s\n%d WU" % [recipe.id.replace("_"," ").capitalize(),_cost_text(recipe.materials)+(" + %d allowed food units" % recipe.food_count if recipe.food_count > 0 else ""),_cost_text(recipe.outputs),recipe.work_milli/1000],body,"item/%s/0" % recipe.outputs.keys()[0])
 		if recipe.unlock != "initial" and not world.researched.has(recipe.unlock):
-			label("Requires "+recipe.unlock.capitalize()+" research.",sheet_body)
-			button(ColonyText.text("ui.action.show_research"),show_research,sheet_body)
+			label("Requires "+recipe.unlock.capitalize()+" research.",body)
+			button(ColonyText.text("ui.action.show_research"),show_research,body)
 		else:
 			button(ColonyText.text("ui.action.make_one_batch"),func() -> void:
 				_submit("recipe_order",{"target":station.id,"definition":recipe.id,"mode":"Repeat","value":1,"priority":2,"filters":recipe.alternatives.duplicate()})
-				close_sheet(),sheet_body)
-			button(ColonyText.text("ui.action.set_production_policy"),func() -> void: show_recipe_policy(station,recipe),sheet_body)
+				close_sheet(),body)
+			button(ColonyText.text("ui.action.set_production_policy"),func() -> void: show_recipe_policy(station,recipe),body)
 	for order in world.production_state.orders:
 		if order.station != station.id: continue
 		label("%s | %s %d | %s" % [order.recipe.replace("_"," "),order.mode,order.quantity,"Enabled" if order.enabled else "Paused"],sheet_body)

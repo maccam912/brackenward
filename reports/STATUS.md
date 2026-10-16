@@ -1,5 +1,14 @@
 # Implementation evidence
 
+Illustrated production recipes (16 October 2026): `0.7.113-m7`, unchanged content/
+schema/envelope. Station recipes now group output art, exact costs and actions.
+Native workbench views inspected at 100/150%; UI passes 879 checks covering all
+13 recipes at both scales and the exact single-batch command. The existing hearth
+tutorial test now searches nested labels and still requires the real food rule.
+Content/font validation passes. Evidence: `production-*` in visual-polish.
+Remote builds 269/270 passed; later builds remain pending. Weekly usage remains
+39% available; original reset unchanged. Polishing continues.
+
 Illustrated research cards (16 October 2026): `0.7.112-m7`, unchanged content/
 schema/envelope. Twelve grouped project cards show actual unlock art, exact
 milli-point progress, active/complete/prerequisite states and queue positions.

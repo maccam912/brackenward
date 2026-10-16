@@ -42,6 +42,7 @@ static func run(game: GameSession, check: Callable) -> void:
 	needs_card(game,check)
 	await rest_disclosure(game,check)
 	await object_cards(game,check)
+	await production_cards(game,check)
 	for viewport in [Vector2i(360,640),Vector2i(640,360)]:
 		tree.root.size=viewport;game.text_scale=1.5;game._build_theme();game.show_appearance(1)
 		await tree.process_frame;await tree.process_frame
@@ -119,3 +120,25 @@ static func object_picture(game: GameSession, semantic: String, baseline: String
 		var row: HBoxContainer=picture.get_parent().get_parent()
 		fits=row.size.x<=game.sheet_body.size.x+1 and row.get_child(1).get_global_rect().end.x<=game.sheet_body.get_global_rect().end.x+1
 	check.call("ART/UI_detail_%s_matches_actual_art_and_wraps_at_large_phone_text" % semantic,fits and game.world.canonical_hash()==baseline)
+
+static func production_cards(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree()
+	var original: ColonyWorld=game.world
+	var world: ColonyWorld=ColonyTests.world();game._replace_world(world);game._tutorial_dismiss()
+	tree.root.size=Vector2i(390,844)
+	for scale in [1.0,1.5]:
+		game.text_scale=scale;game._build_theme()
+		for recipe in world.definitions.recipes.values():
+			var station: Dictionary=world._structure(recipe.station,Vector2i(90,80),0)
+			var baseline: String=world.canonical_hash();game.show_station(station)
+			await tree.process_frame;await tree.process_frame
+			var card: PanelContainer=game.sheet_body.get_node("Recipe_"+recipe.id)
+			var picture: TextureRect=card.find_child("ObjectPortrait",true,false)
+			var locked: bool=recipe.unlock!="initial"
+			var actions: Array=card.find_children("*","Button",true,false)
+			check.call("PRODUCTION/UI_%s_recipe_art_actions_fit_text_%s" % [recipe.id,scale],picture.get_meta("semantic")=="item/%s/0" % recipe.outputs.keys()[0] and card.size.x<=game.sheet_body.size.x+1 and actions.size()==(1 if locked else 2) and world.canonical_hash()==baseline)
+			if recipe.id=="make_toolkit" and scale==1.0:
+				actions[0].pressed.emit()
+				check.call("PRODUCTION/UI_illustrated_batch_keeps_exact_recipe_command",world.pending_commands.size()==1 and world.pending_commands[0].kind=="recipe_order" and world.pending_commands[0].args=={"target":station.id,"definition":"make_toolkit","mode":"Repeat","value":1,"priority":2,"filters":recipe.alternatives})
+				world.pending_commands.clear();game.submitted_command=0
+	game.close_sheet(false);game._replace_world(original);game._tutorial_dismiss()

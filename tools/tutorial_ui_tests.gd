@@ -22,7 +22,7 @@ static func run(game: GameSession, check: Callable) -> void:
 	check.call("TUTORIAL/UI_field_show_me_is_exactly_eight_tiles",game.placement_kind=="field" and game.view.preview_tiles().size()==8 and game.world.pending_commands.is_empty())
 	game.cancel_placement()
 	ColonyTutorial.replay(state,"cook");game._tutorial_show_me()
-	check.call("TUTORIAL/UI_hearth_inspector_explains_real_recipe",state.visited.has("hearth") and game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("allowed food units")))
+	check.call("TUTORIAL/UI_hearth_inspector_explains_real_recipe",state.visited.has("hearth") and game.sheet_body.find_children("*","Label",true,false).any(func(n:Label)->bool:return n.text.contains("allowed food units")))
 	game.show_food_forecast()
 	check.call("TUTORIAL/UI_forecast_has_daily_demand_and_harvest",game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("8 meal portions/day") and n.text.contains("No planted crops")) and game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("four raw food")))
 	for node in game.sheet_body.get_children():

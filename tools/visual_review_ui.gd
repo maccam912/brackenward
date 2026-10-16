@@ -10,6 +10,7 @@ func capture() -> void:
 	ColonyGeneration.configure(game.world,104729,"meadow_reach");game.world.tick=3600
 	root.add_child(game);game.set_process(false);game.runner.pause();game.close_sheet(false)
 	var cart: Dictionary=game.world.structures.filter(func(s:Dictionary)->bool:return s.definition=="supply_cart")[0]
+	var workbench: Dictionary=game.world._structure("workbench",Vector2i(90,80),0)
 	for viewport_size in [Vector2i(1100,720),Vector2i(390,844)]:
 		root.size=viewport_size
 		await process_frame
@@ -31,6 +32,8 @@ func capture() -> void:
 		for selected in [1,2]:
 			site_choice.select(selected)
 			await save_view("new-colony-site%d-%dx%d" % [selected,viewport_size.x,viewport_size.y])
+		game.show_station(workbench)
+		await save_view("production-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.show_station(cart)
 		await save_view("station-%dx%d" % [viewport_size.x,viewport_size.y])
 		game._storage_sheet(game.world.stores[0])
@@ -58,6 +61,8 @@ func capture() -> void:
 	await save_view("build-390x844-text150")
 	game.show_sheet("Work")
 	await save_view("work-390x844-text150")
+	game.show_station(workbench)
+	await save_view("production-390x844-text150")
 	game.show_station(cart)
 	await save_view("station-390x844-text150")
 	game._storage_sheet(game.world.stores[0])

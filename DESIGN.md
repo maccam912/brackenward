@@ -949,6 +949,9 @@ Soil transitions (0.7.111): poor and rich terrain gain a baked one-to-three-pixe
 
 Research cards (0.7.112): all twelve projects remain discoverable in catalog order. Each card groups its exact progress, prerequisites, unlocks and existing Study/Queue actions. An actual first building or recipe-output unlock supplies the illustration; projects without such an unlock remain text-only. Progress bars use milli-points, with completed projects full. Active projects have a gold border and explicit Studying text; queued projects show their position. Cards use two columns at 600 logical pixels times text scale, otherwise one. Rendering does not submit commands or mutate progress.
 
+Production cards (0.7.113): each station recipe groups its actual output art, unchanged ingredient/output quantities, work cost, research requirement and existing actions. Locked recipes remain visible with the Research action. Normal and 150% phone layouts wrap within their sheet; making one batch retains the exact production command and filters.
+
+
 
 
 ### 19.2 Characters and animation
