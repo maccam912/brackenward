@@ -905,6 +905,8 @@ Atmosphere and control feedback (0.7.89): live hearth light is centered beneath 
 
 People-list portraits (0.7.90) reuse the existing portrait atlas and per-resident palette shader beside each name. Images ignore pointer input, leaving the entire native button actionable. A portrait shrinks or hides when needed to preserve the same name space as the text-only row; user names/tooltips and appearance data remain unchanged. No CPU image recoloring or new asset is required.
 
+Resident details (0.7.91) pair a compact portrait with labeled Food, Rest, Health and Morale bars. Exact values remain visible; health uses its actual 100-point range and other needs use 1,000. This paused details view introduces no thresholds, animation or saved fields. Closed-sheet buttons are removed from the layout registry after they are freed, keeping repeated menu visits bounded.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

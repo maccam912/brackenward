@@ -1,5 +1,21 @@
 # Implementation evidence
 
+Resident needs and menu lifetime (16 October 2026): `0.7.91-m7`, unchanged
+content/schema/envelope. Resident details now pair the portrait with four labeled
+needs bars and exact values, including the distinct 100-point health scale. Activity
+and traits precede appearance actions. Native portrait/landscape and 150% text
+captures were inspected. The compact map inspector retains its existing layout.
+
+Repeated menu visits exposed a growing registry of freed buttons: the regression
+reproduced 712 entries with only 30 live controls. Layout now prunes freed entries.
+The regression verifies bounded live controls, retained navigation and unchanged
+world state. Pinned native UI passes 746 checks; content/font, string/message and
+Git checkout fixture checks pass. Needs tests cover zero/full values and health 37;
+the text test now checks the four exact captions and adaptive heading placement.
+Evidence: `reports/visual-polish/needs-*` and `menu-lifetime-*`. Build 251 remote
+Windows replay and full generation sweep passed; Intel Mac remains in progress.
+Physical Android remains unverified. Weekly usage is 65% remaining; work continues.
+
 Recognizable People list (16 October 2026): `0.7.90-m7`, unchanged content,
 schema and envelope. Resident rows show their saved clothing/hair/skin portrait
 beside the existing name. The existing portrait atlas/shader is reused; pictures

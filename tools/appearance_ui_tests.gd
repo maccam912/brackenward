@@ -39,6 +39,7 @@ static func run(game: GameSession, check: Callable) -> void:
 		var point: Vector2 = rect.get_center()-Vector2(32,32)+Vector2(32.5,25.5)
 		var skin: Color = tree.root.get_texture().get_image().get_pixelv(Vector2i(point))
 		check.call("ART/UI_palette_shader_renders_selected_skin_on_GPU",skin.is_equal_approx(Color(CitizenArt.SKINS[expected.skin])),str([skin,Color(CitizenArt.SKINS[expected.skin])]))
+	needs_card(game,check)
 	for viewport in [Vector2i(360,640),Vector2i(640,360)]:
 		tree.root.size=viewport;game.text_scale=1.5;game._build_theme();game.show_appearance(1)
 		await tree.process_frame;await tree.process_frame
@@ -51,3 +52,19 @@ static func run(game: GameSession, check: Callable) -> void:
 			tree.root.get_texture().get_image().save_png("res://reports/appearance-%dx%d-150.png" % [viewport.x,viewport.y])
 	tree.root.size=original_size;game.text_scale=original_scale;game._build_theme();game.close_sheet();game.close_inspector()
 	game.journal_elapsed=0.0;game.set_process(processing)
+
+static func needs_card(game: GameSession, check: Callable) -> void:
+	var person: Dictionary=game.world.citizens[0]
+	var fields: Array[String]=["fullness","rest","health","morale"]
+	var original: Array=fields.map(func(field:String)->int:return person[field])
+	for values in [[0,0,37,1000],[1000,1000,100,0]]:
+		for index in range(fields.size()): person[fields[index]]=values[index]
+		var canonical: String=game.world.canonical_hash()
+		game.show_person(person.id)
+		var panel: ResidentNeeds=game.sheet_body.find_child("ResidentNeeds",true,false)
+		var exact: bool=panel!=null
+		for index in range(fields.size()):
+			var meter: ProgressBar=panel.find_child(fields[index],true,false)
+			exact=exact and meter!=null and meter.value==values[index] and meter.max_value==[1000,1000,100,1000][index]
+		check.call("ART/UI_resident_needs_show_exact_values_and_distinct_health_range_%d" % values[0],exact and game.runner.speed==0 and game.world.canonical_hash()==canonical)
+	for index in range(fields.size()): person[fields[index]]=original[index]

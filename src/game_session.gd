@@ -1061,6 +1061,10 @@ func _layout() -> void:
 	if content == null:
 		return
 	_sync_control_selection()
+	# Closed sheets free their buttons at the frame boundary. Keep the sizing
+	# registry bounded to live controls rather than every button ever created.
+	for index in range(controls.size()-1,-1,-1):
+		if not is_instance_valid(controls[index]): controls.remove_at(index)
 	var available: Vector2 = size / logical_scale
 	var insets: Vector4 = test_insets
 	if OS.has_feature("android") and test_insets == Vector4.ZERO:
@@ -2261,11 +2265,14 @@ func food_access_description(person: Dictionary) -> String:
 func show_person(id: int) -> void:
 	var citizen: Dictionary = world.find(world.citizens,id)
 	show_details(citizen.name)
-	sheet_body.add_child(CitizenArt.portrait(citizen.appearance))
+	var overview: HBoxContainer=HBoxContainer.new();sheet_body.add_child(overview)
+	var portrait: TextureRect=CitizenArt.portrait(citizen.appearance,96)
+	portrait.size_flags_vertical=Control.SIZE_SHRINK_CENTER;overview.add_child(portrait)
+	overview.add_child(ResidentNeeds.new(citizen))
+	label(ColonyText.text("ui.person.summary",{"activity":ColonyText.activity_name(citizen.activity),"trait_a":ColonyText.trait_name(citizen.traits[0]),"trait_b":ColonyText.trait_name(citizen.traits[1]),"preferred":ColonyText.category_name(citizen.preferred),"food_tag":ColonyText.food_tag_name(citizen.food_tag)}),sheet_body)
 	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.appearance"),func()->void:show_appearance(id),sheet_body)
 	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(id),sheet_body)
 	button(ColonyText.text("ui.action.remembered_moments"),func()->void:show_person_history(id),sheet_body)
-	label(ColonyText.text("ui.person.summary",{"activity":ColonyText.activity_name(citizen.activity),"food":citizen.fullness,"rest":citizen.rest,"health":citizen.health,"morale":citizen.morale,"trait_a":ColonyText.trait_name(citizen.traits[0]),"trait_b":ColonyText.trait_name(citizen.traits[1]),"preferred":ColonyText.category_name(citizen.preferred),"food_tag":ColonyText.food_tag_name(citizen.food_tag)}),sheet_body)
 	label(ColonyText.bed_description(world,citizen),sheet_body)
 	var food_access: String=food_access_description(citizen)
 	if not food_access.is_empty(): label(food_access,sheet_body)

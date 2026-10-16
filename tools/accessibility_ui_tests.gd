@@ -22,6 +22,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	game.store.root_directory=root;game.store.select_slot(1);game.settings.path=root.path_join("settings.json")
 	tree.root.add_child(game);game.close_sheet();game._tutorial_dismiss();game.set_process(false)
 	menu_feedback(game,check)
+	await menu_lifetime(game,check)
 	var initial: String = game.world.canonical_hash()
 	for state in ["normal","hover","pressed","disabled"]:
 		var text: String = {"normal":"font_color","hover":"font_hover_color","pressed":"font_pressed_color","disabled":"font_disabled_color"}[state]
@@ -102,6 +103,26 @@ static func run(previous: GameSession, check: Callable) -> void:
 	game.queue_free();await tree.process_frame
 	CampaignTests.remove_tree(root);tree.root.size=original_size
 	previous.visible=visible;previous.set_process(processing);previous._apply_device_settings()
+
+static func menu_lifetime(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree()
+	game.close_sheet(false)
+	await tree.process_frame;await tree.process_frame
+	game._layout()
+	var count: int=game.controls.size()
+	var canonical: String=game.world.canonical_hash()
+	for index in range(12):
+		game.show_sheet(["Build","Work","People"][index%3])
+		await tree.process_frame
+		game.close_sheet(false)
+		await tree.process_frame
+	await tree.process_frame
+	game._layout()
+	var live: int=0
+	for control in game.controls:
+		if is_instance_valid(control): live+=1
+	check.call("MENU/repeated_panel_use_releases_freed_button_registry_entries",live==game.controls.size() and game.controls.size()<=count,"before=%d after=%d live=%d" % [count,game.controls.size(),live])
+	check.call("MENU/button_registry_cleanup_retains_live_navigation_and_world",game.nav.get_children().all(func(control:Button)->bool:return game.controls.has(control)) and game.speeds.get_children().all(func(control:Button)->bool:return game.controls.has(control)) and game.world.canonical_hash()==canonical)
 
 static func menu_feedback(game: GameSession, check: Callable) -> void:
 	var hearth: Dictionary = game.world.structures.filter(func(s:Dictionary)->bool:return s.definition=="hearth")[0]
