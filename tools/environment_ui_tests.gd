@@ -100,8 +100,31 @@ static func run(previous: GameSession, check: Callable) -> void:
 	view.world=replacement;view.refresh_terrain();view.center_camera(Vector2(68,63));view._process(0)
 	check.call("ART/UI_explicit_campaign_refresh_releases_every_old_resource_world_reference",not environment.resource_rows.is_empty() and environment.resource_rows.values().all(func(row:EnvironmentResourceRow)->bool:return row.world==replacement) and environment.props.values().all(func(prop:EnvironmentProp)->bool:return prop.world==replacement))
 	await carrying(view,check)
+	terrain_edges(view,check)
 	view.queue_free();await tree.process_frame;await tree.process_frame
 	tree.root.size=original_size;previous.visible=visible;previous.set_process(processing);previous.view.set_process(old_view_process)
+
+static func terrain_edges(view: WorldView, check: Callable) -> void:
+	for site in ["meadow_reach","pine_shelf","reed_bend"]:
+		var world: ColonyWorld=ColonyTests.world()
+		ColonyGeneration.configure(world,104729,site)
+		var baseline: String=world.canonical_hash()
+		view.world=world;view.refresh_terrain();view._process(0)
+		var environment: ColonyEnvironment=view.environment
+		var valid: bool=not environment.path_rectangles.is_empty() and not environment.bank_rectangles.is_empty()
+		for entry in environment.path_rectangles:
+			var rectangle: Rect2=entry[0]
+			var cell: Vector2i=Vector2i(rectangle.get_center()/16.0)
+			valid=valid and world.terrain_state.paths.has(cell) and world.terrain_state.elevation[cell.y*128+cell.x]!=0 and Rect2(Vector2(cell)*16,Vector2.ONE*16).encloses(rectangle)
+		for entry in environment.bank_rectangles:
+			var rectangle: Rect2=entry[0]
+			var cell: Vector2i=Vector2i(rectangle.get_center()/16.0)
+			valid=valid and world.terrain_state.elevation[cell.y*128+cell.x]==0 and Rect2(Vector2(cell)*16,Vector2.ONE*16).encloses(rectangle)
+		check.call("ART/UI_%s_terrain_edges_stay_inside_their_actual_cells_without_saved_changes" % site,valid and world.canonical_hash()==baseline)
+		var paths: Array=environment.path_rectangles.duplicate(true)
+		var banks: Array=environment.bank_rectangles.duplicate(true)
+		view.refresh_terrain();view._process(0)
+		check.call("ART/UI_%s_terrain_edge_rebuild_is_exact" % site,paths==environment.path_rectangles and banks==environment.bank_rectangles and world.canonical_hash()==baseline)
 
 static func carrying(view: WorldView, check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()

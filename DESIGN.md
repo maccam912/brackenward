@@ -899,6 +899,8 @@ Build and gathering menus (0.7.86) use atlas-backed thumbnails of the actual str
 
 Foliage and camp art (0.7.87) adds original tiered evergreen branches, clustered broadleaf shading within the retained CC0 crown silhouette, a ground-level stone hearth ring and folded/striped blankets. All 284 atlas regions, source dimensions, footprint anchors and runtime animation/fuel rules remain unchanged. These are baked sprite edits with no extra textures or draw nodes.
 
+Path shoulders (0.7.88) add cached 1-3 pixel grass intrusions inside existing path cells, using the adjacent soil color. Path texture variation uses the existing coordinate hash. A local path-membership lookup is rebuilt during terrain refresh; no saved terrain or movement cost changes. All three generated sites have native checks for edge containment, exact rebuilds and unchanged canonical world state.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

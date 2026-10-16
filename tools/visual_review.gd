@@ -15,6 +15,11 @@ func capture() -> void:
 	view.center_camera(Vector2(cart.x,cart.y));view._process(0)
 	await process_frame;await process_frame;await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://reports/visual-polish/camp.png")
+	for hour in [6,18,0]:
+		world.tick=hour*300;view._process(0)
+		await process_frame;await process_frame;await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://reports/visual-polish/camp-hour-%02d.png" % hour)
+	world.tick=3600
 	var water: Vector2i=Vector2i.ZERO
 	var best: float=INF
 	for y in range(10,118):

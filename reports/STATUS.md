@@ -1,5 +1,21 @@
 # Implementation evidence
 
+Path shoulders (16 October 2026): `0.7.88-m7`, unchanged content/schema/envelope.
+Dirt paths have quiet, irregular grass shoulders matched to adjacent soil, with
+coordinate-hashed texture variation. Detail remains inside actual path cells and
+below built floors/bridges. The derived membership table and cached rectangles
+rebuild on terrain refresh/world adoption and never enter saves.
+
+Pinned native UI passes 741 checks, including six new checks across all three
+sites: each path/river detail stays inside its logical cell, rebuilds exactly and
+preserves the complete canonical world. Native camp/river rendering was inspected.
+`tools/visual_review.gd` also captures camp at dawn/dusk/night for subsequent
+lighting review. Logs are in `reports/visual-polish/path-*`. The accompanying CI
+byte/UID correction is separately committed and described below. Remote repaired
+checks and physical Android appearance/performance remain unverified. Weekly
+usage is 69% remaining; the authorized visual polish run continues.
+
+
 Extended CI repair (16 October 2026): Build 247 published after passing all core
 jobs, then its Windows replay failed the frozen v7 producer-byte check while all
 three snapshot rows and the journal fold passed. Actual Git checkout with

@@ -21,6 +21,7 @@ var static_water: TileMapLayer
 var animated_water: TileMapLayer
 var banks: Node2D
 var bank_rectangles: Array = []
+var path_rectangles: Array = []
 var roof_layer: Node2D
 var feedback_layer: Node2D
 var warm_layer: Node2D
@@ -48,7 +49,7 @@ func _init(owner: Node) -> void:
 	view.terrain.tile_set=tiles
 	static_water=TileMapLayer.new();static_water.tile_set=tiles;view.ground.add_child(static_water)
 	animated_water=TileMapLayer.new();animated_water.tile_set=tiles;view.ground.add_child(animated_water)
-	banks=Node2D.new();banks.name="RiverBanks";view.ground.add_child(banks);banks.draw.connect(_draw_banks)
+	banks=Node2D.new();banks.name="TerrainEdges";view.ground.add_child(banks);banks.draw.connect(_draw_banks)
 	ground_root=Node2D.new();ground_root.name="GroundChunks";view.ground.add_child(ground_root)
 	warm_layer=Node2D.new();view.ground.add_child(warm_layer);warm_layer.draw.connect(_draw_warmth)
 	var additive: CanvasItemMaterial = CanvasItemMaterial.new();additive.blend_mode=CanvasItemMaterial.BLEND_MODE_ADD;warm_layer.material=additive
@@ -59,6 +60,14 @@ func refresh_terrain() -> void:
 	if world!=view.world: _reset_world();return
 	view.terrain.clear();static_water.clear();animated_water.clear()
 	bank_rectangles.clear()
+	path_rectangles.clear()
+	var path_cells: Dictionary={}
+	if world.generator_version>0:
+		for point in world.terrain_state.paths: path_cells[point]=true
+	else:
+		for index in range(128):
+			path_cells[Vector2i(66,index)]=true
+			path_cells[Vector2i(index,63)]=true;path_cells[Vector2i(index,64)]=true
 	for y in range(128):
 		for x in range(128):
 			var point: Vector2i = Vector2i(x,y)
@@ -75,8 +84,9 @@ func refresh_terrain() -> void:
 			var cell: int = variant
 			if world.soil_fertility(point)==750: cell=3+posmod(pattern,3)
 			elif world.soil_fertility(point)==1250: cell=6+posmod(pattern,3)
-			var path: bool = world.terrain_state.paths.has(point) if world.generator_version>0 else x==66 or y in [63,64]
-			if path: cell=11+(x+y)%3
+			if path_cells.has(point):
+				cell=11+posmod(pattern,3)
+				_add_path_edges(point,path_cells,pattern)
 			view.terrain.set_cell(point,0,Vector2i(cell,0))
 	last_tick=-1;indexed_count=-1
 	banks.queue_redraw()
@@ -97,6 +107,23 @@ func _add_banks(point: Vector2i) -> void:
 
 func _draw_banks() -> void:
 	for entry in bank_rectangles: banks.draw_rect(entry[0],entry[1])
+	for entry in path_rectangles: banks.draw_rect(entry[0],entry[1])
+
+func _add_path_edges(point: Vector2i, paths: Dictionary, pattern: int) -> void:
+	# A few grass pixels soften the shoulder, wholly within the existing path.
+	# The actual path footprint and movement cost remain exactly grid-defined.
+	for direction in [Vector2i.UP,Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT]:
+		var neighbor: Vector2i=point+direction
+		if not ColonyWorld.inside(neighbor) or paths.has(neighbor): continue
+		var wet: bool=world.terrain_state.elevation[neighbor.y*128+neighbor.x]==0 if world.generator_version>0 else PrototypeWorld.is_water(neighbor)
+		if wet: continue
+		var fertility: int=world.soil_fertility(neighbor)
+		var color: Color=Color("9DAD77") if fertility==750 else (Color("9BAF72") if fertility==1250 else Color("A6B878"))
+		for segment in range(4):
+			var depth: int=1+posmod(pattern>>(segment*3),3)
+			var horizontal: bool=direction.y!=0
+			var offset: Vector2=Vector2(segment*4,16-depth if direction.y==1 else 0) if horizontal else Vector2(16-depth if direction.x==1 else 0,segment*4)
+			path_rectangles.append([Rect2(Vector2(point)*16+offset,Vector2(4,depth) if horizontal else Vector2(depth,4)),color])
 
 func _reset_world() -> void:
 	for collection in [props,resource_rows,ground_chunks]:
