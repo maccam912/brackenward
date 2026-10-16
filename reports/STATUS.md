@@ -1,5 +1,17 @@
 # Implementation evidence
 
+Weather atmosphere (16 October 2026): `0.7.103-m7`, unchanged content/schema/
+envelope. Rain/flood, snow/cold snap, drought and fog now have restrained landscape
+palettes; fog has a static veil and moving snow has varied bounded flakes. Battery
+and reduced-motion modes retain the atmosphere while suppressing precipitation.
+The native seven-weather gallery was visually inspected. UI passes 796 checks,
+including unchanged canonical state, identical Battery/reduced-motion weather
+pixels and exact restoration of clear-weather pixels. Content/font, string/message
+and fixture-checkout checks pass. Evidence: `weather-*` under the local visual-
+polish folder. Builds 262 and 263 remote CI passed; 264/265 were still running.
+Weekly usage is 49% remaining; reset unchanged. Physical-device weather review
+remains unverified. Polishing continues.
+
 Android visual review and header spacing (16 October 2026): `0.7.102-m7`,
 unchanged content/schema/envelope. Exported Android review found a 150% text
 status header overlapping map controls. Controls now track the real wrapped header

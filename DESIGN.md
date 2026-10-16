@@ -929,6 +929,8 @@ Stockpile presentation (0.7.98): ordinary painted zones use a quiet outer bounda
 
 Material silhouettes (0.7.97): wood uses visible log ends, grain tied sheaves, fiber coils, cloth folds/stripes, leather irregular hide edges, and brick visible joints. These replace eighteen existing item regions while preserving the three quantity tiers and source bounds. `tools/visual_review_colony.gd` inspects a recorded campaign in an isolated daylight copy and checks both input bytes and canonical render state remain unchanged.
 
+Weather atmosphere (0.7.103): current rain/flood cools the landscape, snow/cold snap gives it a pale blue cast, drought warms it and fog adds a restrained static veil. Weather multiplies the existing day/night palette; essential map cues and UI retain their full-bright colors. The palette and fog remain in Battery/reduced-motion modes, while decorative precipitation stays disabled there. Balanced/Smooth snow varies the size and opacity of the existing bounded forty-eight flakes. No additional simulation state, random calls or effects nodes are introduced. Clear weather restores the original palette. `tools/visual_review_weather.gd` captures all seven weather states in moving and static modes using a disposable colony.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

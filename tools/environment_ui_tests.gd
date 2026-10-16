@@ -111,6 +111,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	offscreen_props(view,check)
 	beacon_flame(view,check)
 	await renewable_resources(view,check)
+	await weather_atmosphere(view,check)
 	view.queue_free();await tree.process_frame;await tree.process_frame
 	tree.root.size=original_size;previous.visible=visible;previous.set_process(processing);previous.view.set_process(old_view_process)
 
@@ -248,3 +249,24 @@ static func renewable_resources(view: WorldView, check: Callable) -> void:
 		var restored: Image=(await screenshot(view.get_tree())).get_region(region)
 		# Exclude the finite stone, which correctly stays exhausted.
 		check.call("ART/UI_regrown_resource_pixels_exactly_match_original_ready_pixels",ready.get_region(Rect2i(0,0,12*48,72)).get_data()==restored.get_region(Rect2i(0,0,12*48,72)).get_data())
+
+static func weather_atmosphere(view: WorldView, check: Callable) -> void:
+	var world: ColonyWorld=ColonyTests.world();world.tick=3600;world.weather="clear"
+	view.world=world;view.refresh_terrain();view.tile_size=24;view.center_camera(Vector2(64,64))
+	view.quality="Battery";view.reduced_motion=false;view._process(0)
+	var clear_pixels: PackedByteArray
+	if DisplayServer.get_name()!="headless":clear_pixels=(await screenshot(view.get_tree())).get_data()
+	for weather in ["rain","fog","snow","cold_snap","drought","flood"]:
+		world.weather=weather;world.tick+=1
+		var baseline: String=world.canonical_hash()
+		view.quality="Battery";view.reduced_motion=false;view._process(0)
+		var battery_pixels: PackedByteArray
+		if DisplayServer.get_name()!="headless":battery_pixels=(await screenshot(view.get_tree())).get_data()
+		view.quality="Balanced";view.reduced_motion=true;view._process(0)
+		check.call("ART/UI_%s_static_weather_never_advances_saved_world" % weather,world.canonical_hash()==baseline)
+		if DisplayServer.get_name()!="headless":
+			var reduced_pixels: PackedByteArray=(await screenshot(view.get_tree())).get_data()
+			check.call("ART/UI_%s_atmosphere_visible_and_identical_in_battery_and_reduced_motion" % weather,battery_pixels!=clear_pixels and battery_pixels==reduced_pixels)
+	world.weather="clear";world.tick=3600;view.quality="Battery";view.reduced_motion=false;view._process(0)
+	if DisplayServer.get_name()!="headless":
+		check.call("ART/UI_clear_weather_restores_original_native_pixels",(await screenshot(view.get_tree())).get_data()==clear_pixels)

@@ -158,7 +158,7 @@ func update(delta: float) -> void:
 	if indexed_count!=world.resources.size() or not is_same(indexed_resources,world.resources): _index_resources()
 	visual_clock=0.0 if view.reduced_motion else fmod(visual_clock+delta*minf(4.0*view.simulation_speed,10.0),120.0)
 	weather_clock=0.0 if view.reduced_motion else weather_clock+maxf(0.0,delta)
-	tint=EnvironmentArt.night_color(world.tick)
+	tint=EnvironmentArt.night_color(world.tick)*EnvironmentArt.weather_color(world.weather)
 	view.terrain.modulate=tint;static_water.modulate=tint;animated_water.modulate=tint
 	banks.modulate=tint
 	static_water.visible=view.quality=="Battery" or view.reduced_motion;animated_water.visible=not static_water.visible
@@ -443,11 +443,13 @@ func _draw_feedback() -> void:
 	view.account_draw(Time.get_ticks_usec()-started)
 
 func _draw_weather() -> void:
+	if world.weather=="fog":
+		feedback_layer.draw_rect(Rect2(Vector2.ZERO,view.size),Color(0.80,0.85,0.80,0.08))
 	if view.quality=="Battery" or view.reduced_motion or world.weather not in ["rain","flood","snow","cold_snap"]: return
 	var snow: bool = world.weather in ["snow","cold_snap"]
 	# Fixed low-discrepancy positions use a presentation clock, not world RNG.
 	for index in range(48):
 		var x: float = fposmod(index*0.61803398875*view.size.x+weather_clock*(8 if snow else -22),view.size.x)
 		var y: float = fposmod(index*0.41421356237*view.size.y+weather_clock*(24 if snow else 150),view.size.y)
-		if snow: feedback_layer.draw_circle(Vector2(x,y),1.0,Color(0.95,0.91,0.8,0.45))
+		if snow: feedback_layer.draw_circle(Vector2(x,y),1.0 if index%3 else 1.5,Color(0.95,0.96,0.91,0.35 if index%3 else 0.55))
 		else: feedback_layer.draw_line(Vector2(x,y),Vector2(x+2,y-6),Color(0.65,0.8,0.85,0.3),1)

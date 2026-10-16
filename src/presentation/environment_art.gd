@@ -53,3 +53,13 @@ static func resource_semantic(world: ColonyWorld, resource: Dictionary) -> Strin
 		elif kind in RENEWABLE_RESOURCES:kind+="_depleted"
 		else:return ""
 	return tree_semantic(resource.id,world.tick) if kind=="tree" else "resource/%s/0" % kind
+
+static func weather_color(weather: String) -> Color:
+	# Subtle atmosphere remains visible when decorative particles are disabled.
+	# Essential selections, warnings and labels render outside this world tint.
+	match weather:
+		"rain","flood":return Color(0.88,0.94,0.99)
+		"snow","cold_snap":return Color(0.94,0.98,1.0)
+		"drought":return Color(1.0,0.95,0.86)
+		"fog":return Color(0.94,0.97,0.98)
+	return Color.WHITE
