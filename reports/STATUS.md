@@ -1,5 +1,17 @@
 # Implementation evidence
 
+Connected construction art (16 October 2026): `0.7.100-m7`, unchanged content/
+schema/envelope. Fences use open rails and posts; palisades use pointed stakes;
+timber and stone walls have restrained material details. Floors and bridges have
+staggered plank joints. Only eight floor/bridge atlas regions changed, preserving
+all semantic rectangles. A native disposable gallery covers straight walls,
+corners, T junctions, isolated segments and ruins without mutating canonical state.
+
+Pinned native UI passes 762 checks, including actual seam pixels, mixed-material
+junctions, destroyed-wall gaps and unobscured interiors. Content/font and fixture
+checkout validations pass. Evidence: `walls-*` in `reports/visual-polish/`. Weekly
+usage is 55% remaining. Physical Android remains unverified; polishing continues.
+
 Cultivated field art (16 October 2026): `0.7.99-m7`, unchanged content/schema/
 envelope. Quieter brown earth replaces orange soil; the five existing crop stages
 now show distinct barley, flax, vegetable and cavecap growth. Exactly thirty crop

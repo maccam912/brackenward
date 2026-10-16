@@ -202,8 +202,15 @@ def structure(kind, width, height, rotation, roof=False):
     if kind in ("wood_floor", "stone_path", "bridge"):
         if kind == "stone_path": image.alpha_composite(tile("stone_path", True), (0,12))
         else:
-            d.rectangle((0,12,w-1,h-1), fill=WOOD)
-            for y in range(12,h,4): d.rectangle((0,y,w-1,min(h-1,y+2)), fill="#C4966B")
+            d.rectangle((0,12,w-1,h-1), fill="#795E43")
+            for row,y in enumerate(range(12,h,4)):
+                d.rectangle((0,y,w-1,min(h-1,y+2)), fill="#B08C60" if row%2 else "#BC9769")
+                d.line((0,y,w-1,y),fill="#C5A576")
+                joint=4 if row%2 else 12
+                d.line((joint,y,joint,y+2),fill="#795E43")
+                d.point((joint-2,y+1),fill="#927453")
+            if kind=="bridge":
+                for x in [1,w-2]:d.line((x,12,x,h-1),fill=WOOD)
         return image
     if kind in ("wood_wall", "palisade", "stone_wall"):
         d.rectangle((1,7,w-2,h-2), fill=SHADE if kind == "stone_wall" else WOOD, outline=INK)

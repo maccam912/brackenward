@@ -61,10 +61,12 @@ func _sprite() -> Sprite2D:
 func _draw_wall() -> void:
 	var stone: bool = record.definition=="stone_wall"
 	var fence: bool = record.definition=="fence"
+	var palisade: bool = record.definition=="palisade"
 	var face: Color = Color("8C9D9B") if stone else Color("A47B52")
 	var top: Color = Color("C4CBC1") if stone else Color("D6B47A")
 	var shade: Color = Color("52645F") if stone else Color("634D38")
-	var radius: int = 2 if fence else 3
+	if palisade:face=Color("895B44");top=Color("BC9464");shade=Color("554735")
+	var radius: int = 1 if fence else 3
 	# Each branch reaches its tile edge. Neighboring branches share the same
 	# center line and cap height, including mixed-material corners/junctions.
 	var center: Vector2 = Vector2(0,-12)
@@ -73,11 +75,38 @@ func _draw_wall() -> void:
 		if wall_mask&(1<<index)==0: continue
 		var end: Vector2 = center+Vector2([Vector2i.UP,Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT][index])*8
 		shapes.append(Rect2(Vector2(minf(center.x,end.x)-radius,minf(center.y,end.y)-radius),Vector2(absf(end.x-center.x)+radius*2,absf(end.y-center.y)+radius*2)))
+	if fence:
+		# Open two-rail fence, with an upright at each real tile center.
+		for shape in shapes:
+			wall_visual.draw_rect(Rect2(shape.position+Vector2(0,5),shape.size),shade*wall_tint)
+			wall_visual.draw_rect(Rect2(shape.position+Vector2(0,4),shape.size),face*wall_tint)
+			wall_visual.draw_rect(shape,top*wall_tint)
+		wall_visual.draw_rect(Rect2(center+Vector2(-2,-3),Vector2(4,11)),shade*wall_tint)
+		wall_visual.draw_rect(Rect2(center+Vector2(-1,-3),Vector2(2,9)),face*wall_tint)
+		wall_visual.draw_rect(Rect2(center+Vector2(-2,-3),Vector2(4,2)),top*wall_tint)
+		return
 	for shape in shapes: wall_visual.draw_rect(Rect2(shape.position+Vector2(0,3),shape.size+Vector2(0,2)),shade*wall_tint)
 	for shape in shapes: wall_visual.draw_rect(Rect2(shape.position+Vector2(0,2),shape.size),face*wall_tint)
 	for shape in shapes: wall_visual.draw_rect(shape,top*wall_tint)
-	if stone: wall_visual.draw_line(center+Vector2(-2,-radius),center+Vector2(-2,radius),face*wall_tint,1)
-	else: wall_visual.draw_line(center+Vector2(-radius,0),center+Vector2(radius,0),face*wall_tint,1)
+	if palisade:
+		# Pointed timber stakes repeat along connected branches, not across land.
+		var stakes: Array[Vector2]=[center]
+		for index in range(4):
+			if wall_mask&(1<<index)==0:continue
+			var direction: Vector2=Vector2([Vector2i.UP,Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT][index])
+			for distance in [4,8]:stakes.append(center+direction*distance)
+		for point in stakes:
+			wall_visual.draw_rect(Rect2(point+Vector2(-1,-1),Vector2(2,6)),face*wall_tint)
+			wall_visual.draw_colored_polygon(PackedVector2Array([point+Vector2(-2,-1),point+Vector2(0,-4),point+Vector2(2,-1)]),shade*wall_tint)
+			wall_visual.draw_line(point+Vector2(0,-3),point+Vector2(0,2),top*wall_tint,1)
+	elif stone:
+		wall_visual.draw_line(center+Vector2(-2,-radius),center+Vector2(-2,radius),face*wall_tint,1)
+		wall_visual.draw_line(center+Vector2(1,4),center+Vector2(1,6),shade*wall_tint,1)
+		wall_visual.draw_line(center+Vector2(1,-2),center+Vector2(3,-2),Color("D9DBCA")*wall_tint,1)
+	else:
+		wall_visual.draw_line(center+Vector2(-radius,0),center+Vector2(radius,0),face*wall_tint,1)
+		wall_visual.draw_line(center+Vector2(-1,4),center+Vector2(3,4),shade*wall_tint,1)
+		wall_visual.draw_line(center+Vector2(1,-2),center+Vector2(3,-2),Color("E2C48E")*wall_tint,1)
 
 func _draw_decorations() -> void:
 	var started: int = Time.get_ticks_usec()
