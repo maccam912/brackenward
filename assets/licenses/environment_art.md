@@ -48,3 +48,8 @@ crowns and forked bare winter branches), plus nine dormant-grass variants. Autum
 retains the approved crown silhouette and changes its original project shading.
 Winter branches are entirely original drawing code. The resulting atlas has 297
 regions at 1024x418; all earlier rectangle positions/dimensions remain intact.
+
+The 0.7.97 pass replaces generic pile shapes for wood, grain, fiber, cloth and
+leather with original logs, tied sheaves, coils, folded cloth and hide silhouettes;
+brick piles gain a visible joint. Only these eighteen existing item regions change.
+All three quantity tiers, rectangles, atlas dimensions and other art are retained.

@@ -1,5 +1,18 @@
 # Implementation evidence
 
+Distinct material piles (16 October 2026): `0.7.97-m7`, unchanged content/schema/
+envelope. Wood, grain, fiber, cloth, leather and brick have clearer original
+silhouettes across all three quantity tiers. Exactly eighteen item regions changed;
+all other atlas pixels/rectangles and source dimensions remain unchanged. The
+contact sheet and a recorded 103-structure, eight-resident developed colony were
+inspected with the native renderer. The read-only review tool verifies unchanged
+input bytes and canonical state after rendering its disposable daylight copy.
+
+Pinned persistence/art passes 511 checks; content/font validation and checked
+import/capture pass. Evidence is in `reports/visual-polish/items-*` and
+`mature-items-*`. Physical Android remains unverified. The developed-colony review
+identified overbearing stockpile overlays as the next visual-polish target.
+
 Ground contact and beacon alignment (16 October 2026): `0.7.96-m7`, unchanged
 content/schema/envelope. People and animal sprites have small baked contact shadows
 inside their original frame bounds. Every old opaque pixel is unchanged, atlas

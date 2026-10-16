@@ -917,6 +917,8 @@ Building render reuse (0.7.95): off-screen props retain live records and synchro
 
 Ground contact and beacon alignment (0.7.96): people/animals have small baked translucent shadows within their original frame bounds, preserving opaque art and portrait bytes. The beacon ceremony flame is anchored at source y=14 in its raised basket rather than the generic furnace base. Inactive and destroyed beacons remain unlit; the existing Active/Complete ceremony rule is unchanged.
 
+Material silhouettes (0.7.97): wood uses visible log ends, grain tied sheaves, fiber coils, cloth folds/stripes, leather irregular hide edges, and brick visible joints. These replace eighteen existing item regions while preserving the three quantity tiers and source bounds. `tools/visual_review_colony.gd` inspects a recorded campaign in an isolated daylight copy and checks both input bytes and canonical render state remain unchanged.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

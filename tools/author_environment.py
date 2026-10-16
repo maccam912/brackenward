@@ -401,14 +401,42 @@ def item(kind, tier):
     image = Image.new("RGBA", (16,24));d=ImageDraw.Draw(image)
     for level in range(tier+1):
         y=20-level*4;x=2+(level%2)*2
-        if kind in ("wood","stone","clay","iron_ore","charcoal"):
-            color={"wood":WOOD,"stone":STONE,"clay":CLAY,"iron_ore":SHADE,"charcoal":INK}[kind]
+        if kind=="wood":
+            d.rectangle((x+1,y-5,x+9,y+1),fill=WOOD,outline=INK)
+            d.line((x+2,y-4,x+8,y-4),fill=CLAY)
+            d.ellipse((x+7,y-5,x+11,y+1),fill="#C4966B",outline=INK)
+            d.line((x+9,y-3,x+9,y-1),fill=WOOD)
+        elif kind=="grain":
+            # Tied sheaves stay legible among planted rows and harvested piles.
+            for px,top in [(4,y-7),(8,y-9),(12,y-7)]:
+                d.line((8,y+1,px,top),fill=WOOD,width=2)
+                d.line((8,y,px,top),fill=LIGHT)
+                d.ellipse((px-1,top-1,px+1,top+3),fill=LIGHT,outline="#A47B52")
+                d.point((px,top),fill=CREAM)
+            d.line((5,y-2,10,y-2),fill=CREAM,width=2)
+        elif kind=="fiber":
+            d.ellipse((x,y-6,x+11,y+1),fill=MOSS,outline=INK)
+            d.arc((x+2,y-5,x+9,y),0,330,fill="#BDC48B")
+            d.arc((x+4,y-4,x+7,y-1),20,310,fill=DEEP)
+            d.line((x+7,y-1,x+11,y+1),fill="#BDC48B")
+        elif kind=="cloth":
+            d.rounded_rectangle((x,y-5,x+10,y+1),radius=1,fill=ROOF,outline=INK)
+            d.line((x+1,y-4,x+9,y-4),fill="#BDB8C6")
+            d.line((x+1,y-1,x+9,y-1),fill="#555668")
+            d.line((x+7,y-4,x+7,y),fill=CREAM)
+        elif kind=="leather":
+            d.polygon([(x+2,y-6),(x+8,y-6),(x+8,y-4),(x+11,y-2),
+                       (x+8,y),(x+8,y+1),(x+2,y+1),(x+2,y-1),(x,y-2),(x+2,y-4)],fill=WOOD,outline=INK)
+            d.line((x+3,y-5,x+7,y-5),fill="#C4966B")
+        elif kind in ("stone","clay","iron_ore","charcoal"):
+            color={"stone":STONE,"clay":CLAY,"iron_ore":SHADE,"charcoal":INK}[kind]
             d.ellipse((x,y-5,min(15,x+10),y+1),fill=color,outline=INK)
             d.line((x+3,y-3,x+7,y-3),fill=CLAY if kind=="wood" else CREAM)
-        elif kind in ("iron","brick","cloth","leather","fiber"):
-            color={"iron":STONE,"brick":CLAY,"cloth":ROOF,"leather":WOOD,"fiber":MOSS}[kind]
+        elif kind in ("iron","brick"):
+            color={"iron":STONE,"brick":CLAY}[kind]
             d.rectangle((x,y-5,min(15,x+10),y),fill=color,outline=INK)
             d.line((x+2,y-4,x+8,y-4),fill=CREAM)
+            if kind=="brick":d.line((x+5,y-3,x+5,y),fill=WOOD)
         elif kind in ("toolkit","forged_toolkit","bow","spear"):
             if kind=="spear":d.line((4,22,12,7),fill=WOOD,width=2);d.polygon([(10,7),(14,4),(13,10)],fill=CREAM,outline=INK)
             else:image.alpha_composite(tile("bow" if kind=="bow" else ("axe" if kind=="forged_toolkit" else "hammer")),(0,8))
