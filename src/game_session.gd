@@ -43,6 +43,7 @@ var logical_scale: float = 1.0
 var notice: String = "Four travelers. A ruined wayhouse. Make a place to stay."
 var submitted_command: int = 0
 var placement_commands: Array[int] = []
+var field_crop: String = "turnip"
 var placement_world_id: int = 0
 var backgrounded: bool = false
 var last_saved_tick: int = 1800
@@ -777,7 +778,7 @@ func confirm_placement() -> void:
 	elif world is ColonyWorld and placement_kind == "forest":
 		submitted_command = world.queue_command("forest",{"tiles":view.preview_tiles(),"value":75})
 	elif world is ColonyWorld and placement_kind == "field":
-		submitted_command = world.queue_command("field", {"crop":"turnip", "tiles":view.preview_tiles()})
+		submitted_command = world.queue_command("field", {"crop":field_crop, "tiles":view.preview_tiles()})
 	else:
 		submitted_command = world.queue_designation(view.preview_tiles())
 	placement_commands.append(submitted_command)
@@ -993,7 +994,13 @@ func show_sheet(title: String, title_key: String = "", literal_title: bool = fal
 		"Build":
 			label(ColonyText.text("ui.help.sheet.blueprints_require_real_supplies_and_worker_time"), sheet_body)
 			illustrated_button(ColonyText.text("ui.action.paint_stockpile"), begin_placement, sheet_body,"item/wood/2")
-			illustrated_button(ColonyText.text("ui.action.plant_turnips"), begin_field, sheet_body,"crop/turnip/4")
+			if world is ColonyWorld:
+				for crop: String in world.definitions.crops:
+					var crop_definition: Dictionary = world.definitions.crops[crop]
+					if crop_definition.unlock!="initial" and not world.researched.has(crop_definition.unlock): continue
+					illustrated_button(ColonyText.text("ui.action.plant_crop",{"crop":_catalog_name(crop)}),func()->void:begin_field(crop),sheet_body,"crop/%s/4" % crop)
+			else:
+				illustrated_button(ColonyText.text("ui.action.plant_turnips"),begin_field,sheet_body,"crop/turnip/4")
 			if world is ColonyWorld:
 				illustrated_button(ColonyText.text("ui.action.four_bed_lodge_w73_f8"),begin_lodge,sheet_body,"building/bed/0")
 				for kind in world.definitions.buildings:
@@ -1518,7 +1525,12 @@ func _preview_text() -> String:
 		return ColonyText.text("ui.placement.building",{"building":view.preview_definition.capitalize(),"cost":_cost_text(definition.materials),"work":definition.work_milli/1000,"status":ColonyText.text("ui.placement.valid") if error.is_empty() else error})
 	var width: int = absi(view.preview_end.x-view.preview_start.x)+1
 	var height: int = absi(view.preview_end.y-view.preview_start.y)+1
-	return ColonyText.plural("ui.placement.rectangle",width*height,{"width":width,"height":height,"mode":ColonyText.text("ui.placement.pan_mode" if view.gestures.mode=="pan" else ("ui.placement.turnip_mode" if placement_kind=="field" else "ui.placement.stockpile_mode"))})
+	var mode: String=ColonyText.text("ui.placement.pan_mode" if view.gestures.mode=="pan" else ("ui.placement.crop_mode" if placement_kind=="field" else "ui.placement.stockpile_mode"),{"crop":_catalog_name(field_crop)})
+	var description: String=ColonyText.plural("ui.placement.rectangle",width*height,{"width":width,"height":height,"mode":mode})
+	if placement_kind=="field":
+		var crop: Dictionary=world.definitions.crops[field_crop]
+		description+="\n"+ColonyText.text("ui.field.requirements",{"seasons":_crop_seasons(field_crop),"roof":ColonyText.text("ui.field.roofed" if crop.roof else "ui.field.open_soil")})
+	return description
 
 func _paint_preview() -> Dictionary:
 	var result: Dictionary = ColonyConstruction.paint_preview(world,paint_build_definition,view.preview_tiles())
@@ -1747,14 +1759,24 @@ func _tutorial_harvest_text() -> String:
 	var hours: int = (soonest+299)/300
 	return ColonyText.text("ui.forecast.harvest.maturity",{"days":ColonyText.plural("ui.forecast.days",hours/24),"hours":ColonyText.plural("ui.forecast.hours",hours%24),"food":ColonyText.plural("ui.forecast.raw_food",quantity)})
 
-func begin_field() -> void:
+func _crop_seasons(crop: String) -> String:
+	var seasons: Array[String]=[]
+	for season_index: int in world.definitions.crops[crop].seasons: seasons.append(["Spring","Summer","Autumn","Winter"][season_index])
+	return ", ".join(seasons)
+
+func begin_field(crop: String = "turnip") -> void:
+	field_crop=crop
 	begin_placement()
 	placement_kind = "field"
 	view._update_transform()
-	notice = ColonyText.text("ui.notice.field_turnips")
+	var definition: Dictionary=world.definitions.crops[crop]
+	notice=ColonyText.text("ui.notice.field_crop",{"crop":_catalog_name(crop),"prepare":definition.prepare_milli/1000,"sow":definition.sow_milli/1000,"harvest":definition.harvest_milli/1000,"days":definition.growth/1000.0,"yield":definition.yield_count,"item":_catalog_name(definition.item),"seasons":_crop_seasons(crop),"roof":ColonyText.text("ui.field.roofed" if definition.roof else "ui.field.open_soil")})
 
 func _field_sheet(field: Dictionary) -> void:
-	show_details(field.crop.capitalize())
+	show_details(_catalog_name(field.crop))
+	var plot: Array[Dictionary]=ColonyAgriculture.plot(world,field)
+	view.inspected_object=field.id;view.inspected_tiles.clear()
+	for cell: Dictionary in plot: view.inspected_tiles.append(Vector2i(cell.x,cell.y))
 	var definition: Dictionary = world.definitions.crops[field.crop]
 	illustrated_summary(ColonyText.text("ui.field.details",{"reason":field.reason,"growth":field.growth,"required":definition.growth,"yield":field.yield_count,"percent":int(field.fertility/10),"replant":ColonyText.text("ui.field.replant_on" if field.replant else "ui.field.replant_off")}),sheet_body,"crop/%s/%d" % [field.crop,EnvironmentArt.crop_stage(field,definition)])
 	if field.planted:
@@ -1765,6 +1787,10 @@ func _field_sheet(field: Dictionary) -> void:
 				close_sheet(),sheet_body)
 		else:
 			label(ColonyText.text("ui.help.field_sheet.early_harvest_requires_50_growth_clearing_now"),sheet_body)
+	label(ColonyText.text("ui.field.clear_plot_help"),sheet_body)
+	button(ColonyText.text("ui.action.clear_plot",{"count":plot.size()}),func()->void:
+		_submit("clear_field_plot",{"target":field.id})
+		close_sheet(),sheet_body)
 	label(ColonyText.text("ui.help.field_sheet.clearing_removes_this_field_and_its_unharvested"),sheet_body)
 	button(ColonyText.text("ui.action.clear_field"),func() -> void:
 		_submit("clear_field",{"target":field.id})
@@ -2347,6 +2373,8 @@ func show_person(id: int) -> void:
 		view.camera_tile = Vector2(citizen.x,citizen.y),sheet_body)
 	label(ColonyText.bed_description(world,citizen),sheet_body)
 	if not citizen.death_recorded and not citizen.departed: button(ColonyText.text("ui.action.assign_bed"),func()->void:show_beds(id),sheet_body)
+	if citizen.fullness==0 and not citizen.downed and not citizen.death_recorded:
+		label(ColonyText.text("ui.person.starving_work"),sheet_body)
 	var food_access: String=food_access_description(citizen)
 	if not food_access.is_empty(): label(food_access,sheet_body)
 	var rest_toggle: Button=button(ColonyText.text("ui.action.food_and_rest_details"),Callable(),sheet_body)

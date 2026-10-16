@@ -132,3 +132,34 @@ static func complete(world: ColonyWorld, _citizen: Dictionary, job: Dictionary) 
 			field.planted = false
 			field.growth = 0
 			field.ripe_tick = 0
+
+## Old saves store crop tiles individually. Edge-connected matching crops form
+## a visible plot without inventing membership or changing acknowledged saves.
+static func plot(world: ColonyWorld, field: Dictionary) -> Array[Dictionary]:
+	var cells: Dictionary={}
+	for cell: Dictionary in world.fields:
+		if cell.crop==field.crop: cells[Vector2i(cell.x,cell.y)]=cell
+	var result: Array[Dictionary]=[]
+	var pending: Array[Vector2i]=[Vector2i(field.x,field.y)]
+	var cursor: int=0
+	while cursor<pending.size():
+		var point: Vector2i=pending[cursor];cursor+=1
+		if not cells.has(point): continue
+		result.append(cells[point]);cells.erase(point)
+		for direction: Vector2i in [Vector2i.LEFT,Vector2i.RIGHT,Vector2i.UP,Vector2i.DOWN]:
+			if cells.has(point+direction): pending.append(point+direction)
+	return result
+
+static func clear(world: ColonyWorld, target: int, whole_plot: bool) -> String:
+	var field: Dictionary=world.find(world.fields,target)
+	if field.is_empty(): return "missing_field"
+	var removed: Array[Dictionary]=[]
+	if whole_plot: removed=plot(world,field)
+	else: removed.append(field)
+	var ids: Dictionary={}
+	for cell: Dictionary in removed: ids[cell.id]=true
+	for job: Dictionary in world.unfinished_jobs():
+		if job.kind in ["prepare","sow","harvest"] and ids.has(job.target): world._release(job,true)
+	world.fields.assign(world.fields.filter(func(cell:Dictionary)->bool:return not ids.has(cell.id)))
+	world.record_indexes.clear()
+	return "accepted"

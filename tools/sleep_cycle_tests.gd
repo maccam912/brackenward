@@ -27,9 +27,11 @@ static func run(check: Callable) -> void:
 	check.call("SLEEP/frozen_v4_low_rest_fixture_loads_with_exact_header_only_migration",source.citizens[0].rest==200 and source.citizens[0].fullness==200 and source.tick==1800 and source.invariant_errors().is_empty())
 	for fullness in [0,200,350]:
 		var world: ObservedWorld=fixture();world.citizens[0].fullness=fullness
-		for index in range(600): world.step()
+		for index in range(3000 if fullness==0 else 600):
+			world.step()
+			if world.citizens[0].fullness>350 and world.ledger.produced.get("meal",0)>=world.baseline_meals+2: break
 		check.call("SLEEP/no_owned_cook_churn_when_sleep_is_ineligible_%d" % fullness,world.ineligible_cook_releases==0,str(world.ineligible_cook_releases))
-		check.call("SLEEP/real_low_rest_cook_finishes_meals_and_eats_%d" % fullness,world.ledger.produced.get("meal",0)>=world.baseline_meals+2 and world.citizens[0].fullness>350 and world.citizens[0].health==100 and world.invariant_errors().is_empty(),str([world.ledger.produced.get("meal",0)-world.baseline_meals,world.citizens[0].fullness,world.citizens[0].rest,world.citizens[0].activity,world.invariant_errors()]))
+		check.call("SLEEP/real_low_rest_cook_finishes_meals_and_eats_%d" % fullness,world.ledger.produced.get("meal",0)>=world.baseline_meals+2 and world.citizens[0].fullness>350 and world.citizens[0].health>=(95 if fullness==0 else 100) and world.invariant_errors().is_empty(),str([world.ledger.produced.get("meal",0)-world.baseline_meals,world.citizens[0].fullness,world.citizens[0].rest,world.citizens[0].activity,world.invariant_errors()]))
 	for pair in [[750,200],[0,50]]:
 		var world: ObservedWorld=fixture();var chef: Dictionary=world.citizens[0];chef.fullness=pair[0];chef.rest=pair[1]
 		world._assign(chef)
@@ -96,5 +98,7 @@ static func pacing(check: Callable) -> void:
 	check.call("REST/hungry_sleeper_recovers_minimum_rest_before_work",chef.job==rest_job.id and rest_job.target==chef.bed and rest_job.state=="Moving")
 	chef.rest=300;hungry._create_work();hungry._assign(chef)
 	check.call("REST/hungry_sleeper_can_prepare_food_after_minimum_rest",hungry.find(hungry.jobs,chef.job).get("kind")=="cook" and rest_job.state=="Canceled" and hungry.invariant_errors().is_empty(),str([hungry.find(hungry.jobs,chef.job).get("kind"),rest_job.state,hungry.invariant_errors()]))
-	for index in range(600): hungry.step()
+	for index in range(3000):
+		hungry.step()
+		if chef.fullness>350 and hungry.ledger.produced.get("meal",0)>hungry.baseline_meals: break
 	check.call("REST/slow_rest_does_not_trap_the_only_cook_asleep_while_starving",chef.fullness>350 and hungry.ledger.produced.get("meal",0)>hungry.baseline_meals and hungry.invariant_errors().is_empty(),str([chef.fullness,chef.rest,chef.activity]))

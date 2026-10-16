@@ -159,9 +159,9 @@ static func content3_upgrade(root: String, check: Callable) -> void:
 	changed.content_hash="0".repeat(64);envelope.content_hash=changed.content_hash
 	envelope.payload=JSON.stringify(ColonyState.pack(changed),"",true);envelope.sha256=envelope.payload.sha256_text()
 	check.call("SAVE/v3_upgrade_requires_its_exact_released_catalog",ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","").begins_with("Unknown released v3 catalog"))
-	envelope.content="colony-v12"
+	envelope.content="colony-v13"
 	var newer: String = ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","")
-	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v12") and newer.contains("colony-v11"))
+	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v13") and newer.contains("colony-v12"))
 	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("content-v4-upgrade")
 	DirAccess.make_dir_recursive_absolute(store.directory)
 	var snapshot: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/content3-delta-base.brackenward")

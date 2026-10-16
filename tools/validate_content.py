@@ -289,3 +289,8 @@ sleep_catalog=json.loads((root / "data/catalogs/colony_v11.json").read_text())
 assert sleep_catalog["version"]=="colony-v11"
 assert {**sleep_catalog,"version":"colony-v10"}==needs_catalog
 print("Validated uninterrupted-sleep content v11; catalog definitions retained exactly.")
+
+recovery_catalog=json.loads((root / "data/catalogs/colony_v12.json").read_text())
+assert recovery_catalog["version"]=="colony-v12"
+assert {k:v for k,v in recovery_catalog.items() if k!="version"}=={k:v for k,v in sleep_catalog.items() if k!="version"}
+print("Validated starvation-recovery content v12; catalog definitions retained exactly.")

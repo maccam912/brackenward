@@ -28,8 +28,10 @@ static func food_interruption(check: Callable) -> void:
 	defense.worker=person.id;defense.state="Working";person.job=defense.id
 	world._assign(person)
 	check.call("SCHED/starving_guard_keeps_order_but_can_prepare_missing_food",person.drafted and defense.state=="Canceled" and world.find(world.jobs,person.job).get("kind")=="cook")
-	for index in range(1000): world.step()
-	check.call("SCHED/guard_resumes_defense_after_critical_food_recovery",person.drafted and person.fullness>350 and person.health==100 and world.find(world.jobs,person.job).get("kind")=="defend" and world.invariant_errors().is_empty(),str([person.fullness,person.activity,world.invariant_errors()]))
+	for index in range(3000):
+		world.step()
+		if person.fullness>350 and world.find(world.jobs,person.job).get("kind")=="defend": break
+	check.call("SCHED/guard_resumes_defense_after_critical_food_recovery",person.drafted and person.fullness>350 and person.health>=95 and world.find(world.jobs,person.job).get("kind")=="defend" and world.invariant_errors().is_empty(),str([person.fullness,person.activity,world.invariant_errors()]))
 	loaded=ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content3-hungry-cook.brackenward"))
 	world=loaded.world;person=world.citizens[0];person.fullness=0;person.rest=50
 	world._create_work();world._assign(person)

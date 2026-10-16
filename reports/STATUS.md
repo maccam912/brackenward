@@ -1,5 +1,36 @@
 # Implementation evidence
 
+Farm controls and starvation recovery (16 October 2026): `0.7.124-m7`, content
+`colony-v12`, unchanged schema 24/envelope 5. Build now offers every initial or
+researched crop, including Farming's barley/squash/flax; the chosen crop follows
+through the brush, preview and command. Placement displays growing seasons and
+roof requirements. Farm cards highlight the edge-connected same-crop plot and
+offer one whole-plot removal, with tile count and crop-loss warning, alongside
+single-tile clearing. Removal cancels its preparation/sowing/harvest work and
+releases assigned workers; neighboring other crops and separated plots remain.
+
+Injured, conscious hungry residents can leave recovery to perform enabled food
+supply work when no edible portion is reachable. Zero fullness halves walking
+and productive work, combines with injury/environment penalties, and preserves
+saved integer remainders. Eating keeps its normal rate. Critical sleep, work
+preferences, downed care and starvation damage retain their rules. A frozen
+low-rest zero-fullness cook now needs longer and can take 5 starvation damage
+before producing/eating food; bounded tests retain that consequence. Residents
+at health 40 recover from new berry orders through actual gathering/eating and
+exact mid-task save continuation. No acknowledged old save is healed or rerun.
+
+Validation: all 28 native suites pass 3,336 checks; all three site tutorials pass
+66 more. The 69-command current-v12 replay independently matches both canonical
+checkpoints, 234 invariants and save continuation. All 50 recursive immutable
+save fixtures pass codec comparisons; a v11 checkpoint preserves every gameplay
+field with only content headers migrated, and unknown v11 catalog hashes fail.
+All 145 Python tests and content/font checks pass. Phone/desktop controls are
+reviewed at 150% text (390x844/960x600); captures are `reports/barley-placement-*`
+and `reports/farm-controls-*`. Local Android debug export and both Kotlin plugin
+unit-test variants pass, as does the isolated 60-frame macOS Compatibility/audio
+smoke. Remote CI/release and physical Android validation are
+separate; publication status is reported for the exact pushed commit.
+
 Fourfold playback baseline (16 October 2026): 1x now matches the former 4x;
 2x and 4x request the former 8x and 16x rates. The controls remain 1x/2x/4x,
 with 40/80/160 complete logical ticks per real second and three-minute days at

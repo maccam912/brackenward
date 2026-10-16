@@ -2,7 +2,7 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v11"
+const CONTENT_VERSION: String = "colony-v12"
 const SCHEMA_REVISION: int = 24
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
@@ -558,15 +558,7 @@ func _command(command: Dictionary) -> String:
 			var job: Dictionary = _job("harvest","Growing","Field",field.id,Vector2i(field.x,field.y),definition.harvest_milli)
 			job.definition = "early_harvest"
 			job.priority = 3
-		"clear_field":
-			var field: Dictionary = find(fields, args.target)
-			if field.is_empty():
-				return "missing_field"
-			for job in jobs:
-				if job.target == field.id and job.state not in ["Complete", "Canceled"]:
-					_release(job, true)
-			fields.erase(field)
-			record_indexes.clear()
+		"clear_field", "clear_field_plot": return ColonyAgriculture.clear(self,args.target,command.kind=="clear_field_plot")
 		"stock_filter":
 			var store: Dictionary = find(stores, args.target)
 			if store.is_empty() or not args.filters.all(func(item: Variant) -> bool: return definitions.items.has(item)) or args.priority not in [1,2,3]:
@@ -918,7 +910,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 			# then eat before collecting another input or starting the next phase.
 			if current.state=="Fetching": current.state="Delivering"
 			needs_food=false
-		var seek_food_work: bool = food_work_only and hunger_food.is_empty() and current.kind not in PERSONAL_JOBS and not _food_supply_work(current)
+		var seek_food_work: bool = food_work_only and hunger_food.is_empty() and (current.kind not in PERSONAL_JOBS or (current.kind=="recover" and food_work_available)) and not _food_supply_work(current)
 		var hungry_sleeper: bool = current.kind=="sleep" and food_work_available and citizen.rest>=ColonyRest.TIRED and ColonyRest.food_wakes_sleeper(citizen)
 		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or seek_food_work or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
@@ -957,7 +949,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		sleep_job.work_y = point.y
 		citizen.job = sleep_job.id
 		return
-	if citizen.health < 50:
+	if citizen.health < 50 and not food_work_available:
 		var destination: Dictionary = _care_destination(citizen)
 		var recovery: Dictionary = _job("recover","","",destination.id,destination.point,0)
 		recovery.worker = citizen.id; recovery.state = "Moving"
@@ -1442,8 +1434,9 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 		citizen.move_rem += speed * 1150
 		speed = citizen.move_rem / 1000
 		citizen.move_rem %= 1000
-	if citizen.health < 50:
-		citizen.injury_rem += speed * 750
+	if citizen.health < 50 or citizen.fullness==0:
+		var movement_ratio: int=(750 if citizen.health<50 else 1000)*(500 if citizen.fullness==0 else 1000)/1000
+		citizen.injury_rem += speed * movement_ratio
 		speed = citizen.injury_rem / 1000
 		citizen.injury_rem %= 1000
 	if citizen.carrying_patient > 0:
@@ -1466,6 +1459,7 @@ func _rate(citizen: Dictionary, job: Dictionary) -> int:
 	var ratios: Array[int] = [1000 + 100 * citizen.skills.get(job.skill, 0),
 		(500 if citizen.equipment.toolkit.is_empty() else (1150 if citizen.equipment.toolkit == "forged_toolkit" else 1000)) if job.skill in ["Build","Craft","Field"] else 1000,
 		1200 if (job.skill == "Care" and citizen.traits.has("Kind")) or (job.skill == "Study" and citizen.traits.has("Curious")) else 1000, 800 if not comfortable(citizen) and not roofed(Vector2i(citizen.x, citizen.y)) else 1000]
+	if citizen.fullness==0: ratios[3]=ratios[3]*500/1000
 	var remainders: Array = job.rate_remainders.get(citizen.id, [0, 0, 0, 0])
 	var work: int = 100
 	for index in range(4):

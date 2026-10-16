@@ -75,6 +75,7 @@ static func run(game: GameSession, check: Callable) -> void:
 	await overlay_camera(game,check)
 	await bed_assignment(game,check)
 	await building_edits(game,check)
+	await farm_controls(game,check)
 	tree.root.size=original_size;game.size=Vector2(original_size);game.text_scale=original_scale;game._build_theme();game._layout()
 
 static func building_edits(game: GameSession, check: Callable) -> void:
@@ -289,3 +290,42 @@ static func confirmed_orders(game: GameSession, check: Callable) -> void:
 		check.call("PLACE/native_confirmed_marker_changes_actual_pixels_while_paused",game.runner.speed==0 and game.view.confirmed_cells.has(Vector2i(90,80)) and image.get_pixelv(sample)!=before_pixel,str([before_pixel,image.get_pixelv(sample)]))
 	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss();game.saving_disabled=previous_saving_disabled
 	game.get_tree().root.size=original_size;game.size=Vector2(original_size);game._layout()
+
+static func farm_controls(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree()
+	for viewport_size: Vector2i in [Vector2i(390,844),Vector2i(960,600)]:
+		game._replace_world(ColonyTests.world());game.close_sheet();game.close_inspector();game._tutorial_dismiss()
+		tree.root.size=viewport_size;game.size=Vector2(viewport_size);game.text_scale=1.5;game._build_theme();game._layout()
+		game.show_sheet("Build");await tree.process_frame
+		var barley_label: String=ColonyText.text("ui.action.plant_crop",{"crop":game._catalog_name("barley")})
+		check.call("FARM/UI_unresearched_barley_hidden_%d" % viewport_size.x,game.sheet_body.find_children("*","Button",true,false).all(func(n:Node)->bool:return n.text!=barley_label))
+		game.world.researched.assign(["farming","herbalism","storecraft"])
+		game.show_sheet("Build");await tree.process_frame
+		for crop: String in game.world.definitions.crops:
+			var caption: String=ColonyText.text("ui.action.plant_crop",{"crop":game._catalog_name(crop)})
+			var actions: Array=game.sheet_body.find_children("*","Button",true,false).filter(func(n:Node)->bool:return n.text==caption)
+			check.call("FARM/UI_unlocked_crop_has_large_button_%s_%d" % [crop,viewport_size.x],actions.size()==1 and actions[0].custom_minimum_size.y>=48)
+			if actions.size()!=1: continue
+			game.view.center_camera(Vector2(74.5,54.5))
+			actions[0].pressed.emit();await tree.process_frame
+			check.call("FARM/UI_crop_brush_and_help_follow_selection_%s_%d" % [crop,viewport_size.x],game.field_crop==crop and game.placement_kind=="field" and game._preview_text().contains(game._catalog_name(crop)) and game.notice.contains(game._catalog_name(crop)) and game.notice.contains("Growing seasons:") and game._preview_text().contains(game._crop_seasons(crop)))
+			game.view.preview_start=Vector2i(74,54);game.view.preview_end=Vector2i(75,55)
+			if crop=="barley" and DisplayServer.get_name()!="headless":
+				await tree.process_frame;await RenderingServer.frame_post_draw
+				check.call("FARM/UI_barley_brush_capture_%d" % viewport_size.x,tree.root.get_texture().get_image().save_png("res://reports/barley-placement-%d.png" % viewport_size.x)==OK)
+			game.confirm_placement()
+			check.call("FARM/UI_confirmation_queues_selected_crop_%s_%d" % [crop,viewport_size.x],game.world.pending_commands.size()==1 and game.world.pending_commands[0].kind=="field" and game.world.pending_commands[0].args.crop==crop and game.world.pending_commands[0].args.tiles.size()==4)
+			game.world.pending_commands.clear();game.show_sheet("Build");await tree.process_frame
+		game.world.queue_command("field",{"crop":"barley","tiles":[Vector2i(74,54),Vector2i(75,54),Vector2i(74,55),Vector2i(75,55)]});game.world.step()
+		game.view.center_camera(Vector2(74.5,54.5))
+		game._field_sheet(game.world.fields[0]);await tree.process_frame
+		var clear: Array=game.sheet_body.find_children("*","Button",true,false).filter(func(n:Node)->bool:return n.text==ColonyText.text("ui.action.clear_plot",{"count":4}))
+		check.call("FARM/UI_whole_plot_highlight_count_and_large_removal_%d" % viewport_size.x,clear.size()==1 and clear[0].custom_minimum_size.y>=48 and game.view.inspected_tiles.size()==4)
+		if DisplayServer.get_name()!="headless":
+			await RenderingServer.frame_post_draw
+			check.call("FARM/UI_plot_card_capture_%d" % viewport_size.x,tree.root.get_texture().get_image().save_png("res://reports/farm-controls-%d.png" % viewport_size.x)==OK)
+		if clear.size()==1: clear[0].pressed.emit()
+		check.call("FARM/UI_whole_plot_action_queues_one_command_%d" % viewport_size.x,game.world.pending_commands.size()==1 and game.world.pending_commands[0].kind=="clear_field_plot")
+		game.world.step()
+		check.call("FARM/UI_plot_action_removes_all_four_tiles_%d" % viewport_size.x,game.world.fields.is_empty() and game.world.invariant_errors().is_empty())
+	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()

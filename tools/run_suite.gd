@@ -106,6 +106,7 @@ func run() -> void:
 		"scheduler":
 			BedtimeTests.run(check)
 			NeedsPriorityTests.run(check)
+			FarmRecoveryTests.run(check)
 			AssignmentProbeTests.run(check)
 			FoodCandidatesTests.run(check)
 			AssignmentViewTests.run(check)
