@@ -917,6 +917,8 @@ Building render reuse (0.7.95): off-screen props retain live records and synchro
 
 Ground contact and beacon alignment (0.7.96): people/animals have small baked translucent shadows within their original frame bounds, preserving opaque art and portrait bytes. The beacon ceremony flame is anchored at source y=14 in its raised basket rather than the generic furnace base. Inactive and destroyed beacons remain unlit; the existing Active/Complete ceremony rule is unchanged.
 
+Status-header reflow (0.7.102): map tools, placement controls and inspector placement use the actual wrapped status-panel height. The map viewport keeps its stable nominal geometry, so clock/notice reflow never shifts the free-camera scene. Container resizing schedules a deferred layout pass; the correction applies after width, density, safe-area and text-size changes.
+
 Natural resource clarity (0.7.101): berries, leafy herbs, layered clay, faceted stone and iron have distinct silhouettes. Harvested renewable patches remain visible as fruitless foliage, cut leaves or mushroom remnants; exhausted finite deposits stay hidden. Real remaining quantities choose these sprites, and actual regrowth restores the original ready art. Resource cards show remaining growing days and winter pauses, using catalog display names. Three appended depleted regions bring the shared atlas to 300 regions without changing earlier bounds.
 
 Connected construction art (0.7.100): open two-rail fences and pointed palisades are visibly distinct from timber and stone walls. Material details retain the connected centerlines, corners, mixed junctions and destroyed-wall gaps. Wooden floors and bridges use staggered plank joints inside their existing eight atlas regions. All interiors remain visible.

@@ -314,6 +314,8 @@ func _build_status() -> void:
 	notice_label = label(notice, rows)
 	notice_label.max_lines_visible = 2
 	notice_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	# Wrapped labels can enlarge the panel after the container layout pass.
+	status.resized.connect(func()->void:_layout.call_deferred())
 
 func _build_navigation() -> void:
 	nav = GridContainer.new()
@@ -1089,6 +1091,9 @@ func _layout() -> void:
 	var header_height: float = (104.0 if width < 600 else 88.0) * text_scale
 	status.position = Vector2.ZERO
 	status.size = Vector2(width, header_height)
+	# Move controls below the real header without moving the free-camera map
+	# whenever a notice or clock line wraps differently.
+	var status_bottom: float=maxf(header_height,status.get_combined_minimum_size().y)
 	nav.columns = 3 if wrap_navigation else 5
 	nav.position = Vector2(0, height - navigation_height)
 	for child: Button in nav.get_children():
@@ -1104,10 +1109,10 @@ func _layout() -> void:
 	speeds.size = Vector2(speed_width,48)
 	view.position = Vector2(0, header_height)
 	view.size = Vector2(width, maxf(48, height - header_height - navigation_height))
-	map_tools.position = Vector2(8, header_height + 8)
+	map_tools.position = Vector2(8, status_bottom + 8)
 	map_tools.size = Vector2(112, 160)
 	map_tools.visible = sheet == null and not placement.visible
-	placement.position = Vector2(8, header_height + 8)
+	placement.position = Vector2(8, status_bottom + 8)
 	if (width >= 600 and height < 500) or (text_scale > 1.0 and height < 700):
 		placement.position.y = 8
 	status.visible = not (placement.visible and placement.position.y < header_height)
@@ -1128,7 +1133,7 @@ func _layout() -> void:
 		sheet.move_to_front()
 	if inspector != null:
 		var wide: bool = width >= 600
-		inspector.position = Vector2(width - 328, header_height + 8) if wide else Vector2(8, maxf(header_height, height - navigation_height - 248))
+		inspector.position = Vector2(width - 328, status_bottom + 8) if wide else Vector2(8, maxf(status_bottom, height - navigation_height - 248))
 		inspector.size = Vector2(320 if wide else width - 16, 184)
 		inspector.move_to_front()
 		view.focus_offset = Vector2(-164, 0) if wide else Vector2(0, -120)

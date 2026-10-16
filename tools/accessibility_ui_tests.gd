@@ -23,6 +23,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	tree.root.add_child(game);game.close_sheet();game._tutorial_dismiss();game.set_process(false)
 	menu_feedback(game,check)
 	await menu_lifetime(game,check)
+	await status_spacing(game,check)
 	var initial: String = game.world.canonical_hash()
 	for state in ["normal","hover","pressed","disabled"]:
 		var text: String = {"normal":"font_color","hover":"font_hover_color","pressed":"font_pressed_color","disabled":"font_disabled_color"}[state]
@@ -175,3 +176,29 @@ static func menu_feedback(game: GameSession, check: Callable) -> void:
 	game.world.step();game.show_work_preferences(1)
 	check.call("HAUL/UI_explicit_priority_applies_and_reopens_as_normal",game.world.citizens[0].preferences.Hauling==2 and game.sheet_body.find_children("*","Button",true,false).any(func(b:Button)->bool:return b.text=="Hauling: Normal"))
 	game.close_sheet();game._replace_world(ColonyTests.world());game._tutorial_dismiss()
+
+static func status_spacing(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree();var old_size: Vector2i=tree.root.size
+	var old_scale: float=game.text_scale;var old_logical: float=game.logical_scale
+	var old_insets: Vector4=game.test_insets;var old_notice: String=game.notice_label.text
+	game.close_sheet();game.runner.pause();game._refresh_clock()
+	var baseline: String=game.world.canonical_hash()
+	for viewport_size in [Vector2i(360,640),Vector2i(393,851),Vector2i(851,393),Vector2i(1080,2340)]:
+		for scale in [1.0,1.5]:
+			tree.root.size=viewport_size;game.logical_scale=2.75 if viewport_size.x==1080 else 1.0
+			game.test_insets=Vector4(0,50,0,0) if viewport_size.x==1080 else Vector4.ZERO
+			game.text_scale=scale;game._build_theme();game._layout()
+			game.notice_label.text=ColonyText.text("ui.notice.paused")
+			await tree.process_frame;await tree.process_frame;await tree.process_frame
+			var point: Vector2=game.view.get_global_transform()*game.view.tile_to_screen(Vector2(64,64))
+			game.notice_label.text="Paused."
+			await tree.process_frame;await tree.process_frame;await tree.process_frame
+			check.call("SETTINGS/UI_notice_reflow_keeps_map_still_%dx%d_%d" % [viewport_size.x,viewport_size.y,int(scale*100)],point.is_equal_approx(game.view.get_global_transform()*game.view.tile_to_screen(Vector2(64,64))))
+			game.notice_label.text=ColonyText.text("ui.notice.paused")
+			await tree.process_frame;await tree.process_frame;await tree.process_frame
+			var header: Rect2=game.status.get_global_rect();var tools: Rect2=game.map_tools.get_global_rect()
+			check.call("SETTINGS/UI_map_tools_clear_actual_header_%dx%d_%d" % [viewport_size.x,viewport_size.y,int(scale*100)],tools.position.y>=header.end.y+7*game.logical_scale,"header bottom %.1f; tools top %.1f" % [header.end.y,tools.position.y])
+	check.call("SETTINGS/UI_status_reflow_preserves_campaign",game.world.canonical_hash()==baseline)
+	tree.root.size=old_size;game.logical_scale=old_logical;game.test_insets=old_insets;game.text_scale=old_scale
+	game.notice_label.text=old_notice;game._build_theme();game._layout()
+	await tree.process_frame;await tree.process_frame

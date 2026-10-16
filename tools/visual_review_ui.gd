@@ -40,6 +40,8 @@ func capture() -> void:
 	root.size=Vector2i(390,844)
 	await process_frame
 	game.text_scale=1.5;game._build_theme();game._layout()
+	game.notice_label.text=ColonyFonts.display(game.notice);game._refresh_clock()
+	await save_view("hud-390x844-text150")
 	game.show_sheet("Build")
 	await save_view("build-390x844-text150")
 	game.show_sheet("Work")

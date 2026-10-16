@@ -1,5 +1,30 @@
 # Implementation evidence
 
+Android visual review and header spacing (16 October 2026): `0.7.102-m7`,
+unchanged content/schema/envelope. Exported Android review found a 150% text
+status header overlapping map controls. Controls now track the real wrapped header
+height while the map keeps stable geometry. Seven new baseline spacing checks
+failed before the fix. An initial approach moved the viewport and failed existing
+camera/marker tests; it was replaced. The final pinned UI suite passes 783 checks,
+including notice reflow without camera movement at phone, landscape and Android
+density/safe-area sizes. Content/font and string/message validation pass.
+
+Local Android export and Kotlin plugin tests pass. On a new task-owned Android 35
+arm64 Pixel 5 emulator, actual ADB touches exercised setup, scrolling, Build/Work
+thumbnails, People portraits/needs, 100/125/150% text, portrait/landscape, native
+document import and direct stockpile inspection. The rebuilt header has clear
+spacing. The fresh seed-104729 Standard colony matches the retained full initial
+generation reference. A 103-structure/eight-resident recorded colony imported into
+a separate slot matches every migrated gameplay field after normalizing the new
+campaign ID and pending-command session IDs. Runtime logs contain a shader-cache
+recompile warning, with no observed script errors or Android fatal exceptions.
+
+Durable captures and evidence are in `reports/ANDROID_VISUAL_REVIEW.md` and
+`reports/android-visual-v102-evidence.json`; detailed local logs remain under
+`reports/visual-polish/`. This software-rendered emulator run does not certify
+physical Android appearance/performance. Weekly usage is 50% remaining; the
+original reset has not occurred, and polishing continues.
+
 Natural resource clarity (16 October 2026): `0.7.101-m7`, unchanged content/
 schema/envelope. Five resource sprites now distinguish berries, leafy herbs,
 layered clay, faceted stone and iron. Three appended depleted sprites keep

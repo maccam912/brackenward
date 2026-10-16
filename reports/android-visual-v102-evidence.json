@@ -1,0 +1,59 @@
+{
+  "version": "0.7.102-m7",
+  "local_android_code": 119,
+  "engine": "4.7.2-stable",
+  "device": "Task-created Android 35 arm64 Pixel 5 emulator, 1080x2340, density 440, SwiftShader/ANGLE",
+  "apk_sha256": "66d8e5cbdc1df44958cfc679642c4b06df83cb4c7de647b56397aec7c8e72215",
+  "initial_colony_audit": {
+    "different_fields": [],
+    "engine": "4.7.2-stable (official)",
+    "expected_canonical_hash": "0ecd4b3675fe4b910d4003cd51f599b9b0bb8d9612c42a3fa9c28b63d105bf26",
+    "generator_version": 2,
+    "input_sha256": "12be9a11a50926ec02812991fa36f30375ad0b3cc43fadf384374b44b82ba28d",
+    "normalized_canonical_hash": "0ecd4b3675fe4b910d4003cd51f599b9b0bb8d9612c42a3fa9c28b63d105bf26",
+    "original_canonical_hash": "6048482a3d55eabd6fbc67b283a40f2ddc2f63b69d393251bc0c20b1e65454df",
+    "passed": true,
+    "scope": "Initial exported-app colony compared with independently validated and visually inspected boundary expectations. Only campaign/session ID and the two declared content headers normalize privately, after exact catalog-definition equivalence is checked. Every gameplay field remains compared. No simulation ticks, player files or golden values change; this is not device gameplay/performance certification.",
+    "seed": 104729,
+    "site": "meadow_reach",
+    "source": {
+      "data/catalogs/colony_v6.json": "eb263909da826844c24f2f504dd9368bdc8d08a13b01cf82fbe43c197f3a6f73",
+      "data/catalogs/colony_v7.json": "12fe7242931cc9a4997e350c1ba45c2aeb5a07ba505d895a8213b35e75a307a5",
+      "src/generation/colony_generation.gd": "b7fff39888ba4c0d82706aff38529bcf5d6e4acb41840a6c9902f65876e820d0",
+      "src/persistence/colony_codec.gd": "22833fa5f5141be697a649d45611f4abe8cced8c420ee559e4adb389d9960b63",
+      "src/sim/colony_world.gd": "0cf082d2f5c7fbb086c75d96207bb0589d18645db4ffb4bcf3dec7a15b6f7d5e",
+      "tests/fixtures/generation-v2-goldens.json": "0ebd2c7c26acf34842598eac3d598fa517c5295c0622554c8b9d14450fd2e292",
+      "tools/check_initial_golden_save.gd": "8dbe3c1d2ee50223a6841f49ddf60c04deb63fea00d9a1c8ffacf3ad64829baf",
+      "tools/generation_tests.gd": "07d05e55312a13c6155a57cd1a0138410e134fe2a36ab91367f55460aed0e0fc"
+    },
+    "tick": 1800,
+    "unchanged": true
+  },
+  "developed_import_audit": {
+    "changed_fields": [],
+    "input_sha256": [
+      "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+      "a985a45a53f17487ddd1f48dd2cad89d588127d6d5073df88c57bcf7f72c79af"
+    ],
+    "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+    "passed": true,
+    "residents": 8,
+    "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+    "source_inputs_unchanged": true,
+    "structures": 103,
+    "tick": 693000
+  },
+  "screenshots": {
+    "android-visual-v101-header.png": "3a73fcf793fb0cee280e70e80ed844b1d4658095303c26801aad4c01e00e0885",
+    "android-visual-v102-header.png": "fb9704ecf589bdc176046d69c5854f7fc8a13a161185dd693178b0c3a72d7c30",
+    "android-visual-v102-colony.png": "fc7e640ef9a5625471518c6f72d5227fa3ee221b18f3f1fa1509d0c8e04b494a"
+  },
+  "ui_checks": 783,
+  "ui_failures": 0,
+  "runtime_observation": "No script errors or Android fatal exceptions observed. The emulator logged a cached-shader recompilation warning.",
+  "limitations": [
+    "Software-rendered emulator; no physical Android frame-rate, memory, thermal, battery or appearance certification.",
+    "Local debug signing and version code differ from numbered CI release artifacts.",
+    "Initial-colony boundary audit was captured before the developed colony import; it is not a claim that autosave file bytes remain identical across later checkpoints."
+  ]
+}
