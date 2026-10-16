@@ -23,6 +23,16 @@ static func run(previous: GameSession, check: Callable) -> void:
 	trees[0].x=62;trees[0].y=44;trees[1].x=63;trees[1].y=44
 	var view: WorldView = WorldView.new();view.theme=previous.theme;tree.root.add_child(view);view.size=Vector2(960,600);view.setup(world);view.set_process(false);view.tile_size=48;view.center_camera(Vector2(56,47));view._process(0)
 	var baseline: String = world.canonical_hash();var environment: ColonyEnvironment = view.environment
+	var bank_count: int=environment.bank_rectangles.size()
+	check.call("ART/UI_river_banks_have_visible_cached_geometry",bank_count>0)
+	var banks_inside_water: bool=true
+	for entry in environment.bank_rectangles:
+		var rectangle: Rect2=entry[0]
+		var cell: Vector2i=Vector2i((rectangle.position+rectangle.size*0.5)/16.0)
+		banks_inside_water=banks_inside_water and PrototypeWorld.is_water(cell)
+	check.call("ART/UI_river_bank_art_stays_inside_logical_water",banks_inside_water)
+	view.refresh_terrain();view._process(0)
+	check.call("ART/UI_river_bank_rebuild_is_idempotent_and_preserves_saved_state",environment.bank_rectangles.size()==bank_count and world.canonical_hash()==baseline)
 	check.call("ART/UI_resources_batch_multiple_trees_into_one_visible_chunk_row",environment.resource_rows.values().any(func(row:EnvironmentResourceRow)->bool:return row.records.size()>=2))
 	check.call("ART/UI_buildings_share_one_depth_layer_with_people_and_resource_rows",environment.props.size()==world.structures.filter(func(s:Dictionary)->bool:return s.definition not in ColonyEnvironment.FLOORS).size() and environment.props.values().all(func(prop:EnvironmentProp)->bool:return prop.get_parent()==view.actor_layer))
 	var room: int = world.room_tiles[Vector2i(55,47)]

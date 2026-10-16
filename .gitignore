@@ -70,3 +70,6 @@ reports/generation-*/
 
 # Local feedback validation artifacts, including retained failed attempts.
 reports/feedback-*/
+
+# Native visual review captures and local validation evidence.
+reports/visual-polish/

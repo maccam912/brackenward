@@ -19,6 +19,8 @@ var last_chunks: Rect2i = Rect2i()
 var ground_root: Node2D
 var static_water: TileMapLayer
 var animated_water: TileMapLayer
+var banks: Node2D
+var bank_rectangles: Array = []
 var roof_layer: Node2D
 var feedback_layer: Node2D
 var warm_layer: Node2D
@@ -46,6 +48,7 @@ func _init(owner: Node) -> void:
 	view.terrain.tile_set=tiles
 	static_water=TileMapLayer.new();static_water.tile_set=tiles;view.ground.add_child(static_water)
 	animated_water=TileMapLayer.new();animated_water.tile_set=tiles;view.ground.add_child(animated_water)
+	banks=Node2D.new();banks.name="RiverBanks";view.ground.add_child(banks);banks.draw.connect(_draw_banks)
 	ground_root=Node2D.new();ground_root.name="GroundChunks";view.ground.add_child(ground_root)
 	warm_layer=Node2D.new();view.ground.add_child(warm_layer);warm_layer.draw.connect(_draw_warmth)
 	var additive: CanvasItemMaterial = CanvasItemMaterial.new();additive.blend_mode=CanvasItemMaterial.BLEND_MODE_ADD;warm_layer.material=additive
@@ -55,24 +58,45 @@ func _init(owner: Node) -> void:
 func refresh_terrain() -> void:
 	if world!=view.world: _reset_world();return
 	view.terrain.clear();static_water.clear();animated_water.clear()
+	bank_rectangles.clear()
 	for y in range(128):
 		for x in range(128):
 			var point: Vector2i = Vector2i(x,y)
 			var water: bool = world.terrain_state.elevation[y*128+x]==0 if world.generator_version>0 else PrototypeWorld.is_water(point)
 			if water:
-				static_water.set_cell(point,1,Vector2i.ZERO);animated_water.set_cell(point,0,Vector2i(9,0));continue
+				static_water.set_cell(point,1,Vector2i.ZERO);animated_water.set_cell(point,0,Vector2i(9,0))
+				_add_banks(point)
+				continue
 			var pattern: int = x*374761393+y*668265263+(world.seed%65536)*2654435761
 			pattern=((pattern^(pattern>>13))&0x7fffffff)*1274126177
 			pattern=pattern^(pattern>>16)
-			var variant: int = posmod(pattern,2)
+			var variant: int = 1 if posmod(pattern,5)==0 else 0
 			if posmod(pattern>>4,29)==0: variant=2
 			var cell: int = variant
-			if world.soil_fertility(point)==750: cell=3+(x+y)%3
-			elif world.soil_fertility(point)==1250: cell=6+(x+y)%3
+			if world.soil_fertility(point)==750: cell=3+posmod(pattern,3)
+			elif world.soil_fertility(point)==1250: cell=6+posmod(pattern,3)
 			var path: bool = world.terrain_state.paths.has(point) if world.generator_version>0 else x==66 or y in [63,64]
 			if path: cell=11+(x+y)%3
 			view.terrain.set_cell(point,0,Vector2i(cell,0))
 	last_tick=-1;indexed_count=-1
+	banks.queue_redraw()
+
+func _add_banks(point: Vector2i) -> void:
+	# Draw only inside actual water cells; floors and bridges render above banks.
+	for direction in [Vector2i.UP,Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT]:
+		var neighbor: Vector2i=point+direction
+		if not ColonyWorld.inside(neighbor): continue
+		var wet: bool=world.terrain_state.elevation[neighbor.y*128+neighbor.x]==0 if world.generator_version>0 else PrototypeWorld.is_water(neighbor)
+		if wet: continue
+		var origin: Vector2=Vector2(point)*16
+		var horizontal: bool=direction.y!=0
+		var edge: Vector2=origin+Vector2(13 if direction.x==1 else 0,13 if direction.y==1 else 0)
+		bank_rectangles.append([Rect2(edge,Vector2(16,3) if horizontal else Vector2(3,16)),Color("91aca4")])
+		var lip: Vector2=origin+Vector2(15 if direction.x==1 else 0,15 if direction.y==1 else 0)
+		bank_rectangles.append([Rect2(lip,Vector2(16,1) if horizontal else Vector2(1,16)),Color("b5b58a")])
+
+func _draw_banks() -> void:
+	for entry in bank_rectangles: banks.draw_rect(entry[0],entry[1])
 
 func _reset_world() -> void:
 	for collection in [props,resource_rows,ground_chunks]:
@@ -95,6 +119,7 @@ func update(delta: float) -> void:
 	weather_clock=0.0 if view.reduced_motion else weather_clock+maxf(0.0,delta)
 	tint=EnvironmentArt.night_color(world.tick)
 	view.terrain.modulate=tint;static_water.modulate=tint;animated_water.modulate=tint
+	banks.modulate=tint
 	static_water.visible=view.quality=="Battery" or view.reduced_motion;animated_water.visible=not static_water.visible
 	selected_bounds=Rect2()
 	for actor in view.actors:

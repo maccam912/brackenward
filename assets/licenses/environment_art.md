@@ -24,3 +24,9 @@ room, warmth or storage rules.
 `warm_glow.png` is an original 64x64 additive radial gradient authored by the same
 script. It is a bounded presentation effect over actual heat sources and adds no
 light, fuel, collision or simulation rules.
+
+The 0.7.85 terrain pass remaps grass tuft colors to quieter intermediate greens,
+reduces poor/rich soil contrast and bakes original translucent contact shadows
+inside natural-resource sprite bounds. Source component bytes stay unchanged.
+River-bank geometry is original presentation code in `ColonyEnvironment`; it
+follows existing water boundaries and adds no media dependencies.

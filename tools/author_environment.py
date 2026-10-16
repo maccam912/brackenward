@@ -43,23 +43,34 @@ def tile(name, stone=False):
 
 
 def ground(kind, variant):
-    if kind == "grass": return tile(["grass_plain", "grass_speckled", "grass_flowers"][variant])
-    image = Image.new("RGBA", (16, 16), {"poor": MOSS, "rich": "#85985D", "water": WATER, "path": "#BBA980", "soil": CLAY}[kind])
+    if kind == "grass":
+        image = tile(["grass_plain", "grass_speckled", "grass_flowers"][variant])
+        # Keep the inspected shapes, with quieter tufts behind people and props.
+        replacements = {tuple(bytes.fromhex(MOSS[1:])): (151, 170, 111),
+                        tuple(bytes.fromhex(DEEP[1:])): (139, 160, 103)}
+        image.putdata([replacements.get(pixel[:3], pixel[:3]) + (pixel[3],)
+                       for pixel in image.get_flattened_data()])
+        return image
+    image = Image.new("RGBA", (16, 16), {"poor": "#9DAD77", "rich": "#9BAF72", "water": WATER, "path": "#BBA980", "soil": CLAY}[kind])
     d = ImageDraw.Draw(image)
     if kind == "water":
         for x, y, length in [(1 + variant, 4, 5), (8 - variant, 11, 6)]: d.line((x, y, x + length, y), fill="#80AFBA")
     elif kind == "soil":
         for y in range(3, 16, 4): d.line((1, y, 14, y), fill=WOOD)
     else:
-        for index in range(4):
+        for index in range(2 if kind in ("poor", "rich") else 4):
             x, y = (index * 7 + variant * 3) % 14, (index * 5 + variant * 7) % 14
-            d.rectangle((x, y, x + 1, y + 1), fill=SHADE if kind == "poor" else ("#A99A75" if kind == "path" else MOSS))
+            d.rectangle((x, y, x + 1, y + 1), fill="#91A16E" if kind == "poor" else ("#A99A75" if kind == "path" else "#8EA368"))
     return image
 
 
 def resource(kind, variant):
     image = Image.new("RGBA", (32 if kind == "tree" else 24, 40 if kind == "tree" else 24))
     d = ImageDraw.Draw(image)
+    # Compact contact shadows are baked into the existing sprite bounds.
+    # Their position follows the same foot anchor as the visible resource.
+    d.ellipse((5, 34, 27, 39) if kind == "tree" else (3, 19, 21, 23),
+              fill=(38, 60, 59, 48))
     if kind == "tree":
         if variant == 0:
             image.alpha_composite(tile("conifer_top"), (8, 8));image.alpha_composite(tile("conifer_base"), (8, 24))

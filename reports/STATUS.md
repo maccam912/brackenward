@@ -1,5 +1,30 @@
 # Implementation evidence
 
+Visual terrain checkpoint (16 October 2026): `0.7.85-m7`, unchanged content
+`colony-v11`, schema 24 / envelope 5. Quieter grass, closer poor/rich soil
+shades and coordinate-hashed variants reduce the repeating ground pattern.
+Cached river-bank strips follow actual water edges below floors/bridges, tint
+with the world and remain static in Battery/reduced motion. Natural-resource
+sprites carry small baked contact shadows within their existing bounds.
+Original CC0 source bytes, map generation, footprints and saved fields remain
+unchanged. Two isolated native capture scripts provide camp/river day/night
+and portrait/landscape interface views without opening player saves.
+
+Local pinned Godot 4.7.2 validation passes native UI 735, persistence 510
+(including all 284 semantic atlas regions and source-license checks), nature 33,
+content/font validation and the real 60-frame Compatibility startup with audio
+drained. Native day/night terrain captures were inspected. Preliminary captures
+used PATH Godot 4.7; final captures/tests use the pinned 4.7.2 executable. Logs
+and images are retained locally in `reports/visual-polish/`. Physical Android
+appearance/performance and remote publication remain separate gates.
+
+The user resumed visual polishing until the weekly reset or less than 25%
+weekly usage remaining. Initial account reading was 73% remaining; continue
+in verified batches and check usage at boundaries. This replaces the previous
+stop-for-testing instruction. Foliage, camp furniture and build/work menu
+visual presentation are the next candidates; no gameplay additions are implied.
+
+
 
 Bedtime hunger follow-up (15 October 2026): `0.7.84-m7`, content `colony-v11`,
 unchanged schema 24 / envelope 5. Actual Working sleep halves hunger drain,
