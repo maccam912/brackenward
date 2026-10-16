@@ -105,6 +105,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	check.call("ART/UI_explicit_campaign_refresh_releases_every_old_resource_world_reference",not environment.resource_rows.is_empty() and environment.resource_rows.values().all(func(row:EnvironmentResourceRow)->bool:return row.world==replacement) and environment.props.values().all(func(prop:EnvironmentProp)->bool:return prop.world==replacement))
 	await carrying(view,check)
 	terrain_edges(view,check)
+	seasonal_landscape(view,check)
 	view.queue_free();await tree.process_frame;await tree.process_frame
 	tree.root.size=original_size;previous.visible=visible;previous.set_process(processing);previous.view.set_process(old_view_process)
 
@@ -147,3 +148,22 @@ static func carrying(view: WorldView, check: Callable) -> void:
 	view.world=world;view._process(0)
 	var actor: CitizenSprite = view.actors.filter(func(a:Sprite2D)->bool:return a.get_meta("world_id")==carrier.id)[0]
 	check.call("ART/UI_actual_carried_inventory_selects_the_carry_animation",actor.pose=="carry" and world.canonical_hash()==canonical)
+
+static func seasonal_landscape(view: WorldView, check: Callable) -> void:
+	var world: ColonyWorld=ColonyTests.world()
+	ColonyGeneration.configure(world,104729,"meadow_reach")
+	view.world=world;view.refresh_terrain();view.center_camera(Vector2(64,64));view._process(0)
+	var ground: Vector2i=Vector2i.ZERO
+	for point in view.terrain.get_used_cells():
+		if view.terrain.get_cell_atlas_coords(point).x<9:ground=point;break
+	var summer_tile: Vector2i=view.terrain.get_cell_atlas_coords(ground)
+	for season in [2,3,0]:
+		world.tick=season*8*7200+3600
+		var baseline: String=world.canonical_hash()
+		view._process(0)
+		var source: int=view.terrain.get_cell_source_id(ground)
+		var exact: bool=source==summer_tile.x+2 if season==3 else source==0 and view.terrain.get_cell_atlas_coords(ground)==summer_tile
+		var water_count: int=view.environment.static_water.get_used_cells().size()
+		for point in world.terrain_state.paths:
+			if world.terrain_state.elevation[point.y*128+point.x]!=0:exact=exact and view.terrain.get_cell_source_id(point)==0
+		check.call("ART/UI_season_%d_changes_only_grass_presentation_and_keeps_paths_water_state" % season,exact and water_count>0 and world.canonical_hash()==baseline)

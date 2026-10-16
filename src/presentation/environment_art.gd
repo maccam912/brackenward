@@ -34,3 +34,10 @@ static func day_phase(tick: int) -> String:
 	if hour>=7 and hour<17: return "day"
 	if hour>=17 and hour<19: return "dusk"
 	return "night"
+
+static func tree_semantic(id: int, tick: int) -> String:
+	var variant: int=posmod(id,3)
+	var season: int=ColonyAgriculture.season(tick)
+	if variant!=0 and season>=2:
+		return "resource/tree_%s/%d" % ["autumn" if season==2 else "winter",variant]
+	return "resource/tree/%d" % variant

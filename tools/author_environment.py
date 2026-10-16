@@ -369,6 +369,34 @@ def structure(kind, width, height, rotation, roof=False):
     return image
 
 
+def seasonal_tree(variant, season):
+    """Broadleaf-only seasonal art; evergreen and resource quantities are unchanged."""
+    image=Image.new("RGBA",(32,40));d=ImageDraw.Draw(image)
+    d.ellipse((5,34,27,39),fill=(38,60,59,48))
+    if season=="autumn":
+        base=tile("conifer_base").crop((0,8,16,16));image.alpha_composite(base,(8,32))
+        crown=leafy_crown(variant)
+        # Keep the existing crown mask and clustered value structure.
+        palette={INK:INK,DEEP:"#765D40",MOSS:"#A47B52",
+                 "#7F995F":"#B58A4F","#8C9F64":"#B96C50",
+                 "#A3B578":"#D1AD65","#B2BA7D":"#D39262","#BDC48B":"#E5C286"}
+        colors={tuple(bytes.fromhex(key[1:])):tuple(bytes.fromhex(value[1:])) for key,value in palette.items()}
+        crown.putdata([(*colors.get(pixel[:3],pixel[:3]),pixel[3]) for pixel in crown.get_flattened_data()])
+        image.alpha_composite(crown,(4,8))
+    else:
+        # Full-height forked branches distinguish a dormant tree from a stump.
+        branches=[[(15,37),(16,23),(14,10),(12,5)],
+                  [(16,27),(8,21),(5,13)],[(14,17),(22,12),(25,6)],
+                  [(16,31),(24,24),(27,17)],[(9,22),(3,19)],
+                  [(22,12),(21,6)],[(14,12),(7,8)]]
+        for points in branches:d.line(points,fill=INK,width=3)
+        for points in branches:d.line(points,fill=WOOD,width=1)
+        d.line((15,36,16,25),fill="#C4966B")
+        d.line((13,11,11,6),fill="#C4966B")
+        if variant==2:image=image.transpose(Image.Transpose.FLIP_LEFT_RIGHT)
+    return image
+
+
 def item(kind, tier):
     image = Image.new("RGBA", (16,24));d=ImageDraw.Draw(image)
     for level in range(tier+1):
@@ -427,6 +455,17 @@ def main():
         d.polygon([(5,22),(6,17),(9,11+frame),(11,20),(10,23)],fill=CLAY)
         d.line((8,21,9,17),fill=CREAM,width=2)
         images[f"effect/flame/{frame}"]=fire
+    for season in ["autumn","winter"]:
+        for variant in [1,2]:images[f"resource/tree_{season}/{variant}"]=seasonal_tree(variant,season)
+    for kind in ["grass","poor","rich"]:
+        for variant in range(3):
+            art=ground(kind,variant)
+            # Dormant grass, not snow: preserve texture values and soil contrast.
+            pixels=[]
+            for r,g,b,a in art.get_flattened_data():
+                light=round(0.3*r+0.59*g+0.11*b)
+                pixels.append((min(255,light+23),min(255,light+21),min(255,light+7),a))
+            art.putdata(pixels);images[f"ground/winter_{kind}/{variant}"]=art
     sheet=Image.new("RGBA",(1024,2048));x=y=row_height=0;layout={}
     for name,art in images.items():
         w,h=art.size

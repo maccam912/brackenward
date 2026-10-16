@@ -14,6 +14,7 @@ var indexed_count: int = -1
 var resource_groups_valid: bool = false
 var resource_signature: PackedInt64Array = PackedInt64Array()
 var resource_breaks: Array[int] = []
+var terrain_season: int = -1
 var last_tick: int = -1
 var last_chunks: Rect2i = Rect2i()
 var ground_root: Node2D
@@ -46,6 +47,12 @@ func _init(owner: Node) -> void:
 	atlas.set_tile_animation_frame_duration(Vector2i(9,0),0,0.8);atlas.set_tile_animation_frame_duration(Vector2i(9,0),1,0.8)
 	tiles.add_source(atlas,0)
 	var still: TileSetAtlasSource = TileSetAtlasSource.new();still.texture=EnvironmentArt.ATLAS;still.texture_region_size=Vector2i(16,16);still.margins=Vector2i(162,0);still.create_tile(Vector2i.ZERO);tiles.add_source(still,1)
+	# Winter grass reuses the same GPU atlas, with one static source per region.
+	for index in range(9):
+		var winter: TileSetAtlasSource=TileSetAtlasSource.new()
+		winter.texture=EnvironmentArt.ATLAS;winter.texture_region_size=Vector2i(16,16)
+		winter.margins=Vector2i(EnvironmentArt.rectangle("ground/winter_%s/%d" % [["grass","poor","rich"][index/3],index%3]).position)
+		winter.create_tile(Vector2i.ZERO);tiles.add_source(winter,index+2)
 	view.terrain.tile_set=tiles
 	static_water=TileMapLayer.new();static_water.tile_set=tiles;view.ground.add_child(static_water)
 	animated_water=TileMapLayer.new();animated_water.tile_set=tiles;view.ground.add_child(animated_water)
@@ -58,6 +65,7 @@ func _init(owner: Node) -> void:
 
 func refresh_terrain() -> void:
 	if world!=view.world: _reset_world();return
+	terrain_season=ColonyAgriculture.season(world.tick)
 	view.terrain.clear();static_water.clear();animated_water.clear()
 	bank_rectangles.clear()
 	path_rectangles.clear()
@@ -87,7 +95,8 @@ func refresh_terrain() -> void:
 			if path_cells.has(point):
 				cell=11+posmod(pattern,3)
 				_add_path_edges(point,path_cells,pattern)
-			view.terrain.set_cell(point,0,Vector2i(cell,0))
+			if terrain_season==3 and cell<9: view.terrain.set_cell(point,cell+2,Vector2i.ZERO)
+			else: view.terrain.set_cell(point,0,Vector2i(cell,0))
 	last_tick=-1;indexed_count=-1
 	banks.queue_redraw()
 
@@ -119,6 +128,9 @@ func _add_path_edges(point: Vector2i, paths: Dictionary, pattern: int) -> void:
 		if wet: continue
 		var fertility: int=world.soil_fertility(neighbor)
 		var color: Color=Color("9DAD77") if fertility==750 else (Color("9BAF72") if fertility==1250 else Color("A6B878"))
+		if terrain_season==3:
+			var light: float=roundf((color.r*0.3+color.g*0.59+color.b*0.11)*255)
+			color=Color((light+23)/255,(light+21)/255,(light+7)/255)
 		for segment in range(4):
 			var depth: int=1+posmod(pattern>>(segment*3),3)
 			var horizontal: bool=direction.y!=0
@@ -141,6 +153,7 @@ func visible_chunks() -> Rect2i:
 
 func update(delta: float) -> void:
 	if world!=view.world: _reset_world()
+	if terrain_season!=ColonyAgriculture.season(world.tick): refresh_terrain()
 	if indexed_count!=world.resources.size() or not is_same(indexed_resources,world.resources): _index_resources()
 	visual_clock=0.0 if view.reduced_motion else fmod(visual_clock+delta*minf(4.0*view.simulation_speed,10.0),120.0)
 	weather_clock=0.0 if view.reduced_motion else weather_clock+maxf(0.0,delta)

@@ -1704,6 +1704,84 @@
       336,
       16,
       24
+    ],
+    "resource/tree_autumn/1": [
+      954,
+      336,
+      32,
+      40
+    ],
+    "resource/tree_autumn/2": [
+      988,
+      336,
+      32,
+      40
+    ],
+    "resource/tree_winter/1": [
+      0,
+      378,
+      32,
+      40
+    ],
+    "resource/tree_winter/2": [
+      34,
+      378,
+      32,
+      40
+    ],
+    "ground/winter_grass/0": [
+      68,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_grass/1": [
+      86,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_grass/2": [
+      104,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor/0": [
+      122,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor/1": [
+      140,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor/2": [
+      158,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_rich/0": [
+      176,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_rich/1": [
+      194,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_rich/2": [
+      212,
+      378,
+      16,
+      16
     ]
   },
   "source_components": "data/environment_sources.json",

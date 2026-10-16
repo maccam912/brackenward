@@ -42,3 +42,9 @@ masonry kiln/smelter/forge bodies; a slatted bench; and separate bell, memorial
 and beacon silhouettes. Ground contact shadows stay inside existing sprite bounds.
 The beacon basket is static brass-colored metal, not an additional fire effect.
 All source components, 284 regions, dimensions and gameplay anchors are retained.
+
+The 0.7.94 pass adds four original seasonal broadleaf views (gold/copper autumn
+crowns and forked bare winter branches), plus nine dormant-grass variants. Autumn
+retains the approved crown silhouette and changes its original project shading.
+Winter branches are entirely original drawing code. The resulting atlas has 297
+regions at 1024x418; all earlier rectangle positions/dimensions remain intact.

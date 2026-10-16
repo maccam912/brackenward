@@ -1,5 +1,20 @@
 # Implementation evidence
 
+Seasonal landscape (16 October 2026): `0.7.94-m7`, unchanged content/schema/
+envelope. Broadleaf trees turn gold/copper in autumn and show full-height bare
+branches in winter; evergreens retain needles. Winter grass uses quiet dormant
+colors and spring restores the original palette. Thirteen new atlas regions bring
+the total to 297 at 1024x418 without moving earlier rectangles. Cached terrain
+refreshes on season boundaries; no per-frame texture generation or new simulation
+fields were added. Water, paths, crops, tree quantities and movement remain intact.
+
+Native four-season river views were inspected, and checked capture is error-free.
+Pinned UI passes 749 checks, including winter entry/spring return, real source
+selection, unchanged paths/water and canonical state. Persistence/art passes 511
+with all regions in bounds and the seasonal tree anchor contract; content/font
+validation passes. Evidence: `reports/visual-polish/season-*`. Physical Android
+appearance and performance remain unverified; the visual polish run continues.
+
 Workshop and landmark silhouettes (16 October 2026): `0.7.93-m7`, unchanged
 content/schema/envelope. Original drawing code improves the cart, four industrial
 stations, garden bench, bell, memorial and beacon. The editable atlas/contact sheet

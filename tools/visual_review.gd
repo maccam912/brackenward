@@ -30,6 +30,10 @@ func capture() -> void:
 	view.center_camera(Vector2(water));view._process(0)
 	await process_frame;await process_frame;await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://reports/visual-polish/river.png")
+	for season in range(4):
+		world.tick=season*8*7200+3600;view._process(0)
+		await process_frame;await process_frame;await RenderingServer.frame_post_draw
+		root.get_texture().get_image().save_png("res://reports/visual-polish/season-%d.png" % season)
 	world.tick=0;view._process(0)
 	await process_frame;await process_frame;await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://reports/visual-polish/river-night.png")

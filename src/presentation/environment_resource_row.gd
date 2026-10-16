@@ -15,7 +15,8 @@ func _draw() -> void:
 			if kind!="tree": continue
 			if ColonyNature.tree(world,resource.id).cleared: continue
 			kind="sapling" if ColonyNature.tree(world,resource.id).planted else "stump"
-		var rectangle: Rect2 = EnvironmentArt.rectangle("resource/%s/%d" % [kind,resource.id%3 if kind=="tree" else 0])
+		var semantic: String=EnvironmentArt.tree_semantic(resource.id,world.tick) if kind=="tree" else "resource/%s/0" % kind
+		var rectangle: Rect2 = EnvironmentArt.rectangle(semantic)
 		var point: Vector2 = Vector2((resource.x+0.5)*16.0,0)
 		var destination: Rect2 = Rect2(point-Vector2(rectangle.size.x*0.5,rectangle.size.y),rectangle.size)
 		var color: Color = tint
