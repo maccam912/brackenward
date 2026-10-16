@@ -1,5 +1,13 @@
 # Implementation evidence
 
+Clothing/container art (16 October 2026): `0.7.121-m7`, unchanged content/schema/
+envelope. Cloak folds/clasp, cloth-and-leather vest, milk jugs and medicine bottles
+replace twelve regions; other pixels and all 360 bounds remain unchanged. Native
+84-stack gallery inspected with canonical state unchanged. UI passes 885 checks;
+content/font validation passes. Evidence: garments-* in visual-polish and item
+contact sheet. Weekly usage last checked at 30% remaining; original reset unchanged.
+Polishing continues.
+
 Loose mineral art (16 October 2026): `0.7.120-m7`, unchanged content/schema/
 envelope. Stone facets, folded clay, ore inclusions and angular charcoal replace
 twelve generic pile regions. Every atlas rectangle and other pixel is retained.

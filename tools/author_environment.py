@@ -707,13 +707,39 @@ def item(kind, tier):
         elif kind in ("toolkit","forged_toolkit","bow","spear"):
             if kind=="spear":d.line((4,22,12,7),fill=WOOD,width=2);d.polygon([(10,7),(14,4),(13,10)],fill=CREAM,outline=INK)
             else:image.alpha_composite(tile("bow" if kind=="bow" else ("axe" if kind=="forged_toolkit" else "hammer")),(0,8))
-        elif kind in ("cloak","vest"):
-            d.polygon([(6,8),(10,8),(14,21),(2,21)],fill=ROOF if kind=="cloak" else STONE,outline=INK)
-            d.rectangle((6,8,9,11),fill=INK)
+        elif kind=="cloak":
+            d.polygon([(6,7),(9,7),(12,12),(14,21),(2,21),(4,12)],fill=ROOF,outline=INK)
+            d.polygon([(6,8),(9,8),(10,11),(5,11)],fill="#555668",outline=INK)
+            d.line((5,13,4,19),fill="#BDB8C6")
+            d.line((9,12,11,20),fill="#555668")
+            d.line((7,13,7,20),fill="#8F8BA0")
+            d.point((8,12),fill=LIGHT)
+            d.line((4,20,6,20),fill="#BDB8C6")
+        elif kind=="vest":
+            # Cloth padding with leather trim, matching the actual recipe.
+            d.polygon([(4,8),(6,7),(7,10),(9,10),(10,7),(12,8),
+                       (12,12),(14,14),(12,16),(12,21),(3,21),
+                       (3,16),(1,14),(4,12)],fill=WOOD,outline=INK)
+            d.polygon([(5,11),(6,12),(9,12),(11,11),(11,20),(4,20),(4,14)],fill="#C4966B")
+            d.line((8,12,8,20),fill=WOOD)
+            for py in [14,17]:d.line((5,py,10,py),fill=WOOD)
+            d.point((8,14),fill=CREAM)
         elif kind in ("milk","medicine"):
-            d.rectangle((5,y-7,10,y),fill=CREAM if kind=="milk" else DEEP,outline=INK)
-            d.rectangle((6,y-10,9,y-7),fill=WOOD,outline=INK)
-            if kind=="medicine":d.line((6,y-4,9,y-4),fill=CREAM);d.line((8,y-6,8,y-2),fill=CREAM)
+            bx=2+(level%2)*5;by=22-level*3
+            if kind=="milk":
+                d.ellipse((bx+5,by-8,bx+9,by-2),outline=INK,width=2)
+                d.polygon([(bx+2,by-10),(bx+5,by-10),(bx+5,by-8),
+                           (bx+7,by-6),(bx+7,by),(bx,by),(bx,by-6),
+                           (bx+2,by-8)],fill=CREAM,outline=INK)
+                d.line((bx+1,by-5,bx+1,by-1),fill="#FFF9E8")
+                d.line((bx+5,by-5,bx+5,by-1),fill="#C6C7AD")
+                d.line((bx+2,by-10,bx+5,by-10),fill=WOOD)
+            else:
+                d.rounded_rectangle((bx,by-8,bx+7,by),radius=1,fill=DEEP,outline=INK)
+                d.rectangle((bx+2,by-11,bx+5,by-8),fill=WOOD,outline=INK)
+                d.line((bx+2,by-10,bx+4,by-10),fill="#C4966B")
+                d.line((bx+1,by-5,bx+6,by-5),fill=CREAM)
+                d.line((bx+4,by-7,bx+4,by-2),fill=CREAM)
         elif kind=="egg":d.ellipse((x+1,y-7,x+6,y),fill=CREAM,outline=INK)
         elif kind=="fish":
             d.ellipse((2,y-5,12,y),fill=WATER,outline=INK);d.polygon([(11,y-3),(15,y-6),(15,y+1)],fill=WATER,outline=INK);d.point((4,y-3),fill=CREAM)

@@ -965,6 +965,9 @@ Forest regrowth (0.7.119): open leaf clusters and visible stems distinguish youn
 
 Loose mineral art (0.7.120): stone facets, clay folds, iron-bearing rock and angular charcoal distinguish the four material piles at all three quantity tiers. These twelve regions retain existing bounds and quantity contracts.
 
+Clothing and containers (0.7.121): cloaks show folds and a clasp; vests show cloth padding and leather trim matching their recipe. Milk jugs and medicine bottles have distinct shapes and overlapping quantity groups. Twelve existing regions change without altering inventories, protection, recipes or bounds.
+
+
 
 
 

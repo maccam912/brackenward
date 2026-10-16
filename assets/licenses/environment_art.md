@@ -79,3 +79,7 @@ pixels are preserved; retained source components remain untouched.
 The 0.7.120 pass replaces twelve stone, clay, iron-ore and charcoal pile regions
 with original facets, folds, mineral inclusions and angular charred pieces. All
 360 bounds and unrelated pixels remain identical.
+
+The 0.7.121 pass replaces cloak, vest, milk and medicine regions with original
+folds, padding, trim, jugs and bottles. Twelve regions change, preserving all
+360 bounds and other pixels. Clothing materials follow the existing recipes.
