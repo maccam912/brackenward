@@ -255,6 +255,25 @@ func illustrated_button(title: String, callback: Callable, parent: Node, semanti
 		result.add_theme_constant_override("icon_max_width",40 if room>=40 else 24))
 	return result
 
+func illustrated_summary(text: String, parent: Node, semantic: String) -> Label:
+	if semantic.is_empty():return label(text,parent)
+	var row: HBoxContainer=HBoxContainer.new();parent.add_child(row)
+	var picture: TextureRect=TextureRect.new();picture.name="ObjectPortrait"
+	var texture: AtlasTexture=AtlasTexture.new()
+	texture.atlas=EnvironmentArt.ATLAS;texture.region=EnvironmentArt.rectangle(semantic)
+	picture.texture=texture;picture.set_meta("semantic",semantic)
+	picture.custom_minimum_size=Vector2(56,56)
+	picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;picture.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	picture.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+	picture.size_flags_vertical=Control.SIZE_SHRINK_CENTER;picture.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	var frame: PanelContainer=PanelContainer.new();frame.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	frame.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+	var background: StyleBoxFlat=_box(Color("A6B878"),Color("77915A"))
+	background.content_margin_left=4;background.content_margin_right=4
+	frame.add_theme_stylebox_override("panel",background);row.add_child(frame);frame.add_child(picture)
+	var description: Label=label(text,row);description.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+	return description
+
 func resident_button(citizen: Dictionary, callback: Callable, parent: Node) -> Button:
 	var result: Button=button(citizen.name,callback,parent)
 	result.alignment=HORIZONTAL_ALIGNMENT_LEFT
@@ -1537,7 +1556,7 @@ func _sync_placement_world() -> void:
 func _resource_sheet(resource: Dictionary) -> void:
 	show_details(_catalog_name(resource.definition))
 	var definition: Dictionary = world.definitions.resources[resource.definition]
-	label(ColonyText.text("ui.resource.remaining",{"count":resource.remaining,"item":_catalog_name(definition.item).to_lower(),"work":int(definition.work_milli/1000),"basis":ColonyText.text("ui.resource.work.per_unit" if definition.per_unit else "ui.resource.work.per_harvest")}), sheet_body)
+	illustrated_summary(ColonyText.text("ui.resource.remaining",{"count":resource.remaining,"item":_catalog_name(definition.item).to_lower(),"work":int(definition.work_milli/1000),"basis":ColonyText.text("ui.resource.work.per_unit" if definition.per_unit else "ui.resource.work.per_harvest")}),sheet_body,EnvironmentArt.resource_semantic(world,resource))
 	label(ColonyText.text("ui.help.resource_sheet.a_gatherer_works_beside_the_resource_the"), sheet_body)
 	if resource.remaining==0 and resource.regrow_at>0 and resource.definition in EnvironmentArt.RENEWABLE_RESOURCES:
 		label(ColonyText.text("ui.resource.regrowth",{"days":"%.1f" % (maxi(0,resource.regrow_at-world.tick)/7200.0)}),sheet_body)
@@ -1730,7 +1749,7 @@ func begin_field() -> void:
 func _field_sheet(field: Dictionary) -> void:
 	show_details(field.crop.capitalize())
 	var definition: Dictionary = world.definitions.crops[field.crop]
-	label(ColonyText.text("ui.field.details",{"reason":field.reason,"growth":field.growth,"required":definition.growth,"yield":field.yield_count,"percent":int(field.fertility/10),"replant":ColonyText.text("ui.field.replant_on" if field.replant else "ui.field.replant_off")}),sheet_body)
+	illustrated_summary(ColonyText.text("ui.field.details",{"reason":field.reason,"growth":field.growth,"required":definition.growth,"yield":field.yield_count,"percent":int(field.fertility/10),"replant":ColonyText.text("ui.field.replant_on" if field.replant else "ui.field.replant_off")}),sheet_body,"crop/%s/%d" % [field.crop,EnvironmentArt.crop_stage(field,definition)])
 	if field.planted:
 		if field.growth * 2 >= definition.growth:
 			label(ColonyText.plural("ui.field.early_harvest",mini(field.yield_count,maxi(1,definition.yield_count * field.growth / definition.growth))),sheet_body)
@@ -2395,7 +2414,7 @@ func show_station(station: Dictionary) -> void:
 	show_details(ColonyChronicle.display_name(world,station.id))
 	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(station.id),sheet_body)
 	var definition: Dictionary = world.definitions.buildings[station.definition]
-	label("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body)
+	illustrated_summary("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body,"building/%s/%d" % [station.definition,station.rotation])
 	if station.definition == "supply_cart":
 		button(ColonyText.text("ui.action.charter"),show_charter,sheet_body)
 		button(ColonyText.text("ui.action.communal_supper"),show_supper,sheet_body)

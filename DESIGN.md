@@ -941,6 +941,8 @@ Flood preview camera (0.7.107): the explicit View flood area action centers the 
 
 Resident card hierarchy (0.7.108): Work preferences and View on map precede appearance/rename/history actions. Assign bed sits beside the current bed and recovery rate. The long general food/rest policy starts collapsed under Food and rest details, with a toggle that reveals the unchanged exact rules. Current food-access failures, combined low-food/rest priority warnings and departure explanations remain outside that disclosure. Expansion is local presentation state and does not change time, camera, commands or the campaign.
 
+Object detail illustrations (0.7.109): building, resource and field summaries pair exact text with a small nearest-neighbor atlas picture on a quiet meadow backing. Building rotation, resource depletion/tree state and crop stage use the same current-state art selectors as the map. An exhausted finite resource with no visible map sprite receives text only. Pictures do not imply extra contents, fuel or work, and yield space to wrapped text at phone sizes.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

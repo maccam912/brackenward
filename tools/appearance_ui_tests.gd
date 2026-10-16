@@ -41,6 +41,7 @@ static func run(game: GameSession, check: Callable) -> void:
 		check.call("ART/UI_palette_shader_renders_selected_skin_on_GPU",skin.is_equal_approx(Color(CitizenArt.SKINS[expected.skin])),str([skin,Color(CitizenArt.SKINS[expected.skin])]))
 	needs_card(game,check)
 	await rest_disclosure(game,check)
+	await object_cards(game,check)
 	for viewport in [Vector2i(360,640),Vector2i(640,360)]:
 		tree.root.size=viewport;game.text_scale=1.5;game._build_theme();game.show_appearance(1)
 		await tree.process_frame;await tree.process_frame
@@ -88,3 +89,33 @@ static func rest_disclosure(game: GameSession, check: Callable) -> void:
 		check.call("PERSON/UI_%d_expansion_reveals_full_exact_rest_policy_without_world_or_camera_change" % roundi(scale*100),details.visible and details.get_child(0).text==ColonyFonts.display(expected) and game.runner.speed==0 and game.world.canonical_hash()==baseline and game.view.camera_center().is_equal_approx(camera))
 		toggle.button_pressed=false;await tree.process_frame
 		check.call("PERSON/UI_%d_rest_help_can_collapse_again" % roundi(scale*100),not details.visible and game.world.canonical_hash()==baseline)
+
+static func object_cards(game: GameSession, check: Callable) -> void:
+	var baseline: String=game.world.canonical_hash()
+	var cart: Dictionary=game.world.structures.filter(func(s:Dictionary)->bool:return s.definition=="supply_cart")[0]
+	var rotation: int=cart.rotation
+	for turn in range(4):
+		cart.rotation=turn;var current: String=game.world.canonical_hash();game.show_station(cart)
+		await object_picture(game,"building/supply_cart/%d" % turn,current,check)
+	cart.rotation=rotation
+	var berry: Dictionary=game.world.resources.filter(func(r:Dictionary)->bool:return r.definition=="berry_bush")[0]
+	var count: int=berry.remaining
+	for remaining in [count,0]:
+		berry.remaining=remaining;var current: String=game.world.canonical_hash();game._resource_sheet(berry)
+		await object_picture(game,"resource/berry_bush%s/0" % ("_depleted" if remaining==0 else ""),current,check)
+	berry.remaining=count
+	var definition: Dictionary=game.world.definitions.crops.turnip
+	for stage in range(5):
+		var field: Dictionary={"id":9999,"crop":"turnip","x":90,"y":80,"prepared":true,"planted":stage>0,"growth":int(definition.growth*[0.0,0.0,0.2,0.6,1.0][stage]),"ripe_tick":game.world.tick if stage==4 else 0,"yield_count":definition.yield_count,"fertility":1000,"replant":true,"reason":"Test crop"}
+		game._field_sheet(field)
+		await object_picture(game,"crop/turnip/%d" % stage,baseline,check)
+	check.call("ART/UI_object_cards_preserve_all_original_world_fields",game.world.canonical_hash()==baseline)
+
+static func object_picture(game: GameSession, semantic: String, baseline: String, check: Callable) -> void:
+	await game.get_tree().process_frame;await game.get_tree().process_frame
+	var picture: TextureRect=game.sheet_body.find_child("ObjectPortrait",true,false)
+	var fits: bool=picture!=null and picture.texture is AtlasTexture and picture.texture.region==EnvironmentArt.rectangle(semantic)
+	if fits:
+		var row: HBoxContainer=picture.get_parent().get_parent()
+		fits=row.size.x<=game.sheet_body.size.x+1 and row.get_child(1).get_global_rect().end.x<=game.sheet_body.get_global_rect().end.x+1
+	check.call("ART/UI_detail_%s_matches_actual_art_and_wraps_at_large_phone_text" % semantic,fits and game.world.canonical_hash()==baseline)

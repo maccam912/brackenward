@@ -29,6 +29,8 @@ func capture() -> void:
 		for selected in [1,2]:
 			site_choice.select(selected)
 			await save_view("new-colony-site%d-%dx%d" % [selected,viewport_size.x,viewport_size.y])
+		game.show_station(cart)
+		await save_view("station-%dx%d" % [viewport_size.x,viewport_size.y])
 		game._storage_sheet(game.world.stores[0])
 		await save_view("storage-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.show_sheet("People")
@@ -52,6 +54,8 @@ func capture() -> void:
 	await save_view("build-390x844-text150")
 	game.show_sheet("Work")
 	await save_view("work-390x844-text150")
+	game.show_station(cart)
+	await save_view("station-390x844-text150")
 	game._storage_sheet(game.world.stores[0])
 	await save_view("storage-390x844-text150")
 	game.show_sheet("People")
@@ -64,6 +68,9 @@ func capture() -> void:
 	harvested.remaining=0;harvested.regrow_at=game.world.tick+14400
 	game._resource_sheet(harvested)
 	await save_view("harvested-390x844-text150")
+	var crop: Dictionary=game.world.definitions.crops.turnip
+	game._field_sheet({"id":99999,"crop":"turnip","x":90,"y":80,"prepared":true,"planted":true,"growth":int(crop.growth*0.6),"ripe_tick":0,"yield_count":crop.yield_count,"fertility":1000,"replant":true,"reason":"Growing"})
+	await save_view("field-390x844-text150")
 	await game.soundscape.drain()
 	game.queue_free();await process_frame
 	print("VISUAL_UI_REVIEW_COMPLETE");quit()

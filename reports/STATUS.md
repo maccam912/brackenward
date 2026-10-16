@@ -1,5 +1,15 @@
 # Implementation evidence
 
+Object detail illustrations (16 October 2026): `0.7.109-m7`, unchanged content/
+schema/envelope. Building/resource/field summaries now show state-accurate atlas
+pictures on a meadow backing beside their exact text. Native 150% phone views of
+the cart, harvested berry bush and growing field were inspected. UI passes 835
+checks, including all cart rotations, ready/depleted berry states, five crop stages,
+wrapped large-text geometry and unchanged world fields. Content/font and string/
+message checks pass. Evidence: `station-*`, `harvested-*`, `field-*`, `details-*`
+in visual-polish. Weekly usage is 45% remaining; reset unchanged. Physical-device
+review remains unverified. Polishing continues.
+
 Resident card hierarchy (16 October 2026): `0.7.108-m7`, unchanged content/
 schema/envelope. Work preferences/map access now precede cosmetic actions, bed
 assignment accompanies bed information, and the long exact food/rest policy uses
