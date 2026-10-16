@@ -72,6 +72,7 @@ static func prospective_food(check: Callable) -> void:
 			check.call("FOOD/release_preview_matches_actual_%s_%s" % [kind,location],preview.get("id",0)==actual.get("id",0) and world.canonical_hash()==before,str([preview.get("id",0),actual.get("id",0)]))
 
 static func run(check: Callable) -> void:
+	HungerCheckpointTests.run(check)
 	food_interruption(check)
 	prospective_food(check)
 	WorkBudgetTests.run(check)

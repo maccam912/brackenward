@@ -1,10 +1,10 @@
 extends SceneTree
 ## SAVE10: frozen player commands, canonical checkpoints and a foreign-host save.
-## Current v7 replay keeps the historical generator-1 map and command input.
+## Current v8 replay keeps the historical generator-1 map and command input.
 const GENERATOR_REVISION: int = 1
-const INPUT: String = "res://tests/fixtures/content7/campaign-replay-input.json"
-const GOLDEN: String = "res://tests/fixtures/content7/campaign-replay-golden.json"
-const SAVED: String = "res://tests/fixtures/content7/campaign-replay-7200.brackenward"
+const INPUT: String = "res://tests/fixtures/content8/campaign-replay-input.json"
+const GOLDEN: String = "res://tests/fixtures/content8/campaign-replay-golden.json"
+const SAVED: String = "res://tests/fixtures/content8/campaign-replay-7200.brackenward"
 var report_path: String = "res://reports/replay.json"
 var record_golden: bool = false
 var failure: String = ""

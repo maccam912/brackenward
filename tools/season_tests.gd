@@ -84,7 +84,9 @@ static func run(check: Callable) -> void:
 	w.queue_command("early_harvest",{"target":w.fields[0].id})
 	w.step()
 	check.call("CROP/early_harvest_below_half_rejected",w.receipts[2].contains("50%") and not w.jobs.any(func(j:Dictionary)->bool:return j.kind == "harvest"))
-	for i in range(9000): w.step()
+	for i in range(40000):
+		if w.fields[0].growth*2>=w.definitions.crops.turnip.growth: break
+		w.step()
 	w.queue_command("early_harvest",{"target":w.fields[0].id})
 	for i in range(600): w.step()
 	check.call("CROP/early_harvest_real_work_and_proportional_output",w.receipts[3] == "accepted" and w.jobs.any(func(j:Dictionary)->bool:return j.kind == "harvest" and j.definition == "early_harvest" and j.state == "Complete") and w.ledger.produced.get("vegetable",0) == 2 and w.invariant_errors().is_empty(),str(w.ledger.produced))

@@ -1,5 +1,39 @@
 # Implementation evidence
 
+Player-feedback checkpoint (15 October 2026): `0.7.81-m7`, content
+`colony-v8`, unchanged campaign schema 23 / envelope 5. Ordinary hunger now
+finishes the current carried load, recipe/gathering/crop action, or whole work
+unit for construction/research before eating. Partial mixed loads deliver
+immediately; the deposit checkpoint prevents another pickup before eating.
+Starvation, critical rest, emergencies and blocked routes retain their existing
+interruptions. Nested ordinary panels and optional paused citizen inspectors
+restore their exact entry speed; explicit pauses, alerts, backgrounding,
+storage errors and world adoption cancel that resume. Build hides every
+structure whose research is incomplete. Room and barn roofs are hidden;
+optional room outlines leave interiors clear. Neighboring wall/fence segments
+join across corners and junctions and update after destruction. Turnips now
+need four normal-soil days (3.2 on rich soil); planting help and the design's
+food arithmetic reflect the new duration.
+
+Local validation: 15 affected suites / 2,496 assertions pass, including native
+UI 713, scheduler 453, persistence 506, and an eight-day four-person farming
+and foraging run. Native rendered wall seams and open room interiors pass
+pixel checks; `reports/feedback-open-rooms-connected-walls.png` was inspected.
+Content validation, English messages (5), GDScript string checks (7), and
+merchant audit tooling (18) pass. Frozen v7 loaded-work snapshots and its
+600-tick journal retain all acknowledged fields and untouched migration
+backups; older v3-v6 acknowledgement audits also pass. Current replay and
+save continuation use new v8 fixtures; all 62 receipts remain accepted, with
+only the observed raid payment target updated from 3976 to 3850. Earlier
+fixtures remain unchanged. Exact final validation is recorded in
+`reports/feedback-v8-validation.json`.
+
+This checkpoint is local. Previous published/CI results and long-campaign
+balance evidence retain their original source/content scopes; current-v8
+cross-platform CI, APK publication, physical-phone and long-campaign balance
+validation are separate, pending checks.
+
+
 Development release numbering (15 October 2026): checked APK releases now use
 `Build N (development)`, semantic tags `v0.0.N-dev`, and sortable download names
 `brackenward-build-000NNN.apk`. N is 100 plus the full Git commit count, shared
@@ -19,7 +53,7 @@ package/provenance fields and renamed-asset checksum handling; it uses fixture
 APK bytes, not an Android export. Remote CI/APK publication for this checkpoint
 will be checked after pushing; physical-device validation is separate.
 
-Checkpoint: `0.7.80-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
+Prior checkpoint: `0.7.80-m7` (campaign schema 23, device settings schema 6), content `colony-v7`, development colony envelope version 5 with a canonical catalog hash. New colonies use generator revision 2; saved revision 0/1 maps and historical revision 1 replay remain unchanged. The M0 touch fixture and its separate saves remain available to the regression suite. Version 3 adds campaign/sequence/time/generator metadata and complete-tick recovery states. Implementation was authorized on 12 October 2026. The user authorized M1 and later implementation without a physical-device gate and subsequently tried an Android build, providing UI and resource-designation feedback. Physical release gates remain pending.
 
 | Gate | Status | Evidence / remaining work |
 | --- | --- | --- |
@@ -48,7 +82,7 @@ Checkpoint: `0.7.80-m7` (campaign schema 23, device settings schema 6), content 
 | M7 release quality | In progress | Animated citizens/animals/guests, matching portraits, editable cosmetics, environment art, audio, accessibility, diagnostics and rebinding are implemented. Localization, balance/playtesting, stress optimization and platform/human release gates remain. |
 | Development APK publication | Pass at `25cb2c0` | [Downloadable APK prerelease](https://github.com/maccam912/brackenward/releases/tag/dev-25cb2c097d10), code 231 / 0.7.78-m7+25cb2c0, APK SHA-256 `a1e7e5c3eac078074cc803eb715dbb67359aed3102263ab9369087aebed1ee68`. Four-host artifacts, 28 suites / 2,892 assertions, Kotlin 4 and exact published assets audited. Current 79 publication and production signing/store release remain separate. |
 
-Current recorded validation: 28 maintained GDScript suites / 2,902 assertions. Current 0.7.80 freshly passes scheduler 438 (five new checks), persistence 502, unit 24, care 55, fire 23, defense 81, replay 62/all retained acknowledgements, catalog/font 671, messages 5 and Android 119 export/metadata. Cached Kotlin 4 XML is inspected. The other 21 headless suites and native GUI 679 retain their fresh 79 scopes; presentation/persistence/generation/scenes/catalogs/immutable fixtures are unchanged. Complete original-search four-pair timing and full unsorted state/invariant comparisons pass. Native 79 completes ten minutes at 4x with twenty residents and both audits passing its periodic heap/time/counter proxies. Separate frame peaks, the 4 ms tick target and physical/human gates remain open. Version 78/code 231 is last fully audited remote publication; current 79/80 remote scopes remain separate.
+Prior 0.7.80 recorded validation: 28 maintained GDScript suites / 2,902 assertions. Current 0.7.80 freshly passes scheduler 438 (five new checks), persistence 502, unit 24, care 55, fire 23, defense 81, replay 62/all retained acknowledgements, catalog/font 671, messages 5 and Android 119 export/metadata. Cached Kotlin 4 XML is inspected. The other 21 headless suites and native GUI 679 retain their fresh 79 scopes; presentation/persistence/generation/scenes/catalogs/immutable fixtures are unchanged. Complete original-search four-pair timing and full unsorted state/invariant comparisons pass. Native 79 completes ten minutes at 4x with twenty residents and both audits passing its periodic heap/time/counter proxies. Separate frame peaks, the 4 ms tick target and physical/human gates remain open. Version 78/code 231 is last fully audited remote publication; current 79/80 remote scopes remain separate.
 
 Design amendment: Android compile/target SDK 36, build-tools 36.1.0, NDK 29.0.14206865, Gradle 8.11.1, AGP 8.6.1, Kotlin 2.1.21 match the downloaded 4.7.2 template. The original design's SDK 35 / NDK 28 pins conflicted with that template. No gameplay numbers changed. The template emits an AGP compile-SDK support warning; it remains recorded rather than treated as device validation.
 

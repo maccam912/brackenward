@@ -2,7 +2,7 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v7"
+const CONTENT_VERSION: String = "colony-v8"
 const SCHEMA_REVISION: int = 23
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
@@ -828,9 +828,9 @@ func _needs(citizen: Dictionary) -> void:
 	else:
 		citizen.starving_ticks = 0
 
-func _assign(citizen: Dictionary) -> void:
+func _assign(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	assigning_work=true;reservation_query_ready=false
-	_assign_search(citizen)
+	_assign_search(citizen,food_checkpoint)
 	assigning_work=false;reservation_query_ready=false;reservation_query_jobs.clear()
 
 func _assignment_jobs() -> Array:
@@ -857,7 +857,7 @@ func _has_emergency(open_jobs: Array) -> bool:
 		if job.emergency and job.worker==0 and job.state!="Complete" and job.state!="Canceled" and tick>=job.retry:return true
 	return false
 
-func _assign_search(citizen: Dictionary) -> void:
+func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	work_budget.mark_dirty()
 	if citizen.away: return
 	if citizen.death_recorded or citizen.departed:
@@ -899,6 +899,11 @@ func _assign_search(citizen: Dictionary) -> void:
 		# Hunger still drains during sleep. Wake for ordinary food before reaching
 		# zero, while protecting life-critical rest until it exceeds 100.
 		var needs_food: bool = ordinary_food and not hunger_food.is_empty()
+		if needs_food and citizen.fullness>0 and not food_checkpoint and _finishing_food_iteration(citizen,current):
+			# A partially collected armload is already useful. Deliver it now,
+			# then eat before collecting another input or starting the next phase.
+			if current.state=="Fetching": current.state="Delivering"
+			needs_food=false
 		var hungry_sleeper: bool = current.kind=="sleep" and citizen.fullness<=350 and citizen.rest>=ColonyRest.TIRED
 		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
@@ -1194,7 +1199,36 @@ func _block(job: Dictionary, reason: String) -> bool:
 	job.retry = tick + 50
 	return false
 
+func _food_load(citizen: Dictionary, job: Dictionary) -> bool:
+	for stack in _work_inventory():
+		if stack.count>0 and stack.location=="carry" and stack.owner==citizen.id and stack.job==job.id: return true
+	return false
+
+func _food_batch(job: Dictionary) -> bool:
+	return job.kind in ["cook","craft","gather","prepare","sow","harvest","replant","plant_tree","clear_sapling","fish","butcher","collect_animal","slaughter","equip","fuel"]
+
+func _food_work(job: Dictionary) -> int:
+	if job.kind=="build_helper": return find(jobs,job.order).get("work",0)
+	return job.work
+
+func _finishing_food_iteration(citizen: Dictionary, job: Dictionary) -> bool:
+	if _food_load(citizen,job): return true
+	if job.state!="Working": return false
+	var progress: int = _food_work(job)
+	return progress>0 and ((_food_batch(job) and progress<job.required) or (job.kind in ["build","build_helper","research"] and progress%1000!=0))
+
 func _work(citizen: Dictionary, job: Dictionary) -> void:
+	var delivering: bool = job.get("state")=="Delivering"
+	var progress: int = 0 if job.is_empty() else _food_work(job)
+	_work_step(citizen,job)
+	if job.is_empty() or citizen.job!=job.id or job.worker!=citizen.id: return
+	# Check the exact deposit/WU boundary, before another tick can fetch or
+	# work again. No pending flag is needed, including across save/load.
+	var delivered: bool = delivering and job.state=="Fetching"
+	var work_boundary: bool = job.kind in ["build","build_helper","research"] and _food_work(job)/1000>progress/1000
+	if (delivered or work_boundary) and citizen.fullness<=(500 if ColonyRegion.preparing(self,citizen) else 350): _assign(citizen,true)
+
+func _work_step(citizen: Dictionary, job: Dictionary) -> void:
 	if job.is_empty():
 		citizen.job = 0
 		return

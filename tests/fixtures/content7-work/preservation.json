@@ -1,0 +1,29 @@
+{
+	"catalog_hash": "0ad46307023fe5b49971eecf1e8d16e3bb11545393ef57159c526b4e28fe168c",
+	"content": "colony-v7",
+	"delta": {
+		"content7-work/delta-base.brackenward": "20ec77701bcce3e05a568b527e6b4a8cd2355e6c896ed6b6794ca6884ada67db",
+		"content7-work/delta-final.brackenward": "a12a0b68977f07170990d7f47b05866c10ef59c320ff9ba378faec3dbc5805a4",
+		"content7-work/delta.frames": "61ec8c196f774185a746ee365eed2addca5e82eea3d7c4edae74d06c76ded4a2"
+	},
+	"producer_sha256": "4ea7d14555e65adc2d0c1b2ba20e53c5fb2651ed7aebab79567ae10156af4b7d",
+	"schema": 23,
+	"snapshots": [
+		{
+			"canonical_hash": "37e013a00f0021ab59ca01281360dd35b12f9c3812886e9b2f9e2f63fb2584a5",
+			"file": "content7-work/held-load.brackenward",
+			"sha256": "d44b0784a47ef43c36357766be9008b8eab533c69ecb0118fc5ec58bcd2b17c7"
+		},
+		{
+			"canonical_hash": "30978489220c1b343362d66db3eff3ae4fd5fea752d90cdc5a555772943b4865",
+			"file": "content7-work/delta-final.brackenward",
+			"sha256": "a12a0b68977f07170990d7f47b05866c10ef59c320ff9ba378faec3dbc5805a4"
+		},
+		{
+			"canonical_hash": "4640f173ff6aac07e49444a1cb7ffe344fa3ab52b70d66595e1d512f8f520dc0",
+			"file": "content7/campaign-replay-7200.brackenward",
+			"sha256": "8d11b6fe8df8118ace6eb06840f4b90c1bfba85de70dd2b9ee23a3a705469017"
+		}
+	],
+	"source_commit": "f338b94f83285ac6501e04b0dd9fe12370256779"
+}

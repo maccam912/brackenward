@@ -26,13 +26,31 @@ static func run(previous: GameSession, check: Callable) -> void:
 	check.call("ART/UI_resources_batch_multiple_trees_into_one_visible_chunk_row",environment.resource_rows.values().any(func(row:EnvironmentResourceRow)->bool:return row.records.size()>=2))
 	check.call("ART/UI_buildings_share_one_depth_layer_with_people_and_resource_rows",environment.props.size()==world.structures.filter(func(s:Dictionary)->bool:return s.definition not in ColonyEnvironment.FLOORS).size() and environment.props.values().all(func(prop:EnvironmentProp)->bool:return prop.get_parent()==view.actor_layer))
 	var room: int = world.room_tiles[Vector2i(55,47)]
-	check.call("ART/UI_roof_is_normally_present_over_a_real_enclosed_room",room>=0 and not environment.revealed_rooms.has(room) and not view.rooms_overlay)
+	check.call("ART/UI_enclosed_room_keeps_shelter_without_a_roof_overlay",room>=0 and not view.rooms_overlay and world.roofed(Vector2i(55,47)))
+	var top_wall: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.x==54 and s.y==45)[0]
+	var corner: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.x==53 and s.y==45)[0]
+	check.call("ART/UI_wall_straights_and_corners_connect_to_actual_neighbors",environment.props[top_wall.id].wall_mask==10 and environment.props[corner.id].wall_mask==6 and environment.props[top_wall.id].wall_visual.visible)
+	var interior_pixel: Color
+	if DisplayServer.get_name()!="headless":
+		var actual: Image = await screenshot(tree)
+		interior_pixel=actual.get_pixelv(Vector2i(view.tile_to_screen(Vector2(55.5,48.5))))
+		var seam: Vector2i = Vector2i(view.tile_to_screen(Vector2(55,45.25)))
+		check.call("ART/UI_adjacent_wall_cap_pixels_have_no_seam",actual.get_pixelv(seam)==actual.get_pixelv(seam+Vector2i.LEFT) and actual.get_pixelv(seam)==actual.get_pixelv(seam+Vector2i.RIGHT))
+		actual.save_png("res://reports/feedback-open-rooms-connected-walls.png")
 	view.selected_id=person.id;view._process(0)
 	check.call("ART/UI_selecting_an_occupant_reveals_its_actual_room",environment.revealed_rooms.has(room))
 	view.selected_id=0;view.rooms_overlay=true;view._process(0)
 	check.call("ART/UI_rooms_overlay_reveals_without_any_selected_citizen",view.rooms_overlay and environment.revealed_rooms.is_empty())
-	if DisplayServer.get_name()!="headless": (await screenshot(tree)).save_png("res://reports/environment-room-cutaway.png")
+	if DisplayServer.get_name()!="headless":
+		var outlined: Image = await screenshot(tree)
+		check.call("ART/UI_room_outline_never_fills_or_hides_the_interior",outlined.get_pixelv(Vector2i(view.tile_to_screen(Vector2(55.5,48.5))))==interior_pixel)
+		outlined.save_png("res://reports/environment-room-cutaway.png")
 	view.rooms_overlay=false
+	var branch: Dictionary = world._structure("stone_wall",Vector2i(54,44),0)
+	world.tick+=1;view._process(0)
+	check.call("ART/UI_mixed_material_T_junction_updates_after_construction",environment.props[top_wall.id].wall_mask==11)
+	branch.health=0;world.tick+=1;view._process(0)
+	check.call("ART/UI_destroyed_wall_disconnects_and_leaves_a_gap",environment.props[top_wall.id].wall_mask==10 and (environment.props[branch.id].wall_visual==null or not environment.props[branch.id].wall_visual.visible))
 	var hearth: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition=="hearth")[0]
 	hearth.fuel=0;world.tick+=1;view._process(0)
 	check.call("ART/UI_cold_hearth_has_no_false_flame",environment.props[hearth.id].flame==null or not environment.props[hearth.id].flame.visible)

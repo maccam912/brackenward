@@ -1,7 +1,8 @@
 class_name AssignmentProbeReference
 extends ColonyWorld
 ## Complete 476bdd0 assignment-search oracle, retaining both callback probes.
-func _assign_search(citizen: Dictionary) -> void:
+## Updated only for the v8 hunger checkpoints; the older query strategy remains independent.
+func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	work_budget.mark_dirty()
 	if citizen.away: return
 	if citizen.death_recorded or citizen.departed:
@@ -43,6 +44,9 @@ func _assign_search(citizen: Dictionary) -> void:
 		# Hunger still drains during sleep. Wake for ordinary food before reaching
 		# zero, while protecting life-critical rest until it exceeds 100.
 		var needs_food: bool = ordinary_food and not hunger_food.is_empty()
+		if needs_food and citizen.fullness>0 and not food_checkpoint and _finishing_food_iteration(citizen,current):
+			if current.state=="Fetching": current.state="Delivering"
+			needs_food=false
 		var hungry_sleeper: bool = current.kind=="sleep" and citizen.fullness<=350 and citizen.rest>=ColonyRest.TIRED
 		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]

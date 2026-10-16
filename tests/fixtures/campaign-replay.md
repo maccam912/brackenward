@@ -110,3 +110,16 @@ Content-v3/v4/v5 acknowledgements and old schema-22-compatible endpoints retain
 every acknowledged field after header normalization; the old future trace is
 not claimed equal after intentional rest-rule changes. Separate v6 replay
 goldens constrain the new simulation instead.
+
+
+15 October content v8 hunger checkpoints and four-day turnips: current replay
+uses the separate `content8/` input, golden and locally produced tick-7200 save.
+All 62 public actions, execution times, payment quantities and accepted
+receipts remain. The actually announced budget-2 raid is 3850 instead of 3976;
+the retained diagnostic at tick 52201 supplies that observed target, and input
+provenance records its digest. Every earlier fixture remains unchanged. The
+first unreviewed attempt is retained in reports and is not the current golden.
+Recording and independent non-recording verification must both pass. Native
+CI on other hosts remains separate from this local baseline and continuation.
+Frozen `content7-work/` snapshots and a 600-tick journal verify preservation of
+acknowledged v7 jobs/cargo/needs/history before v8 scheduling begins.

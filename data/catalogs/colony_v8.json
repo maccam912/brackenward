@@ -1,0 +1,2268 @@
+{
+  "version": "colony-v8",
+  "items": [
+    {
+      "id": "wood",
+      "name_key": "wood.name",
+      "description_key": "wood.description",
+      "icon_id": "wood",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 1
+    },
+    {
+      "id": "stone",
+      "name_key": "stone.name",
+      "description_key": "stone.description",
+      "icon_id": "stone",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 1
+    },
+    {
+      "id": "clay",
+      "name_key": "clay.name",
+      "description_key": "clay.description",
+      "icon_id": "clay",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 1
+    },
+    {
+      "id": "iron_ore",
+      "name_key": "iron_ore.name",
+      "description_key": "iron_ore.description",
+      "icon_id": "iron_ore",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 2
+    },
+    {
+      "id": "fiber",
+      "name_key": "fiber.name",
+      "description_key": "fiber.description",
+      "icon_id": "fiber",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 1
+    },
+    {
+      "id": "charcoal",
+      "name_key": "charcoal.name",
+      "description_key": "charcoal.description",
+      "icon_id": "charcoal",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 2
+    },
+    {
+      "id": "iron",
+      "name_key": "iron.name",
+      "description_key": "iron.description",
+      "icon_id": "iron",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 5
+    },
+    {
+      "id": "brick",
+      "name_key": "brick.name",
+      "description_key": "brick.description",
+      "icon_id": "brick",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 2
+    },
+    {
+      "id": "cloth",
+      "name_key": "cloth.name",
+      "description_key": "cloth.description",
+      "icon_id": "cloth",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 4
+    },
+    {
+      "id": "leather",
+      "name_key": "leather.name",
+      "description_key": "leather.description",
+      "icon_id": "leather",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 3
+    },
+    {
+      "id": "herb",
+      "name_key": "herb.name",
+      "description_key": "herb.description",
+      "icon_id": "herb",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 115200,
+      "barter_value": 2
+    },
+    {
+      "id": "vegetable",
+      "name_key": "vegetable.name",
+      "description_key": "vegetable.description",
+      "icon_id": "vegetable",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 250,
+      "tags": [
+        "Vegetable"
+      ],
+      "shelf_ticks": 43200,
+      "barter_value": 1
+    },
+    {
+      "id": "grain",
+      "name_key": "grain.name",
+      "description_key": "grain.description",
+      "icon_id": "grain",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [
+        "Grain"
+      ],
+      "shelf_ticks": 230400,
+      "barter_value": 1
+    },
+    {
+      "id": "berry",
+      "name_key": "berry.name",
+      "description_key": "berry.description",
+      "icon_id": "berry",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 250,
+      "tags": [
+        "Berry"
+      ],
+      "shelf_ticks": 21600,
+      "barter_value": 1
+    },
+    {
+      "id": "mushroom",
+      "name_key": "mushroom.name",
+      "description_key": "mushroom.description",
+      "icon_id": "mushroom",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 250,
+      "tags": [
+        "Mushroom"
+      ],
+      "shelf_ticks": 28800,
+      "barter_value": 1
+    },
+    {
+      "id": "meat",
+      "name_key": "meat.name",
+      "description_key": "meat.description",
+      "icon_id": "meat",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [
+        "Meat"
+      ],
+      "shelf_ticks": 14400,
+      "barter_value": 2
+    },
+    {
+      "id": "fish",
+      "name_key": "fish.name",
+      "description_key": "fish.description",
+      "icon_id": "fish",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 0,
+      "tags": [
+        "Fish"
+      ],
+      "shelf_ticks": 14400,
+      "barter_value": 2
+    },
+    {
+      "id": "milk",
+      "name_key": "milk.name",
+      "description_key": "milk.description",
+      "icon_id": "milk",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 250,
+      "tags": [
+        "Dairy"
+      ],
+      "shelf_ticks": 14400,
+      "barter_value": 2
+    },
+    {
+      "id": "egg",
+      "name_key": "egg.name",
+      "description_key": "egg.description",
+      "icon_id": "egg",
+      "schema_version": 1,
+      "stack_limit": 50,
+      "fullness": 250,
+      "tags": [
+        "Egg"
+      ],
+      "shelf_ticks": 28800,
+      "barter_value": 2
+    },
+    {
+      "id": "meal",
+      "name_key": "meal.name",
+      "description_key": "meal.description",
+      "icon_id": "meal",
+      "schema_version": 1,
+      "stack_limit": 20,
+      "fullness": 500,
+      "tags": [],
+      "shelf_ticks": 28800,
+      "barter_value": 3
+    },
+    {
+      "id": "travel_ration",
+      "name_key": "travel_ration.name",
+      "description_key": "travel_ration.description",
+      "icon_id": "travel_ration",
+      "schema_version": 1,
+      "stack_limit": 20,
+      "fullness": 500,
+      "tags": [],
+      "shelf_ticks": 172800,
+      "barter_value": 4
+    },
+    {
+      "id": "medicine",
+      "name_key": "medicine.name",
+      "description_key": "medicine.description",
+      "icon_id": "medicine",
+      "schema_version": 1,
+      "stack_limit": 20,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 6
+    },
+    {
+      "id": "toolkit",
+      "name_key": "toolkit.name",
+      "description_key": "toolkit.description",
+      "icon_id": "toolkit",
+      "schema_version": 1,
+      "stack_limit": 1,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 5
+    },
+    {
+      "id": "forged_toolkit",
+      "name_key": "forged_toolkit.name",
+      "description_key": "forged_toolkit.description",
+      "icon_id": "forged_toolkit",
+      "schema_version": 1,
+      "stack_limit": 1,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 12
+    },
+    {
+      "id": "bow",
+      "name_key": "bow.name",
+      "description_key": "bow.description",
+      "icon_id": "bow",
+      "schema_version": 1,
+      "stack_limit": 1,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 8
+    },
+    {
+      "id": "spear",
+      "name_key": "spear.name",
+      "description_key": "spear.description",
+      "icon_id": "spear",
+      "schema_version": 1,
+      "stack_limit": 1,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 6
+    },
+    {
+      "id": "cloak",
+      "name_key": "cloak.name",
+      "description_key": "cloak.description",
+      "icon_id": "cloak",
+      "schema_version": 1,
+      "stack_limit": 1,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 8
+    },
+    {
+      "id": "vest",
+      "name_key": "vest.name",
+      "description_key": "vest.description",
+      "icon_id": "vest",
+      "schema_version": 1,
+      "stack_limit": 1,
+      "fullness": 0,
+      "tags": [],
+      "shelf_ticks": 0,
+      "barter_value": 10
+    }
+  ],
+  "buildings": [
+    {
+      "id": "supply_cart",
+      "name_key": "supply_cart.name",
+      "description_key": "supply_cart.description",
+      "icon_id": "supply_cart",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {},
+      "work_milli": 20000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 300,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": false,
+      "built_in_roof": false
+    },
+    {
+      "id": "wood_wall",
+      "name_key": "wood_wall.name",
+      "description_key": "wood_wall.description",
+      "icon_id": "wood_wall",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 2
+      },
+      "work_milli": 6000,
+      "solid": true,
+      "room_boundary": true,
+      "health": 180,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "stone_wall",
+      "name_key": "stone_wall.name",
+      "description_key": "stone_wall.description",
+      "icon_id": "stone_wall",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "stone": 3
+      },
+      "work_milli": 10000,
+      "solid": true,
+      "room_boundary": true,
+      "health": 400,
+      "unlock": "masonry",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "door",
+      "name_key": "door.name",
+      "description_key": "door.description",
+      "icon_id": "door",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 3
+      },
+      "work_milli": 8000,
+      "solid": false,
+      "room_boundary": true,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "wood_floor",
+      "name_key": "wood_floor.name",
+      "description_key": "wood_floor.description",
+      "icon_id": "wood_floor",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 1
+      },
+      "work_milli": 2000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "stone_path",
+      "name_key": "stone_path.name",
+      "description_key": "stone_path.description",
+      "icon_id": "stone_path",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "stone": 1
+      },
+      "work_milli": 1000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "masonry",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "bedroll",
+      "name_key": "bedroll.name",
+      "description_key": "bedroll.description",
+      "icon_id": "bedroll",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "fiber": 2
+      },
+      "work_milli": 5000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "bed",
+      "name_key": "bed.name",
+      "description_key": "bed.description",
+      "icon_id": "bed",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "wood": 6,
+        "fiber": 2
+      },
+      "work_milli": 15000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "table",
+      "name_key": "table.name",
+      "description_key": "table.description",
+      "icon_id": "table",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "wood": 8
+      },
+      "work_milli": 20000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "hearth",
+      "name_key": "hearth.name",
+      "description_key": "hearth.description",
+      "icon_id": "hearth",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "wood": 8,
+        "stone": 10
+      },
+      "work_milli": 40000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "rack",
+      "name_key": "rack.name",
+      "description_key": "rack.description",
+      "icon_id": "rack",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "wood": 8
+      },
+      "work_milli": 15000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 200,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "granary",
+      "name_key": "granary.name",
+      "description_key": "granary.description",
+      "icon_id": "granary",
+      "schema_version": 1,
+      "width": 3,
+      "height": 3,
+      "materials": {
+        "wood": 18,
+        "stone": 8
+      },
+      "work_milli": 70000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "storecraft",
+      "storage_capacity": 600,
+      "age_denominator": 2,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "cellar",
+      "name_key": "cellar.name",
+      "description_key": "cellar.description",
+      "icon_id": "cellar",
+      "schema_version": 1,
+      "width": 3,
+      "height": 3,
+      "materials": {
+        "stone": 30,
+        "wood": 6
+      },
+      "work_milli": 100000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 400,
+      "unlock": "masonry",
+      "storage_capacity": 600,
+      "age_denominator": 4,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "well",
+      "name_key": "well.name",
+      "description_key": "well.description",
+      "icon_id": "well",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "stone": 16,
+        "wood": 6
+      },
+      "work_milli": 60000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "farming",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "fishing_pier",
+      "name_key": "fishing_pier.name",
+      "description_key": "fishing_pier.description",
+      "icon_id": "fishing_pier",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "wood": 10
+      },
+      "work_milli": 30000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "workbench",
+      "name_key": "workbench.name",
+      "description_key": "workbench.description",
+      "icon_id": "workbench",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "wood": 12,
+        "stone": 4
+      },
+      "work_milli": 30000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "charcoal_kiln",
+      "name_key": "charcoal_kiln.name",
+      "description_key": "charcoal_kiln.description",
+      "icon_id": "charcoal_kiln",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "stone": 16,
+        "clay": 12
+      },
+      "work_milli": 60000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "metalwork",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "brick_kiln",
+      "name_key": "brick_kiln.name",
+      "description_key": "brick_kiln.description",
+      "icon_id": "brick_kiln",
+      "schema_version": 1,
+      "width": 3,
+      "height": 2,
+      "materials": {
+        "stone": 20,
+        "clay": 20
+      },
+      "work_milli": 80000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "masonry",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "smelter",
+      "name_key": "smelter.name",
+      "description_key": "smelter.description",
+      "icon_id": "smelter",
+      "schema_version": 1,
+      "width": 2,
+      "height": 3,
+      "materials": {
+        "stone": 30,
+        "brick": 10
+      },
+      "work_milli": 120000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 400,
+      "unlock": "metalwork",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "smithy",
+      "name_key": "smithy.name",
+      "description_key": "smithy.description",
+      "icon_id": "smithy",
+      "schema_version": 1,
+      "width": 3,
+      "height": 2,
+      "materials": {
+        "stone": 20,
+        "iron": 4,
+        "wood": 8
+      },
+      "work_milli": 100000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "metalwork",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "loom",
+      "name_key": "loom.name",
+      "description_key": "loom.description",
+      "icon_id": "loom",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "wood": 12
+      },
+      "work_milli": 60000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "weaving",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "herbal_bench",
+      "name_key": "herbal_bench.name",
+      "description_key": "herbal_bench.description",
+      "icon_id": "herbal_bench",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "wood": 8,
+        "stone": 4
+      },
+      "work_milli": 30000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "research_desk",
+      "name_key": "research_desk.name",
+      "description_key": "research_desk.description",
+      "icon_id": "research_desk",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "wood": 10,
+        "fiber": 2
+      },
+      "work_milli": 30000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "barn",
+      "name_key": "barn.name",
+      "description_key": "barn.description",
+      "icon_id": "barn",
+      "schema_version": 1,
+      "width": 4,
+      "height": 3,
+      "materials": {
+        "wood": 24,
+        "stone": 8
+      },
+      "work_milli": 60000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "husbandry",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": true
+    },
+    {
+      "id": "fence",
+      "name_key": "fence.name",
+      "description_key": "fence.description",
+      "icon_id": "fence",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 1
+      },
+      "work_milli": 3000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "husbandry",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "pen_gate",
+      "name_key": "pen_gate.name",
+      "description_key": "pen_gate.description",
+      "icon_id": "pen_gate",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 2
+      },
+      "work_milli": 4000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "husbandry",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "watchpost",
+      "name_key": "watchpost.name",
+      "description_key": "watchpost.description",
+      "icon_id": "watchpost",
+      "schema_version": 1,
+      "width": 2,
+      "height": 2,
+      "materials": {
+        "wood": 12,
+        "stone": 8
+      },
+      "work_milli": 50000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "signalcraft",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "palisade",
+      "name_key": "palisade.name",
+      "description_key": "palisade.description",
+      "icon_id": "palisade",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 4
+      },
+      "work_milli": 8000,
+      "solid": true,
+      "room_boundary": true,
+      "health": 250,
+      "unlock": "woodcraft",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "reinforced_gate",
+      "name_key": "reinforced_gate.name",
+      "description_key": "reinforced_gate.description",
+      "icon_id": "reinforced_gate",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "wood": 8,
+        "iron": 2
+      },
+      "work_milli": 20000,
+      "solid": false,
+      "room_boundary": true,
+      "health": 300,
+      "unlock": "metalwork",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "bell",
+      "name_key": "bell.name",
+      "description_key": "bell.description",
+      "icon_id": "bell",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 4,
+        "iron": 2
+      },
+      "work_milli": 15000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "signalcraft",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "garden_bench",
+      "name_key": "garden_bench.name",
+      "description_key": "garden_bench.description",
+      "icon_id": "garden_bench",
+      "schema_version": 1,
+      "width": 2,
+      "height": 1,
+      "materials": {
+        "wood": 6
+      },
+      "work_milli": 15000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "initial",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": true,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "memorial",
+      "name_key": "memorial.name",
+      "description_key": "memorial.description",
+      "icon_id": "memorial",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "stone": 6
+      },
+      "work_milli": 20000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "commonlife",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "bridge",
+      "name_key": "bridge.name",
+      "description_key": "bridge.description",
+      "icon_id": "bridge",
+      "schema_version": 1,
+      "width": 1,
+      "height": 1,
+      "materials": {
+        "wood": 4,
+        "stone": 2
+      },
+      "work_milli": 12000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 200,
+      "unlock": "masonry",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    },
+    {
+      "id": "beacon",
+      "name_key": "beacon.name",
+      "description_key": "beacon.description",
+      "icon_id": "beacon",
+      "schema_version": 1,
+      "width": 3,
+      "height": 3,
+      "materials": {
+        "stone": 60,
+        "brick": 40,
+        "iron": 12,
+        "cloth": 8
+      },
+      "work_milli": 400000,
+      "solid": false,
+      "room_boundary": false,
+      "health": 400,
+      "unlock": "signalcraft",
+      "storage_capacity": 0,
+      "age_denominator": 1,
+      "flammable": false,
+      "buildable": true,
+      "built_in_roof": false
+    }
+  ],
+  "resources": [
+    {
+      "id": "tree",
+      "name_key": "tree.name",
+      "description_key": "tree.description",
+      "icon_id": "tree",
+      "schema_version": 1,
+      "item": "wood",
+      "yield_count": 8,
+      "work_milli": 16000,
+      "solid": true,
+      "per_unit": false,
+      "regrow_ticks": 0
+    },
+    {
+      "id": "berry_bush",
+      "name_key": "berry_bush.name",
+      "description_key": "berry_bush.description",
+      "icon_id": "berry_bush",
+      "schema_version": 1,
+      "item": "berry",
+      "yield_count": 4,
+      "work_milli": 8000,
+      "solid": false,
+      "per_unit": false,
+      "regrow_ticks": 14400
+    },
+    {
+      "id": "mushroom_patch",
+      "name_key": "mushroom_patch.name",
+      "description_key": "mushroom_patch.description",
+      "icon_id": "mushroom_patch",
+      "schema_version": 1,
+      "item": "mushroom",
+      "yield_count": 3,
+      "work_milli": 8000,
+      "solid": false,
+      "per_unit": false,
+      "regrow_ticks": 21600
+    },
+    {
+      "id": "herb_patch",
+      "name_key": "herb_patch.name",
+      "description_key": "herb_patch.description",
+      "icon_id": "herb_patch",
+      "schema_version": 1,
+      "item": "herb",
+      "yield_count": 2,
+      "work_milli": 8000,
+      "solid": false,
+      "per_unit": false,
+      "regrow_ticks": 28800
+    },
+    {
+      "id": "stone_node",
+      "name_key": "stone_node.name",
+      "description_key": "stone_node.description",
+      "icon_id": "stone_node",
+      "schema_version": 1,
+      "item": "stone",
+      "yield_count": 200,
+      "work_milli": 2000,
+      "solid": true,
+      "per_unit": true,
+      "regrow_ticks": 0
+    },
+    {
+      "id": "clay_bank",
+      "name_key": "clay_bank.name",
+      "description_key": "clay_bank.description",
+      "icon_id": "clay_bank",
+      "schema_version": 1,
+      "item": "clay",
+      "yield_count": 120,
+      "work_milli": 2000,
+      "solid": true,
+      "per_unit": true,
+      "regrow_ticks": 0
+    },
+    {
+      "id": "iron_seam",
+      "name_key": "iron_seam.name",
+      "description_key": "iron_seam.description",
+      "icon_id": "iron_seam",
+      "schema_version": 1,
+      "item": "iron_ore",
+      "yield_count": 80,
+      "work_milli": 4000,
+      "solid": true,
+      "per_unit": true,
+      "regrow_ticks": 0
+    }
+  ],
+  "recipes": [
+    {
+      "id": "cook_meals",
+      "name_key": "cook_meals.name",
+      "description_key": "cook_meals.description",
+      "icon_id": "cook_meals",
+      "schema_version": 1,
+      "station": "hearth",
+      "alternatives": [
+        "vegetable",
+        "grain",
+        "berry",
+        "mushroom",
+        "meat",
+        "fish",
+        "milk",
+        "egg"
+      ],
+      "food_count": 4,
+      "materials": {
+        "wood": 1
+      },
+      "outputs": {
+        "meal": 2
+      },
+      "work_milli": 8000,
+      "skill": "Cooking",
+      "unlock": "initial"
+    },
+    {
+      "id": "dry_rations",
+      "name_key": "dry_rations.name",
+      "description_key": "dry_rations.description",
+      "icon_id": "dry_rations",
+      "schema_version": 1,
+      "station": "hearth",
+      "alternatives": [
+        "grain",
+        "vegetable",
+        "berry",
+        "meat",
+        "fish"
+      ],
+      "food_count": 4,
+      "materials": {
+        "wood": 1
+      },
+      "outputs": {
+        "travel_ration": 2
+      },
+      "work_milli": 12000,
+      "skill": "Cooking",
+      "unlock": "trailcraft"
+    },
+    {
+      "id": "make_toolkit",
+      "name_key": "make_toolkit.name",
+      "description_key": "make_toolkit.description",
+      "icon_id": "make_toolkit",
+      "schema_version": 1,
+      "station": "workbench",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "wood": 2,
+        "stone": 1
+      },
+      "outputs": {
+        "toolkit": 1
+      },
+      "work_milli": 10000,
+      "skill": "Craft",
+      "unlock": "initial"
+    },
+    {
+      "id": "make_spear",
+      "name_key": "make_spear.name",
+      "description_key": "make_spear.description",
+      "icon_id": "make_spear",
+      "schema_version": 1,
+      "station": "workbench",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "wood": 2,
+        "stone": 2
+      },
+      "outputs": {
+        "spear": 1
+      },
+      "work_milli": 10000,
+      "skill": "Craft",
+      "unlock": "initial"
+    },
+    {
+      "id": "make_bow",
+      "name_key": "make_bow.name",
+      "description_key": "make_bow.description",
+      "icon_id": "make_bow",
+      "schema_version": 1,
+      "station": "workbench",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "wood": 3,
+        "fiber": 2
+      },
+      "outputs": {
+        "bow": 1
+      },
+      "work_milli": 14000,
+      "skill": "Craft",
+      "unlock": "woodcraft"
+    },
+    {
+      "id": "burn_charcoal",
+      "name_key": "burn_charcoal.name",
+      "description_key": "burn_charcoal.description",
+      "icon_id": "burn_charcoal",
+      "schema_version": 1,
+      "station": "charcoal_kiln",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "wood": 4
+      },
+      "outputs": {
+        "charcoal": 4
+      },
+      "work_milli": 16000,
+      "skill": "Craft",
+      "unlock": "metalwork"
+    },
+    {
+      "id": "fire_brick",
+      "name_key": "fire_brick.name",
+      "description_key": "fire_brick.description",
+      "icon_id": "fire_brick",
+      "schema_version": 1,
+      "station": "brick_kiln",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "clay": 4,
+        "wood": 1
+      },
+      "outputs": {
+        "brick": 4
+      },
+      "work_milli": 16000,
+      "skill": "Craft",
+      "unlock": "masonry"
+    },
+    {
+      "id": "smelt_iron",
+      "name_key": "smelt_iron.name",
+      "description_key": "smelt_iron.description",
+      "icon_id": "smelt_iron",
+      "schema_version": 1,
+      "station": "smelter",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "iron_ore": 2,
+        "charcoal": 1
+      },
+      "outputs": {
+        "iron": 1
+      },
+      "work_milli": 20000,
+      "skill": "Craft",
+      "unlock": "metalwork"
+    },
+    {
+      "id": "weave_cloth",
+      "name_key": "weave_cloth.name",
+      "description_key": "weave_cloth.description",
+      "icon_id": "weave_cloth",
+      "schema_version": 1,
+      "station": "loom",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "fiber": 4
+      },
+      "outputs": {
+        "cloth": 1
+      },
+      "work_milli": 8000,
+      "skill": "Craft",
+      "unlock": "weaving"
+    },
+    {
+      "id": "sew_cloak",
+      "name_key": "sew_cloak.name",
+      "description_key": "sew_cloak.description",
+      "icon_id": "sew_cloak",
+      "schema_version": 1,
+      "station": "loom",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "cloth": 2
+      },
+      "outputs": {
+        "cloak": 1
+      },
+      "work_milli": 14000,
+      "skill": "Craft",
+      "unlock": "weaving"
+    },
+    {
+      "id": "make_vest",
+      "name_key": "make_vest.name",
+      "description_key": "make_vest.description",
+      "icon_id": "make_vest",
+      "schema_version": 1,
+      "station": "smithy",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "cloth": 2,
+        "leather": 1
+      },
+      "outputs": {
+        "vest": 1
+      },
+      "work_milli": 16000,
+      "skill": "Craft",
+      "unlock": "metalwork"
+    },
+    {
+      "id": "forge_toolkit",
+      "name_key": "forge_toolkit.name",
+      "description_key": "forge_toolkit.description",
+      "icon_id": "forge_toolkit",
+      "schema_version": 1,
+      "station": "smithy",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "iron": 2,
+        "wood": 1
+      },
+      "outputs": {
+        "forged_toolkit": 1
+      },
+      "work_milli": 18000,
+      "skill": "Craft",
+      "unlock": "metalwork"
+    },
+    {
+      "id": "prepare_medicine",
+      "name_key": "prepare_medicine.name",
+      "description_key": "prepare_medicine.description",
+      "icon_id": "prepare_medicine",
+      "schema_version": 1,
+      "station": "herbal_bench",
+      "alternatives": [],
+      "food_count": 0,
+      "materials": {
+        "herb": 2,
+        "cloth": 1
+      },
+      "outputs": {
+        "medicine": 2
+      },
+      "work_milli": 8000,
+      "skill": "Care",
+      "unlock": "herbalism"
+    }
+  ],
+  "crops": [
+    {
+      "id": "turnip",
+      "name_key": "turnip.name",
+      "description_key": "turnip.description",
+      "icon_id": "turnip",
+      "schema_version": 1,
+      "item": "vegetable",
+      "yield_count": 4,
+      "growth": 4000,
+      "seasons": [
+        0,
+        1,
+        2
+      ],
+      "unlock": "initial",
+      "roof": false,
+      "prepare_milli": 4000,
+      "sow_milli": 1000,
+      "harvest_milli": 2000
+    },
+    {
+      "id": "barley",
+      "name_key": "barley.name",
+      "description_key": "barley.description",
+      "icon_id": "barley",
+      "schema_version": 1,
+      "item": "grain",
+      "yield_count": 6,
+      "growth": 4000,
+      "seasons": [
+        0,
+        1
+      ],
+      "unlock": "farming",
+      "roof": false,
+      "prepare_milli": 4000,
+      "sow_milli": 1000,
+      "harvest_milli": 2000
+    },
+    {
+      "id": "squash",
+      "name_key": "squash.name",
+      "description_key": "squash.description",
+      "icon_id": "squash",
+      "schema_version": 1,
+      "item": "vegetable",
+      "yield_count": 8,
+      "growth": 4000,
+      "seasons": [
+        1,
+        2
+      ],
+      "unlock": "farming",
+      "roof": false,
+      "prepare_milli": 4000,
+      "sow_milli": 1000,
+      "harvest_milli": 2000
+    },
+    {
+      "id": "flax",
+      "name_key": "flax.name",
+      "description_key": "flax.description",
+      "icon_id": "flax",
+      "schema_version": 1,
+      "item": "fiber",
+      "yield_count": 6,
+      "growth": 3000,
+      "seasons": [
+        0,
+        1
+      ],
+      "unlock": "farming",
+      "roof": false,
+      "prepare_milli": 4000,
+      "sow_milli": 1000,
+      "harvest_milli": 2000
+    },
+    {
+      "id": "healing_leaf",
+      "name_key": "healing_leaf.name",
+      "description_key": "healing_leaf.description",
+      "icon_id": "healing_leaf",
+      "schema_version": 1,
+      "item": "herb",
+      "yield_count": 3,
+      "growth": 3000,
+      "seasons": [
+        0,
+        1,
+        2
+      ],
+      "unlock": "herbalism",
+      "roof": false,
+      "prepare_milli": 4000,
+      "sow_milli": 1000,
+      "harvest_milli": 2000
+    },
+    {
+      "id": "cavecap",
+      "name_key": "cavecap.name",
+      "description_key": "cavecap.description",
+      "icon_id": "cavecap",
+      "schema_version": 1,
+      "item": "mushroom",
+      "yield_count": 4,
+      "growth": 3000,
+      "seasons": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "unlock": "storecraft",
+      "roof": true,
+      "prepare_milli": 4000,
+      "sow_milli": 1000,
+      "harvest_milli": 2000
+    }
+  ],
+  "research": [
+    {
+      "id": "storecraft",
+      "name_key": "storecraft.name",
+      "description_key": "storecraft.description",
+      "icon_id": "storecraft",
+      "schema_version": 1,
+      "points": 240,
+      "prerequisites": [],
+      "unlocks": [
+        "building:granary",
+        "crop:cavecap"
+      ]
+    },
+    {
+      "id": "farming",
+      "name_key": "farming.name",
+      "description_key": "farming.description",
+      "icon_id": "farming",
+      "schema_version": 1,
+      "points": 300,
+      "prerequisites": [],
+      "unlocks": [
+        "building:well",
+        "crop:barley",
+        "crop:squash",
+        "crop:flax"
+      ]
+    },
+    {
+      "id": "herbalism",
+      "name_key": "herbalism.name",
+      "description_key": "herbalism.description",
+      "icon_id": "herbalism",
+      "schema_version": 1,
+      "points": 240,
+      "prerequisites": [],
+      "unlocks": [
+        "recipe:prepare_medicine",
+        "crop:healing_leaf"
+      ]
+    },
+    {
+      "id": "woodcraft",
+      "name_key": "woodcraft.name",
+      "description_key": "woodcraft.description",
+      "icon_id": "woodcraft",
+      "schema_version": 1,
+      "points": 240,
+      "prerequisites": [],
+      "unlocks": [
+        "building:palisade",
+        "recipe:make_bow"
+      ]
+    },
+    {
+      "id": "masonry",
+      "name_key": "masonry.name",
+      "description_key": "masonry.description",
+      "icon_id": "masonry",
+      "schema_version": 1,
+      "points": 400,
+      "prerequisites": [
+        "storecraft"
+      ],
+      "unlocks": [
+        "building:stone_wall",
+        "building:stone_path",
+        "building:cellar",
+        "building:brick_kiln",
+        "building:bridge",
+        "recipe:fire_brick"
+      ]
+    },
+    {
+      "id": "weaving",
+      "name_key": "weaving.name",
+      "description_key": "weaving.description",
+      "icon_id": "weaving",
+      "schema_version": 1,
+      "points": 360,
+      "prerequisites": [
+        "farming"
+      ],
+      "unlocks": [
+        "building:loom",
+        "recipe:weave_cloth",
+        "recipe:sew_cloak"
+      ]
+    },
+    {
+      "id": "metalwork",
+      "name_key": "metalwork.name",
+      "description_key": "metalwork.description",
+      "icon_id": "metalwork",
+      "schema_version": 1,
+      "points": 600,
+      "prerequisites": [
+        "masonry",
+        "woodcraft"
+      ],
+      "unlocks": [
+        "building:charcoal_kiln",
+        "building:smelter",
+        "building:smithy",
+        "building:reinforced_gate",
+        "recipe:burn_charcoal",
+        "recipe:smelt_iron",
+        "recipe:make_vest",
+        "recipe:forge_toolkit"
+      ]
+    },
+    {
+      "id": "husbandry",
+      "name_key": "husbandry.name",
+      "description_key": "husbandry.description",
+      "icon_id": "husbandry",
+      "schema_version": 1,
+      "points": 320,
+      "prerequisites": [
+        "farming"
+      ],
+      "unlocks": [
+        "building:barn",
+        "building:fence",
+        "building:pen_gate"
+      ]
+    },
+    {
+      "id": "trailcraft",
+      "name_key": "trailcraft.name",
+      "description_key": "trailcraft.description",
+      "icon_id": "trailcraft",
+      "schema_version": 1,
+      "points": 360,
+      "prerequisites": [
+        "woodcraft"
+      ],
+      "unlocks": [
+        "recipe:dry_rations"
+      ]
+    },
+    {
+      "id": "commonlife",
+      "name_key": "commonlife.name",
+      "description_key": "commonlife.description",
+      "icon_id": "commonlife",
+      "schema_version": 1,
+      "points": 240,
+      "prerequisites": [
+        "storecraft"
+      ],
+      "unlocks": [
+        "building:memorial"
+      ]
+    },
+    {
+      "id": "signalcraft",
+      "name_key": "signalcraft.name",
+      "description_key": "signalcraft.description",
+      "icon_id": "signalcraft",
+      "schema_version": 1,
+      "points": 600,
+      "prerequisites": [
+        "metalwork",
+        "trailcraft"
+      ],
+      "unlocks": [
+        "building:watchpost",
+        "building:bell",
+        "building:beacon"
+      ]
+    },
+    {
+      "id": "valley_charter",
+      "name_key": "valley_charter.name",
+      "description_key": "valley_charter.description",
+      "icon_id": "valley_charter",
+      "schema_version": 1,
+      "points": 800,
+      "prerequisites": [
+        "signalcraft",
+        "commonlife"
+      ],
+      "unlocks": []
+    }
+  ],
+  "animals": [
+    {
+      "id": "hare",
+      "name_key": "hare.name",
+      "description_key": "hare.description",
+      "schema_version": 1,
+      "domestic": false,
+      "health": 24,
+      "move_ticks": 7,
+      "flee_range": 3,
+      "outputs": {
+        "meat": 3,
+        "leather": 1
+      },
+      "work_milli": 6000,
+      "initial_count": 6
+    },
+    {
+      "id": "deer",
+      "name_key": "deer.name",
+      "description_key": "deer.description",
+      "schema_version": 1,
+      "domestic": false,
+      "health": 60,
+      "move_ticks": 8,
+      "flee_range": 4,
+      "outputs": {
+        "meat": 8,
+        "leather": 4
+      },
+      "work_milli": 12000,
+      "initial_count": 4
+    },
+    {
+      "id": "boar",
+      "name_key": "boar.name",
+      "description_key": "boar.description",
+      "schema_version": 1,
+      "domestic": false,
+      "health": 90,
+      "move_ticks": 10,
+      "flee_range": 3,
+      "outputs": {
+        "meat": 10,
+        "leather": 3
+      },
+      "work_milli": 16000,
+      "initial_count": 2,
+      "damage": 12,
+      "cooldown": 25,
+      "range": 1
+    },
+    {
+      "id": "marsh_goose",
+      "name_key": "marsh_goose.name",
+      "description_key": "marsh_goose.description",
+      "schema_version": 1,
+      "domestic": false,
+      "health": 30,
+      "move_ticks": 9,
+      "flee_range": 3,
+      "outputs": {
+        "meat": 4
+      },
+      "work_milli": 8000,
+      "initial_count": 4
+    },
+    {
+      "id": "hen",
+      "name_key": "hen.name",
+      "description_key": "hen.description",
+      "schema_version": 1,
+      "domestic": true,
+      "health": 25,
+      "move_ticks": 10,
+      "feed": 1,
+      "outputs": {
+        "egg": 1
+      },
+      "slaughter_outputs": {
+        "meat": 3
+      },
+      "work_milli": 10000,
+      "barter_value": 12
+    },
+    {
+      "id": "pack_goat",
+      "name_key": "pack_goat.name",
+      "description_key": "pack_goat.description",
+      "schema_version": 1,
+      "domestic": true,
+      "health": 60,
+      "move_ticks": 10,
+      "feed": 2,
+      "outputs": {
+        "milk": 2
+      },
+      "slaughter_outputs": {
+        "meat": 8,
+        "leather": 3
+      },
+      "work_milli": 10000,
+      "barter_value": 30,
+      "cargo": 12
+    }
+  ],
+  "enemies": [
+    {
+      "id": "hungry_thief",
+      "name_key": "hungry_thief.name",
+      "description_key": "hungry_thief.description",
+      "schema_version": 1,
+      "cost": 1,
+      "health": 40,
+      "weapon": "club",
+      "damage": 5,
+      "cooldown": 25,
+      "min_range": 1,
+      "max_range": 1,
+      "armor": 0,
+      "objective": "food"
+    },
+    {
+      "id": "road_raider",
+      "name_key": "road_raider.name",
+      "description_key": "road_raider.description",
+      "schema_version": 1,
+      "cost": 3,
+      "health": 70,
+      "weapon": "spear",
+      "damage": 8,
+      "cooldown": 25,
+      "min_range": 1,
+      "max_range": 1,
+      "armor": 1,
+      "objective": "trade"
+    },
+    {
+      "id": "bow_raider",
+      "name_key": "bow_raider.name",
+      "description_key": "bow_raider.description",
+      "schema_version": 1,
+      "cost": 3,
+      "health": 55,
+      "weapon": "bow",
+      "damage": 6,
+      "cooldown": 35,
+      "min_range": 2,
+      "max_range": 6,
+      "armor": 0,
+      "objective": "trade"
+    }
+  ],
+  "expeditions": [
+    {
+      "id": "berry_hollow",
+      "name_key": "berry_hollow.name",
+      "description_key": "berry_hollow.description",
+      "schema_version": 1,
+      "skill": "Field",
+      "challenge": 3,
+      "site_hours": 6,
+      "rewards": {
+        "berry": 12,
+        "herb": 4
+      },
+      "insight": 0,
+      "reputation": {},
+      "cooldown_days": 4,
+      "unlock": "initial",
+      "payment": {},
+      "seasons": [
+        0,
+        1,
+        2
+      ]
+    },
+    {
+      "id": "old_quarry",
+      "name_key": "old_quarry.name",
+      "description_key": "old_quarry.description",
+      "schema_version": 1,
+      "skill": "Build",
+      "challenge": 5,
+      "site_hours": 12,
+      "rewards": {
+        "stone": 24
+      },
+      "insight": 0,
+      "reputation": {},
+      "cooldown_days": 6,
+      "unlock": "initial",
+      "payment": {},
+      "reward_choices": [
+        {
+          "stone": 24
+        },
+        {
+          "iron_ore": 12
+        }
+      ]
+    },
+    {
+      "id": "lost_goats",
+      "name_key": "lost_goats.name",
+      "description_key": "lost_goats.description",
+      "schema_version": 1,
+      "skill": "Field",
+      "challenge": 5,
+      "site_hours": 6,
+      "rewards": {
+        "fiber": 6
+      },
+      "insight": 0,
+      "reputation": {},
+      "cooldown_days": 0,
+      "unlock": "husbandry",
+      "payment": {},
+      "animal_reward": "pack_goat"
+    },
+    {
+      "id": "wayhouse_archive",
+      "name_key": "wayhouse_archive.name",
+      "description_key": "wayhouse_archive.description",
+      "schema_version": 1,
+      "skill": "Study",
+      "challenge": 6,
+      "site_hours": 12,
+      "rewards": {
+        "cloth": 4
+      },
+      "insight": 300,
+      "reputation": {},
+      "cooldown_days": 0,
+      "unlock": "initial",
+      "payment": {}
+    },
+    {
+      "id": "broken_causeway",
+      "name_key": "broken_causeway.name",
+      "description_key": "broken_causeway.description",
+      "schema_version": 1,
+      "skill": "Build",
+      "challenge": 7,
+      "site_hours": 12,
+      "rewards": {},
+      "insight": 200,
+      "reputation": {
+        "riverward": 15
+      },
+      "cooldown_days": 0,
+      "unlock": "initial",
+      "payment": {
+        "wood": 12,
+        "stone": 8
+      }
+    },
+    {
+      "id": "raider_cache",
+      "name_key": "raider_cache.name",
+      "description_key": "raider_cache.description",
+      "schema_version": 1,
+      "skill": "Guard",
+      "challenge": 9,
+      "site_hours": 12,
+      "rewards": {
+        "iron": 8,
+        "medicine": 2,
+        "cloth": 4
+      },
+      "insight": 0,
+      "reputation": {},
+      "cooldown_days": 0,
+      "unlock": "initial",
+      "payment": {}
+    },
+    {
+      "id": "seed_exchange",
+      "name_key": "seed_exchange.name",
+      "description_key": "seed_exchange.description",
+      "schema_version": 1,
+      "skill": "Field",
+      "challenge": 4,
+      "site_hours": 6,
+      "rewards": {
+        "grain": 16,
+        "herb": 4
+      },
+      "insight": 0,
+      "reputation": {
+        "orchard_kin": 5
+      },
+      "cooldown_days": 8,
+      "unlock": "initial",
+      "payment": {
+        "cloth": 2
+      }
+    },
+    {
+      "id": "hill_observatory",
+      "name_key": "hill_observatory.name",
+      "description_key": "hill_observatory.description",
+      "schema_version": 1,
+      "skill": "Study",
+      "challenge": 8,
+      "site_hours": 12,
+      "rewards": {},
+      "insight": 500,
+      "reputation": {
+        "road_fellowship": 10
+      },
+      "cooldown_days": 0,
+      "unlock": "initial",
+      "payment": {}
+    }
+  ],
+  "communities": [
+    {
+      "id": "orchard_kin",
+      "name_key": "orchard_kin.name",
+      "description_key": "orchard_kin.description",
+      "schema_version": 1,
+      "stock": {
+        "meal": 30,
+        "grain": 30,
+        "herb": 12,
+        "hen": 2
+      },
+      "delivery": {
+        "travel_ration": 12
+      },
+      "reputation": 10
+    },
+    {
+      "id": "riverward",
+      "name_key": "riverward.name",
+      "description_key": "riverward.description",
+      "schema_version": 1,
+      "stock": {
+        "stone": 40,
+        "iron_ore": 20,
+        "iron": 8,
+        "cloth": 10
+      },
+      "delivery": {
+        "brick": 20
+      },
+      "reputation": 10
+    },
+    {
+      "id": "road_fellowship",
+      "name_key": "road_fellowship.name",
+      "description_key": "road_fellowship.description",
+      "schema_version": 1,
+      "stock": {
+        "travel_ration": 20,
+        "medicine": 6,
+        "cloth": 10,
+        "pack_goat": 1
+      },
+      "delivery": {
+        "cloak": 3
+      },
+      "reputation": 10
+    }
+  ],
+  "events": [
+    {
+      "id": "traveling_storyteller",
+      "name_key": "traveling_storyteller.name",
+      "description_key": "traveling_storyteller.description",
+      "schema_version": 1,
+      "payment": {
+        "meal": 2
+      },
+      "work_milli": 0,
+      "hours": 6,
+      "rewards": {},
+      "insight": 0,
+      "reputation": {}
+    },
+    {
+      "id": "stranded_carrier",
+      "name_key": "stranded_carrier.name",
+      "description_key": "stranded_carrier.description",
+      "schema_version": 1,
+      "payment": {
+        "wood": 8
+      },
+      "work_milli": 12000,
+      "hours": 48,
+      "rewards": {
+        "cloth": 4
+      },
+      "insight": 0,
+      "reputation": {
+        "road_fellowship": 3
+      }
+    },
+    {
+      "id": "surplus_harvest",
+      "name_key": "surplus_harvest.name",
+      "description_key": "surplus_harvest.description",
+      "schema_version": 1,
+      "payment": {
+        "wood": 20
+      },
+      "work_milli": 0,
+      "hours": 48,
+      "rewards": {
+        "grain": 16
+      },
+      "insight": 0,
+      "reputation": {}
+    },
+    {
+      "id": "shared_observation",
+      "name_key": "shared_observation.name",
+      "description_key": "shared_observation.description",
+      "schema_version": 1,
+      "payment": {},
+      "work_milli": 20000,
+      "hours": 48,
+      "rewards": {},
+      "insight": 100,
+      "reputation": {}
+    }
+  ],
+  "charter": [
+    {
+      "id": "shelter",
+      "name_key": "shelter.name",
+      "description_key": "shelter.description",
+      "schema_version": 1,
+      "insight": 100,
+      "reward": "banner"
+    },
+    {
+      "id": "provision",
+      "name_key": "provision.name",
+      "description_key": "provision.description",
+      "schema_version": 1,
+      "insight": 100,
+      "reward": "palette"
+    },
+    {
+      "id": "connection",
+      "name_key": "connection.name",
+      "description_key": "connection.description",
+      "schema_version": 1,
+      "insight": 200,
+      "reward": "plaque"
+    },
+    {
+      "id": "refuge",
+      "name_key": "refuge.name",
+      "description_key": "refuge.description",
+      "schema_version": 1,
+      "insight": 200,
+      "reward": "sign"
+    },
+    {
+      "id": "charter",
+      "name_key": "charter.name",
+      "description_key": "charter.description",
+      "schema_version": 1,
+      "insight": 0,
+      "reward": "ending"
+    }
+  ]
+}

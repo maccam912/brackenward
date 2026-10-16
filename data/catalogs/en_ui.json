@@ -443,7 +443,7 @@
   "ui.newcomers.waits": "Waits {hours} more game hours. No hidden reputation penalty if this expires.",
   "ui.notice.allow_food_ingredient": "Allow at least one food ingredient.",
   "ui.notice.choose_colony_first": "Choose a site and create this colony first.",
-  "ui.notice.field_turnips": "Turnips: prepare 4 WU, sow 1 WU, harvest 2 WU per tile. Two days of growth gives four vegetables.",
+  "ui.notice.field_turnips": "Turnips: prepare 4 WU, sow 1 WU, harvest 2 WU per tile. Four days of growth on normal soil gives four vegetables.",
   "ui.notice.order_already_pending": "An order is pending. Resume to apply it before another action.",
   "ui.notice.order_pending": "Order pending. Close the panel and resume to apply it.",
   "ui.notice.paused": "Paused. Choose 1x, 2x, or 4x to resume.",

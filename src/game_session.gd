@@ -34,6 +34,7 @@ var sheet_route: String = ""
 var sheet_title_key: String = ""
 var sheet_camera_center: Vector2 = Vector2.ZERO
 var sheet_entry_speed: int = 0
+var inspector_entry_speed: int = 0
 var placement_entry_speed: int = 0
 var text_scale: float = 1.0
 var left_handed: bool = false
@@ -398,6 +399,7 @@ func _advance_frame(delta: float) -> void:
 	if store is ColonyStore and not _has_undurable_progress(): durable_at=save_clock
 	if _storage_wait_required() and runner.speed>0:
 		diagnostics.count("slow_storage_pauses")
+		_cancel_menu_resume()
 		runner.pause()
 		notice="Saving is slow; paused to protect recent progress. Resume after saving finishes."
 	var tick_before: int = world.tick
@@ -427,22 +429,22 @@ func _advance_frame(delta: float) -> void:
 		elif world.care_state.alert_serial > seen_care_alert:
 			seen_care_alert = world.care_state.alert_serial
 			if world.citizens.any(func(c:Dictionary)->bool:return c.downed or c.death_recorded):
-				if settings.values.auto_pauses.downed: show_care()
+				if settings.values.auto_pauses.downed: _cancel_menu_resume();runner.pause();show_care()
 				else: notice="A resident needs urgent care. Open People > Injuries and care."
 	if world is ColonyWorld and world.region_state.alert_serial>seen_region_alert:
 		seen_region_alert=world.region_state.alert_serial
 		if ColonyRegion.critical(world):
-			if settings.values.auto_pauses.expedition: show_expeditions()
+			if settings.values.auto_pauses.expedition: _cancel_menu_resume();runner.pause();show_expeditions()
 			else: notice="An expedition needs a decision. Open Valley > Expedition status."
 	if world is ColonyWorld and world.fire_state.alert_serial>seen_fire_alert:
 		seen_fire_alert=world.fire_state.alert_serial
 		if not ColonyFire.active(world).is_empty():
-			if settings.values.auto_pauses.fire: show_fires()
+			if settings.values.auto_pauses.fire: _cancel_menu_resume();runner.pause();show_fires()
 			else: notice="A building is on fire. Open People > Fires and water."
 	if world is ColonyWorld and world.defense_state.alert_serial>seen_defense_alert:
 		seen_defense_alert=world.defense_state.alert_serial
 		if not ColonyDefense.active(world).is_empty():
-			if settings.values.auto_pauses.hostile: show_defense()
+			if settings.values.auto_pauses.hostile: _cancel_menu_resume();runner.pause();show_defense()
 			else: notice="A hostile party has arrived. Open People > Defense and shelter."
 	if world is ColonyWorld:
 		for event in world.opportunity_state.offers:
@@ -481,7 +483,7 @@ func _advance_frame(delta: float) -> void:
 			if warning > food_warning_level:
 				notice = ColonyText.text("ui.forecast.warning",{"runway":ColonyText.food_runway(forecast)})
 				if is_instance_valid(soundscape): soundscape.cue("cue_warning",2,"",0.9)
-				if warning==3 and settings.values.auto_pauses.low_food: runner.pause()
+				if warning==3 and settings.values.auto_pauses.low_food: _cancel_menu_resume();runner.pause()
 			food_warning_level = warning
 	_refresh_clock()
 	notice_label.text = ColonyFonts.display(("Unsaved progress | " if saving_disabled else "") + notice)
@@ -569,7 +571,7 @@ func _has_undurable_progress() -> bool:
 
 func set_speed(value: int) -> void:
 	if quitting: return
-	if value==0: placement_entry_speed=0;sheet_entry_speed=0
+	if value==0: _cancel_menu_resume()
 	if value>0 and _storage_wait_required():
 		notice="Saving is still in progress. Resume after saving finishes."
 		return
@@ -604,7 +606,7 @@ func begin_placement() -> void:
 	var center: Vector2 = sheet_camera_center if sheet!=null and view.follow_id>0 else view.camera_center()
 	placement_entry_speed=sheet_entry_speed if sheet!=null else runner.speed
 	view.follow_id=0
-	close_sheet()
+	close_sheet(false)
 	runner.pause()
 	confirm_button.disabled = false
 	view.cancel_gesture()
@@ -784,6 +786,7 @@ func _select_map_object(candidate: Dictionary) -> void:
 	elif object.has("x") and object.has("y"): view.inspected_tiles.assign([Vector2i(object.x,object.y)])
 
 func select_citizen(id: int) -> void:
+	if inspector==null: inspector_entry_speed=runner.speed if settings.values.inspector_pause else 0
 	if settings.values.inspector_pause: runner.pause()
 	selected = id
 	view.selected_id = id
@@ -814,13 +817,19 @@ func select_citizen(id: int) -> void:
 	button(ColonyText.text("ui.action.close"), close_inspector, actions, 64)
 	_layout()
 
-func close_inspector() -> void:
+func close_inspector(resume: bool = true) -> void:
+	var entry_speed: int = inspector_entry_speed if inspector!=null else 0
+	inspector_entry_speed=0
 	if inspector != null:
 		inspector.queue_free()
 		inspector = null
 	selected = 0
 	view.selected_id = 0
 	view.inspected_tiles.clear();view.inspected_object=0
+	if resume and entry_speed>0 and sheet==null: set_speed(entry_speed)
+
+func _cancel_menu_resume() -> void:
+	placement_entry_speed=0;sheet_entry_speed=0;inspector_entry_speed=0
 
 func show_details(title: String) -> void:
 	show_sheet(title,"",true)
@@ -831,14 +840,15 @@ func show_sheet(title: String, title_key: String = "", literal_title: bool = fal
 	if notice==ColonyText.text("ui.notice.running"): notice=ColonyText.text("ui.notice.paused")
 	if sheet==null:
 		sheet_camera_center=view.camera_center()
-		sheet_entry_speed=runner.speed
+		sheet_entry_speed=inspector_entry_speed if inspector!=null and settings.values.inspector_pause else runner.speed
 	runner.pause()
 	view.cancel_gesture()
 	if sheet != null:
 		sheet.queue_free()
-	close_inspector()
+	close_inspector(false)
 	sheet_name = title
 	sheet_route="" if literal_title else title
+	if sheet_route in ["Welcome","Save problem","Recovery stopped","Delete saves"]: _cancel_menu_resume()
 	sheet_title_key=title_key
 	var display_title: String=ColonyText.text(title_key) if not title_key.is_empty() else title
 	sheet = PanelContainer.new()
@@ -859,7 +869,7 @@ func show_sheet(title: String, title_key: String = "", literal_title: bool = fal
 	heading.add_theme_font_size_override("font_size", int(16 * text_scale))
 	var close_button: Button = button(ColonyText.text("ui.action.close"), close_sheet, top, 64)
 	close_button.size_flags_horizontal = Control.SIZE_SHRINK_END
-	var pause_button: Button = button(ColonyText.text("ui.action.pause"), func() -> void: runner.pause(), top, 72)
+	var pause_button: Button = button(ColonyText.text("ui.action.pause"), func() -> void: set_speed(0), top, 72)
 	pause_button.size_flags_horizontal = Control.SIZE_SHRINK_END
 	var scroll: ScrollContainer = TouchScrollContainer.new()
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -896,6 +906,7 @@ func show_sheet(title: String, title_key: String = "", literal_title: bool = fal
 				for kind in world.definitions.buildings:
 					var definition: Dictionary = world.definitions.buildings[kind]
 					if not definition.buildable: continue
+					if definition.unlock!="initial" and not world.researched.has(definition.unlock): continue
 					button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body)
 		"People":
 			if world is ColonyWorld: button(ColonyText.text("ui.action.defense_and_shelter"),show_defense,sheet_body)
@@ -962,7 +973,8 @@ func _adapt_sheet_heading() -> void:
 	sheet_heading.text=title if fits else ""
 	sheet_full_heading.visible=not fits
 
-func close_sheet() -> void:
+func close_sheet(resume: bool = true) -> void:
+	var entry_speed: int = sheet_entry_speed if sheet!=null else 0
 	listening_binding=""
 	text_entry_error=""
 	if is_instance_valid(view): view.inspected_tiles.clear();view.inspected_object=0
@@ -975,6 +987,8 @@ func close_sheet() -> void:
 	sheet_entry_speed=0
 	notice = ColonyText.text("ui.notice.paused")
 	_layout()
+	if resume and entry_speed>0: set_speed(entry_speed)
+	if runner.speed>0: notice=ColonyText.text("ui.notice.running")
 
 func _layout() -> void:
 	if content == null:
@@ -1088,6 +1102,7 @@ func load_local() -> void:
 	notice = "Colony restored. Time stays paused."
 
 func _replace_world(state: RefCounted) -> void:
+	_cancel_menu_resume()
 	_finish_background_save(true,false)
 	diagnostics.reset();diagnostic_preview.clear()
 	durable_at=save_clock
@@ -1226,7 +1241,7 @@ func suspend() -> void:
 	if backgrounded:
 		return
 	backgrounded = true
-	placement_entry_speed=0;sheet_entry_speed=0
+	_cancel_menu_resume()
 	diagnostics.count("backgrounds");diagnostics.foreground=false;diagnostics.break_frame_clock()
 	if is_instance_valid(soundscape): soundscape.suspend()
 	runner.pause()
@@ -1318,7 +1333,7 @@ func _input(event: InputEvent) -> void:
 func _shortcut(action: String) -> bool:
 	match action:
 		"back": back()
-		"pause": set_speed(runner.previous_speed if runner.speed==0 else 0)
+		"pause": set_speed(runner.previous_speed if runner.speed==0 and sheet==null and (inspector==null or not settings.values.inspector_pause) and not placement.visible else 0)
 		"speed_1": set_speed(1)
 		"speed_2": set_speed(2)
 		"speed_4": set_speed(4)
@@ -1664,7 +1679,7 @@ func _storage_sheet(storage: Dictionary) -> void:
 			_submit("stock_filter",{"target":storage.id,"filters":filters,"priority":storage.priority}),sheet_body)
 
 func _storage_failed(error: String) -> void:
-	placement_entry_speed=0;sheet_entry_speed=0
+	_cancel_menu_resume()
 	diagnostics.count("storage_alerts")
 	storage_error = error
 	runner.pause()
@@ -2386,6 +2401,7 @@ func show_care() -> void:
 	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_sheet("Work","ui.sheet.work"),sheet_body)
 
 func show_epilogue() -> void:
+	_cancel_menu_resume()
 	runner.pause()
 	show_sheet("Colony epilogue","ui.sheet.colony_epilogue")
 	label(ColonyText.text("ui.help.epilogue.no_living_residents_remain_in_this_colony"),sheet_body)
@@ -2504,7 +2520,7 @@ func show_map_details() -> void:
 	button(ColonyText.text("ui.action.show_weather"),show_weather,sheet_body)
 	button("Rooms overlay: "+("On" if view.rooms_overlay else "Off"),func()->void:
 		view.rooms_overlay=not view.rooms_overlay;close_sheet()
-		notice="Room roofs are faded. Enclose 1-64 tiles with walls and doors." if view.rooms_overlay else "Rooms overlay off.",sheet_body).name="RoomsOverlay"
+		notice="Room outlines are shown. Enclose 1-64 tiles with walls and doors." if view.rooms_overlay else "Rooms overlay off.",sheet_body).name="RoomsOverlay"
 
 func begin_forest() -> void:
 	begin_placement()
@@ -2837,6 +2853,7 @@ func show_expeditions() -> void:
 			else: button(ColonyText.text("ui.action.depart"),func()->void:_submit("expedition_depart",{"target":trip.id,"unprepared":false});close_sheet(),sheet_body)
 		button(ColonyText.text("ui.action.cancel_packing"),func()->void:_submit("expedition_cancel",{"target":trip.id});close_sheet(),sheet_body)
 	elif trip.state=="Decision":
+		_cancel_menu_resume()
 		var options: Array = [["wait","repair","continue"],["give","continue"],["survey","continue"]][trip.decision]
 		var descriptions: Dictionary = {"wait":"Wait for carrier: +6 hours, cloth 4","repair":"Repair path: wood 4, cloth 4, no delay","give":"Give rations: 2 rations, +3 Road reputation","survey":"Survey shortcut: +6 hours, +80 insight","continue":"Continue on the original route: free"}
 		if world.tick<world.region_state.progress[trip.args.definition].decision_after: label(ColonyText.text("ui.help.expeditions.optional_bonus_is_cooling_down_no_extra"),sheet_body)
@@ -2845,6 +2862,7 @@ func show_expeditions() -> void:
 			label(descriptions[option]+(" · "+error if not error.is_empty() else ""),sheet_body)
 			if error.is_empty(): button("Choose "+option,func()->void:_submit("expedition_choice",{"target":trip.id,"definition":option});close_sheet();runner.set_speed(runner.previous_speed),sheet_body)
 	elif trip.state=="Collect":
+		_cancel_menu_resume()
 		label("Declared outcome: %s; insight %d; shortfall %d. Contract payment %s is consumed only on full/partial success. Health damage: %d%s. Kept goods remain in cargo on recall after collection; unkept goods stay here for one pickup." % [_cost_text(trip.quote.rewards),trip.quote.insight,trip.quote.shortfall,_cost_text(trip.quote.payment),20 if trip.quote.shortfall>2 else trip.quote.shortfall*10," to each of the two lowest IDs" if trip.quote.shortfall>2 else " to the highest relevant-skill leader"],sheet_body)
 		var default: Dictionary = ColonyRegion.default_keep(world,trip);var quantities: Dictionary = {}
 		for item in trip.quote.rewards:
@@ -3035,6 +3053,7 @@ func show_charter_appearance() -> void:
 		else: label(title+" waits for "+ColonyCharter.TITLES[stage]+".",sheet_body)
 
 func show_charter_ending() -> void:
+	_cancel_menu_resume()
 	runner.pause()
 	show_sheet("Brackenward restored","ui.sheet.brackenward_restored")
 	label(ColonyChronicle.display_name(world,0)+" has completed its charter. The beacon watches over a living settlement. These moments come from the colony's recorded history.",sheet_body)

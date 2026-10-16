@@ -10,6 +10,9 @@ var flame: Sprite2D
 var decorations: Node2D
 var output_pile: Sprite2D
 var semantic: String = ""
+var wall_mask: int = 0
+var wall_visual: Node2D
+var wall_tint: Color = Color.WHITE
 
 func _init() -> void:
 	texture=EnvironmentArt.ATLAS;region_enabled=true
@@ -26,11 +29,15 @@ func sync(state: ColonyWorld, structure: Dictionary, tint: Color, reveal_roof: b
 	if next!=semantic:
 		semantic=next;region_rect=EnvironmentArt.rectangle(semantic);offset=Vector2(0,-region_rect.size.y*0.5)
 	self_modulate=tint*Color(1,1,1,0.4 if obstruction else 1.0)
-	if structure.definition=="barn" and structure.health>0:
-		if roof==null: roof=_sprite()
-		roof.visible=true;roof.region_rect=EnvironmentArt.rectangle("roof/barn/%d" % structure.rotation);roof.offset=Vector2(0,-roof.region_rect.size.y*0.5)
-		roof.self_modulate=tint*Color(1,1,1,0.2 if reveal_roof else 1.0)
-	elif roof!=null: roof.hide()
+	# Keep every interior visible; room enclosure remains a simulation property.
+	if roof!=null: roof.hide()
+	if structure.health>0 and structure.definition in ["wood_wall","stone_wall","palisade","fence"]:
+		self_modulate.a=0
+		if wall_visual==null:
+			wall_visual=Node2D.new();add_child(wall_visual);wall_visual.draw.connect(_draw_wall)
+		wall_tint=tint*Color(1,1,1,0.4 if obstruction else 1.0)
+		wall_visual.show();wall_visual.queue_redraw()
+	elif wall_visual!=null: wall_visual.hide()
 	if burning and structure.health>0:
 		if flame==null: flame=_sprite()
 		flame.visible=true;flame.region_rect=EnvironmentArt.rectangle("effect/flame/%d" % fire_frame);flame.offset=Vector2(0,-12);flame.position=Vector2(0,-8)
@@ -50,6 +57,27 @@ func sync(state: ColonyWorld, structure: Dictionary, tint: Color, reveal_roof: b
 func _sprite() -> Sprite2D:
 	var result: Sprite2D = Sprite2D.new();result.texture=EnvironmentArt.ATLAS;result.region_enabled=true
 	result.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST;add_child(result);return result
+
+func _draw_wall() -> void:
+	var stone: bool = record.definition=="stone_wall"
+	var fence: bool = record.definition=="fence"
+	var face: Color = Color("8C9D9B") if stone else Color("A47B52")
+	var top: Color = Color("C4CBC1") if stone else Color("D6B47A")
+	var shade: Color = Color("52645F") if stone else Color("634D38")
+	var radius: int = 2 if fence else 3
+	# Each branch reaches its tile edge. Neighboring branches share the same
+	# center line and cap height, including mixed-material corners/junctions.
+	var center: Vector2 = Vector2(0,-12)
+	var shapes: Array[Rect2] = [Rect2(center-Vector2.ONE*radius,Vector2.ONE*radius*2)]
+	for index in range(4):
+		if wall_mask&(1<<index)==0: continue
+		var end: Vector2 = center+Vector2([Vector2i.UP,Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT][index])*8
+		shapes.append(Rect2(Vector2(minf(center.x,end.x)-radius,minf(center.y,end.y)-radius),Vector2(absf(end.x-center.x)+radius*2,absf(end.y-center.y)+radius*2)))
+	for shape in shapes: wall_visual.draw_rect(Rect2(shape.position+Vector2(0,3),shape.size+Vector2(0,2)),shade*wall_tint)
+	for shape in shapes: wall_visual.draw_rect(Rect2(shape.position+Vector2(0,2),shape.size),face*wall_tint)
+	for shape in shapes: wall_visual.draw_rect(shape,top*wall_tint)
+	if stone: wall_visual.draw_line(center+Vector2(-2,-radius),center+Vector2(-2,radius),face*wall_tint,1)
+	else: wall_visual.draw_line(center+Vector2(-radius,0),center+Vector2(radius,0),face*wall_tint,1)
 
 func _draw_decorations() -> void:
 	var started: int = Time.get_ticks_usec()

@@ -21,6 +21,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	game.world=ColonyTests.world();game.runner=SimRunner.new(game.world)
 	game.store.root_directory=root;game.store.select_slot(1);game.settings.path=root.path_join("settings.json")
 	tree.root.add_child(game);game.close_sheet();game._tutorial_dismiss();game.set_process(false)
+	menu_feedback(game,check)
 	var initial: String = game.world.canonical_hash()
 	for state in ["normal","hover","pressed","disabled"]:
 		var text: String = {"normal":"font_color","hover":"font_hover_color","pressed":"font_pressed_color","disabled":"font_disabled_color"}[state]
@@ -101,3 +102,47 @@ static func run(previous: GameSession, check: Callable) -> void:
 	game.queue_free();await tree.process_frame
 	CampaignTests.remove_tree(root);tree.root.size=original_size
 	previous.visible=visible;previous.set_process(processing);previous._apply_device_settings()
+
+static func menu_feedback(game: GameSession, check: Callable) -> void:
+	var hearth: Dictionary = game.world.structures.filter(func(s:Dictionary)->bool:return s.definition=="hearth")[0]
+	for speed in [0,1,2,4]:
+		game.set_speed(speed);game.show_station(hearth)
+		check.call("MENU/hearth_pauses_entry_speed_%d" % speed,game.runner.speed==0)
+		var close: Button = game.sheet.find_children("*","Button",true,false).filter(func(b:Button)->bool:return b.text=="Close")[0]
+		close.pressed.emit()
+		check.call("MENU/hearth_close_restores_exact_entry_speed_%d" % speed,game.sheet==null and game.runner.speed==speed)
+		game.show_sheet("Work");game.show_research();game.show_sheet("Build");game.back()
+		check.call("MENU/nested_panels_restore_original_speed_%d" % speed,game.sheet==null and game.runner.speed==speed)
+		game.settings.values.inspector_pause=true
+		game.select_citizen(1);game.select_citizen(2);game.close_inspector()
+		check.call("MENU/switching_citizen_inspectors_keeps_original_speed_%d" % speed,game.runner.speed==speed)
+		game.select_citizen(1);game.show_station(hearth);game.close_sheet()
+		check.call("MENU/inspector_to_station_preserves_original_speed_%d" % speed,game.runner.speed==speed)
+		game.settings.values.inspector_pause=false
+	game.set_speed(4);game.show_station(hearth)
+	var pause: Button = game.sheet.find_children("*","Button",true,false).filter(func(b:Button)->bool:return b.text=="Pause")[0]
+	pause.pressed.emit();game.close_sheet()
+	check.call("MENU/explicit_panel_pause_cancels_auto_resume",game.runner.speed==0)
+	game.set_speed(2);game.show_sheet("Work");game._shortcut("pause");game.close_sheet()
+	check.call("MENU/explicit_keyboard_pause_cancels_auto_resume",game.runner.speed==0)
+	game.set_speed(4);game.show_sheet("Build");game.show_sheet("Work");game.suspend();game.resume_from_background();game.close_sheet()
+	check.call("MENU/background_return_cancels_panel_auto_resume",game.runner.speed==0)
+	game.set_speed(4);game.show_station(hearth);game._storage_failed("Controlled menu storage failure");game.close_sheet()
+	check.call("MENU/storage_error_close_keeps_game_paused",game.runner.speed==0)
+	game.storage_error="";game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()
+	game.set_speed(4);game.show_sheet("Work");game._replace_world(ColonyTests.world());game.close_sheet()
+	check.call("MENU/world_replacement_cancels_panel_auto_resume",game.runner.speed==0)
+	game.show_sheet("Build")
+	var buildings: Array = game.sheet_body.find_children("*","Button",true,false).map(func(b:Button)->String:return b.text)
+	var hidden: bool = true;var available: bool = true
+	for definition in game.world.definitions.buildings.values():
+		if not definition.buildable: continue
+		var present: bool = buildings.any(func(text:String)->bool:return text.begins_with(definition.id.capitalize()+" | "))
+		if definition.unlock=="initial": available=available and present
+		else: hidden=hidden and not present
+	check.call("BUILD/menu_shows_initial_buildings_and_hides_every_locked_structure",available and hidden)
+	game.world.researched.append("masonry");game.show_sheet("Build")
+	check.call("BUILD/stone_path_appears_when_masonry_is_researched",game.sheet_body.find_children("*","Button",true,false).any(func(b:Button)->bool:return b.text.begins_with("stone_path".capitalize()+" | ")))
+	game.show_research()
+	check.call("BUILD/research_keeps_future_unlocks_discoverable",game.sheet_body.find_children("*","Label",true,false).any(func(l:Label)->bool:return l.text.begins_with("Unlocks: ")))
+	game.close_sheet();game._replace_world(ColonyTests.world());game._tutorial_dismiss()

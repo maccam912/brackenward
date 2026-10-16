@@ -67,3 +67,6 @@ reports/preparation-v42-sources/
 reports/post-charter-*/
 reports/release-repair-v44/
 reports/generation-*/
+
+# Local feedback validation artifacts, including retained failed attempts.
+reports/feedback-*/

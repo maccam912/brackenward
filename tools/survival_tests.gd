@@ -2,6 +2,7 @@ class_name SurvivalTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	turnip_growth(check)
 	LivingHeatTests.run(check)
 	RoomGeometryTests.run(check)
 	var w: ColonyWorld = ColonyTests.world()
@@ -133,13 +134,16 @@ static func run(check: Callable) -> void:
 	for name in DirAccess.get_files_at(store.directory):
 		DirAccess.remove_absolute(store.directory.path_join(name))
 	DirAccess.remove_absolute(store.directory)
-	# Competent first-week plan: prepare/sow sixteen starter turnip tiles, preserve
+	# Four-day turnips need early foraging as well as the field. Use real orders.
+	# Competent first-week plan: prepare/sow twenty-four starter turnip tiles, preserve
 	# default cooking, and grow/harvest/haul every cycle through the real scheduler.
 	w = ColonyTests.world()
 	var tiles: Array[Vector2i] = []
-	for y in range(54,58):
+	for y in range(52,58):
 		for x in range(74,78): tiles.append(Vector2i(x,y))
 	w.queue_command("field", {"crop":"turnip", "tiles":tiles})
+	for resource in w.resources:
+		if resource.definition in ["berry_bush","mushroom_patch"]: w.queue_command("gather",{"target":resource.id})
 	var invariant_failures: Array[String] = []
 	var minimum_health: int = 100
 	for i in range(57600):
@@ -148,7 +152,21 @@ static func run(check: Callable) -> void:
 			invariant_failures.append_array(w.invariant_errors())
 			for citizen in w.citizens:
 				minimum_health = mini(minimum_health,citizen.health)
-	check.call("M2/eight_day_four_person_sustainable_colony", minimum_health == 100 and w.citizens.all(func(c:Dictionary)->bool:return not c.departed) and w.ledger.produced.get("vegetable",0) >= 128 and w.ledger.produced.get("meal",0) > 24, str({"health":minimum_health,"produced":w.ledger.produced,"food":w.available("meal")}))
+	check.call("M2/eight_day_four_person_sustainable_colony", minimum_health == 100 and w.citizens.all(func(c:Dictionary)->bool:return not c.departed) and w.ledger.produced.get("vegetable",0) >= 96 and w.ledger.produced.get("meal",0) > 24, str({"health":minimum_health,"produced":w.ledger.produced,"food":w.available("meal")}))
 	check.call("M2/eight_day_inventory_conservation", invariant_failures.is_empty(),str(invariant_failures.slice(0,8)))
 	var roundtrip: Dictionary = ColonyCodec.decode(ColonyCodec.encode(w))
 	check.call("M2/fields_and_needs_roundtrip", roundtrip.has("world") and roundtrip.world.canonical_hash() == w.canonical_hash(),str(roundtrip.get("error","")))
+
+static func turnip_growth(check: Callable) -> void:
+	for fertility in [750,1000,1250]:
+		var world: ColonyWorld = ColonyTests.world()
+		ColonyAgriculture.designate(world,{"crop":"turnip","tiles":[Vector2i(74,54)]})
+		var field: Dictionary = world.fields[0];field.prepared=true;field.planted=true;field.fertility=fertility
+		var started: int = world.tick
+		var duration: int = (4000*7200+fertility-1)/fertility
+		for index in range(duration-1):
+			world.tick+=1;ColonyAgriculture.advance(world)
+			if index==14399: check.call("CROP/turnips_still_growing_after_two_days_at_%d_fertility" % fertility,field.ripe_tick==0)
+		check.call("CROP/turnips_do_not_ripen_before_exact_duration_%d" % fertility,field.ripe_tick==0 and field.growth<4000)
+		world.tick+=1;ColonyAgriculture.advance(world)
+		check.call("CROP/turnips_ripen_after_several_days_at_%d_fertility" % fertility,field.ripe_tick==started+duration and field.growth==4000 and duration>=23040)

@@ -13,6 +13,7 @@ static func run(tree: SceneTree, check: Callable) -> void:
 	content4_upgrade(root,check)
 	content5_upgrade(root,check)
 	content6_upgrade(root,check)
+	content7_upgrade(root,check)
 	var world: ColonyWorld = ColonyTests.world()
 	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("campaign")
 	check.call("SAVE/async_fixture_snapshot",store.save(world).is_empty())
@@ -157,9 +158,9 @@ static func content3_upgrade(root: String, check: Callable) -> void:
 	changed.content_hash="0".repeat(64);envelope.content_hash=changed.content_hash
 	envelope.payload=JSON.stringify(ColonyState.pack(changed),"",true);envelope.sha256=envelope.payload.sha256_text()
 	check.call("SAVE/v3_upgrade_requires_its_exact_released_catalog",ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","").begins_with("Unknown released v3 catalog"))
-	envelope.content="colony-v8"
+	envelope.content="colony-v9"
 	var newer: String = ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","")
-	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v8") and newer.contains("colony-v7"))
+	check.call("SAVE/newer_content_error_identifies_required_and_supported_versions",newer.contains("colony-v9") and newer.contains("colony-v8"))
 	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("content-v4-upgrade")
 	DirAccess.make_dir_recursive_absolute(store.directory)
 	var snapshot: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/content3-delta-base.brackenward")
@@ -322,3 +323,18 @@ static func content6_upgrade(root: String, check: Callable) -> void:
 	check.call("SAVE/v7_future_checkpoint_recovers_exactly_after_v6_upgrade",error.is_empty() and loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash() and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-journal-0000000001.frames"))==journal,error)
 	var envelope: Dictionary=JSON.parse_string(snapshot.get_string_from_utf8());var changed: Dictionary=ColonyState.unpack(JSON.parse_string(envelope.payload));changed.content_hash="0".repeat(64);envelope.content_hash=changed.content_hash;envelope.payload=JSON.stringify(ColonyState.pack(changed),"",true);envelope.sha256=envelope.payload.sha256_text()
 	check.call("SAVE/v6_upgrade_requires_its_exact_released_catalog",ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","").begins_with("Unknown released v6 catalog"))
+
+static func content7_upgrade(root: String, check: Callable) -> void:
+	var audit: Dictionary = Content7Migration.audit()
+	check.call("SAVE/v7_loaded_work_foreign_snapshot_and_600_tick_journal_preserved",audit.passed and audit.delta_fold_preserved,str(audit))
+	var snapshot: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/content7-work/delta-base.brackenward")
+	var journal: PackedByteArray = FileAccess.get_file_as_bytes("res://tests/fixtures/content7-work/delta.frames")
+	var store: ColonyStore = ColonyStore.new();store.directory=root.path_join("content-v8-upgrade");DirAccess.make_dir_recursive_absolute(store.directory)
+	for pair in [["snapshot-0000000001.brackenward",snapshot],["journal-0000000001.frames",journal]]:
+		var file: FileAccess = FileAccess.open(store.directory.path_join(pair[0]),FileAccess.WRITE);file.store_buffer(pair[1]);file.close()
+	var expected: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/content7-work/delta-final.brackenward"))
+	var recovered: Dictionary = store.load_latest()
+	check.call("SAVE/v7_journal_folds_before_v8_hunger_rules",expected.has("world") and recovered.has("world") and expected.world.canonical_hash()==recovered.world.canonical_hash())
+	check.call("SAVE/v7_migration_keeps_snapshot_journal_and_untouched_backups",FileAccess.get_file_as_bytes(store.directory.path_join("snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("journal-0000000001.frames"))==journal and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-snapshot-0000000001.brackenward"))==snapshot and FileAccess.get_file_as_bytes(store.directory.path_join("migration-backup-journal-0000000001.frames"))==journal)
+	var envelope: Dictionary=JSON.parse_string(snapshot.get_string_from_utf8());var data: Dictionary=ColonyState.unpack(JSON.parse_string(envelope.payload));data.content_hash="0".repeat(64);envelope.content_hash=data.content_hash;envelope.payload=JSON.stringify(ColonyState.pack(data),"",true);envelope.sha256=envelope.payload.sha256_text()
+	check.call("SAVE/v7_upgrade_requires_exact_released_catalog",ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer()).get("error","").begins_with("Unknown released v7 catalog"))

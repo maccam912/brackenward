@@ -5,7 +5,7 @@ class ReservationProbe extends ColonyWorld:
 	var target: int = 0
 	func _init(catalog: Dictionary) -> void:
 		super(catalog)
-	func _assign_search(citizen: Dictionary) -> void:
+	func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		var job: Dictionary = find(jobs,target)
 		if _reserve(job,citizen): citizen.job=job.id
 

@@ -266,3 +266,11 @@ combat_catalog=json.loads((root / 'data/catalogs/colony_v7.json').read_text())
 assert combat_catalog['version']=='colony-v7'
 assert {k:v for k,v in combat_catalog.items() if k!='version'}=={k:v for k,v in rest_catalog.items() if k!='version'}, 'Self-defense correction must retain every released catalog definition'
 print('Validated self-defense content v7; definitions are identical to retained v6 except the declared version.')
+
+work_catalog=json.loads((root / 'data/catalogs/colony_v8.json').read_text())
+assert work_catalog['version']=='colony-v8'
+normalized_work=json.loads(json.dumps(work_catalog));normalized_work['version']='colony-v7'
+assert next(c for c in normalized_work['crops'] if c['id']=='turnip')['growth']==4000
+next(c for c in normalized_work['crops'] if c['id']=='turnip')['growth']=2000
+assert normalized_work==combat_catalog, 'Only the version and turnip growth duration may change'
+print('Validated hunger-checkpoint content v8; only the version and turnip growth duration differ from retained v7.')

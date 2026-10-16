@@ -441,7 +441,10 @@ func ui() -> void:
 	colony_game.runner.advance_frame(0.1)
 	check("M2/UI_field_tiles_created",colony_game.world.fields.size() == 16)
 	for tick_index in range(17000): colony_game.world.step()
-	check("M2/UI_fields_produced_real_food",colony_game.world.ledger.produced.get("vegetable",0) > 0)
+	check("M2/UI_fields_are_still_growing_after_two_days",colony_game.world.ledger.produced.get("vegetable",0)==0)
+	var later_field: ColonyWorld = ColonyCodec.decode(ColonyCodec.encode(colony_game.world)).world
+	for tick_index in range(15000): later_field.step()
+	check("M2/UI_fields_produced_real_food",later_field.ledger.produced.get("vegetable",0)>0)
 	colony_game._process(0.0)
 	colony_game.runner.pause()
 	colony_game._name_snapshot(1,false,"")

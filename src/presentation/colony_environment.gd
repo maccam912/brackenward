@@ -124,6 +124,9 @@ func _index_resources() -> void:
 
 func _refresh_props() -> void:
 	var wanted: Dictionary = {}
+	var walls: Dictionary = {}
+	for structure in world.structures:
+		if structure.health>0 and structure.definition in ["wood_wall","stone_wall","palisade","fence","door","pen_gate"]: walls[Vector2i(structure.x,structure.y)]=true
 	for structure in world.structures:
 		if structure.definition in FLOORS and structure.health>0: continue
 		wanted[structure.id]=true
@@ -132,6 +135,10 @@ func _refresh_props() -> void:
 			prop.set_meta("world_id",structure.id);prop.set_meta("role","building")
 			view.actor_layer.add_child(prop);props[structure.id]=prop;view.extra_order_changed=true
 		props[structure.id].record=structure
+		var mask: int = 0
+		for index in range(4):
+			if walls.has(Vector2i(structure.x,structure.y)+[Vector2i.UP,Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT][index]): mask|=1<<index
+		props[structure.id].wall_mask=mask
 	for id in props.keys():
 		if not wanted.has(id): props[id].queue_free();props.erase(id);view.extra_order_changed=true
 
@@ -287,16 +294,17 @@ func _draw_warmth() -> void:
 	view.account_draw(Time.get_ticks_usec()-started)
 
 func _draw_roofs() -> void:
+	if not view.rooms_overlay: return
 	var started: int = Time.get_ticks_usec()
 	for point in roof_tiles:
 		var room: int = roof_tiles[point]
 		if room<0: continue # Barn's own roof uses its dedicated atlas layer.
 		var rectangle: Rect2 = Rect2(view.tile_to_screen(Vector2(point)),Vector2.ONE*view.tile_size)
 		if not rectangle.intersects(Rect2(Vector2.ZERO,view.size)): continue
-		var color: Color = Color("716D88")*tint;color.a=0.2 if view.rooms_overlay or revealed_rooms.has(room) else 0.9
-		roof_layer.draw_rect(rectangle,color)
-		var seam: Color = Color("F3E8CC");seam.a=color.a*0.25
-		roof_layer.draw_line(rectangle.position+Vector2(0,view.tile_size*0.5),rectangle.position+Vector2(view.tile_size,view.tile_size*0.5),seam,1)
+		var corners: Array[Vector2] = [rectangle.position,rectangle.position+Vector2(rectangle.size.x,0),rectangle.end,rectangle.position+Vector2(0,rectangle.size.y)]
+		for index in range(4):
+			if roof_tiles.get(point+[Vector2i.UP,Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT][index],-1)!=room:
+				roof_layer.draw_line(corners[index],corners[(index+1)%4],Color("E9BA67"),2)
 	view.account_draw(Time.get_ticks_usec()-started)
 
 func _draw_feedback() -> void:
