@@ -1146,6 +1146,11 @@ func _layout() -> void:
 	placement.reset_size()
 	placement.size = Vector2(width - 16, 160)
 	if sheet != null:
+		var research_summary: HFlowContainer=sheet_body.get_node_or_null("ResearchSummary") as HFlowContainer
+		if research_summary!=null:
+			for entry in research_summary.get_children():
+				var text_width: float=entry.get_theme_font("font").get_string_size(entry.text,HORIZONTAL_ALIGNMENT_LEFT,-1,entry.get_theme_font_size("font_size")).x
+				entry.custom_minimum_size.x=minf(ceilf(text_width),maxf(1,width-48))
 		sheet.position = Vector2(8, 8)
 		sheet.reset_size()
 		sheet.size = Vector2(width - 16, maxf(120, height - navigation_height - 72))
@@ -2391,7 +2396,12 @@ func show_research() -> void:
 	_tutorial_action("research")
 	show_sheet("Research","ui.sheet.research")
 	label(ColonyText.text("ui.help.research.one_active_project_up_to_two_desks"),sheet_body)
-	label("Active: "+("None" if world.production_state.project.is_empty() else _catalog_name(world.production_state.project))+"\nQueue: "+", ".join(world.production_state.queue.map(_catalog_name))+"\nBanked insight: %d" % world.production_state.insight,sheet_body)
+	var queued_names: String="None" if world.production_state.queue.is_empty() else ", ".join(world.production_state.queue.map(_catalog_name))
+	var summary: HFlowContainer=HFlowContainer.new();summary.name="ResearchSummary";sheet_body.add_child(summary)
+	summary.add_theme_constant_override("h_separation",16)
+	for text in ["Active: "+("None" if world.production_state.project.is_empty() else _catalog_name(world.production_state.project)),"Queue: "+queued_names,"Banked insight: %d" % world.production_state.insight]:
+		var entry: Label=label(text,summary);entry.size_flags_horizontal=Control.SIZE_SHRINK_BEGIN
+
 	var cards: GridContainer=GridContainer.new();cards.name="ResearchCards";sheet_body.add_child(cards)
 	cards.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	cards.add_theme_constant_override("h_separation",8);cards.add_theme_constant_override("v_separation",8)
@@ -2448,7 +2458,6 @@ func show_station(station: Dictionary) -> void:
 		button(ColonyText.text("ui.action.rebuild"),func()->void:_submit("rebuild",{"target":station.id});close_sheet(),sheet_body)
 		return
 	show_details(ColonyChronicle.display_name(world,station.id))
-	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(station.id),sheet_body)
 	var definition: Dictionary = world.definitions.buildings[station.definition]
 	illustrated_summary("Health %d/%d | %s\n%s" % [station.health,definition.health,"Flammable" if definition.flammable else "Does not spread fire",("Store capacity %d" % definition.storage_capacity) if definition.storage_capacity > 0 else "Work needs inputs and an eligible resident"],sheet_body,"building/%s/%d" % [station.definition,station.rotation])
 	if station.definition == "supply_cart":
@@ -2456,7 +2465,7 @@ func show_station(station: Dictionary) -> void:
 		button(ColonyText.text("ui.action.communal_supper"),show_supper,sheet_body)
 		button(ColonyText.text("ui.action.move_supply_cart"),func()->void:begin_cart_move(station),sheet_body)
 		button(ColonyText.text("ui.action.neighbors_and_trade"),show_valley,sheet_body)
-	if station.definition != "supply_cart":
+	if station.definition != "supply_cart" and station.health<definition.health:
 		button(ColonyText.text("ui.action.repair_or_demolish"),func()->void:show_maintenance(station),sheet_body)
 	if station.definition in ["bed","bedroll"]:
 		label("Assigned to "+ColonyChronicle.display_name(world,station.user) if station.user>0 else "Unassigned sleeping place",sheet_body)
@@ -2466,6 +2475,7 @@ func show_station(station: Dictionary) -> void:
 			for person in world.citizens:
 				if person.death_recorded or person.departed: continue
 				button("Assign "+person.name,func()->void:show_bed_choice(person.id,station.id),sheet_body)
+		_station_secondary_actions(station)
 		return
 	if station.definition in ColonyFire.INDUSTRIAL:
 		var hazards: Array = ColonyFire.unsafe(world,station)
@@ -2504,6 +2514,12 @@ func show_station(station: Dictionary) -> void:
 		close_sheet(),sheet_body)
 	if definition.storage_capacity > 0:
 		button(ColonyText.text("ui.action.storage_filters_and_priority"),func() -> void: _storage_sheet(world.find(world.stores,station.id)),sheet_body)
+	_station_secondary_actions(station)
+
+func _station_secondary_actions(station: Dictionary) -> void:
+	button(ColonyText.text("ui.action.rename"),func()->void:show_rename(station.id),sheet_body)
+	if station.definition!="supply_cart" and station.health>=world.definitions.buildings[station.definition].health:
+		button(ColonyText.text("ui.action.repair_or_demolish"),func()->void:show_maintenance(station),sheet_body)
 
 func _catalog_name(id: String) -> String:
 	var key: String = id.get_slice(":",1) if id.contains(":") else id

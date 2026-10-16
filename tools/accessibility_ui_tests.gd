@@ -307,5 +307,16 @@ static func research_cards(game: GameSession, check: Callable) -> void:
 		check.call("RESEARCH/UI_cards_wrap_all_twelve_projects_at_%s_text_%s" % [entry[0],entry[1]],valid and world.canonical_hash()==baseline)
 		check.call("RESEARCH/UI_exact_milli_progress_completed_state_and_active_border_%s" % entry[1],meter.value==123456 and meter.max_value==240000 and done.value==done.max_value and active.get_theme_stylebox("panel").border_color==Color("E9BA67") and complete.find_children("*","Button",true,false).is_empty())
 		check.call("RESEARCH/UI_locked_queued_project_keeps_requirements_and_queue_action_%s" % entry[1],locked.find_children("*","Label",true,false).any(func(l:Label)->bool:return l.text.contains("Requires") and l.text.contains("Queue 1")) and locked.find_children("*","Button",true,false).size()==1 and locked.find_children("*","Button",true,false)[0].text=="Queue Metalwork")
+	world.production_state.queue=["masonry","metalwork","signalcraft","valley_charter"]
+	game.text_scale=1.5;game._build_theme();tree.root.size=Vector2i(1100,720);game.show_research()
+	await tree.process_frame;await tree.process_frame;await tree.process_frame
+	baseline=world.canonical_hash();tree.root.size=Vector2i(390,844)
+	await tree.process_frame;await tree.process_frame;await tree.process_frame
+	var summary: HFlowContainer=game.sheet_body.get_node("ResearchSummary")
+	check.call("RESEARCH/UI_long_queue_summary_reflows_on_rotation_without_overflow",summary.size.x<=game.sheet_body.size.x+1 and game.sheet_body.size.x<390 and summary.get_children().all(func(l:Label)->bool:return l.get_global_rect().end.x<=summary.get_global_rect().end.x+1) and world.canonical_hash()==baseline)
+	var original_name: String=world.citizens[0].name;world.citizens[0].name="ResearchSummary"
+	game.show_sheet("People");await tree.process_frame;await tree.process_frame
+	check.call("RESEARCH/UI_layout_ignores_resident_name_matching_summary_node",game.sheet_body.get_node("ResearchSummary") is Button)
+	world.citizens[0].name=original_name
 	game.close_sheet(false);game._replace_world(original);game._tutorial_dismiss()
 	game.text_scale=original_scale;game._build_theme();tree.root.size=original_size

@@ -1,5 +1,16 @@
 # Implementation evidence
 
+Android layout follow-up (16 October 2026): `0.7.118-m7`, unchanged content/
+schema/envelope. Research summary wraps whole label/value groups; healthy station
+recipes precede rename/repair, while damage keeps Repair prominent. Native UI
+passes 885 checks including long-queue resize and a resident named ResearchSummary.
+Android 35 emulator review covers 100/150% text, rotation, research and production.
+Final guarded APK also passes People/Research smoke and a full checkpoint audit:
+all gameplay fields unchanged at tick 693000. Both export/plugin tests pass.
+Durable screenshots and exact APK/source hashes: ANDROID_VISUAL_REVIEW.md and
+android-visual-v118-evidence.json. Physical Android remains unverified. Weekly
+usage last checked at 31% remaining; original reset unchanged. Polishing continues.
+
 Construction silhouettes (16 October 2026): `0.7.117-m7`, unchanged content/
 schema/envelope. Acknowledged plans show faint actual building art while retaining
 dashed footprints/progress. Real delivered goods replace the generic delivery

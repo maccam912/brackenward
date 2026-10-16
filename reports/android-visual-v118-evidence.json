@@ -1,0 +1,143 @@
+{
+  "date": "2026-10-16",
+  "device": "Task-owned Android 35 arm64 Pixel 5 emulator; 1080x2340, density 440; software SwiftShader/ANGLE",
+  "local_android_code": 119,
+  "engine": "4.7.2-stable",
+  "builds": [
+    {
+      "version": "0.7.117-m7",
+      "commit": "71b402a1c51e7e1944bc82d5b1ba7f01e65a1c41",
+      "apk_sha256": "fe47e6237f8a65487a61dacbe7cef1334fa24c12e9404bab1d61e7639aa84af0",
+      "sources": {
+        "src/game_session.gd": "67fdeb1c7a772ba5943a9057d07489d65e473affd9dde0c332cee09bad0080b0",
+        "src/presentation/colony_environment.gd": "c48fba1a7aca51fb20d49d96c142c29e80605ed9118651b28f1fd93eef295613",
+        "src/presentation/citizen_sprite.gd": "865854f37cf189b27ee8406b261dda63b35fc4ba6ae59bb23e038d951c7503f0",
+        "project.godot": "8248f4be26561a3910fd3b93ff0c179d0008329bb2a4b667ada95c55fc7a0963",
+        "export_presets.cfg": "f864d55ae177a11ea7440783fe23d8961613bb5cc197a2015ee5b2ec4bf11a33",
+        "assets/exported/environment/woodland.png": "502689b2e0fb4459b78b9d397977a2bcc30e7d0b0aab81739dffae0e557190eb"
+      }
+    },
+    {
+      "version": "0.7.118-m7",
+      "apk_sha256": "dfe3da73ce932df69a3a0056770d40fb6b851fe61cca18d7aae2589179fe7811",
+      "sources": {
+        "src/game_session.gd": "050da6cf3b1a3b3d44f16556114b734e3a2bcdcf0124982450a78db44bb82e4f",
+        "src/presentation/colony_environment.gd": "c48fba1a7aca51fb20d49d96c142c29e80605ed9118651b28f1fd93eef295613",
+        "src/presentation/citizen_sprite.gd": "865854f37cf189b27ee8406b261dda63b35fc4ba6ae59bb23e038d951c7503f0",
+        "assets/exported/environment/woodland.png": "502689b2e0fb4459b78b9d397977a2bcc30e7d0b0aab81739dffae0e557190eb",
+        "project.godot": "44bd5d69799120ef7c91b15df31892a9251433a79ad2d0e55da2658bbe9c1f37",
+        "export_presets.cfg": "4454bb0d8426938df0fcde737ef18f9411d35a874233fcbc9ecd665c68e08922"
+      },
+      "scope": "Full 100/150% portrait/landscape layout review before final type-safety guard"
+    },
+    {
+      "version": "0.7.118-m7",
+      "apk_sha256": "ec340d81defcff1e303e61af41ad8f830191d14ae3a0500624836ae5ef3bad40",
+      "sources": {
+        "src/game_session.gd": "5f19db336cb70e8e7fc4875a3e7ce988fc5571ecf05b40e33066b936b847a3bf",
+        "src/presentation/colony_environment.gd": "c48fba1a7aca51fb20d49d96c142c29e80605ed9118651b28f1fd93eef295613",
+        "src/presentation/citizen_sprite.gd": "865854f37cf189b27ee8406b261dda63b35fc4ba6ae59bb23e038d951c7503f0",
+        "assets/exported/environment/woodland.png": "502689b2e0fb4459b78b9d397977a2bcc30e7d0b0aab81739dffae0e557190eb",
+        "project.godot": "44bd5d69799120ef7c91b15df31892a9251433a79ad2d0e55da2658bbe9c1f37",
+        "export_presets.cfg": "4454bb0d8426938df0fcde737ef18f9411d35a874233fcbc9ecd665c68e08922"
+      },
+      "scope": "Final safe-cast guard; rebuilt APK smoke-tested People and Research at 100% portrait, then full checkpoint audit."
+    }
+  ],
+  "audits": [
+    {
+      "changed_fields": [],
+      "input_sha256": [
+        "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+        "3f841bdeacc7280c47679e2d8385321d7df2b23d24adab4baec2066ce89105ca"
+      ],
+      "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+      "passed": true,
+      "residents": 8,
+      "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+      "source_inputs_unchanged": true,
+      "structures": 103,
+      "tick": 693000
+    },
+    {
+      "changed_fields": [],
+      "input_sha256": [
+        "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+        "80eb33f8cbd89ec95d1eaf66d4f0439c74bd294921695dedfcf3e82ee75bdf76"
+      ],
+      "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+      "passed": true,
+      "residents": 8,
+      "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+      "source_inputs_unchanged": true,
+      "structures": 103,
+      "tick": 693000
+    },
+    {
+      "changed_fields": [],
+      "input_sha256": [
+        "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+        "f7b5b411f8d27312628ea47a61058bdf80bf25683f87a0eda6bd933920e2dd10"
+      ],
+      "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+      "passed": true,
+      "residents": 8,
+      "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+      "source_inputs_unchanged": true,
+      "structures": 103,
+      "tick": 693000
+    }
+  ],
+  "interactions": [
+    "Loaded mature colony after v117 and v118 upgrades",
+    "Research scrolling at 100% and 150% text",
+    "Research rotation portrait to landscape and return; two columns at 100%, one at 150% landscape",
+    "Actual map tap opened workbench; recipe cards and source/output art inspected",
+    "Opened toolkit production policy without submitting an order",
+    "Healthy station action order verified at 100% and 150% text",
+    "Restored 100% text and portrait; background checkpoint saved; full codec audit matches original campaign"
+  ],
+  "validation": {
+    "native_ui_checks": 885,
+    "native_ui_failures": 0,
+    "content_font_validation": "passed",
+    "string_message_tests": 12,
+    "android_exports": "v117 and final v118 passed",
+    "kotlin_plugin_tests": "passed",
+    "runtime": "Observed cached-shader recompilation warning; no SCRIPT ERROR or FATAL EXCEPTION found in captured logs",
+    "physical_android": "unverified",
+    "device_performance": "not certified"
+  },
+  "screenshots": [
+    {
+      "path": "reports/android-visual-v118-research-before.png",
+      "version": "0.7.117-m7",
+      "sha256": "cb5ea8f6b0ae57734dc4e91fee117733731e493189277b85fabe1970c892706a",
+      "apk_sha256": "fe47e6237f8a65487a61dacbe7cef1334fa24c12e9404bab1d61e7639aa84af0"
+    },
+    {
+      "path": "reports/android-visual-v118-research-after.png",
+      "version": "0.7.118-m7",
+      "sha256": "9d15626007becd3d02de8230aacd64566c8cb26c14b9cc93244f1df3e799077b",
+      "apk_sha256": "dfe3da73ce932df69a3a0056770d40fb6b851fe61cca18d7aae2589179fe7811"
+    },
+    {
+      "path": "reports/android-visual-v118-research150.png",
+      "version": "0.7.118-m7",
+      "sha256": "77046141b4f1cb5afb299393d216cd5ae90900724b59fc7db91f34f6ff28e730",
+      "apk_sha256": "dfe3da73ce932df69a3a0056770d40fb6b851fe61cca18d7aae2589179fe7811"
+    },
+    {
+      "path": "reports/android-visual-v118-production150.png",
+      "version": "0.7.118-m7",
+      "sha256": "5688ca1e7bd0e3d228cfc661b02bee211bac854bf72fa48bf9b6d94cf3cd77d1",
+      "apk_sha256": "dfe3da73ce932df69a3a0056770d40fb6b851fe61cca18d7aae2589179fe7811"
+    },
+    {
+      "path": "reports/android-visual-v118-map.png",
+      "version": "0.7.118-m7",
+      "sha256": "d98e0c9b2de7eba8ef45b2bc3db1aa2f7123f114054437ea7fb47d458d091185",
+      "apk_sha256": "dfe3da73ce932df69a3a0056770d40fb6b851fe61cca18d7aae2589179fe7811"
+    }
+  ]
+}

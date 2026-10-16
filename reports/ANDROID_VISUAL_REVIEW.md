@@ -75,3 +75,27 @@ remains software-emulator evidence, not physical Android or frame-rate certifica
 
 Detailed native/ADB logs and intermediate captures are local under
 `reports/visual-polish/`, including the `android-v109-*` and `android-v110-*` files.
+
+## 0.7.117 and 0.7.118 follow-up
+
+The updated landscape Research view exposed excess summary height. Whole
+label/value groups now flow across available width. Healthy stations put their
+recipes before rename/repair; damaged stations retain prominent Repair. Actual
+touches exercised Research and production at 100/150% text and both orientations.
+
+| Before, 0.7.117 | After, 0.7.118 |
+| --- | --- |
+| ![Research before](android-visual-v118-research-before.png) | ![Research after](android-visual-v118-research-after.png) |
+
+![Production at 150 percent](android-visual-v118-production150.png)
+
+![Updated mature colony](android-visual-v118-map.png)
+
+The full layout review preceded a final type-safety guard for residents named
+ResearchSummary. The final rebuilt APK separately passed People/Research smoke
+and a full checkpoint audit. All three new audits match every gameplay field
+of the original imported colony at tick 693000. Native UI passes 885 checks.
+[Exact APK/source hashes and screenshot provenance](android-visual-v118-evidence.json)
+distinguish these builds. Exports and Kotlin plugin tests passed; captured runtime
+logs contain no script errors or Android fatal exceptions. These remain emulator
+checks; physical-device appearance and performance are unverified.

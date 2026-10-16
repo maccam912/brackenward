@@ -959,6 +959,9 @@ Craft-station detail (0.7.116): workbenches have timber joinery and a vise, loom
 
 Construction silhouettes (0.7.117): acknowledged unfinished build jobs add 28%-opacity art for their actual definition and rotation to the cached ground commands. Dashed footprint outlines and exact progress bars remain full-bright. Actual escrow stacks retain their item art at their real delivery/work position; the old generic orange delivery square is removed. Cancellation/completion removes the plan with the unfinished job. These drawings never create structures, change collision or alter reservations.
 
+Detail hierarchy (0.7.118): healthy stations place their actual recipes, bed assignments or storage actions before Rename and Repair/demolish. Damaged stations keep one early repair action. Research summary fields flow as whole label/value groups; long queues wrap within the safe content width after rotation. Empty queues explicitly say None. Layout lookup verifies the container type so a resident with a matching node name remains safe.
+
+
 
 
 

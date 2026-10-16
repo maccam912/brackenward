@@ -136,9 +136,15 @@ static func production_cards(game: GameSession, check: Callable) -> void:
 			var picture: TextureRect=card.find_child("ObjectPortrait",true,false)
 			var locked: bool=recipe.unlock!="initial"
 			var actions: Array=card.find_children("*","Button",true,false)
-			check.call("PRODUCTION/UI_%s_recipe_art_actions_fit_text_%s" % [recipe.id,scale],picture.get_meta("semantic")=="item/%s/0" % recipe.outputs.keys()[0] and card.size.x<=game.sheet_body.size.x+1 and actions.size()==(1 if locked else 2) and world.canonical_hash()==baseline)
+			var maintenance: Array=game.sheet_body.find_children("*","Button",true,false).filter(func(b:Button)->bool:return b.text=="Repair or demolish")
+			var primary_first: bool=maintenance.size()==1 and card.get_index()<maintenance[0].get_index()
+			check.call("PRODUCTION/UI_%s_recipe_art_actions_fit_text_%s" % [recipe.id,scale],picture.get_meta("semantic")=="item/%s/0" % recipe.outputs.keys()[0] and card.size.x<=game.sheet_body.size.x+1 and actions.size()==(1 if locked else 2) and primary_first and world.canonical_hash()==baseline)
 			if recipe.id=="make_toolkit" and scale==1.0:
 				actions[0].pressed.emit()
 				check.call("PRODUCTION/UI_illustrated_batch_keeps_exact_recipe_command",world.pending_commands.size()==1 and world.pending_commands[0].kind=="recipe_order" and world.pending_commands[0].args=={"target":station.id,"definition":"make_toolkit","mode":"Repeat","value":1,"priority":2,"filters":recipe.alternatives})
 				world.pending_commands.clear();game.submitted_command=0
+	var damaged: Dictionary=world._structure("workbench",Vector2i(90,80),0);damaged.health-=1
+	var damaged_baseline: String=world.canonical_hash();game.show_station(damaged)
+	var repairs: Array=game.sheet_body.find_children("*","Button",true,false).filter(func(b:Button)->bool:return b.text=="Repair or demolish")
+	check.call("PRODUCTION/UI_damaged_station_keeps_one_early_repair_action",repairs.size()==1 and repairs[0].get_index()<game.sheet_body.get_node("Recipe_make_toolkit").get_index() and world.canonical_hash()==damaged_baseline)
 	game.close_sheet(false);game._replace_world(original);game._tutorial_dismiss()
