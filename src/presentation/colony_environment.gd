@@ -291,6 +291,16 @@ func _refresh_ground(chunks: Rect2i) -> void:
 		var point: Vector2i = Vector2i(field.x,field.y)
 		var semantic: String = "crop/%s/%d" % [field.crop,EnvironmentArt.crop_stage(field,world.definitions.crops[field.crop])]
 		_push(commands,point,semantic,Rect2(Vector2(point)*16,Vector2.ONE*16),tint*Color(1,1,1,1.0 if field.prepared else 0.25))
+	# Floodwater belongs on the ground, beneath supplies and people. Forecast
+	# hatching remains a separate full-bright feedback overlay.
+	var flooded: Dictionary={}
+	for point in world.weather_state.flooded:flooded[point]=true
+	for point in flooded:
+		_push(commands,point,"floodwater",Rect2(Vector2(point)*16,Vector2.ONE*16),Color(0.30,0.55,0.65,0.38)*tint)
+		for direction in ColonyNavigation.NEIGHBORS:
+			if flooded.has(point+direction) or (ColonyWorld.inside(point+direction) and world.elevation(point+direction)==0):continue
+			var offset: Vector2=Vector2(15.5 if direction.x==1 else 0,15.5 if direction.y==1 else 0)
+			_push(commands,point,"flood_edge",Rect2(Vector2(point)*16+offset,Vector2(16,0.5) if direction.y!=0 else Vector2(0.5,16)),Color(0.73,0.85,0.82,0.7)*tint)
 	var carts: Dictionary = {}
 	for structure in world.structures:
 		if structure.definition=="supply_cart": carts[structure.id]=true

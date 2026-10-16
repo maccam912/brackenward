@@ -1,5 +1,16 @@
 # Implementation evidence
 
+Floodwater clarity (16 October 2026): `0.7.104-m7`, unchanged content/schema/
+envelope. Actual water now uses shallow ground tint, static ripples and perimeter
+edges beneath supplies/actors; forecast stripes stay separate and full-bright.
+Native generated Reed Bend and authored river views were inspected, including
+a resident and cloth stack beside the river. UI passes 799 checks: actual simulator
+onset matches visible ground commands exactly, forecast remains distinct, recession
+removes every cached water command, and rendering preserves canonical state.
+Content/font and string/message validations pass. Evidence: `flood-*` under the
+local visual-polish folder. Weekly usage is 48% remaining; original reset unchanged.
+Physical-device flood presentation remains unverified. Polishing continues.
+
 Weather atmosphere (16 October 2026): `0.7.103-m7`, unchanged content/schema/
 envelope. Rain/flood, snow/cold snap, drought and fog now have restrained landscape
 palettes; fog has a static veil and moving snow has varied bounded flakes. Battery

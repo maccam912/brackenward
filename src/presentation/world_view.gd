@@ -383,8 +383,7 @@ func _draw_feedback(painter: CanvasItem) -> void:
 		painter.draw_rect(rectangle,Color("E9BA67"),false,minf(1.5,tile_size*0.25))
 		painter.draw_line(rectangle.position,rectangle.end,Color("E9BA67"),minf(1.5,tile_size*0.25))
 	for tile in confirmed_resources: _draw_gather_mark(Vector2(tile),Color("E9BA67"),painter)
-	var flooded: Array = world.weather_state.flooded if world is ColonyWorld else []
-	for tile in flooded + forecast_mask:
+	for tile in forecast_mask:
 		var point: Vector2 = tile_to_screen(Vector2(tile))
 		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point): continue
 		painter.draw_rect(Rect2(point,Vector2.ONE*tile_size),Color(0.25,0.52,0.65,0.35))

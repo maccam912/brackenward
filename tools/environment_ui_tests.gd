@@ -112,6 +112,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	beacon_flame(view,check)
 	await renewable_resources(view,check)
 	await weather_atmosphere(view,check)
+	await floodwater(view,check)
 	view.queue_free();await tree.process_frame;await tree.process_frame
 	tree.root.size=original_size;previous.visible=visible;previous.set_process(processing);previous.view.set_process(old_view_process)
 
@@ -270,3 +271,32 @@ static func weather_atmosphere(view: WorldView, check: Callable) -> void:
 	world.weather="clear";world.tick=3600;view.quality="Battery";view.reduced_motion=false;view._process(0)
 	if DisplayServer.get_name()!="headless":
 		check.call("ART/UI_clear_weather_restores_original_native_pixels",(await screenshot(view.get_tree())).get_data()==clear_pixels)
+
+static func floodwater(view: WorldView, check: Callable) -> void:
+	var world: ColonyWorld=ColonyTests.world();world.weather="flood";world.tick=1799
+	ColonyWeather.initialize(world)
+	view.world=world;view.refresh_terrain();view.tile_size=32;view.center_camera(Vector2(33,64))
+	view.quality="Battery";view.reduced_motion=true;view._process(0)
+	world.tick=1800;ColonyWeather.advance(world)
+	var actual_mask: Array=world.weather_state.flooded.duplicate()
+	var baseline: String=world.canonical_hash();view._process(0)
+	var rendered: Array[Vector2i]=[]
+	for key in view.environment.ground_chunks:
+		for command in view.environment.ground_chunks[key].commands:
+			if command[0]=="floodwater":rendered.append(key*16+Vector2i(command[1].position/16))
+	var expected: Array[Vector2i]=[]
+	for point in actual_mask:
+		if view.environment.ground_chunks.has(Vector2i(point.x/16,point.y/16)):expected.append(point)
+	rendered.sort();expected.sort()
+	check.call("ART/UI_flood_ground_matches_actual_simulator_onset_mask_without_render_mutation",not rendered.is_empty() and rendered==expected and world.canonical_hash()==baseline)
+	var flooded_pixels: PackedByteArray
+	if DisplayServer.get_name()!="headless":flooded_pixels=(await screenshot(view.get_tree())).get_data()
+	view.forecast_mask.assign(actual_mask);view._process(0)
+	if DisplayServer.get_name()!="headless":
+		check.call("ART/UI_forecast_stripes_remain_distinct_over_actual_floodwater",(await screenshot(view.get_tree())).get_data()!=flooded_pixels and world.canonical_hash()==baseline)
+	view.forecast_mask.clear();world.tick=5400;ColonyWeather.advance(world)
+	baseline=world.canonical_hash();view._process(0)
+	var drained: bool=world.weather_state.flooded.is_empty()
+	for chunk in view.environment.ground_chunks.values():
+		drained=drained and not chunk.commands.any(func(command:Array)->bool:return command[0] in ["floodwater","flood_edge"])
+	check.call("ART/UI_simulator_recession_removes_every_cached_water_command",drained and world.canonical_hash()==baseline)
