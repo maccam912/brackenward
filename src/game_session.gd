@@ -807,6 +807,8 @@ func _map_intent(action: Dictionary) -> void:
 			if Vector2i(resource.x,resource.y)==action.tile: candidates.append({"kind":"resource","object":resource,"rank":5,"distance":0.0})
 		for field in world.fields:
 			if Vector2i(field.x,field.y)==action.tile: candidates.append({"kind":"field","object":field,"rank":5,"distance":0.0})
+		for storage in world.stores:
+			if storage.tiles.has(action.tile) and world.find(world.structures,storage.id).is_empty():candidates.append({"kind":"storage","object":storage,"rank":5,"distance":0.0})
 		for carcass in world.wildlife_state.carcasses:
 			if not carcass.done and not carcass.spoiled and Vector2i(carcass.x,carcass.y)==action.tile: candidates.append({"kind":"carcass","object":carcass,"rank":3,"distance":0.0})
 	candidates.sort_custom(func(a:Dictionary,b:Dictionary)->bool:
@@ -818,6 +820,7 @@ func _map_intent(action: Dictionary) -> void:
 		for candidate in candidates:
 			var title: String = candidate.object.get("name",("Ruins: " if candidate.kind=="station" and candidate.object.health<=0 else candidate.kind+": ")+candidate.object.get("definition",candidate.object.get("crop","")))
 			if candidate.kind=="merchant": title=candidate.object.community.capitalize()+" merchant"
+			if candidate.kind=="storage":title=ColonyText.text("ui.work.storage",{"id":candidate.object.id})
 			button(title,func()->void:close_sheet();_select_map_object(candidate),sheet_body)
 		label("Terrain (%d, %d)" % [action.tile.x,action.tile.y],sheet_body)
 	elif candidates.size()==1: _select_map_object(candidates[0])
@@ -844,6 +847,7 @@ func _select_map_object(candidate: Dictionary) -> void:
 		"job": _job_sheet(object)
 		"resource": _resource_sheet(object)
 		"field": _field_sheet(object)
+		"storage": _storage_sheet(object)
 		"carcass":
 			show_sheet("Carcass","ui.sheet.carcass")
 			label("%s: %.1f game hours until spoilage. Gathering workers butcher it; outputs need hauling." % [_catalog_name(object.definition),(object.expires-world.tick)/300.0],sheet_body)
@@ -1734,6 +1738,7 @@ func _field_sheet(field: Dictionary) -> void:
 
 func _storage_sheet(storage: Dictionary) -> void:
 	show_sheet("Storage","ui.sheet.storage")
+	view.inspected_object=storage.id;view.inspected_tiles.assign(storage.tiles)
 	var count: int = 0
 	for stack in world.stacks:
 		if stack.location == "store" and stack.owner == storage.id:
@@ -1749,11 +1754,11 @@ func _storage_sheet(storage: Dictionary) -> void:
 				stored += stack.count
 				reserved += world._reserved(stack)
 		label(ColonyText.text("ui.storage.item_counts",{"item":item.capitalize(),"stored":stored,"reserved":reserved}),sheet_body)
-		button(ColonyText.text("ui.storage.item_filter",{"item":item.capitalize(),"status":ColonyText.text("ui.choice.on" if storage.filters.has(item) else "ui.choice.off")}),func() -> void:
+		illustrated_button(ColonyText.text("ui.storage.item_filter",{"item":item.capitalize(),"status":ColonyText.text("ui.choice.on" if storage.filters.has(item) else "ui.choice.off")}),func() -> void:
 			var filters: Array = storage.filters.duplicate()
 			if filters.has(item): filters.erase(item)
 			else: filters.append(item)
-			_submit("stock_filter",{"target":storage.id,"filters":filters,"priority":storage.priority}),sheet_body)
+			_submit("stock_filter",{"target":storage.id,"filters":filters,"priority":storage.priority}),sheet_body,"item/%s/2" % item)
 
 func _storage_failed(error: String) -> void:
 	_cancel_menu_resume()

@@ -392,9 +392,18 @@ func _draw_feedback(painter: CanvasItem) -> void:
 	for tile in rejected_build_tiles:
 		painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size),Color(0.7,0.3,0.3,0.35))
 		painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size),Color("B44F4A"),false,2)
-	for tile in world.designations:
-		painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color(0.91, 0.73, 0.4, 0.35))
-		painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color("F3E8CC"), false, 2)
+	if not world is ColonyWorld:
+		for tile in world.designations:
+			painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color(0.91, 0.73, 0.4, 0.35))
+			painter.draw_rect(Rect2(tile_to_screen(Vector2(tile)), Vector2.ONE * tile_size), Color("F3E8CC"), false, 2)
+	else:
+		var storage: Dictionary=world.find(world.stores,inspected_object)
+		if not storage.is_empty() and world.find(world.structures,storage.id).is_empty():
+			for tile in storage.tiles:
+				var rectangle: Rect2=Rect2(tile_to_screen(Vector2(tile)),Vector2.ONE*tile_size)
+				if not rectangle.intersects(Rect2(Vector2.ZERO,size)):continue
+				if high_contrast:painter.draw_rect(rectangle,Color("263C3B"),false,4)
+				painter.draw_rect(rectangle,Color("F3E8CC"),false,minf(2,tile_size*0.25))
 	if preview_visible:
 		for tile in preview_tiles():
 			var water: bool = world.is_water(tile) if world is ColonyWorld else PrototypeWorld.is_water(tile)

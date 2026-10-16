@@ -1,5 +1,19 @@
 # Implementation evidence
 
+Stockpile clarity and inspection (16 October 2026): `0.7.98-m7`, unchanged
+content/schema/envelope. Painted zones now have quiet outer boundaries beneath
+goods; the ordinary orange wash and internal white grid are removed. Tapping a
+zone opens its existing Storage sheet, highlights selected cells without tinting
+items, pauses, and restores the previous speed on close. Filter buttons show
+adaptive item thumbnails. Native developed-colony and large-text portrait views
+were inspected.
+
+The native pixel/map-tap regression failed three checks against the old renderer
+and now passes; the full pinned UI suite passes 762 checks. Content/font, string,
+message and fixture-checkout validations pass. Evidence: `storage-*` and
+`mature-storage-*` in `reports/visual-polish/`. Weekly usage is 56% remaining;
+physical Android remains unverified and visual polishing continues.
+
 Distinct material piles (16 October 2026): `0.7.97-m7`, unchanged content/schema/
 envelope. Wood, grain, fiber, cloth, leather and brick have clearer original
 silhouettes across all three quantity tiers. Exactly eighteen item regions changed;

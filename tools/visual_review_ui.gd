@@ -27,6 +27,8 @@ func capture() -> void:
 		for selected in [1,2]:
 			site_choice.select(selected)
 			await save_view("new-colony-site%d-%dx%d" % [selected,viewport_size.x,viewport_size.y])
+		game._storage_sheet(game.world.stores[0])
+		await save_view("storage-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.show_sheet("People")
 		await save_view("people-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.show_person(game.world.citizens[0].id)
@@ -42,6 +44,8 @@ func capture() -> void:
 	await save_view("build-390x844-text150")
 	game.show_sheet("Work")
 	await save_view("work-390x844-text150")
+	game._storage_sheet(game.world.stores[0])
+	await save_view("storage-390x844-text150")
 	game.show_sheet("People")
 	await save_view("people-390x844-text150")
 	game.show_person(game.world.citizens[0].id)

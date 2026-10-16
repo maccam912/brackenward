@@ -265,7 +265,20 @@ func _refresh_ground(chunks: Rect2i) -> void:
 	for y in range(chunks.position.y,chunks.end.y):
 		for x in range(chunks.position.x,chunks.end.x): commands[Vector2i(x,y)]=[]
 	for store in world.stores:
-		for point in store.tiles: _push(commands,point,"zone",Rect2(Vector2(point)*16,Vector2.ONE*16),Color(0.4,0.5,0.5,0.12))
+		var loose: bool=world.find(world.structures,store.id).is_empty()
+		var members: Dictionary={}
+		for point in store.tiles:
+			members[point]=true
+			_push(commands,point,"stockpile" if loose else "zone",Rect2(Vector2(point)*16,Vector2.ONE*16),Color(0.4,0.5,0.5,0.12))
+		if not loose:continue
+		# The ordinary boundary lives beneath goods, with no internal grid.
+		for point in members:
+			for direction in ColonyNavigation.NEIGHBORS:
+				if members.has(point+direction):continue
+				var horizontal: bool=direction.y!=0
+				var offset: Vector2=Vector2(15.5 if direction.x==1 else 0,15.5 if direction.y==1 else 0)
+				var edge: Rect2=Rect2(Vector2(point)*16+offset,Vector2(16,0.5) if horizontal else Vector2(0.5,16))
+				_push(commands,point,"stockpile_edge",edge,Color(0.95,0.91,0.8,0.6))
 	for pen in world.domestic_state.pens:
 		for point in pen.tiles: _push(commands,point,"zone",Rect2(Vector2(point)*16,Vector2.ONE*16),Color(0.7,0.7,0.45,0.12))
 	for structure in world.structures:
