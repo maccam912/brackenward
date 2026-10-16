@@ -1,5 +1,22 @@
 # Implementation evidence
 
+Fourfold playback baseline (16 October 2026): 1x now matches the former 4x;
+2x and 4x request the former 8x and 16x rates. The controls remain 1x/2x/4x,
+with 40/80/160 complete logical ticks per real second and three-minute days at
+1x. Quiet-sleep tiers and actor/environment animation use the same baseline;
+existing animation caps, eight-tick frame cap, CPU fallback, pause/alert and
+exact wake checks remain. Authoritative rules, save/content versions and replay
+fixtures are unchanged. DESIGN.md records the revised real-time pacing.
+
+Validation: explicit one-second 30/60 FPS tests cover every manual speed and
+compare exact authoritative state. The capped backlog test drains all 160 ticks.
+Native unit, integration, colony, scheduler, persistence, graphical UI, care and
+region suites pass 2,178 checks total, including 72,000-tick speed comparisons,
+adaptive quiet sleep, menu/placement resume, event pauses and save continuation.
+Twelve Python string/message checks also pass. Pause/decision tests now expect
+four ticks rather than one per 0.1 real seconds at 1x. Remote CI/release and
+physical Android validation are pending for this checkpoint.
+
 CI publication repair (16 October 2026): the two latest runs, 38920799135 and
 38921054184, built the Android APK and passed simulation, desktop, native replay
 and generation checks, but graphical UI checks logged six PNG-write errors. The

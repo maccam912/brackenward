@@ -495,7 +495,7 @@ func _advance_frame(delta: float) -> void:
 	diagnostics.speed=runner.frame_speed
 	if not runner.notice.is_empty(): notice=runner.notice;runner.notice=""
 	if runner.speed>0 and notice==ColonyText.text("ui.notice.paused"): notice=ColonyText.text("ui.notice.running")
-	view.simulation_speed=runner.playback_speed()
+	view.simulation_speed=runner.playback_speed()*SimRunner.BASE_PLAYBACK_RATE
 	guidance_elapsed += delta
 	if world is ColonyWorld:
 		var signature: String = world.session_id+JSON.stringify(_tutorial_state())

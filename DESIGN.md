@@ -117,7 +117,7 @@ The opening map has a usable hearth, supply cart, four bedrolls, and enough reso
 
 ### 2.3 Sessions and campaign length
 
-A 3–5 minute session should allow inspecting a problem, issuing a plan, and observing one meaningful result. A 20-minute session can finish a building, handle an incident, or send an expedition. A first charter should normally take 33–48 in-game days, roughly 6.6–9.6 hours at uninterrupted 1× or 3–5 hours with typical use of faster speeds and pauses. These are playtest targets, not completion timers.
+A 3–5 minute session should allow inspecting a problem, issuing a plan, and observing one meaningful result. A 20-minute session can finish a building, handle an incident, or send an expedition. A first charter should normally take 33–48 in-game days, roughly 1.65–2.4 hours at uninterrupted 1× (before pauses and quiet-sleep acceleration). These are playtest targets, not completion timers.
 
 ## 3 Time and the core loop
 
@@ -127,14 +127,16 @@ A 3–5 minute session should allow inspecting a problem, issuing a plan, and ob
 | --- | --- |
 | Simulation rate | 10 fixed ticks per simulated second |
 | One game hour | 300 ticks = 30 simulated seconds |
-| One game day | 7,200 ticks = 720 simulated seconds = 12 real minutes at 1× |
+| One game day | 7,200 ticks = 720 simulated seconds = 3 real minutes at 1× |
 | Season | 8 days; Spring, Summer, Autumn, Winter |
 | Year | 32 days |
-| Speeds | Paused, 1×, 2×, 4×; simulation rules identical at every speed |
+| Speeds | Paused, 1×, 2×, 4×; 40/80/160 fixed ticks per real second respectively; simulation rules identical at every speed |
 | Work unit, WU | One simulated second of productive work by skill 0 at rate 100% |
 | Tile | 2 fictional meters; movement uses grid distances, not physics meters |
 | Need units | 0–1,000 internally, shown as rounded percentages |
 | Health | 0–100 integer points |
+
+Playback has a fourfold baseline: the current 1× matches the former 4×, 2× matches the former 8×, and 4× matches the former 16×. Quiet-sleep labels use the same baseline (12×/8×/6× request 480/320/240 ticks per real second). The eight-tick frame cap and adaptive overload protection still apply. Authoritative tick length, calendar, work and needs arithmetic, and saved state remain unchanged.
 
 Durations in days or hours always mean game time unless explicitly marked real time. “Day 1” is the first calendar day. Simulation time begins at tick 1,800, corresponding to 06:00. Daily counters reset at 00:00, not on loading or resuming.
 

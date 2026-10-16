@@ -185,7 +185,7 @@ static func run(check: Callable) -> void:
 		runner.quiet_sleep_enabled=false # Compare the three explicit manual speeds.
 		runner.set_speed(speed)
 		for frame in range(72000 / speed):
-			runner.advance_frame(0.1)
+			runner.advance_frame(0.025)
 		hashes.append(w.canonical_hash())
 	check.call("SIM01/colony_72000_ticks_speeds", hashes[0] == hashes[1] and hashes[1] == hashes[2], str(hashes))
 

@@ -1,5 +1,7 @@
 class_name SimRunner
 extends RefCounted
+# Playback labels are relative to this baseline; authoritative ticks stay 0.1 simulated seconds.
+const BASE_PLAYBACK_RATE: int = 4
 const QUIET_SLEEP_SPEED: int = 12
 const SLEEP_SPEED_STEPS: Array[int] = [12,8,6]
 const SLEEP_BATCH_BUDGET_US: int = 8000
@@ -90,7 +92,7 @@ func advance_frame(delta: float) -> int:
 	sleep_fast_forward=quiet_sleep_enabled and quiet_sleep_allowed and not sleep_boost_suppressed and all_asleep and _quiet()
 	if was_fast and not sleep_fast_forward: accumulator=0.0;behind_seconds=0.0
 	frame_speed=playback_speed()
-	accumulator += delta * float(frame_speed)
+	accumulator += delta * float(frame_speed * BASE_PLAYBACK_RATE)
 	var started: int=_clock_usec() if sleep_fast_forward else 0
 	var observe_ticks: bool=tick_observer.is_valid() and frame_clock.is_valid()
 	var count: int = 0

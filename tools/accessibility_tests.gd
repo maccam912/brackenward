@@ -53,9 +53,9 @@ static func run(check: Callable) -> void:
 	runner=SimRunner.new(world);runner.set_speed(1)
 	check.call("PAUSE/departure_ultimatum_pauses_once_with_named_cause",runner.advance_frame(0.1)==0 and runner.speed==0 and runner.notice.contains("Mira"))
 	runner.set_speed(1);runner.advance_frame(0.1)
-	check.call("PAUSE/acknowledged_ultimatum_does_not_block_resume",runner.speed==1 and world.tick==1801)
+	check.call("PAUSE/acknowledged_ultimatum_does_not_block_resume",runner.speed==1 and world.tick==1804)
 	runner=SimRunner.new(world);runner.auto_pauses.departure=false;runner.set_speed(1);runner.advance_frame(0.1)
-	check.call("PAUSE/disabled_departure_pause_keeps_notice_and_time_advancing",runner.speed==1 and world.tick==1802 and runner.notice.contains("Mira"))
+	check.call("PAUSE/disabled_departure_pause_keeps_notice_and_time_advancing",runner.speed==1 and world.tick==1808 and runner.notice.contains("Mira"))
 	var sprite: CitizenSprite = CitizenSprite.new()
 	world.citizens[0].edge_x=world.citizens[0].x+1;world.citizens[0].progress=5000
 	var before: String = world.canonical_hash()
