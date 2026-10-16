@@ -1,0 +1,10 @@
+{
+  "version": "0.7.123-m7",
+  "source_commit": "e4b9faeca9b20a117a36f20541a852775567afe3",
+  "engine": "4.7.2-stable",
+  "renderer": "macOS Compatibility, Apple M5 Pro",
+  "capture_tool": "tools/visual_review_colony.gd",
+  "input_sha256": "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+  "scope": "Disposable daylight copy of recorded 103-structure/eight-resident colony. Input bytes and canonical render state preserved. No player campaign opened.",
+  "image_sha256": "ef67fdfbe76ecf7a8b9b2ef1513dc8f729bb0adfe156cb82b8b2d859fe433914"
+}

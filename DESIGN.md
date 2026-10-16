@@ -971,6 +971,9 @@ River variation (0.7.122): a deterministic presentation-only cell hash selects t
 
 Animal recognition (0.7.123): wildlife/livestock choices and detail headers use their actual map atlas frames, with a smaller juvenile portrait. Existing health, maturity, feeding, danger and explicit hunt/slaughter confirmation information remain intact. Pictures yield space to long button text and do not advance animation or simulation in menus. Wildlife health sits beside the portrait; its behavior/danger paragraph spans the full width below.
 
+Visual-polish stopping point (16 October 2026): implementation through 0.7.123 is published at development tag 286. Native UI passes 913 checks and persistence/art 518; content/font and twelve string/message checks pass. Final Android exports/plugin tests and full imported-colony checkpoint audits pass, with exact screenshots/build provenance in `reports/ANDROID_VISUAL_REVIEW.md`. The task-owned emulator was removed after review. Work stopped at 24% weekly usage remaining with the original reset unchanged. No visual implementation is left half-finished. Remote builds 283-286 are still in progress at handoff; physical Android appearance/performance, human readability/playtesting and remaining M7 release gates stay unverified. Resume only on a new user instruction.
+
+
 
 
 

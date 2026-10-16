@@ -1,5 +1,17 @@
 # Implementation evidence
 
+Visual-polish handoff (16 October 2026): stopped at the requested cutoff, 24%
+weekly usage remaining (reset 1792649647 unchanged). Game implementation through
+`0.7.123-m7` is committed/pushed as development build 286. UI 913, persistence/art
+518, content/font and twelve string/message checks pass. Final Android export/
+plugin tests and full codec audits pass; no gameplay fields changed during review.
+The current native preview and Android before/after evidence are retained in this
+repository. The temporary visual-review AVD was deleted; existing brackenward_m0
+and pgtest AVDs remain. No implementation is half-finished. Remote builds through
+282 have passed; 283-286 remain in progress. Physical Android, performance/human
+playtesting and remaining M7 gates remain unverified. This documentation/preview
+checkpoint closes the work; do not resume automatically after reset.
+
 Animal cards and Android review (16 October 2026): `0.7.123-m7`, unchanged
 content/schema/envelope. Wildlife/livestock lists and detail cards use actual
 map atlas frames, with smaller juvenile portraits. Android review prompted a
@@ -11,7 +23,7 @@ gameplay field at tick 693000. Durable screenshots and hashes are in
 ANDROID_VISUAL_REVIEW.md and android-visual-v123-evidence.json. Juvenile livestock
 was reviewed natively; physical Android remains unverified. Usage last checked
 at 25% remaining with the original reset. Current visual work is complete;
-publication and the final usage/CI checkpoint remain in progress.
+publication and the final usage/CI checkpoint are recorded in the handoff above.
 
 River variation (16 October 2026): `0.7.122-m7`, unchanged content/schema/envelope.
 Three deterministic ripple patterns replace uniform repetition. Two appended
