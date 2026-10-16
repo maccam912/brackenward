@@ -2176,16 +2176,28 @@ func show_weather() -> void:
 			for field in world.fields:
 				if field.ripe_tick > 0 and entry.mask.has(Vector2i(field.x,field.y)): crop += field.yield_count / 2
 			label("Currently exposed: %d food units and %d ripe crop units. Move food or harvest before 06:00. This count assumes current positions and ripeness." % [food,crop],card)
-			button(ColonyText.text("ui.action.view_flood_area"),func() -> void:
-				view.forecast_mask.assign(entry.mask)
-				view.camera_tile = Vector2(38,64)
-				view.tile_size = 16
-				close_sheet()
-				notice = "Striped low ground floods from 06:00 to 18:00 on the forecast date. High ground is safe.",card)
+			button(ColonyText.text("ui.action.view_flood_area"),_preview_flood.bind(entry.mask),card)
 	if not view.forecast_mask.is_empty():
 		button(ColonyText.text("ui.action.hide_flood_preview"),func() -> void:
 			view.forecast_mask.clear()
 			close_sheet(),sheet_body)
+
+func _preview_flood(mask: Array) -> void:
+	# Opening a sheet hides the guidance/inspector offset while following. Use
+	# the visible center captured before that reflow, as placement does.
+	var origin: Vector2=sheet_camera_center if sheet!=null and view.follow_id>0 else view.camera_center()
+	var focus: Vector2=origin
+	var distance: float=INF
+	for point in mask:
+		var candidate: Vector2=Vector2(point)+Vector2.ONE*0.5
+		var next_distance: float=origin.distance_squared_to(candidate)
+		if next_distance<distance:focus=candidate;distance=next_distance
+	view.forecast_mask.assign(mask)
+	view.follow_id=0
+	view.tile_size=16
+	close_sheet()
+	view.center_camera(focus)
+	notice="Striped low ground floods from 06:00 to 18:00 on the forecast date. High ground is safe."
 
 func show_work_preferences(id: int) -> void:
 	_tutorial_action("work_preferences",{"citizen":id})

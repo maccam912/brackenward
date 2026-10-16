@@ -1,5 +1,15 @@
 # Implementation evidence
 
+Generated flood preview (16 October 2026): `0.7.107-m7`, unchanged content/schema/
+envelope. View flood area now targets the nearest actual forecast-mask tile and
+clears resident follow. It uses the pre-sheet visible center when following,
+accounting for guidance/inspector reflow. Three new generated-site baseline tests
+failed; the final native UI suite passes 817 checks, including correct tile-center
+focus on all three sites, released follow, restored prior speed and unchanged
+world state. Content/font and string/message checks pass. Evidence:
+`flood-camera-{baseline-ui,ui,content}.log` in visual-polish. Weekly usage is
+46% remaining; reset unchanged. Polishing continues.
+
 Forecast presentation (16 October 2026): `0.7.106-m7`, unchanged content/schema/
 envelope. Separate day cards and seven original static weather symbols clarify
 conditions while retaining dates, temperature, exact consequences and flood

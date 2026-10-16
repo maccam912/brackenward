@@ -937,6 +937,8 @@ Utility building art (0.7.105): racks have open shelves, granaries have enclosed
 
 Forecast cards (0.7.106): the weather sheet groups today and each future date in separate compact cards with original static sun, rain, fog, snow, drought, flood and cold-snap symbols. Date, condition, temperature where available and exact gameplay consequences remain text. Future flood exposure counts and the view-area action remain inside that day's card. Symbols use presentation drawing primitives, add no saved fields and remain identical with reduced motion. Cards wrap at phone widths and 150% text without horizontal scrolling.
 
+Flood preview camera (0.7.107): the explicit View flood area action centers the closest tile in that forecast's actual mask, measured from the current camera center, at the retained preview zoom. It clears resident-follow mode so later rendering cannot pull the view away. Selection of the target uses stable mask order for equal distances. Closing the forecast still restores its prior running speed. No forecast data, simulation field or save schema changes.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

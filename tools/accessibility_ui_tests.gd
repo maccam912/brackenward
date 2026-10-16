@@ -25,6 +25,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	await menu_lifetime(game,check)
 	await status_spacing(game,check)
 	await weather_cards(game,check)
+	await flood_preview_camera(game,check)
 	var initial: String = game.world.canonical_hash()
 	for state in ["normal","hover","pressed","disabled"]:
 		var text: String = {"normal":"font_color","hover":"font_hover_color","pressed":"font_pressed_color","disabled":"font_disabled_color"}[state]
@@ -236,3 +237,24 @@ static func weather_cards(game: GameSession, check: Callable) -> void:
 		check.call("WEATHER/UI_all_seven_native_weather_symbols_are_distinct",unique.size()==7)
 	game.world.weather=original_weather;game.world.weather_state.days=original_days
 	game.text_scale=original_scale;game._build_theme();game.close_sheet(false);tree.root.size=original_size
+
+static func flood_preview_camera(game: GameSession, check: Callable) -> void:
+	var original: ColonyWorld=game.world
+	var old_processing: bool=game.view.is_processing();game.view.set_process(false)
+	for site in ["meadow_reach","pine_shelf","reed_bend"]:
+		var world: ColonyWorld=ColonyTests.world();ColonyGeneration.configure(world,104729,site)
+		game._replace_world(world);game._tutorial_dismiss();game.close_sheet(false)
+		var entry: Dictionary=world.weather_state.days[-1]
+		entry.kind="flood";entry.mask=ColonyWeather.flood_mask(world)
+		game.view.follow_id=world.citizens[0].id;game.view._process(0)
+		var origin: Vector2=game.view.camera_center()
+		var nearest: float=INF
+		for point in entry.mask:nearest=minf(nearest,origin.distance_squared_to(Vector2(point)+Vector2.ONE*0.5))
+		game.runner.set_speed(2);game.show_weather()
+		var baseline: String=world.canonical_hash()
+		for button in game.sheet_body.find_children("*","Button",true,false):
+			if button.text=="View flood area":button.pressed.emit();break
+		game.view._process(0)
+		var center: Vector2=game.view.camera_center()
+		check.call("WEATHER/UI_%s_preview_centers_nearest_real_flood_cell_and_releases_follow" % site,entry.mask.has(Vector2i(center)) and is_equal_approx(center.x-floorf(center.x),0.5) and is_equal_approx(origin.distance_squared_to(center),nearest) and game.view.follow_id==0 and game.sheet==null and game.runner.speed==2 and world.canonical_hash()==baseline,JSON.stringify({"center":center,"origin":origin,"nearest":nearest,"actual_distance":origin.distance_squared_to(center),"follow":game.view.follow_id,"speed":game.runner.speed,"same_world":world.canonical_hash()==baseline,"on_mask":entry.mask.has(Vector2i(center))}))
+	game._replace_world(original);game._tutorial_dismiss();game.view.set_process(old_processing)
