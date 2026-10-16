@@ -46,3 +46,32 @@ cached-shader recompilation warning, with no observed script errors or Android
 fatal exceptions. This is an emulator appearance/interaction check, not physical
 Android frame-rate, memory, thermal, battery or device-appearance certification.
 The local debug APK differs in signing/version metadata from numbered CI releases.
+
+## 0.7.109 and 0.7.110 follow-up
+
+The same task-owned Android 35 emulator received the two local APK updates. The
+103-structure/eight-resident review colony remained at tick 693000. Full codec
+comparisons after upgrade and after background checkpoints match every original
+gameplay field after normalizing only the imported campaign/session IDs.
+
+Actual touches exercised the revised People/Mira card, expansion and collapse of
+the exact food/rest rules, the actual granary detail card, menu text settings at
+100/125/150%, forecast scrolling and portrait/landscape rotation. The initial
+landscape forecast used too much width for one card per row. Version 0.7.110 now
+uses two columns when width allows; rotation back to portrait restores one column.
+The v109 Android 150% view remains readable, and native v110 tests cover the
+large-text column fallback. The native suite passes 840 checks.
+
+Both local exports and Kotlin plugin tests passed. Runtime logs show a shader-cache
+recompile warning, with no observed script errors or Android fatal exceptions.
+The emulator was stopped after the final verified background checkpoint. This
+remains software-emulator evidence, not physical Android or frame-rate certification.
+
+- [Resident rest details](android-visual-v110-rest-details.png) (captured in v109)
+- [Granary detail](android-visual-v110-granary.png) (captured in v109)
+- [Landscape before](android-visual-v110-forecast-before.png) (v109)
+- [Landscape after](android-visual-v110-forecast-after.png) (v110)
+- [APK/source/screenshot hashes and full-state audits](android-visual-v110-evidence.json)
+
+Detailed native/ADB logs and intermediate captures are local under
+`reports/visual-polish/`, including the `android-v109-*` and `android-v110-*` files.

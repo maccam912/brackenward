@@ -1,0 +1,102 @@
+{
+  "date": "2026-10-16",
+  "versions": [
+    "0.7.109-m7",
+    "0.7.110-m7"
+  ],
+  "local_android_code": 119,
+  "engine": "4.7.2-stable",
+  "device": "Task-created Android 35 arm64 Pixel 5 emulator; 1080x2340, density 440; software SwiftShader/ANGLE",
+  "apk_sha256": {
+    "0.7.109-m7": "51dfb3e5c0ff117616ce5a3fcc094a6f77d7b73e498652295b77f767b217438b",
+    "0.7.110-m7": "9603b67753a87fdf069cf4a458b7158ca96e6a6f1e9679519eb3e6dc40e59952"
+  },
+  "v110_sources": {
+    "src/game_session.gd": "5712b85cb676708f216dcee4b1c1fe6fe4eb379d466279bf0cbc54279e7cf8a1",
+    "src/ui/weather_badge.gd": "ed44fef852e835562b1d19fa599e7b65030f62a919ed26a67ab5c242bbf5b8c2",
+    "assets/exported/environment/woodland.png": "86930464f0661b31622b65d2f821372562f70d015e966264f5b1275df80938a8",
+    "project.godot": "2a17eaea313e3aa9ea8d9a68761cde4fd97557ddb63a136000903d2d007c21e9",
+    "export_presets.cfg": "ee410845a3e012bd763cfffda0cbecf9d99f8f7c0ed86bfb9b3bfda33906f00f"
+  },
+  "v109_before_audit": {
+    "changed_fields": [],
+    "input_sha256": [
+      "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+      "de3ac73df80cf9b5165c8178fa529b398c815c88a802a2e28eafb9fbb448fc7d"
+    ],
+    "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+    "passed": true,
+    "residents": 8,
+    "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+    "source_inputs_unchanged": true,
+    "structures": 103,
+    "tick": 693000
+  },
+  "v109_after_audit": {
+    "changed_fields": [],
+    "input_sha256": [
+      "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+      "ad665b40489173068187e9f008fa01ae4f777cae364315ead0f9922040c15836"
+    ],
+    "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+    "passed": true,
+    "residents": 8,
+    "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+    "source_inputs_unchanged": true,
+    "structures": 103,
+    "tick": 693000
+  },
+  "v110_after_audit": {
+    "changed_fields": [],
+    "input_sha256": [
+      "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+      "acdc87bbb47144c83fbfc73dbaa71e6e97cc5e9327546c0398562023511da37a"
+    ],
+    "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+    "passed": true,
+    "residents": 8,
+    "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+    "source_inputs_unchanged": true,
+    "structures": 103,
+    "tick": 693000
+  },
+  "interactions": [
+    "v109: existing mature campaign loaded after upgrade from v102",
+    "v109: People -> Mira -> expand, scroll and collapse food/rest details",
+    "v109: tap actual granary -> state-accurate art/health/capacity card",
+    "v109: Menu -> forecast; 100%,125%,150% text settings; portrait and landscape forecast views",
+    "v110: installed update; 150% retained, then restored 100% through Menu",
+    "v110: forecast portrait -> landscape with two columns -> scroll -> portrait with one column"
+  ],
+  "screenshots": {
+    "android-visual-v110-rest-details.png": {
+      "capture_version": "0.7.109-m7",
+      "sha256": "5d151699198b3f63785b7ecd58a6b4faa9318ed75244f5ee2d47f010f72c3085"
+    },
+    "android-visual-v110-granary.png": {
+      "capture_version": "0.7.109-m7",
+      "sha256": "7eda06394351869419b45da384d75f14255b73b8923a2ab1e4c8bfcecdcbe570"
+    },
+    "android-visual-v110-forecast-before.png": {
+      "capture_version": "0.7.109-m7",
+      "sha256": "9abad0b965592d1e4c10700127ee39c951ec065f78da0051a182b1303f0b5aa7"
+    },
+    "android-visual-v110-forecast-after.png": {
+      "capture_version": "0.7.110-m7",
+      "sha256": "a1258d5cf34a8c62bf46d2abd3d2641046605dce319c3c8baa548b68d318bbf3"
+    }
+  },
+  "validation": {
+    "native_ui_checks": 840,
+    "native_ui_failures": 0,
+    "android_export": "passed",
+    "kotlin_plugin_tests": "passed",
+    "runtime": "Observed shader cache recompilation warning; no script errors or Android fatal exceptions in retained logs."
+  },
+  "limits": [
+    "Software emulator is not physical Android/GPU/performance certification.",
+    "All upgrades, touches and snapshots use the task-owned test AVD, not user campaigns.",
+    "Visual-only previews never advanced the mature colony beyond tick 693000.",
+    "v110 large-text column fallback covered by native UI tests; Android 150% forecast capture is v109."
+  ]
+}

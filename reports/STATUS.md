@@ -1,5 +1,23 @@
 # Implementation evidence
 
+Responsive forecasts and Android follow-up (16 October 2026): `0.7.110-m7`,
+unchanged content/schema/envelope. Forecast cards now use two columns where width
+and text size allow, retaining one column elsewhere and reflowing the same cards
+on rotation. Native UI passes 840 checks; content/font and string/message checks
+pass. Both v109/v110 local Android exports and Kotlin plugin tests pass.
+
+Actual touches on the task-owned Android 35 emulator covered the mature colony,
+resident rest disclosure, granary illustration, text-size settings, forecast
+scrolling and rotation. The revised two-column landscape layout and return to one
+column in portrait were visually verified. Three full codec audits after upgrades
+and background checkpoints match every gameplay field of the recorded colony after
+normalizing only imported campaign/session IDs. Tick remains 693000. Runtime logs
+show only the observed shader-cache recompilation warning, with no script errors
+or Android fatal exceptions. Durable evidence and captures are linked in
+`reports/ANDROID_VISUAL_REVIEW.md` and `reports/android-visual-v110-evidence.json`.
+Physical Android/performance remain unverified. Builds 265-267 remote CI passed.
+Weekly usage is 42% remaining; original reset unchanged. Polishing continues.
+
 Object detail illustrations (16 October 2026): `0.7.109-m7`, unchanged content/
 schema/envelope. Building/resource/field summaries now show state-accurate atlas
 pictures on a meadow backing beside their exact text. Native 150% phone views of

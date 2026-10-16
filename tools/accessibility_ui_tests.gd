@@ -25,6 +25,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	await menu_lifetime(game,check)
 	await status_spacing(game,check)
 	await weather_cards(game,check)
+	await weather_columns(game,check)
 	await flood_preview_camera(game,check)
 	var initial: String = game.world.canonical_hash()
 	for state in ["normal","hover","pressed","disabled"]:
@@ -220,7 +221,7 @@ static func weather_cards(game: GameSession, check: Callable) -> void:
 		for scale in [1.0,1.5]:
 			tree.root.size=Vector2i(360,640);game.text_scale=scale;game._build_theme();game.show_weather()
 			await tree.process_frame;await tree.process_frame;await tree.process_frame
-			var cards: Array=game.sheet_body.get_children().filter(func(node:Node)->bool:return node is PanelContainer)
+			var cards: Array=game.sheet_body.get_node("ForecastCards").get_children()
 			var fits: bool=cards.size()==4
 			for card in cards:fits=fits and card.size.x<=game.sheet_body.size.x+1
 			var all_text: String=""
@@ -258,3 +259,23 @@ static func flood_preview_camera(game: GameSession, check: Callable) -> void:
 		var center: Vector2=game.view.camera_center()
 		check.call("WEATHER/UI_%s_preview_centers_nearest_real_flood_cell_and_releases_follow" % site,entry.mask.has(Vector2i(center)) and is_equal_approx(center.x-floorf(center.x),0.5) and is_equal_approx(origin.distance_squared_to(center),nearest) and game.view.follow_id==0 and game.sheet==null and game.runner.speed==2 and world.canonical_hash()==baseline,JSON.stringify({"center":center,"origin":origin,"nearest":nearest,"actual_distance":origin.distance_squared_to(center),"follow":game.view.follow_id,"speed":game.runner.speed,"same_world":world.canonical_hash()==baseline,"on_mask":entry.mask.has(Vector2i(center))}))
 	game._replace_world(original);game._tutorial_dismiss();game.view.set_process(old_processing)
+
+static func weather_columns(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree()
+	var original_size: Vector2i=tree.root.size;var original_scale: float=game.text_scale
+	var baseline: String=game.world.canonical_hash()
+	for entry in [[Vector2i(390,844),1.0,1],[Vector2i(851,393),1.0,2],[Vector2i(851,393),1.5,1],[Vector2i(1100,720),1.5,2]]:
+		tree.root.size=entry[0];game.text_scale=entry[1];game._build_theme();game.show_weather()
+		await tree.process_frame;await tree.process_frame;await tree.process_frame
+		var grid: GridContainer=game.sheet_body.get_node("ForecastCards")
+		var fits: bool=grid.columns==entry[2] and grid.get_child_count()==4
+		for card in grid.get_children():fits=fits and card.get_global_rect().end.x<=game.sheet_body.get_global_rect().end.x+1
+		check.call("WEATHER/UI_%s_%d_uses_readable_columns_without_horizontal_overflow" % [str(entry[0]),roundi(entry[1]*100)],fits and game.world.canonical_hash()==baseline)
+	game.text_scale=1;game._build_theme();tree.root.size=Vector2i(851,393);game.show_weather()
+	await tree.process_frame;await tree.process_frame;await tree.process_frame
+	var grid: GridContainer=game.sheet_body.get_node("ForecastCards")
+	var cards: Array=grid.get_children()
+	tree.root.size=Vector2i(390,844)
+	await tree.process_frame;await tree.process_frame;await tree.process_frame
+	check.call("WEATHER/UI_rotation_reflows_same_cards_without_changing_order_or_world",grid.columns==1 and cards==grid.get_children() and game.world.canonical_hash()==baseline)
+	game.text_scale=original_scale;game._build_theme();game.close_sheet(false);tree.root.size=original_size

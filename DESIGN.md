@@ -943,6 +943,8 @@ Resident card hierarchy (0.7.108): Work preferences and View on map precede appe
 
 Object detail illustrations (0.7.109): building, resource and field summaries pair exact text with a small nearest-neighbor atlas picture on a quiet meadow backing. Building rotation, resource depletion/tree state and crop stage use the same current-state art selectors as the map. An exhausted finite resource with no visible map sprite receives text only. Pictures do not imply extra contents, fuel or work, and yield space to wrapped text at phone sizes.
 
+Responsive forecasts (0.7.110): forecast cards use two columns only when their available width is at least 600 logical pixels times the current text scale. Narrow and large-text layouts retain one column. Rotation reflows the existing cards in chronological row-major order without recreating forecasts, moving the camera or changing campaign state.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

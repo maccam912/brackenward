@@ -2166,8 +2166,9 @@ func show_key_capture(action: String) -> void:
 	button(ColonyText.text("ui.action.cancel"),show_controls,sheet_body)
 	listening_binding=action
 
-func _weather_card(title: String, weather: String) -> VBoxContainer:
-	var panel: PanelContainer=PanelContainer.new();sheet_body.add_child(panel)
+func _weather_card(title: String, weather: String, parent: Node) -> VBoxContainer:
+	var panel: PanelContainer=PanelContainer.new();parent.add_child(panel)
+	panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	panel.name="Forecast_"+weather
 	var box: StyleBoxFlat=_box(Color("2C4440"),Color("4D6656"))
 	box.content_margin_top=10;box.content_margin_bottom=10
@@ -2183,10 +2184,14 @@ func _weather_card(title: String, weather: String) -> VBoxContainer:
 func show_weather() -> void:
 	_tutorial_action("weather")
 	show_sheet("Weather forecast","ui.sheet.weather_forecast")
-	_weather_card("Today: %s, %d C" % [world.weather.replace("_"," "),ColonyLiving.temperature(world)],world.weather)
+	var cards: GridContainer=GridContainer.new();cards.name="ForecastCards"
+	cards.size_flags_horizontal=Control.SIZE_EXPAND_FILL;sheet_body.add_child(cards)
+	cards.add_theme_constant_override("h_separation",8);cards.add_theme_constant_override("v_separation",8)
+	cards.resized.connect(func()->void:cards.columns=2 if cards.size.x>=600*text_scale else 1)
+	_weather_card("Today: %s, %d C" % [world.weather.replace("_"," "),ColonyLiving.temperature(world)],world.weather,cards)
 	for entry in world.weather_state.days:
 		if entry.day <= world.tick / 7200: continue
-		var card: VBoxContainer=_weather_card("%s %d Y%d: %s" % [["Spring","Summer","Autumn","Winter"][(entry.day/8)%4],entry.day%8+1,entry.day/32+1,entry.kind.replace("_"," ")],entry.kind)
+		var card: VBoxContainer=_weather_card("%s %d Y%d: %s" % [["Spring","Summer","Autumn","Winter"][(entry.day/8)%4],entry.day%8+1,entry.day/32+1,entry.kind.replace("_"," ")],entry.kind,cards)
 		if entry.kind == "flood":
 			var food: int = 0
 			var crop: int = 0
