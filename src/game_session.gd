@@ -234,6 +234,26 @@ func button(label: String, callback: Callable, parent: Node, width: float = 48.0
 	controls.append(result)
 	return result
 
+func illustrated_button(title: String, callback: Callable, parent: Node, semantic: String) -> Button:
+	var result: Button=button(title,callback,parent)
+	var picture: AtlasTexture=AtlasTexture.new()
+	picture.atlas=EnvironmentArt.ATLAS;picture.region=EnvironmentArt.rectangle(semantic)
+	var side: float=maxf(picture.region.size.x,picture.region.size.y)
+	var padding: Vector2=Vector2.ONE*side-picture.region.size
+	picture.margin=Rect2(padding*0.5,padding)
+	result.icon=picture;result.expand_icon=true
+	result.add_theme_constant_override("icon_max_width",40)
+	result.add_theme_constant_override("h_separation",12)
+	result.alignment=HORIZONTAL_ALIGNMENT_LEFT
+	result.texture_filter=CanvasItem.TEXTURE_FILTER_NEAREST
+	# Decoration yields space to the full action/cost at larger text sizes.
+	result.resized.connect(func()->void:
+		var text_width: float=result.get_theme_font("font").get_string_size(result.text,HORIZONTAL_ALIGNMENT_LEFT,-1,result.get_theme_font_size("font_size")).x
+		var room: float=result.size.x-result.get_theme_stylebox("normal").get_minimum_size().x-text_width-12
+		result.icon=picture if room>=24 else null
+		result.add_theme_constant_override("icon_max_width",40 if room>=40 else 24))
+	return result
+
 func direction_button(title: String, direction: Vector2, callback: Callable, parent: Node) -> Button:
 	var result: Button = button("",callback,parent)
 	result.name = title
@@ -908,15 +928,15 @@ func show_sheet(title: String, title_key: String = "", literal_title: bool = fal
 			button(ColonyText.text("ui.action.look_around"), close_sheet, sheet_body)
 		"Build":
 			label(ColonyText.text("ui.help.sheet.blueprints_require_real_supplies_and_worker_time"), sheet_body)
-			button(ColonyText.text("ui.action.paint_stockpile"), begin_placement, sheet_body)
-			button(ColonyText.text("ui.action.plant_turnips"), begin_field, sheet_body)
+			illustrated_button(ColonyText.text("ui.action.paint_stockpile"), begin_placement, sheet_body,"item/wood/2")
+			illustrated_button(ColonyText.text("ui.action.plant_turnips"), begin_field, sheet_body,"crop/turnip/4")
 			if world is ColonyWorld:
-				button(ColonyText.text("ui.action.four_bed_lodge_w73_f8"),begin_lodge,sheet_body)
+				illustrated_button(ColonyText.text("ui.action.four_bed_lodge_w73_f8"),begin_lodge,sheet_body,"building/bed/0")
 				for kind in world.definitions.buildings:
 					var definition: Dictionary = world.definitions.buildings[kind]
 					if not definition.buildable: continue
 					if definition.unlock!="initial" and not world.researched.has(definition.unlock): continue
-					button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body)
+					illustrated_button(kind.capitalize() + " | " + _cost_text(definition.materials), func() -> void: begin_build(kind), sheet_body,"building/%s/0" % kind)
 		"People":
 			if world is ColonyWorld: button(ColonyText.text("ui.action.defense_and_shelter"),show_defense,sheet_body)
 			if world is ColonyWorld and not ColonyFire.active(world).is_empty(): button(ColonyText.text("ui.action.fires_and_water"),show_fires,sheet_body)
@@ -1508,7 +1528,7 @@ func _work_sheet() -> void:
 		return
 	label(ColonyText.text("ui.help.work_sheet.choose_a_resource_drag_a_rectangle_then"), sheet_body)
 	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node", "clay_bank", "iron_seam"]:
-		button(ColonyText.text("ui.work.gather",{"item":world.definitions.resources[kind].item}), func() -> void: begin_gather(kind), sheet_body)
+		illustrated_button(ColonyText.text("ui.work.gather",{"item":world.definitions.resources[kind].item}), func() -> void: begin_gather(kind), sheet_body,"resource/%s/0" % kind)
 	button(ColonyText.text("ui.action.paint_forest_zone"),begin_forest,sheet_body)
 	button(ColonyText.text("ui.action.research"),show_research,sheet_body)
 	button(ColonyText.text("ui.action.wildlife"),show_wildlife,sheet_body)

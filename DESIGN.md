@@ -895,6 +895,8 @@ Visible ground chunks cache drawing commands; resources batch by row, camera chu
 
 Terrain polish (0.7.85): grass uses mostly quiet tiles with sparse tufts and flowers; poor/rich soil retains distinct, closer meadow shades with coordinate-hashed variants. Cached two-band shore edges draw exclusively inside actual water cells, below bridges/floors and with the same day/night tint. Terrain refresh and world adoption rebuild the bank geometry. Natural resource sprites include small baked contact shadows inside their existing bounds. These details are static in Battery and reduced-motion modes and consume no simulation randomness or saved fields. `tools/visual_review.gd` captures an isolated seed-104729 meadow camp and river by day/night using the native renderer.
 
+Build and gathering menus (0.7.86) use atlas-backed thumbnails of the actual structures, mature crops, supplies and natural resources. Square transparent margins keep their label column aligned; nearest-neighbor filtering retains the pixel-art style. On narrow/large-text rows, art shrinks from 40 to 24 logical pixels or hides when it would take space from the action/cost. Text, tooltips, input handling and unlock rules remain authoritative.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

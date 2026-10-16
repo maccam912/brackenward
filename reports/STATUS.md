@@ -1,5 +1,21 @@
 # Implementation evidence
 
+Illustrated action menus (16 October 2026): `0.7.86-m7`, unchanged content,
+schema and save envelope. Build and gathering rows now show the actual atlas art
+with a consistent square thumbnail column and left-aligned labels. Pictures shrink
+or hide when needed to preserve action/cost text at larger type sizes. Ordinary
+button semantics, touch scrolling, tooltips, placement and unlock rules remain.
+The first 150% portrait capture exposed a truncated lodge cost; the adaptive
+thumbnail correction retains the complete label in the final inspected capture.
+
+Pinned native UI passes all 735 checks after the correction. Content/font
+validation passes. Isolated native Build/Work/resident/HUD captures cover portrait
+and landscape, plus both illustrated menus at 150% text. Logs/captures are in
+`reports/visual-polish/illustrated-*` and the corresponding PNGs. Physical Android
+and remote publication remain separate. At this boundary weekly usage is 71%
+remaining; the authorized visual-polish run continues.
+
+
 Visual terrain checkpoint (16 October 2026): `0.7.85-m7`, unchanged content
 `colony-v11`, schema 24 / envelope 5. Quieter grass, closer poor/rich soil
 shades and coordinate-hashed variants reduce the repeating ground pattern.
