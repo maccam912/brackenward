@@ -152,6 +152,8 @@ static func production_cards(game: GameSession, check: Callable) -> void:
 
 static func animal_cards(game: GameSession, check: Callable) -> void:
 	var tree: SceneTree=game.get_tree();var original: ColonyWorld=game.world
+	if DisplayServer.get_name()!="headless":
+		check.call("ANIMALS/UI_capture_directory_is_available",DirAccess.make_dir_recursive_absolute("res://reports/visual-polish")==OK)
 	var world: ColonyWorld=DomesticTests.setup();world.wildlife_state.animals.clear()
 	for kind in ["hare","deer","boar","marsh_goose"]:ColonyWildlife.spawn(world,kind,Vector2i(90,80))
 	var pen: Dictionary=world.domestic_state.pens[0]
@@ -163,7 +165,8 @@ static func animal_cards(game: GameSession, check: Callable) -> void:
 		await tree.process_frame;await tree.process_frame
 		var choices: Array=game.sheet_body.find_children("*","Button",true,false)
 		check.call("ANIMALS/UI_wildlife_list_art_and_actions_text_%s" % scale,choices.size()==4 and choices.all(func(b:Button)->bool:return b.size.x<=game.sheet_body.size.x+1 and (scale>1 or (b.icon is AtlasTexture and b.icon.atlas==AnimalArt.ATLAS))) and world.canonical_hash()==baseline)
-		if DisplayServer.get_name()!="headless":(await EnvironmentUITests.screenshot(tree)).save_png("res://reports/visual-polish/animals-list-%s.png" % scale)
+		if DisplayServer.get_name()!="headless":
+			check.call("ANIMALS/UI_list_capture_saved_text_%s" % scale,(await EnvironmentUITests.screenshot(tree)).save_png("res://reports/visual-polish/animals-list-%s.png" % scale)==OK)
 		choices[0].pressed.emit()
 		check.call("ANIMALS/UI_illustrated_choice_opens_actual_animal_without_hunt_text_%s" % scale,game.sheet_body.find_child("ObjectPortrait",true,false).texture.region==AnimalArt.frame_rect("hare","idle",1,0) and world.canonical_hash()==baseline)
 		for animal in world.wildlife_state.animals:
@@ -174,7 +177,8 @@ static func animal_cards(game: GameSession, check: Callable) -> void:
 				animal.juvenile_until=world.tick+7200 if juvenile else 0;baseline=world.canonical_hash()
 				game.show_domestic_animal(animal)
 				await _animal_card_check(game,animal,true,scale,baseline,check)
-				if animal.definition=="pack_goat" and DisplayServer.get_name()!="headless":(await EnvironmentUITests.screenshot(tree)).save_png("res://reports/visual-polish/animal-goat-%s-young-%s.png" % [scale,juvenile])
+				if animal.definition=="pack_goat" and DisplayServer.get_name()!="headless":
+					check.call("ANIMALS/UI_goat_capture_saved_text_%s_young_%s" % [scale,juvenile],(await EnvironmentUITests.screenshot(tree)).save_png("res://reports/visual-polish/animal-goat-%s-young-%s.png" % [scale,juvenile])==OK)
 		baseline=world.canonical_hash();game.show_pen(pen)
 		await tree.process_frame;await tree.process_frame
 		var animal_choices: Array=game.sheet_body.find_children("*","Button",true,false).filter(func(b:Button)->bool:return b.text.contains("health"))

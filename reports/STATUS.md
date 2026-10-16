@@ -1,5 +1,31 @@
 # Implementation evidence
 
+CI publication repair (16 October 2026): the two latest runs, 38920799135 and
+38921054184, built the Android APK and passed simulation, desktop, native replay
+and generation checks, but graphical UI checks logged six PNG-write errors. The
+new animal-card captures assumed the ignored `reports/visual-polish/` directory
+already existed, blocking the publication dependency. A fresh tracked-source
+copy reproduced all six errors despite 913 passing UI assertions. Animal-card
+tests now create that directory and assert successful image writes; CI also
+archives those nested captures. The repaired clean-source graphical suite passes
+920 checks and writes all six PNGs; workflow lint, suite-runner, string/message,
+content/font and build-stamping/checkpoint tests pass.
+
+At the user's request, CI now exports Android and desktop binaries in release
+mode. APK provenance is `development_release`, publication checks that kind,
+and Android packaging verifies the signature and rejects a debuggable manifest.
+The retained development certificate preserves updates from existing debug APKs;
+fork PRs use a disposable signing key and never publish. Both debug/release Kotlin
+plugin tests run. Local Android builds still default to debug and accept
+`--release` with explicit signing environment variables. These remain development
+prereleases; production signing/store gates and physical-phone battery/performance
+measurements remain pending. Clean-source Android release export passes, its
+manifest disables debugging, its signature matches the retained local development
+identity, and its arm64 engine bytes match the release template AAR exactly. Both
+Kotlin variants pass four tests each. The macOS release export also passes its
+isolated sixty-frame graphical/audio-drained launch. Replacement remote CI and
+publication are pending at this commit; inspect the exact-source Actions run.
+
 Visual-polish handoff (16 October 2026): stopped at the requested cutoff, 24%
 weekly usage remaining (reset 1792649647 unchanged). Game implementation through
 `0.7.123-m7` is committed/pushed as development build 286. UI 913, persistence/art

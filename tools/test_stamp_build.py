@@ -57,7 +57,7 @@ class StampBuildTests(unittest.TestCase):
         self.assertIn('application/version="612"', updated)
         self.assertIn('application/file_version="0.7.5.612"', updated)
         self.assertEqual({"commit": source, "run_number": 512, "version_code": 612,
-                          "run_id": "987", "kind": "development_debug",
+                          "run_id": "987", "kind": "development_release",
                           "version_name": "0.7.5-m7+build.612", "release_tag": "v0.0.612-dev",
                           "apk_filename": "brackenward-build-000612.apk"},
                          json.loads((self.root / "data/build.json").read_text()))

@@ -67,7 +67,7 @@ def stamp(root, local=False, environ=None):
         text = replace_one(text, r'^version/name="[^"]+"$', f'version/name="{version_name}"')
         (root / "data/build.json").write_text(json.dumps({"commit": commit,
             "run_number": int(environ["GITHUB_RUN_NUMBER"]), "version_code": code,
-            "run_id": run_id, "kind": "development_debug", "version_name": version_name,
+            "run_id": run_id, "kind": "development_release", "version_name": version_name,
             "release_tag": tag, "apk_filename": f"brackenward-build-{code:06d}.apk"}, indent=2) + "\n")
         print(f"Development version code {code}; source {commit[:12]}")
     preset.write_text(text)
