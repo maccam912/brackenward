@@ -1,5 +1,16 @@
 # Implementation evidence
 
+Illustrated site selection (16 October 2026): `0.7.92-m7`, unchanged content,
+schema and envelope. New Colony shows a static meadow/forest/river vignette using
+the actual atlas. Selecting a site updates the illustration with its description.
+It ignores input and requires no generated preview world or additional assets.
+Native views of all three sites at portrait/landscape widths and 150% text were
+inspected. The native UI suite passes all 746 checks, including setup creation and
+scroll gestures. Initial preview atlas-key errors were fixed before the final
+error-free capture and isolated UI run; concurrent GUI runs are not validation.
+Evidence: `reports/visual-polish/sites-*` and `new-colony-*`. Weekly usage is 64%
+remaining; visual polish continues. Physical Android remains unverified.
+
 Resident needs and menu lifetime (16 October 2026): `0.7.91-m7`, unchanged
 content/schema/envelope. Resident details now pair the portrait with four labeled
 needs bars and exact values, including the distinct 100-point health scale. Activity

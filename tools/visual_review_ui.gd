@@ -21,6 +21,12 @@ func capture() -> void:
 		await save_view("build-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.show_sheet("Work")
 		await save_view("work-%dx%d" % [viewport_size.x,viewport_size.y])
+		game.show_new_colony(2)
+		await save_view("new-colony-%dx%d" % [viewport_size.x,viewport_size.y])
+		var site_choice: CycleChoiceButton=game.sheet_body.find_children("*","CycleChoiceButton",true,false)[0]
+		for selected in [1,2]:
+			site_choice.select(selected)
+			await save_view("new-colony-site%d-%dx%d" % [selected,viewport_size.x,viewport_size.y])
 		game.show_sheet("People")
 		await save_view("people-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.show_person(game.world.citizens[0].id)
@@ -40,6 +46,8 @@ func capture() -> void:
 	await save_view("people-390x844-text150")
 	game.show_person(game.world.citizens[0].id)
 	await save_view("person-390x844-text150")
+	game.show_new_colony(2)
+	await save_view("new-colony-390x844-text150")
 	await game.soundscape.drain()
 	game.queue_free();await process_frame
 	print("VISUAL_UI_REVIEW_COMPLETE");quit()

@@ -2511,10 +2511,12 @@ func show_new_colony(number: int) -> void:
 	for name in ["Meadow Reach","Pine Shelf","Reed Bend"]: site.add_item(name)
 	site.custom_minimum_size = Vector2(48,48)
 	sheet_body.add_child(site)
+	var illustration: SiteIllustration=SiteIllustration.new();sheet_body.add_child(illustration)
 	var description: Label = label("",sheet_body)
 	var descriptions: Array[String] = ["Balanced ground. Poor/normal/rich soil 15/65/20%; trees 22%; floodplain width 4.","More forest and four extra stone deposits. Soil 30/60/10%; trees 36%; floodplain width 3.","Fertile ground and three extra clay deposits. Soil 10/45/45%; trees 18%; floodplain width 6."]
 	description.text = descriptions[0]
-	site.item_selected.connect(func(index:int)->void:description.text = descriptions[index])
+	site.item_selected.connect(func(index:int)->void:
+		description.text = descriptions[index];illustration.site_index=index)
 	var seed_entry: LineEdit = LineEdit.new()
 	seed_entry.placeholder_text = "Unsigned 32-bit seed"
 	seed_entry.max_length = 10; seed_entry.custom_minimum_size = Vector2(48,48)
