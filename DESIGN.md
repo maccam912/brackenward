@@ -917,6 +917,8 @@ Building render reuse (0.7.95): off-screen props retain live records and synchro
 
 Ground contact and beacon alignment (0.7.96): people/animals have small baked translucent shadows within their original frame bounds, preserving opaque art and portrait bytes. The beacon ceremony flame is anchored at source y=14 in its raised basket rather than the generic furnace base. Inactive and destroyed beacons remain unlit; the existing Active/Complete ceremony rule is unchanged.
 
+Cultivated field art (0.7.99): subdued brown soil with two furrows supports all five existing growth stages. Barley stalks, flax flowers, leafy vegetables, and cavecap silhouettes differ as they mature; ripe produce remains visually distinct. All thirty crop and three soil regions retain their original bounds and stage-selection rules.
+
 Stockpile presentation (0.7.98): ordinary painted zones use a quiet outer boundary beneath goods, with no internal grid or color wash over item sprites. Tapping a zone opens its existing Storage inspector; selected cells receive a stronger outline without tinting their interiors. Opening pauses and closing restores the prior speed without moving the camera or mutating simulation state. Storage filters use the same adaptive item thumbnails as other illustrated actions.
 
 Material silhouettes (0.7.97): wood uses visible log ends, grain tied sheaves, fiber coils, cloth folds/stripes, leather irregular hide edges, and brick visible joints. These replace eighteen existing item regions while preserving the three quantity tiers and source bounds. `tools/visual_review_colony.gd` inspects a recorded campaign in an isolated daylight copy and checks both input bytes and canonical render state remain unchanged.

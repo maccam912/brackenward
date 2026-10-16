@@ -1,5 +1,14 @@
 # Implementation evidence
 
+Cultivated field art (16 October 2026): `0.7.99-m7`, unchanged content/schema/
+envelope. Quieter brown earth replaces orange soil; the five existing crop stages
+now show distinct barley, flax, vegetable and cavecap growth. Exactly thirty crop
+and three soil regions changed; all other atlas pixels, dimensions and semantic
+rectangles remain unchanged. Source art and the native developed-colony field view
+were inspected. Pinned persistence/art passes 511 checks, content/font validation
+and checked import/capture pass. Evidence: `crops-*` and `mature-crops-*` under
+`reports/visual-polish/`. Physical Android remains unverified.
+
 Stockpile clarity and inspection (16 October 2026): `0.7.98-m7`, unchanged
 content/schema/envelope. Painted zones now have quiet outer boundaries beneath
 goods; the ordinary orange wash and internal white grid are removed. Tapping a

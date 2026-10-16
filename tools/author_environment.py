@@ -51,12 +51,15 @@ def ground(kind, variant):
         image.putdata([replacements.get(pixel[:3], pixel[:3]) + (pixel[3],)
                        for pixel in image.get_flattened_data()])
         return image
-    image = Image.new("RGBA", (16, 16), {"poor": "#9DAD77", "rich": "#9BAF72", "water": WATER, "path": "#BBA980", "soil": CLAY}[kind])
+    image = Image.new("RGBA", (16, 16), {"poor": "#9DAD77", "rich": "#9BAF72", "water": WATER, "path": "#BBA980", "soil": "#927453"}[kind])
     d = ImageDraw.Draw(image)
     if kind == "water":
         for x, y, length in [(1 + variant, 4, 5), (8 - variant, 11, 6)]: d.line((x, y, x + length, y), fill="#80AFBA")
     elif kind == "soil":
-        for y in range(3, 16, 4): d.line((1, y, 14, y), fill=WOOD)
+        for y in [6,13]:
+            d.line((0,y,15,y),fill="#796248")
+            d.line((0,y+1,15,y+1),fill="#A1875D")
+        for x,y in [(1,2),(8,9),(14,3)]:d.point((x,y),fill="#A1875D")
     else:
         for index in range(2 if kind in ("poor", "rich") else 4):
             x, y = (index * 7 + variant * 3) % 14, (index * 5 + variant * 7) % 14
@@ -135,21 +138,52 @@ def crop(kind, stage):
     d = ImageDraw.Draw(image)
     if stage == 0: return image
     for x, y in [(4, 5), (11, 5), (4, 12), (11, 12)]:
-        if stage == 1: d.point((x,y), fill=CREAM);continue
-        length = 2 if stage == 2 else 4
-        d.line((x,y,x,y-length), fill=DEEP)
-        d.line((x,y-1,x-2,y-length), fill=MOSS)
-        d.line((x,y-1,x+2,y-length+1), fill=DEEP)
-        if stage < 4: continue
-        if kind == "turnip": d.ellipse((x-2,y-1,x+2,y+2), fill=CREAM, outline=INK)
-        elif kind == "squash": d.ellipse((x-3,y-1,x+2,y+2), fill=LIGHT, outline=CLAY)
-        elif kind == "barley":
-            d.line((x,y-5,x,y), fill=LIGHT)
-            for height in [2,4]: d.line((x-1,y-height-1,x+1,y-height+1), fill=LIGHT)
-        elif kind == "flax": d.rectangle((x-1,y-5,x+1,y-3), fill=WATER);d.point((x,y-4), fill=CREAM)
-        elif kind == "healing_leaf": d.polygon([(x,y-6),(x-3,y-2),(x,y),(x+3,y-2)], fill=DEEP);d.line((x,y-5,x,y), fill=MOSS)
+        if stage == 1:
+            d.line((x,y,x,y-1),fill=DEEP)
+            d.point((x-1,y-1),fill="#B3C080")
+            continue
+        ripe=stage==4
+        if kind == "barley":
+            length=2 if stage==2 else (4 if ripe else 3)
+            for dx in [-2,0,2]:
+                top=y-length+(1 if dx else 0)
+                d.line((x,y,x+dx,top),fill=LIGHT if ripe else DEEP)
+                if ripe:
+                    d.line((x+dx,top-1,x+dx,top+1),fill=LIGHT)
+                    d.point((x+dx,top-1),fill=CREAM)
+                else:d.point((x+dx,top),fill=MOSS)
+        elif kind == "flax":
+            for dx in [-2,1]:
+                d.line((x,y,x+dx,y-(2 if stage==2 else 4)),fill=DEEP)
+                d.point((x+dx+1,y-2),fill=MOSS)
+                if ripe:
+                    d.line((x+dx-1,y-4,x+dx+1,y-4),fill="#A4B6CF")
+                    d.point((x+dx,y-5),fill=WATER)
+                    d.point((x+dx,y-4),fill=CREAM)
+        elif kind == "cavecap":
+            radius=1 if stage==2 else (3 if ripe else 2)
+            d.line((x,y-2,x,y+1),fill=CREAM)
+            d.ellipse((x-radius,y-4,x+radius,y-1),fill=ROOF,outline=INK)
+            if ripe:d.point((x-1,y-3),fill=CREAM);d.point((x+1,y-2),fill="#BDB8C6")
         else:
-            d.rectangle((x,y-1,x+1,y+1), fill=CREAM);d.ellipse((x-3,y-5,x+3,y-1), fill=ROOF, outline=INK);d.point((x-1,y-3), fill=CREAM)
+            radius=2 if stage==2 else 3
+            d.polygon([(x,y),(x-radius,y-2),(x-radius,y-3),(x-1,y-2),(x,y-4),
+                       (x+1,y-2),(x+radius,y-3),(x+radius,y-1)],fill=DEEP)
+            d.line((x,y-1,x-1,y-3),fill=MOSS)
+            d.point((x+2,y-2),fill="#93A96B")
+            if not ripe:continue
+            if kind=="turnip":
+                d.ellipse((x-2,y-1,x+2,y+2),fill=CREAM,outline="#6B6450")
+                d.line((x-1,y,x+1,y),fill="#BDB8C6")
+                d.point((x,y-2),fill=MOSS)
+            elif kind=="squash":
+                d.ellipse((x-3,y-1,x+2,y+2),fill=LIGHT,outline="#A47B52")
+                d.line((x-1,y,x-1,y+1),fill=CREAM)
+                d.point((x,y-2),fill=DEEP)
+            else:
+                assert kind=="healing_leaf",kind
+                d.polygon([(x,y-5),(x-2,y-2),(x,y),(x+2,y-2)],fill=MOSS)
+                d.line((x,y-4,x,y-1),fill="#B3C080")
     return image
 
 
