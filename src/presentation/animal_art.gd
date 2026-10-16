@@ -12,3 +12,11 @@ static func frame_rect(kind: String, pose: String, facing: int, frame: int) -> R
 	var animation: Dictionary = block.states[pose]
 	var index: int = int(animation.first)+posmod(facing,4)*int(animation.frames)+posmod(frame,int(animation.frames))
 	return Rect2((index%16)*24,(int(block.block_row)*4+index/16)*24,24,24)
+
+static func portrait_texture(kind: String, juvenile: bool = false, downed: bool = false) -> AtlasTexture:
+	var result: AtlasTexture=AtlasTexture.new();result.atlas=ATLAS
+	result.region=frame_rect(kind,"downed" if downed else "idle",1,0)
+	if juvenile:
+		var padding: Vector2=Vector2.ONE*(24.0/0.7-24.0)
+		result.margin=Rect2(padding*0.5,padding)
+	return result

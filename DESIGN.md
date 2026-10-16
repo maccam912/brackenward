@@ -969,6 +969,9 @@ Clothing and containers (0.7.121): cloaks show folds and a clasp; vests show clo
 
 River variation (0.7.122): a deterministic presentation-only cell hash selects three ripple patterns. Two appended two-frame strips share the existing atlas and TileMap layers. Battery and reduced-motion modes use each pattern's static first frame; Balanced/Smooth retain the existing 0.8-second two-frame cadence. Water coverage, banks, movement, fishing and saves are unchanged.
 
+Animal recognition (0.7.123): wildlife/livestock choices and detail headers use their actual map atlas frames, with a smaller juvenile portrait. Existing health, maturity, feeding, danger and explicit hunt/slaughter confirmation information remain intact. Pictures yield space to long button text and do not advance animation or simulation in menus. Wildlife health sits beside the portrait; its behavior/danger paragraph spans the full width below.
+
+
 
 
 

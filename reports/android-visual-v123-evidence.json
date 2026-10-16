@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-16",
+  "device": "Task-owned Android 35 arm64 Pixel 5 emulator; 1080x2340, density 440; SwiftShader/ANGLE",
+  "local_android_code": 119,
+  "engine": "4.7.2-stable",
+  "builds": [
+    {
+      "version": "0.7.123-m7",
+      "apk_sha256": "f9af87c20a91ba00bd3b3b8d4a8be367c0872c47e6b06df10e3e087bbf1aa12e",
+      "sources": {
+        "src/game_session.gd": "3f5dd6a493d92a11b694f5b5787828a35808b7c6bd7da47fa36d41998c713e8f",
+        "src/presentation/animal_art.gd": "05b374695e15de0cb792827899f800bb1b0c1990fdd0fd2d70b174997d0514e1",
+        "src/presentation/colony_environment.gd": "87430d5190aa2026c298949a53a79df932c5a066b7c30951a10240aab6249189",
+        "assets/exported/environment/woodland.png": "8f7e057d1111b5a11d364b3b80207d3e70f494bfb9afbd4f6cf2a913afb077b5",
+        "data/environment_art.json": "2b7996c7e8395e7c5e322e815d0e93d518ff9fb1b14d4bfcb62f06f8d74f1a60",
+        "project.godot": "8ac83121ab1c7412a6a37b6aa4df458d400b817e2b4cdf4c230c6318bc19e8ab",
+        "export_presets.cfg": "aadf47afd0e608110dc14a0e4ac5914d0dc666a48b9f7a10c47923a923d03076"
+      },
+      "scope": "Initial wildlife/river review at 100/150% and rotation; before full-width behavior paragraph"
+    },
+    {
+      "version": "0.7.123-m7",
+      "apk_sha256": "fafc1c05d58e78248d9fbb2509c3fb2538314efc5369f21a81896ee607a220a3",
+      "sources": {
+        "src/game_session.gd": "650c3bc5deb5acb0b9d6202b497910879851e358117f64e484360de40da938e7",
+        "src/presentation/animal_art.gd": "05b374695e15de0cb792827899f800bb1b0c1990fdd0fd2d70b174997d0514e1",
+        "src/presentation/colony_environment.gd": "87430d5190aa2026c298949a53a79df932c5a066b7c30951a10240aab6249189",
+        "assets/exported/environment/woodland.png": "8f7e057d1111b5a11d364b3b80207d3e70f494bfb9afbd4f6cf2a913afb077b5",
+        "data/environment_art.json": "2b7996c7e8395e7c5e322e815d0e93d518ff9fb1b14d4bfcb62f06f8d74f1a60",
+        "project.godot": "8ac83121ab1c7412a6a37b6aa4df458d400b817e2b4cdf4c230c6318bc19e8ab",
+        "export_presets.cfg": "aadf47afd0e608110dc14a0e4ac5914d0dc666a48b9f7a10c47923a923d03076"
+      },
+      "scope": "Final full-width wildlife behavior paragraph after Android review"
+    }
+  ],
+  "audits": [
+    {
+      "changed_fields": [],
+      "input_sha256": [
+        "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+        "1a506ca23d6b7ece61d97b65a5cc39d05768826c636e6120ccc2d31ce9154641"
+      ],
+      "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+      "passed": true,
+      "residents": 8,
+      "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+      "source_inputs_unchanged": true,
+      "structures": 103,
+      "tick": 693000
+    },
+    {
+      "changed_fields": [],
+      "input_sha256": [
+        "545f5d1ab75c72358fcdc85a4689436ae5fccb4df7473a91a67e282cc8154749",
+        "c3e60297306b5dbe3ab9f8fd7488ef698223c051b3f48be69751d304102edb08"
+      ],
+      "normalized_canonical_sha256": "d297df33d31244a364e94742dce11e585f8683c95f5d88417dc1767b36b88472",
+      "passed": true,
+      "residents": 8,
+      "scope": "Full codec validated both snapshots. Only the imported campaign ID and pending-command session IDs normalize privately; every gameplay field is compared.",
+      "source_inputs_unchanged": true,
+      "structures": 103,
+      "tick": 693000
+    }
+  ],
+  "interactions": [
+    "Wildlife list scroll and actual deer/boar selection at 100/150% text",
+    "Portrait/landscape animal detail review",
+    "Actual river and regrowth art inspected after animal selection",
+    "Final full-width boar behavior paragraph reviewed at 150% portrait and landscape",
+    "Restored 100% text and portrait, then background checkpoint and full codec audit"
+  ],
+  "validation": {
+    "native_ui_checks": 913,
+    "native_ui_failures": 0,
+    "persistence_checks": 518,
+    "persistence_failures": 0,
+    "content_font_validation": "passed",
+    "string_message_tests": 12,
+    "android_export_and_kotlin_plugin_tests": "passed for both builds",
+    "runtime": "No SCRIPT ERROR or FATAL EXCEPTION in captured logs; shader-cache warning observed",
+    "physical_android": "unverified",
+    "juvenile_livestock": "Native fixture cards at 100/150%; not exercised in this Android colony",
+    "device_performance": "not certified"
+  },
+  "screenshots": [
+    {
+      "path": "reports/android-visual-v123-river.png",
+      "sha256": "d932b9e9abc282f1955cf035372990bf2275a989a94b1adcae4feb2b8286b866",
+      "apk_sha256": "f9af87c20a91ba00bd3b3b8d4a8be367c0872c47e6b06df10e3e087bbf1aa12e"
+    },
+    {
+      "path": "reports/android-visual-v123-wildlife150.png",
+      "sha256": "04512493a8dd18a30be8bb81c1dee714d8702d27ae99588dcce377ddacd897c5",
+      "apk_sha256": "f9af87c20a91ba00bd3b3b8d4a8be367c0872c47e6b06df10e3e087bbf1aa12e"
+    },
+    {
+      "path": "reports/android-visual-v123-boar-before.png",
+      "sha256": "51753321de5cab6230ea036cd6e3fc809764cee178dc78b4b3e1eadb062d1038",
+      "apk_sha256": "f9af87c20a91ba00bd3b3b8d4a8be367c0872c47e6b06df10e3e087bbf1aa12e"
+    },
+    {
+      "path": "reports/android-visual-v123-boar-after.png",
+      "sha256": "7a727e695f542d4bb1e76984d559b9525863c9e54171f99728638aa85cfc0901",
+      "apk_sha256": "fafc1c05d58e78248d9fbb2509c3fb2538314efc5369f21a81896ee607a220a3"
+    },
+    {
+      "path": "reports/android-visual-v123-boar-landscape.png",
+      "sha256": "8c30577b21b1ad3de6d911073ee08670a59058c451cb245f9193e2dd474f67e5",
+      "apk_sha256": "fafc1c05d58e78248d9fbb2509c3fb2538314efc5369f21a81896ee607a220a3"
+    }
+  ]
+}

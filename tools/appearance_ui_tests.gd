@@ -43,6 +43,7 @@ static func run(game: GameSession, check: Callable) -> void:
 	await rest_disclosure(game,check)
 	await object_cards(game,check)
 	await production_cards(game,check)
+	await animal_cards(game,check)
 	for viewport in [Vector2i(360,640),Vector2i(640,360)]:
 		tree.root.size=viewport;game.text_scale=1.5;game._build_theme();game.show_appearance(1)
 		await tree.process_frame;await tree.process_frame
@@ -148,3 +149,45 @@ static func production_cards(game: GameSession, check: Callable) -> void:
 	var repairs: Array=game.sheet_body.find_children("*","Button",true,false).filter(func(b:Button)->bool:return b.text=="Repair or demolish")
 	check.call("PRODUCTION/UI_damaged_station_keeps_one_early_repair_action",repairs.size()==1 and repairs[0].get_index()<game.sheet_body.get_node("Recipe_make_toolkit").get_index() and world.canonical_hash()==damaged_baseline)
 	game.close_sheet(false);game._replace_world(original);game._tutorial_dismiss()
+
+static func animal_cards(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree();var original: ColonyWorld=game.world
+	var world: ColonyWorld=DomesticTests.setup();world.wildlife_state.animals.clear()
+	for kind in ["hare","deer","boar","marsh_goose"]:ColonyWildlife.spawn(world,kind,Vector2i(90,80))
+	var pen: Dictionary=world.domestic_state.pens[0]
+	for kind in ["hen","pack_goat"]:ColonyDomestic.acquire(world,kind,pen.id,Vector2i(66,63))
+	game._replace_world(world);game._tutorial_dismiss();tree.root.size=Vector2i(390,844)
+	for scale in [1.0,1.5]:
+		game.text_scale=scale;game._build_theme()
+		var baseline: String=world.canonical_hash();game.show_wildlife()
+		await tree.process_frame;await tree.process_frame
+		var choices: Array=game.sheet_body.find_children("*","Button",true,false)
+		check.call("ANIMALS/UI_wildlife_list_art_and_actions_text_%s" % scale,choices.size()==4 and choices.all(func(b:Button)->bool:return b.size.x<=game.sheet_body.size.x+1 and (scale>1 or (b.icon is AtlasTexture and b.icon.atlas==AnimalArt.ATLAS))) and world.canonical_hash()==baseline)
+		if DisplayServer.get_name()!="headless":(await EnvironmentUITests.screenshot(tree)).save_png("res://reports/visual-polish/animals-list-%s.png" % scale)
+		choices[0].pressed.emit()
+		check.call("ANIMALS/UI_illustrated_choice_opens_actual_animal_without_hunt_text_%s" % scale,game.sheet_body.find_child("ObjectPortrait",true,false).texture.region==AnimalArt.frame_rect("hare","idle",1,0) and world.canonical_hash()==baseline)
+		for animal in world.wildlife_state.animals:
+			game._wildlife_sheet(animal)
+			await _animal_card_check(game,animal,false,scale,baseline,check)
+		for animal in world.domestic_state.animals:
+			for juvenile in [false,true]:
+				animal.juvenile_until=world.tick+7200 if juvenile else 0;baseline=world.canonical_hash()
+				game.show_domestic_animal(animal)
+				await _animal_card_check(game,animal,true,scale,baseline,check)
+				if animal.definition=="pack_goat" and DisplayServer.get_name()!="headless":(await EnvironmentUITests.screenshot(tree)).save_png("res://reports/visual-polish/animal-goat-%s-young-%s.png" % [scale,juvenile])
+		baseline=world.canonical_hash();game.show_pen(pen)
+		await tree.process_frame;await tree.process_frame
+		var animal_choices: Array=game.sheet_body.find_children("*","Button",true,false).filter(func(b:Button)->bool:return b.text.contains("health"))
+		check.call("ANIMALS/UI_pen_retains_both_named_animal_actions_text_%s" % scale,animal_choices.size()==2 and world.canonical_hash()==baseline)
+	game.close_sheet(false);game._replace_world(original);game._tutorial_dismiss()
+
+static func _animal_card_check(game: GameSession, animal: Dictionary, domestic: bool, scale: float, baseline: String, check: Callable) -> void:
+	await game.get_tree().process_frame;await game.get_tree().process_frame
+	var picture: TextureRect=game.sheet_body.find_child("ObjectPortrait",true,false)
+	var young: bool=domestic and animal.juvenile_until>game.world.tick
+	var valid: bool=picture!=null and picture.texture is AtlasTexture
+	if valid:
+		valid=picture.texture.atlas==AnimalArt.ATLAS and picture.texture.region==AnimalArt.frame_rect(animal.definition,"idle",1,0) and is_equal_approx(24.0/(picture.texture.region.size.x+picture.texture.margin.size.x),0.7 if young else 1.0)
+		var row: Control=picture.get_parent().get_parent()
+		valid=valid and row.size.x<=game.sheet_body.size.x+1 and row.get_child(1).get_global_rect().end.x<=game.sheet_body.get_global_rect().end.x+1
+	check.call("ANIMALS/UI_%s_portrait_young_%s_text_%s_matches_map_and_fits" % [animal.definition,young,scale],valid and game.world.canonical_hash()==baseline)

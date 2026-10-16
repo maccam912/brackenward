@@ -15,6 +15,11 @@ static func run(check: Callable) -> void:
 					all_regions[rectangle]=true
 		check.call("ART/animal_%s_has_four_facing_nonempty_distinct_regions" % kind,valid and states.has_all(["idle","walk","eat","downed"]) and states.walk.frames==4 and states.eat.frames==2 and states.idle.frames==2 and states.downed.frames==1)
 	check.call("ART/all_268_animal_frames_fit_one_shared_atlas",all_regions.size()==268 and AnimalArt.kinds().boar.states.charge.frames==4)
+	for kind in AnimalArt.kinds():
+		var adult: AtlasTexture=AnimalArt.portrait_texture(kind)
+		var young: AtlasTexture=AnimalArt.portrait_texture(kind,true)
+		var downed: AtlasTexture=AnimalArt.portrait_texture(kind,false,true)
+		check.call("ART/animal_%s_portraits_use_real_map_frames_and_juvenile_scale" % kind,adult.atlas==AnimalArt.ATLAS and adult.region==AnimalArt.frame_rect(kind,"idle",1,0) and adult.margin==Rect2() and young.region==adult.region and is_equal_approx(24.0/(24+young.margin.size.x),0.7) and downed.region==AnimalArt.frame_rect(kind,"downed",1,0))
 	var world: ColonyWorld = ColonyTests.world()
 	ColonyWildlife.spawn(world,"hare",Vector2i(73,66));ColonyWildlife.spawn(world,"boar",Vector2i(74,66))
 	var saved: Dictionary = world.payload().duplicate(true)

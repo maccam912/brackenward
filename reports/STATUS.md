@@ -1,5 +1,18 @@
 # Implementation evidence
 
+Animal cards and Android review (16 October 2026): `0.7.123-m7`, unchanged
+content/schema/envelope. Wildlife/livestock lists and detail cards use actual
+map atlas frames, with smaller juvenile portraits. Android review prompted a
+full-width wildlife behavior paragraph below portrait/health. Existing warnings
+and explicit hunt/slaughter flows remain intact. Native UI passes 913 checks,
+persistence/art 518, content/font and twelve string/message tests pass. Both
+Android exports/plugin tests pass; two full codec audits retain every original
+gameplay field at tick 693000. Durable screenshots and hashes are in
+ANDROID_VISUAL_REVIEW.md and android-visual-v123-evidence.json. Juvenile livestock
+was reviewed natively; physical Android remains unverified. Usage last checked
+at 25% remaining with the original reset. Current visual work is complete;
+publication and the final usage/CI checkpoint remain in progress.
+
 River variation (16 October 2026): `0.7.122-m7`, unchanged content/schema/envelope.
 Three deterministic ripple patterns replace uniform repetition. Two appended
 strips retain every earlier pixel/rectangle and the 1024x436 atlas size. Existing

@@ -235,13 +235,14 @@ func button(label: String, callback: Callable, parent: Node, width: float = 48.0
 	controls.append(result)
 	return result
 
-func illustrated_button(title: String, callback: Callable, parent: Node, semantic: String) -> Button:
+func illustrated_button(title: String, callback: Callable, parent: Node, semantic: String, picture_override: AtlasTexture = null) -> Button:
 	var result: Button=button(title,callback,parent)
-	var picture: AtlasTexture=AtlasTexture.new()
-	picture.atlas=EnvironmentArt.ATLAS;picture.region=EnvironmentArt.rectangle(semantic)
-	var side: float=maxf(picture.region.size.x,picture.region.size.y)
-	var padding: Vector2=Vector2.ONE*side-picture.region.size
-	picture.margin=Rect2(padding*0.5,padding)
+	var picture: AtlasTexture=picture_override
+	if picture==null:
+		picture=AtlasTexture.new();picture.atlas=EnvironmentArt.ATLAS;picture.region=EnvironmentArt.rectangle(semantic)
+		var side: float=maxf(picture.region.size.x,picture.region.size.y)
+		var padding: Vector2=Vector2.ONE*side-picture.region.size
+		picture.margin=Rect2(padding*0.5,padding)
 	result.icon=picture;result.expand_icon=true
 	result.add_theme_constant_override("icon_max_width",40)
 	result.add_theme_constant_override("h_separation",12)
@@ -255,12 +256,13 @@ func illustrated_button(title: String, callback: Callable, parent: Node, semanti
 		result.add_theme_constant_override("icon_max_width",40 if room>=40 else 24))
 	return result
 
-func illustrated_summary(text: String, parent: Node, semantic: String) -> Label:
-	if semantic.is_empty():return label(text,parent)
+func illustrated_summary(text: String, parent: Node, semantic: String, picture_override: AtlasTexture = null) -> Label:
+	if semantic.is_empty() and picture_override==null:return label(text,parent)
 	var row: HBoxContainer=HBoxContainer.new();parent.add_child(row)
 	var picture: TextureRect=TextureRect.new();picture.name="ObjectPortrait"
-	var texture: AtlasTexture=AtlasTexture.new()
-	texture.atlas=EnvironmentArt.ATLAS;texture.region=EnvironmentArt.rectangle(semantic)
+	var texture: AtlasTexture=picture_override
+	if texture==null:
+		texture=AtlasTexture.new();texture.atlas=EnvironmentArt.ATLAS;texture.region=EnvironmentArt.rectangle(semantic)
 	picture.texture=texture;picture.set_meta("semantic",semantic)
 	picture.custom_minimum_size=Vector2(56,56)
 	picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;picture.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -2746,13 +2748,14 @@ func show_wildlife() -> void:
 	label(ColonyText.text("ui.help.wildlife.wild_animals_forage_and_flee_mark_a"),sheet_body)
 	for animal in world.wildlife_state.animals:
 		if animal.health<=0: continue
-		button("%s · health %d" % [_catalog_name(animal.definition),animal.health],func()->void:
-			view.camera_tile = Vector2(animal.x,animal.y); _wildlife_sheet(animal),sheet_body)
+		illustrated_button("%s · health %d" % [_catalog_name(animal.definition),animal.health],func()->void:
+			view.camera_tile = Vector2(animal.x,animal.y); _wildlife_sheet(animal),sheet_body,"",_animal_portrait(animal))
 
 func _wildlife_sheet(animal: Dictionary) -> void:
 	show_details(_catalog_name(animal.definition))
 	var definition: Dictionary = world.definitions.animals[animal.definition]
-	label("Health %d/%d. %s" % [animal.health,definition.health,catalog_strings.get(animal.definition+".description","")],sheet_body)
+	illustrated_summary("Health %d/%d" % [animal.health,definition.health],sheet_body,"",_animal_portrait(animal))
+	label(catalog_strings.get(animal.definition+".description",""),sheet_body)
 	label("After butchering (%d WU): %s. Carcass spoils in two days; outputs need hauling. Hunters retreat at health 40." % [definition.work_milli/1000,_cost_text(definition.outputs)],sheet_body)
 	if world.jobs.any(func(j:Dictionary)->bool:return j.kind == "hunt" and j.target == animal.id and j.state not in ["Complete","Canceled"]):
 		label(ColonyText.text("ui.help.wildlife_sheet.hunt_marked_eligible_armed_gathering_workers_take"),sheet_body)
@@ -2803,12 +2806,15 @@ func show_pen(pen: Dictionary) -> void:
 		label("Barn %d: feed %d/24 · products %d/24. Fed adults accrue up to two days of products; collection costs 4 WU." % [barn,ColonyDomestic.feed_count(world,barn),ColonyDomestic.output_count(world,barn)],sheet_body)
 	label(ColonyText.text("ui.help.pen.breeding_one_juvenile_after_eight_days_with"),sheet_body)
 	button("Disable breeding" if pen.breeding else "Enable breeding",func()->void:_submit("breeding",{"target":pen.id,"enabled":not pen.breeding});close_sheet(),sheet_body)
-	for animal in animals: button(animal.name+" · health "+str(animal.health),func()->void:show_domestic_animal(animal),sheet_body)
+	for animal in animals: illustrated_button(animal.name+" · health "+str(animal.health),func()->void:show_domestic_animal(animal),sheet_body,"",_animal_portrait(animal,true))
+
+func _animal_portrait(animal: Dictionary, domestic: bool = false) -> AtlasTexture:
+	return AnimalArt.portrait_texture(animal.definition,domestic and animal.juvenile_until>world.tick,animal.health<=0)
 
 func show_domestic_animal(animal: Dictionary) -> void:
 	show_details(animal.name)
 	var definition: Dictionary = world.definitions.animals[animal.definition]
-	label("%s · health %d/%d. %s" % [_catalog_name(animal.definition),animal.health,definition.health,"Juvenile: %.1f days until maturity" % ((animal.juvenile_until-world.tick)/7200.0) if animal.juvenile_until>world.tick else "Adult"],sheet_body)
+	illustrated_summary("%s · health %d/%d. %s" % [_catalog_name(animal.definition),animal.health,definition.health,"Juvenile: %.1f days until maturity" % ((animal.juvenile_until-world.tick)/7200.0) if animal.juvenile_until>world.tick else "Adult"],sheet_body,"",_animal_portrait(animal,true))
 	label("%d unfed days. Two days of grace; then 10 health/day. Feeding restores 10/day. %d products await collection; no milk from goats away on expedition." % [animal.unfed,animal.pending],sheet_body)
 	button(ColonyText.text("ui.action.inspect_pen"),func()->void:show_pen(world.find(world.domestic_state.pens,animal.pen)),sheet_body)
 	if animal.away: label(ColonyText.text("ui.help.domestic_animal.away_on_expedition_local_work_unavailable"),sheet_body);return

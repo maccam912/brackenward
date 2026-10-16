@@ -99,3 +99,28 @@ of the original imported colony at tick 693000. Native UI passes 885 checks.
 distinguish these builds. Exports and Kotlin plugin tests passed; captured runtime
 logs contain no script errors or Android fatal exceptions. These remain emulator
 checks; physical-device appearance and performance are unverified.
+
+## 0.7.123 animal and environment follow-up
+
+The task-owned emulator received the latest regrowth, item, water and animal-card
+art. Actual wildlife list scrolling and deer/boar selection were reviewed at
+100/150% text and after rotation. Native fixtures additionally cover adult and
+juvenile hens/goats at both text sizes; those livestock states were not exercised
+in this Android colony.
+
+The long boar behavior paragraph initially wrapped beside the picture. The final
+layout puts health beside the portrait and behavior across the full width below.
+
+| Initial layout, 150% | Final layout, 150% |
+| --- | --- |
+| ![Initial boar warning](android-visual-v123-boar-before.png) | ![Full-width boar warning](android-visual-v123-boar-after.png) |
+
+![River in the exported game](android-visual-v123-river.png)
+
+Both Android checkpoints match every gameplay field of the original imported
+colony at tick 693000; settings ended at 100% text and portrait. The final native
+UI suite passes 913 checks, persistence/art passes 518, and export/plugin tests
+pass. Captured logs contain no script errors or Android fatal exceptions.
+[Build hashes, screenshot provenance and codec audits](android-visual-v123-evidence.json)
+distinguish the two APKs sharing the local version label. Physical Android and
+device performance remain unverified.

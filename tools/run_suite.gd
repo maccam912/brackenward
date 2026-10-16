@@ -719,7 +719,7 @@ func ui() -> void:
 	check("ANIMAL/UI_all_sixteen_wildlife_selectable",colony_game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button).size()==16)
 	var boar_card: Dictionary = colony_game.world.wildlife_state.animals.filter(func(a:Dictionary)->bool:return a.definition=="boar")[0]
 	colony_game._wildlife_sheet(boar_card)
-	check("HUNT/UI_boar_risk_and_escort_explained",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("12 damage")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Hunt with armed escort"))
+	check("HUNT/UI_boar_risk_and_escort_explained",colony_game.sheet_body.find_children("*","Label",true,false).any(func(n:Label)->bool:return n.text.contains("12 damage")) and colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Button and n.text=="Hunt with armed escort"))
 	for child in colony_game.sheet_body.get_children():
 		if child is Button and child.text=="Solo hunt risk…": child.pressed.emit(); break
 	check("HUNT/UI_solo_requires_separate_confirmation",colony_game.sheet_name=="Solo boar hunt" and colony_game.world.pending_commands.is_empty())
