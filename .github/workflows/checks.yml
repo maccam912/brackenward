@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   prototype:
+    name: Android APK and content checks
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     env:
@@ -26,6 +27,17 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          cache: gradle
+          cache-dependency-path: |
+            platform/android_save/**/*.gradle*
+            platform/android_save/gradle.properties
+            toolchain.lock.json
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/brackenward/toolchain/*.zip
+            ~/.local/share/brackenward/toolchain/*.tpz
+          key: export-toolchain-linux-x64-${{ hashFiles('toolchain.lock.json') }}
       - name: Install verified engine/templates
         run: python3 tools/bootstrap.py
       - name: Install Android command-line tools
@@ -50,56 +62,6 @@ jobs:
           python3 tools/test_map_sweep.py
           python3 tools/test_check_suite.py
           python3 tools/validate_content.py
-      - name: Install Linux UI test dependencies
-        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
-      - name: Import project
-        run: python3 tools/checked_godot.py -- --headless --editor --import
-      - name: Unit and deterministic integration checks
-        run: |
-          python3 tools/check_suite.py unit
-          python3 tools/check_suite.py integration
-          python3 tools/check_suite.py colony
-          python3 tools/check_suite.py survival
-          python3 tools/check_suite.py persistence --timeout 180
-          python3 tools/check_suite.py seasons
-          python3 tools/check_suite.py people
-          python3 tools/check_suite.py production
-          python3 tools/check_suite.py care
-          python3 tools/check_suite.py generation --timeout 360
-          python3 tools/check_suite.py nature
-          python3 tools/check_suite.py wildlife
-          python3 tools/check_suite.py domestic
-          python3 tools/check_suite.py construction
-          python3 tools/check_suite.py equipment
-          python3 tools/check_suite.py maintenance
-          python3 tools/check_suite.py population
-          python3 tools/check_suite.py trade
-          python3 tools/check_suite.py region
-          python3 tools/check_suite.py fire
-          python3 tools/check_suite.py defense
-          python3 tools/check_suite.py director
-          python3 tools/check_suite.py opportunity
-          python3 tools/check_suite.py charter
-          python3 tools/check_suite.py chronicle
-          python3 tools/check_suite.py scheduler --timeout 240
-          python3 tools/check_suite.py tutorial
-          python3 tools/check_suite.py tutorial_flow --site meadow_reach
-          python3 tools/check_suite.py tutorial_flow --site pine_shelf
-          python3 tools/check_suite.py tutorial_flow --site reed_bend
-      - name: Verify paired prepared defense and physical ransom delivery
-        run: |
-          python3 tools/checked_godot.py --timeout 240 -- --headless --script tools/defense_scenario.gd -- --seed 104729 --site meadow_reach --report reports/prepared-defense-ci.json > reports/prepared-defense-ci.log
-          PYTHONPATH=tools python3 - <<'PY'
-          import json
-          from pathlib import Path
-          from defense_sweep import verify
-          result = verify(Path('reports/prepared-defense-ci.json'), 0, 'meadow_reach', 104729)
-          Path('reports/prepared-defense-ci-audit.json').write_text(json.dumps(result, indent=2) + '\n')
-          print(json.dumps(result))
-          raise SystemExit(0 if result['passed'] else 1)
-          PY
-      - name: Real Control/input/layout suite
-        run: xvfb-run -a python3 tools/check_suite.py ui
       - name: Build/test Kotlin plugin and Android debug APK
         env:
           DEVELOPMENT_KEYSTORE_BASE64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_BASE64 }}
@@ -126,6 +88,172 @@ jobs:
           name: development-apk
           path: build/download/
           if-no-files-found: error
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: android-evidence
+          path: |
+            platform/android_save/plugin/build/test-results/testDebugUnitTest/*.xml
+            data/build.json
+          if-no-files-found: warn
+
+  simulation:
+    name: Simulation (${{ matrix.shard }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BRACKENWARD_GODOT: /home/runner/.local/share/brackenward/toolchain/4.7.2/Godot_v4.7.2-stable_linux.x86_64
+    strategy:
+      fail-fast: false
+      matrix:
+        # Balanced against CI suite timings; each runner has its own project,
+        # user data and reports. Never run suites concurrently in one checkout.
+        shard: [persistence, scheduler, generation, colony, gameplay]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/brackenward/toolchain/*.zip
+          key: native-editor-linux-x64-${{ hashFiles('toolchain.lock.json') }}
+      - name: Install checksum-verified editor
+        run: python3 tools/bootstrap.py --editor-only
+      - name: Import project
+        run: python3 tools/checked_godot.py -- --headless --editor --import
+      - name: Persistence, baseline and item checks
+        if: matrix.shard == 'persistence'
+        run: |
+          python3 tools/check_suite.py persistence --timeout 180
+          python3 tools/check_suite.py unit
+          python3 tools/check_suite.py integration
+          python3 tools/check_suite.py equipment
+          python3 tools/check_suite.py population
+          python3 tools/check_suite.py trade
+      - name: Scheduler and construction checks
+        if: matrix.shard == 'scheduler'
+        run: |
+          python3 tools/check_suite.py scheduler --timeout 240
+          python3 tools/check_suite.py construction
+          python3 tools/check_suite.py maintenance
+      - name: Generation and production checks
+        if: matrix.shard == 'generation'
+        run: |
+          python3 tools/check_suite.py generation --timeout 360
+          python3 tools/check_suite.py production
+      - name: Colony, survival and region checks
+        if: matrix.shard == 'colony'
+        run: |
+          python3 tools/check_suite.py colony
+          python3 tools/check_suite.py survival
+          python3 tools/check_suite.py region
+      - name: People, events, wildlife and tutorial checks
+        if: matrix.shard == 'gameplay'
+        run: |
+          python3 tools/check_suite.py seasons
+          python3 tools/check_suite.py people
+          python3 tools/check_suite.py care
+          python3 tools/check_suite.py nature
+          python3 tools/check_suite.py wildlife
+          python3 tools/check_suite.py domestic
+          python3 tools/check_suite.py fire
+          python3 tools/check_suite.py defense
+          python3 tools/check_suite.py director
+          python3 tools/check_suite.py opportunity
+          python3 tools/check_suite.py charter
+          python3 tools/check_suite.py chronicle
+          python3 tools/check_suite.py tutorial
+          python3 tools/check_suite.py tutorial_flow --site meadow_reach
+          python3 tools/check_suite.py tutorial_flow --site pine_shelf
+          python3 tools/check_suite.py tutorial_flow --site reed_bend
+      - name: Verify paired prepared defense and physical ransom delivery
+        if: matrix.shard == 'gameplay'
+        run: |
+          python3 tools/checked_godot.py --timeout 240 -- --headless --script tools/defense_scenario.gd -- --seed 104729 --site meadow_reach --report reports/prepared-defense-ci.json > reports/prepared-defense-ci.log
+          PYTHONPATH=tools python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from defense_sweep import verify
+          result = verify(Path('reports/prepared-defense-ci.json'), 0, 'meadow_reach', 104729)
+          Path('reports/prepared-defense-ci-audit.json').write_text(json.dumps(result, indent=2) + '\n')
+          print(json.dumps(result))
+          raise SystemExit(0 if result['passed'] else 1)
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: simulation-evidence-${{ matrix.shard }}
+          path: |
+            reports/*.xml
+            reports/*.png
+            reports/prepared-defense-ci*
+          if-no-files-found: warn
+
+  ui:
+    name: Graphical UI checks
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BRACKENWARD_GODOT: /home/runner/.local/share/brackenward/toolchain/4.7.2/Godot_v4.7.2-stable_linux.x86_64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.local/share/brackenward/toolchain/*.zip
+          key: native-editor-linux-x64-${{ hashFiles('toolchain.lock.json') }}
+      - name: Install checksum-verified editor
+        run: python3 tools/bootstrap.py --editor-only
+      - name: Install Linux UI test dependencies
+        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
+      - name: Import project
+        run: python3 tools/checked_godot.py -- --headless --editor --import
+      - name: Real Control/input/layout suite
+        run: xvfb-run -a python3 tools/check_suite.py ui
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ui-evidence
+          path: |
+            reports/*.xml
+            reports/*.png
+          if-no-files-found: warn
+
+  desktop:
+    name: Desktop exports and launch
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    env:
+      BRACKENWARD_GODOT: /home/runner/.local/share/brackenward/toolchain/4.7.2/Godot_v4.7.2-stable_linux.x86_64
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.local/share/brackenward/toolchain/*.zip
+            ~/.local/share/brackenward/toolchain/*.tpz
+          key: export-toolchain-linux-x64-${{ hashFiles('toolchain.lock.json') }}
+      - name: Install verified engine/templates
+        run: python3 tools/bootstrap.py
+      - name: Install Linux graphical smoke dependencies
+        run: sudo apt-get update && sudo apt-get install -y xvfb xauth libgl1-mesa-dri
+      - name: Stamp exact-source desktop versions and import project
+        run: |
+          python3 tools/stamp_build.py
+          python3 tools/checked_godot.py -- --headless --editor --import
       - name: Export desktop prototypes
         run: |
           python3 tools/checked_godot.py -- --headless --export-debug Windows build/brackenward.exe
@@ -136,20 +264,17 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: prototype-evidence
+          name: desktop-exports
           path: |
-            reports/*.xml
-            reports/*.png
-            reports/prepared-defense-ci*
-            platform/android_save/plugin/build/test-results/testDebugUnitTest/*.xml
             build/
+            data/build.json
           if-no-files-found: warn
 
   # Publish after the core build checks, before the extended validation jobs.
   publish:
     name: Publish development APK
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [prototype]
+    needs: [prototype, simulation, ui, desktop]
     runs-on: ubuntu-24.04
     permissions:
       contents: write

@@ -1,5 +1,28 @@
 # Implementation evidence
 
+Parallel core CI (15 October 2026): the previous successful prototype job in
+run `38814033122` took 16m48s: sequential simulation suites 12m07s,
+Android/Kotlin 2m03s, graphical UI 50s, desktop exports 22s, plus setup and
+uploads. Suite summaries identify persistence 131.6s, scheduler 134.0s and
+generation 118.7s as the largest contributors. The 30 headless suite/site
+invocations now run in five isolated matrix jobs, balanced at 99–141s of
+observed test time per group (plus setup and the prepared-defense scenario).
+Android/content/Kotlin, UI and desktop export/launch run alongside those
+groups. All core jobs still gate publication; extended validation still runs
+after the publication attempt. Fail-fast is disabled across simulation groups.
+
+Gradle dependencies and pinned engine/template archives are cached; archives
+are still verified on installation, and project/user/signing state is excluded.
+Android and desktop each stamp the same full-history source independently.
+Evidence is uploaded per job without duplicating the APK inside desktop
+artifacts. `DESIGN.md` §23.3 and `README.md` describe the parallel release gate.
+Local actionlint, shell syntax and whitespace checks pass. Parsed-workflow
+checks preserve all 31 suite/site invocations including UI exactly once with
+their original arguments/timeouts, the tool/content, APK, desktop, UI and
+prepared-defense commands, real failures, and the existing follow-up jobs.
+The estimated release path is roughly 3–5 minutes before runner queue delays;
+actual remote timing and publication for this checkpoint remain unverified.
+
 Development APK before extended validation (15 October 2026): CI now runs
 the existing core simulation/UI/Kotlin/build/export job, publishes the exact
 commit's APK, then starts the four native replay jobs and the independent
