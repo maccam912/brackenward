@@ -23,8 +23,10 @@ static func pile_tier(count: int, limit: int) -> int:
 static func night_color(tick: int) -> Color:
 	var hour: float = float(tick%7200)/300.0
 	var daylight: float = clampf((hour-5.0)/2.0,0.0,1.0) if hour<12 else clampf((19.0-hour)/2.0,0.0,1.0)
-	# Visible cool nights with readable terrain. Essential cues stay untinted.
-	return Color(lerpf(0.60,1.0,daylight),lerpf(0.68,1.0,daylight),lerpf(0.84,1.0,daylight))
+	# A brief warm shoulder at dawn/dusk; endpoints retain readable cool nights
+	# and untinted daylight. Essential cues stay outside this world modulation.
+	var warmth: float=4.0*daylight*(1.0-daylight)
+	return Color(minf(1.0,lerpf(0.60,1.0,daylight)+0.12*warmth),lerpf(0.68,1.0,daylight)+0.04*warmth,lerpf(0.84,1.0,daylight)-0.14*warmth)
 
 static func day_phase(tick: int) -> String:
 	var hour: int=posmod(tick,7200)/300

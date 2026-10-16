@@ -191,6 +191,7 @@ func _build_theme() -> void:
 		ui_theme.set_stylebox("panel" if type_name == "PanelContainer" else "normal", type_name, box)
 	ui_theme.set_stylebox("hover", "Button", _box(Color("375749")))
 	ui_theme.set_stylebox("pressed", "Button", _box(Color("6F6B86")))
+	ui_theme.set_stylebox("hover_pressed", "Button", _box(Color("6F6B86")))
 	ui_theme.set_stylebox("focus", "Button", _box(Color(0, 0, 0, 0), Color("E9BA67")))
 	ui_theme.set_stylebox("disabled", "Button", _box(Color("334741")))
 	ui_theme.set_constant("separation", "VBoxContainer", 8)
@@ -300,6 +301,7 @@ func _build_navigation() -> void:
 		var title_key: String=ColonyText.sheet_key(title)
 		var display_title: String=ColonyText.text(title_key)
 		var entry: Button = button(display_title, func() -> void: show_sheet(title,title_key), nav)
+		entry.toggle_mode=true;entry.set_meta("nav_route",title)
 		entry.text = ""
 		entry.tooltip_text = display_title
 		entry.custom_minimum_size.y = 64
@@ -334,11 +336,21 @@ func _build_navigation() -> void:
 func _build_speed_controls() -> void:
 	speeds = HBoxContainer.new()
 	content.add_child(speeds)
-	button(ColonyText.text("ui.action.pause"), func() -> void: set_speed(0), speeds, 72)
-	for speed in [1, 2, 4]:
-		button("%dx" % speed, func() -> void: set_speed(speed), speeds)
+	for speed in [0,1,2,4]:
+		var control: Button=button(ColonyText.text("ui.action.pause") if speed==0 else "%dx" % speed,func()->void:
+			set_speed(speed);_sync_control_selection(),speeds,72 if speed==0 else 48)
+		control.toggle_mode=true;control.set_meta("speed",speed)
 	var help: Button = button("?",show_tutorials,speeds)
 	help.tooltip_text="Lessons and food forecast"
+	_sync_control_selection()
+
+func _sync_control_selection() -> void:
+	if is_instance_valid(nav):
+		for control: Button in nav.get_children():
+			control.set_pressed_no_signal(sheet!=null and control.get_meta("nav_route","")==sheet_route)
+	if is_instance_valid(speeds):
+		for control: Button in speeds.get_children():
+			if control.has_meta("speed"): control.set_pressed_no_signal(control.get_meta("speed")==runner.speed)
 
 func _build_map_tools() -> void:
 	map_tools = VBoxContainer.new()
@@ -544,6 +556,7 @@ func _refresh_clock() -> void:
 	var playback: int=runner.playback_speed()
 	if clock_world_id==identity and clock_tick==world.tick and clock_speed==playback: return
 	clock_world_id=identity;clock_tick=world.tick;clock_speed=playback
+	_sync_control_selection()
 	var season_name: String = ColonyText.text(["ui.clock.spring","ui.clock.summer","ui.clock.autumn","ui.clock.winter"][ColonyAgriculture.season(world.tick)])
 	var stock: String = ColonyText.text("ui.clock.stock",{"meals":world.available("meal"),"wood":world.available("wood")}) if world is ColonyWorld else ColonyText.plural("ui.clock.travelers",world.citizens.size())
 	var speed_name: String = ColonyText.text("ui.clock.quiet_sleep",{"speed":runner.playback_speed()}) if runner.sleep_fast_forward else ColonyText.speed_label(runner.speed)
@@ -623,6 +636,7 @@ func set_speed(value: int) -> void:
 		notice = "Close the panel or confirm/cancel the area before resuming."
 		return
 	runner.set_speed(value)
+	_sync_control_selection()
 	if value==0 and notice==ColonyText.text("ui.notice.running"): notice=ColonyText.text("ui.notice.paused")
 
 func begin_placement() -> void:
@@ -1022,6 +1036,7 @@ func close_sheet(resume: bool = true) -> void:
 func _layout() -> void:
 	if content == null:
 		return
+	_sync_control_selection()
 	var available: Vector2 = size / logical_scale
 	var insets: Vector4 = test_insets
 	if OS.has_feature("android") and test_insets == Vector4.ZERO:

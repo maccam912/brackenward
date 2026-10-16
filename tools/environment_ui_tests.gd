@@ -66,6 +66,10 @@ static func run(previous: GameSession, check: Callable) -> void:
 	check.call("ART/UI_cold_hearth_has_no_false_flame",environment.props[hearth.id].flame==null or not environment.props[hearth.id].flame.visible)
 	hearth.fuel=4;world.tick+=1;view._process(0)
 	check.call("ART/UI_real_fuel_enables_flame_and_a_bounded_warm_sprite",environment.props[hearth.id].flame.visible and environment.heat_points.size()==1)
+	var hearth_health: int=hearth.health
+	hearth.health=0;world.tick+=1;view._process(0)
+	check.call("ART/UI_destroyed_hearth_with_leftover_fuel_has_no_false_flame_or_glow",not environment.props[hearth.id].flame.visible and environment.heat_points.is_empty())
+	hearth.health=hearth_health;world.tick+=1;view._process(0)
 	view.quality="Battery";view._process(0)
 	check.call("ART/UI_battery_uses_static_water_and_keeps_the_actual_fire_state",environment.static_water.visible and not environment.animated_water.visible and environment.props[hearth.id].flame.visible)
 	view.quality="Balanced";view.reduced_motion=false;view._process(0)

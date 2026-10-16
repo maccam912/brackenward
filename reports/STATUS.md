@@ -1,5 +1,25 @@
 # Implementation evidence
 
+Atmosphere and control feedback (16 October 2026): `0.7.89-m7`, unchanged
+content/schema/envelope. Dawn and dusk briefly warm the world tint while exact
+white daylight and the existing readable cool night endpoint remain. Live hearths
+cast a slightly wider, night-strengthened warm pool centered beneath the fire ring.
+A discovered presentation bug is fixed: destroyed hearths with leftover fuel no
+longer emit a false glow. The existing sixteen-visible-source bound remains.
+
+Active top-level menus and actual selected speed now retain their pressed styling;
+rejected speed actions restore the real state, and clock/layout updates follow
+pause/resume. Existing action callbacks, pause policy and quiet-sleep behavior are
+unchanged. Selected-button text contrast measures 4.60:1. Native portrait/landscape
+and 150% captures were inspected, along with camp at noon, dawn, dusk and night.
+Pinned native UI passes 742 checks, including destroyed-hearth feedback; persistence
+and asset checks pass 510. Content/font validation remains part of the checkpoint.
+Evidence is in `reports/visual-polish/lighting-*` and `control-feedback-*`.
+Build 251 has passed all remote core jobs and published; repaired extended checks
+are still running. Physical Android/performance gates remain open. Weekly usage
+is 67% remaining and visual work continues.
+
+
 Path shoulders (16 October 2026): `0.7.88-m7`, unchanged content/schema/envelope.
 Dirt paths have quiet, irregular grass shoulders matched to adjacent soil, with
 coordinate-hashed texture variation. Detail remains inside actual path cells and

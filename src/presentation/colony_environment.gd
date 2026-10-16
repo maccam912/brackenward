@@ -321,9 +321,9 @@ func _update_props() -> void:
 	for prop in props.values():
 		var structure: Dictionary = prop.record
 		var reveal: bool = view.rooms_overlay or revealed_rooms.has(-structure.id)
-		var burning: bool = structure.definition=="hearth" and structure.fuel>0
-		if structure.definition in ["charcoal_kiln","brick_kiln","smelter","smithy"] and hot.has(structure.id): burning=true
-		if structure.definition=="beacon" and world.charter_state.ceremony.get("state") in ["Active","Complete"]: burning=true
+		var burning: bool = structure.health>0 and structure.definition=="hearth" and structure.fuel>0
+		if structure.definition in ["charcoal_kiln","brick_kiln","smelter","smithy"] and hot.has(structure.id): burning=structure.health>0
+		if structure.definition=="beacon" and world.charter_state.ceremony.get("state") in ["Active","Complete"]: burning=structure.health>0
 		var inside: bool = false
 		if selected_bounds.has_area():
 			var definition: Dictionary = world.definitions.buildings[structure.definition]
@@ -332,16 +332,17 @@ func _update_props() -> void:
 		var output_item: String = "";var output_tier: int = 0
 		if station_outputs.has(structure.id): output_item=station_outputs[structure.id][0];output_tier=station_outputs[structure.id][1]
 		prop.sync(world,structure,tint,reveal,inside,burning,frame,moving.get(structure.id,Vector2.ZERO),output_item,output_tier)
-		if burning and structure.definition=="hearth": heat_points.append(Vector2(structure.x+1,structure.y+1)*16)
+		if burning and structure.definition=="hearth": heat_points.append(Vector2(structure.x+1,structure.y+1.5)*16)
 		prop.visible=Rect2(Vector2.ZERO,view.size).grow(view.tile_size*6).has_point(view.tile_to_screen(prop.position/16.0))
 	for fire in ColonyFire.active(world):
 		for point in ColonyFire.footprint(world,fire): heat_points.append((Vector2(point)+Vector2.ONE*0.5)*16)
 
 func _draw_warmth() -> void:
 	var started: int = Time.get_ticks_usec();var shown: int = 0
+	var strength: float=lerpf(0.45,1.0,clampf((1.0-tint.r)/0.4,0.0,1.0))
 	for point in heat_points:
 		if not Rect2(Vector2.ZERO,view.size).grow(view.tile_size*2).has_point(view.tile_to_screen(point/16.0)): continue
-		warm_layer.draw_texture_rect(GLOW,Rect2(point-Vector2.ONE*24,Vector2.ONE*48),false,Color(1,1,1,0.6));shown+=1
+		warm_layer.draw_texture_rect(GLOW,Rect2(point-Vector2.ONE*32,Vector2.ONE*64),false,Color(1,1,1,strength));shown+=1
 		if shown>=16: break
 	view.account_draw(Time.get_ticks_usec()-started)
 
