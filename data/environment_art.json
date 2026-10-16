@@ -1800,6 +1800,366 @@
       378,
       24,
       24
+    ],
+    "ground/summer_poor_edge/1": [
+      308,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/2": [
+      326,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/3": [
+      344,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/4": [
+      362,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/5": [
+      380,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/6": [
+      398,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/7": [
+      416,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/8": [
+      434,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/9": [
+      452,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/10": [
+      470,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/11": [
+      488,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/12": [
+      506,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/13": [
+      524,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/14": [
+      542,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_poor_edge/15": [
+      560,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/1": [
+      578,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/2": [
+      596,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/3": [
+      614,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/4": [
+      632,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/5": [
+      650,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/6": [
+      668,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/7": [
+      686,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/8": [
+      704,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/9": [
+      722,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/10": [
+      740,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/11": [
+      758,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/12": [
+      776,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/13": [
+      794,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/14": [
+      812,
+      378,
+      16,
+      16
+    ],
+    "ground/summer_rich_edge/15": [
+      830,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/1": [
+      848,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/2": [
+      866,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/3": [
+      884,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/4": [
+      902,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/5": [
+      920,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/6": [
+      938,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/7": [
+      956,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/8": [
+      974,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/9": [
+      992,
+      378,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/10": [
+      0,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/11": [
+      18,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/12": [
+      36,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/13": [
+      54,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/14": [
+      72,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_poor_edge/15": [
+      90,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/1": [
+      108,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/2": [
+      126,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/3": [
+      144,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/4": [
+      162,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/5": [
+      180,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/6": [
+      198,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/7": [
+      216,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/8": [
+      234,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/9": [
+      252,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/10": [
+      270,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/11": [
+      288,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/12": [
+      306,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/13": [
+      324,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/14": [
+      342,
+      420,
+      16,
+      16
+    ],
+    "ground/winter_rich_edge/15": [
+      360,
+      420,
+      16,
+      16
     ]
   },
   "source_components": "data/environment_sources.json",

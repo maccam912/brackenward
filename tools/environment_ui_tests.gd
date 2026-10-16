@@ -108,6 +108,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	await carrying(view,check)
 	terrain_edges(view,check)
 	seasonal_landscape(view,check)
+	soil_fringe(view,check)
 	offscreen_props(view,check)
 	beacon_flame(view,check)
 	await renewable_resources(view,check)
@@ -162,7 +163,7 @@ static func seasonal_landscape(view: WorldView, check: Callable) -> void:
 	view.world=world;view.refresh_terrain();view.center_camera(Vector2(64,64));view._process(0)
 	var ground: Vector2i=Vector2i.ZERO
 	for point in view.terrain.get_used_cells():
-		if view.terrain.get_cell_atlas_coords(point).x<9:ground=point;break
+		if view.terrain.get_cell_source_id(point)==0 and view.terrain.get_cell_atlas_coords(point).x<3:ground=point;break
 	var summer_tile: Vector2i=view.terrain.get_cell_atlas_coords(ground)
 	for season in [2,3,0]:
 		world.tick=season*8*7200+3600
@@ -174,6 +175,34 @@ static func seasonal_landscape(view: WorldView, check: Callable) -> void:
 		for point in world.terrain_state.paths:
 			if world.terrain_state.elevation[point.y*128+point.x]!=0:exact=exact and view.terrain.get_cell_source_id(point)==0
 		check.call("ART/UI_season_%d_changes_only_grass_presentation_and_keeps_paths_water_state" % season,exact and water_count>0 and world.canonical_hash()==baseline)
+
+static func soil_fringe(view: WorldView, check: Callable) -> void:
+	var world: ColonyWorld=ColonyTests.world()
+	ColonyGeneration.configure(world,104729,"meadow_reach")
+	world.terrain_state.paths.clear()
+	# An isolated rich patch has grass on all sides; the poor patch borders
+	# grass only north, with a path east, water south and rich soil west.
+	for y in range(59,64):
+		for x in range(59,69):
+			world.terrain_state.elevation[y*128+x]=1
+			world.terrain_state.fertility[y*128+x]=1000
+	world.terrain_state.fertility[61*128+61]=1250
+	world.terrain_state.fertility[61*128+66]=750
+	world.terrain_state.fertility[61*128+65]=1250
+	world.terrain_state.elevation[62*128+66]=0
+	world.terrain_state.paths.append(Vector2i(67,61))
+	view.world=world
+	for season in [0,3,0]:
+		world.tick=season*8*7200+3600
+		var baseline: String=world.canonical_hash()
+		view.refresh_terrain();view._process(0)
+		var offset: int=30 if season==3 else 0
+		check.call("ART/UI_soil_fringe_season_%d_respects_grass_path_water_and_fertility" % season,
+			view.terrain.get_cell_source_id(Vector2i(61,61))==40+offset
+			and view.terrain.get_cell_source_id(Vector2i(66,61))==11+offset
+			and view.terrain.get_cell_source_id(Vector2i(67,61))==0
+			and view.terrain.get_cell_source_id(Vector2i(66,62))==-1
+			and world.canonical_hash()==baseline)
 
 static func offscreen_props(view: WorldView, check: Callable) -> void:
 	var world: ColonyWorld=ColonyTests.world();world.tick=3600

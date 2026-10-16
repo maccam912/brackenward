@@ -58,3 +58,8 @@ The 0.7.105 pass adds original utility construction details for racks, granaries
 barns, cellars, wells, fishing piers and watchposts. Only their twenty-eight
 rotation regions change. Shelves and bins represent fixtures, not stored goods.
 All source components, atlas rectangles, dimensions and foot anchors are retained.
+
+The 0.7.111 pass appends sixty original baked poor/rich soil borders, covering
+fifteen grass-neighbor masks in summer and winter. These use project ground
+colors and the existing winter transform. All 300 previous rectangles and pixels
+are retained; the atlas now has 360 regions at 1024x436.

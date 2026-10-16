@@ -67,6 +67,33 @@ def ground(kind, variant):
     return image
 
 
+def winter_ground(art):
+    art=art.copy()
+    pixels=[]
+    for r,g,b,a in art.get_flattened_data():
+        light=round(0.3*r+0.59*g+0.11*b)
+        pixels.append((min(255,light+23),min(255,light+21),min(255,light+7),a))
+    art.putdata(pixels)
+    return art
+
+
+def soil_edge(kind, mask):
+    # Ordinary meadow nibbles into soil patches only along actual grass edges.
+    # No new fertility, randomness or runtime geometry is introduced.
+    art=ground(kind,0);d=ImageDraw.Draw(art)
+    for side in range(4):
+        if not mask & (1<<side):continue
+        for segment in range(8):
+            depth=1+(segment*7+side*3+mask)%3
+            start=segment*2
+            if side==0:box=(start,0,start+1,depth-1)
+            elif side==1:box=(16-depth,start,15,start+1)
+            elif side==2:box=(start,16-depth,start+1,15)
+            else:box=(0,start,depth-1,start+1)
+            d.rectangle(box,fill=MEADOW)
+    return art
+
+
 def leafy_crown(variant):
     """Original clustered shading inside the retained CC0 crown silhouette."""
     source = tile("round_canopy")
@@ -654,15 +681,14 @@ def main():
         for variant in [1,2]:images[f"resource/tree_{season}/{variant}"]=seasonal_tree(variant,season)
     for kind in ["grass","poor","rich"]:
         for variant in range(3):
-            art=ground(kind,variant)
-            # Dormant grass, not snow: preserve texture values and soil contrast.
-            pixels=[]
-            for r,g,b,a in art.get_flattened_data():
-                light=round(0.3*r+0.59*g+0.11*b)
-                pixels.append((min(255,light+23),min(255,light+21),min(255,light+7),a))
-            art.putdata(pixels);images[f"ground/winter_{kind}/{variant}"]=art
+            images[f"ground/winter_{kind}/{variant}"]=winter_ground(ground(kind,variant))
     for kind in ["berry_bush","herb_patch","mushroom_patch"]:
         images[f"resource/{kind}_depleted/0"]=depleted_resource(kind)
+    for season in ["summer","winter"]:
+        for kind in ["poor","rich"]:
+            for mask in range(1,16):
+                art=soil_edge(kind,mask)
+                images[f"ground/{season}_{kind}_edge/{mask}"]=winter_ground(art) if season=="winter" else art
     sheet=Image.new("RGBA",(1024,2048));x=y=row_height=0;layout={}
     for name,art in images.items():
         w,h=art.size

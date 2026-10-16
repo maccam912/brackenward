@@ -5,11 +5,11 @@ static func run(check: Callable) -> void:
 	seasons(check)
 	var image: Image = EnvironmentArt.ATLAS.get_image()
 	var regions: Dictionary = EnvironmentArt.rectangles()
-	var valid: bool = regions.size()==300
+	var valid: bool = regions.size()==360
 	for semantic in regions:
 		var rectangle: Rect2 = EnvironmentArt.rectangle(semantic)
 		valid=valid and Rect2(Vector2.ZERO,image.get_size()).encloses(rectangle) and not image.get_region(Rect2i(rectangle)).is_invisible()
-	check.call("ART/environment_300_semantic_regions_are_nonempty_and_in_bounds",valid)
+	check.call("ART/environment_360_semantic_regions_are_nonempty_and_in_bounds",valid)
 	var world: ColonyWorld = ColonyTests.world()
 	valid=true
 	for definition in world.definitions.buildings.values():

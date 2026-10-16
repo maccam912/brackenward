@@ -945,6 +945,9 @@ Object detail illustrations (0.7.109): building, resource and field summaries pa
 
 Responsive forecasts (0.7.110): forecast cards use two columns only when their available width is at least 600 logical pixels times the current text scale. Narrow and large-text layouts retain one column. Rotation reflows the existing cards in chronological row-major order without recreating forecasts, moving the camera or changing campaign state.
 
+Soil transitions (0.7.111): poor and rich terrain gain a baked one-to-three-pixel meadow fringe only where they adjoin ordinary grass. Paths, water and unlike soil remain separate. Sixty appended summer/winter edge regions preserve all 300 previous atlas rectangles and pixels. The existing tile layer selects these regions during terrain refresh; fertility, movement, terrain data and saves stay unchanged. Winter uses the same dormant-grass transform and returns exactly to the summer selection.
+
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

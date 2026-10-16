@@ -54,6 +54,15 @@ func _init(owner: Node) -> void:
 		winter.texture=EnvironmentArt.ATLAS;winter.texture_region_size=Vector2i(16,16)
 		winter.margins=Vector2i(EnvironmentArt.rectangle("ground/winter_%s/%d" % [["grass","poor","rich"][index/3],index%3]).position)
 		winter.create_tile(Vector2i.ZERO);tiles.add_source(winter,index+2)
+	# Baked soil fringes use the existing atlas and tile layer, with no extra
+	# per-frame geometry. Earlier source IDs/atlas rectangles stay unchanged.
+	for season in range(2):
+		for soil in range(2):
+			for mask in range(1,16):
+				var edge: TileSetAtlasSource=TileSetAtlasSource.new()
+				edge.texture=EnvironmentArt.ATLAS;edge.texture_region_size=Vector2i(16,16)
+				edge.margins=Vector2i(EnvironmentArt.rectangle("ground/%s_%s_edge/%d" % ["winter" if season else "summer","rich" if soil else "poor",mask]).position)
+				edge.create_tile(Vector2i.ZERO);tiles.add_source(edge,11+season*30+soil*15+mask-1)
 	view.terrain.tile_set=tiles
 	static_water=TileMapLayer.new();static_water.tile_set=tiles;view.ground.add_child(static_water)
 	animated_water=TileMapLayer.new();animated_water.tile_set=tiles;view.ground.add_child(animated_water)
@@ -96,10 +105,23 @@ func refresh_terrain() -> void:
 			if path_cells.has(point):
 				cell=11+posmod(pattern,3)
 				_add_path_edges(point,path_cells,pattern)
-			if terrain_season==3 and cell<9: view.terrain.set_cell(point,cell+2,Vector2i.ZERO)
+			var mask: int=_soil_grass_mask(point,path_cells) if cell>=3 and cell<9 else 0
+			if mask>0:
+				view.terrain.set_cell(point,11+(30 if terrain_season==3 else 0)+(15 if cell>=6 else 0)+mask-1,Vector2i.ZERO)
+			elif terrain_season==3 and cell<9: view.terrain.set_cell(point,cell+2,Vector2i.ZERO)
 			else: view.terrain.set_cell(point,0,Vector2i(cell,0))
 	last_tick=-1;indexed_count=-1
 	banks.queue_redraw()
+
+func _soil_grass_mask(point: Vector2i, paths: Dictionary) -> int:
+	var mask: int=0
+	var directions: Array[Vector2i]=[Vector2i.UP,Vector2i.RIGHT,Vector2i.DOWN,Vector2i.LEFT]
+	for index in range(4):
+		var neighbor: Vector2i=point+directions[index]
+		if not ColonyWorld.inside(neighbor) or paths.has(neighbor):continue
+		var wet: bool=world.terrain_state.elevation[neighbor.y*128+neighbor.x]==0 if world.generator_version>0 else PrototypeWorld.is_water(neighbor)
+		if not wet and world.soil_fertility(neighbor)==1000:mask|=1<<index
+	return mask
 
 func _add_banks(point: Vector2i) -> void:
 	# Draw only inside actual water cells; floors and bridges render above banks.

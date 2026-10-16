@@ -1,5 +1,14 @@
 # Implementation evidence
 
+Soft soil transitions (16 October 2026): `0.7.111-m7`, unchanged content/schema/
+envelope. Baked grass fringes soften poor/rich patch edges in summer and winter
+without changing terrain data. All 300 previous atlas regions retain exact bounds
+and pixels; sixty new edge regions use the existing tile layer. Mature-colony and
+native seasonal captures were inspected. UI passes 843 checks and persistence 511;
+content/font validation passes. Evidence: `mature-soil-*`, `season-*`,
+`soil-ui.log`, `soil-persistence.log` in visual-polish. Remote build 268 passed.
+Weekly usage is 40% remaining; original reset unchanged. Polishing continues.
+
 Responsive forecasts and Android follow-up (16 October 2026): `0.7.110-m7`,
 unchanged content/schema/envelope. Forecast cards now use two columns where width
 and text size allow, retaining one column elsewhere and reflowing the same cards
