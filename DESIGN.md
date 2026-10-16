@@ -953,6 +953,9 @@ Production cards (0.7.113): each station recipe groups its actual output art, un
 
 Food silhouettes (0.7.114): bowls of prepared food, wrapped travel rations, berry baskets, pale rooted vegetables, tied medicinal leaves and meat cuts have distinct original art in all three pile tiers. Only eighteen item regions change. Atlas bounds, quantity selection, recipes, inventories and all other pixels remain unchanged.
 
+Held-tool facing (0.7.115): the equipment overlay mirrors horizontally with west-facing citizen poses. East, north and south remain unchanged. This keeps tools, spears and bows on the same side as the mirrored hand, without altering facing decisions, animation timing, equipment or work state.
+
+
 
 
 

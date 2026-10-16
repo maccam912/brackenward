@@ -1,5 +1,13 @@
 # Implementation evidence
 
+Held-tool facing (16 October 2026): `0.7.115-m7`, unchanged content/schema/
+envelope. West-facing tools and weapons now mirror with their resident pose.
+A native 24-pose gallery shows gathering/building/cooking/planting/spear/bow in
+all four directions; the other three directions retain exact rendered pixels.
+UI passes 879 checks; content/font validation passes. Evidence: `actors-before`,
+`actors-after`, `actors-ui.log` in visual-polish. Weekly usage last checked at
+38% remaining; original reset unchanged. Polishing continues.
+
 Distinct food silhouettes (16 October 2026): `0.7.114-m7`, unchanged content/
 schema/envelope. Six food/ingredient types now have original readable shapes in
 all three quantity tiers. Exactly eighteen item regions changed; all 360 atlas

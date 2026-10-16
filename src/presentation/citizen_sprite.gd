@@ -52,6 +52,8 @@ func animate(world: ColonyWorld, person: Dictionary, delta: float, speed: int, c
 	equipment_layer.queue_redraw()
 
 func set_visual(appearance: Dictionary, state: String, delta: float, speed: int, reduced_motion: bool) -> void:
+	# West-facing atlas poses are mirrored; held tools must follow the same hand.
+	equipment_layer.scale.x=-1.0 if facing==3 else 1.0
 	if choices!=appearance:
 		choices=appearance.duplicate()
 		if material==null: material=CitizenArt.material_for(appearance)
