@@ -5,14 +5,19 @@ static func inspected_catalog_matches(golden: Dictionary) -> bool:
 	var original: Dictionary=ColonyCatalog.load_data("res://data/catalogs/colony_v6.json")
 	var current: Dictionary=ColonyCatalog.load_data()
 	current.version=original.version;current.content_hash=original.content_hash
-	if ColonyWorld.CONTENT_VERSION=="colony-v8":
+	if ColonyWorld.CONTENT_VERSION in ["colony-v8","colony-v9"]:
 		if current.crops.turnip.growth!=4000 or original.crops.turnip.growth!=2000: return false
 		current.crops.turnip.growth=original.crops.turnip.growth
 	return golden.get("content")=="colony-v6" and golden.get("catalog_sha256")==original.content_hash and current==original
 
 static func inspected_hash(world: ColonyWorld, golden: Dictionary) -> String:
-	# Only these two declared headers changed; compare every initial gameplay field.
+	# Initial-map comparison allows only declared content headers and the v9 hauling default.
 	var state: Dictionary=world.payload();state.content=golden.content;state.content_hash=golden.catalog_sha256
+	if ColonyWorld.CONTENT_VERSION=="colony-v9":
+		state.citizens=world.citizens.duplicate(true)
+		for person in state.citizens:
+			if person.preferences.Hauling!=1: return ""
+			person.preferences.Hauling=2
 	return JSON.stringify(ColonyState.pack(state),"",true).sha256_text()
 
 static func run(check: Callable) -> void:

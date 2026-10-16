@@ -146,3 +146,11 @@ static func menu_feedback(game: GameSession, check: Callable) -> void:
 	game.show_research()
 	check.call("BUILD/research_keeps_future_unlocks_discoverable",game.sheet_body.find_children("*","Label",true,false).any(func(l:Label)->bool:return l.text.begins_with("Unlocks: ")))
 	game.close_sheet();game._replace_world(ColonyTests.world());game._tutorial_dismiss()
+	game.show_work_preferences(1)
+	var hauling: Button = game.sheet_body.find_children("*","Button",true,false).filter(func(b:Button)->bool:return b.text=="Hauling: Last")[0]
+	check.call("HAUL/UI_default_last_and_fallback_rule_are_visible",hauling!=null and game.sheet_body.find_children("*","Label",true,false).any(func(l:Label)->bool:return l.text.contains("Hauling at Last happens only after other feasible work")))
+	hauling.pressed.emit()
+	check.call("HAUL/UI_can_raise_one_resident_to_normal_while_paused",hauling.text=="Hauling: Normal (pending)" and game.world.citizens[0].preferences.Hauling==1 and game.world.pending_commands.size()==1)
+	game.world.step();game.show_work_preferences(1)
+	check.call("HAUL/UI_explicit_priority_applies_and_reopens_as_normal",game.world.citizens[0].preferences.Hauling==2 and game.sheet_body.find_children("*","Button",true,false).any(func(b:Button)->bool:return b.text=="Hauling: Normal"))
+	game.close_sheet();game._replace_world(ColonyTests.world());game._tutorial_dismiss()

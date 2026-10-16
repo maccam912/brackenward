@@ -703,7 +703,7 @@
   "ui.work.page": "{page} / {pages}",
   "ui.work.preference": "{category}: {preference}",
   "ui.work.preference_pending": "{category}: {preference} (pending)",
-  "ui.work.preferences_help": "{activity}\nCategories set to Off retain their queued jobs for other eligible workers. Hunger, sleep and taking a break come first.",
+  "ui.work.preferences_help": "{activity}\nChoose First, Normal, Last or Off for each category. Hauling at Last happens only after other feasible work; workers still fetch supplies for their own tasks. Off leaves those jobs for others. Hunger, sleep and taking a break come first.",
   "ui.work.required_materials": "Required: {cost}\nDelivered materials remain refundable until completion.",
   "ui.work.row": "{kind} - {state}",
   "ui.work.shift_pending": "{shift} (pending)",

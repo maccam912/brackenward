@@ -92,10 +92,8 @@ static func command(world: ColonyWorld, args: Dictionary) -> String:
 	var check: Dictionary = acceptance(world,request)
 	if not check.error.is_empty(): return check.error
 	var candidate: Dictionary = request.candidate
-	var xp: Dictionary = {};var preferences: Dictionary = {}
+	var xp: Dictionary = {};var preferences: Dictionary = ColonyWorld.default_preferences(candidate.preferred)
 	for skill in ColonyWorld.SKILLS: xp[skill]=ColonyWorld.THRESHOLDS[candidate.skills[skill]]*1000
-	for category in ColonyWorld.CATEGORIES: preferences[category]=1 if category in ["Research","Guard"] else 2
-	preferences[candidate.preferred]=3
 	var person: Dictionary = ColonyWorld.citizen_record(world._id(),candidate.name,request.entry,candidate.skills.duplicate(),xp,candidate.traits.duplicate(),candidate.preferred,preferences,candidate.food,"")
 	person.fullness=800;person.rest=800;person.morale=600
 	person.bed=check.bed;world.find(world.structures,check.bed).user=person.id

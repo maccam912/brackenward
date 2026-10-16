@@ -19,6 +19,24 @@ def fixture():
 
 
 class MerchantAuditChecks(unittest.TestCase):
+    def test_v9_initial_map_normalizes_only_the_declared_hauling_default(self):
+        root = Path(__file__).resolve().parents[1]
+        golden = sweep.read(root / 'tests/fixtures/generation-v2-goldens.json')
+        catalog = sweep.read(root / 'data/catalogs/colony_v9.json')
+        digest = hashlib.sha256(json.dumps(catalog, sort_keys=True, separators=(',', ':'), ensure_ascii=False).encode()).hexdigest()
+        old = {'content': 'colony-v6', 'content_hash': golden['catalog_sha256'], 'pending_commands': [], 'next_command_id': '1', 'citizens': [{'preferences': {'Hauling': 2, 'Building': 2}, 'rest': 900}]}
+        current = copy.deepcopy(old)
+        current.update(content='colony-v9', content_hash=digest)
+        current['citizens'][0]['preferences']['Hauling'] = 1
+        before = copy.deepcopy(current)
+        self.assertEqual(sweep.initial_hash(current, 'Standard', golden), sweep.initial_hash(old, 'Standard', golden))
+        self.assertEqual(current, before)
+        current['citizens'][0]['preferences']['Building'] = 3
+        self.assertNotEqual(sweep.initial_hash(current, 'Standard', golden), sweep.initial_hash(old, 'Standard', golden))
+        current['citizens'][0]['preferences']['Hauling'] = 2
+        with self.assertRaises(ValueError):
+            sweep.initial_hash(current, 'Standard', golden)
+
     def test_content_header_normalization_keeps_all_gameplay_and_source_fields(self):
         root = Path(__file__).resolve().parents[1]
         golden = sweep.read(root / 'tests/fixtures/generation-v2-goldens.json')

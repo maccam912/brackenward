@@ -274,3 +274,8 @@ assert next(c for c in normalized_work['crops'] if c['id']=='turnip')['growth']=
 next(c for c in normalized_work['crops'] if c['id']=='turnip')['growth']=2000
 assert normalized_work==combat_catalog, 'Only the version and turnip growth duration may change'
 print('Validated hunger-checkpoint content v8; only the version and turnip growth duration differ from retained v7.')
+
+priority_catalog=json.loads((root / 'data/catalogs/colony_v9.json').read_text())
+assert priority_catalog['version']=='colony-v9'
+assert {**priority_catalog,'version':'colony-v8'}==work_catalog, 'Hauling defaults and fallback must retain all catalog values'
+print('Validated fallback-hauling content v9; every catalog definition except version matches v8.')

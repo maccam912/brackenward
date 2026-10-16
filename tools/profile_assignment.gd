@@ -137,7 +137,7 @@ class AssignmentWorld extends Campaign.ProfileWorld:
 			return
 		if citizen.break_until > tick or (hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
 			if not taking_break:
-				var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _score(j,citizen)[0]==3)
+				var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and not _hauling_fallback(j,citizen) and _task_priority(j)==3)
 				_sort_jobs(urgent,citizen)
 				var urgent_storage: Dictionary={}
 				for job in urgent:

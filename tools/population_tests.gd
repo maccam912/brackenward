@@ -16,6 +16,7 @@ static func run(check: Callable) -> void:
 	var old_gear: int = world.total("toolkit")
 	world.queue_command("newcomer",{"target":a.id,"accept":true});world.step()
 	var person: Dictionary = world.citizens[-1]
+	check.call("POP/newcomer_defaults_hauling_to_last_and_keeps_their_specialty_first",person.preferences.Hauling==1 and person.preferences[person.preferred]==3)
 	check.call("POP/accept_registers_nonsequential_id_and_worn_gear",world.citizens.size()==5 and person.id>4 and person.equipment.weapon.is_empty() and person.equipment.toolkit=="toolkit" and person.equipment.cloak=="cloak" and world.total("toolkit")==old_gear+1 and world.invariant_errors().is_empty(),str(world.invariant_errors()))
 	check.call("POP/relationships_and_policies_register_new_id",world.social_state.pairs.size()==10 and world.equipment_state.has(person.id) and world.equipment_state[person.id].toolkit.replacements)
 	check.call("POP/rations_wait_for_physical_cart_arrival",a.state=="Accepted" and world.total("travel_ration")==8 and (person.x in [0,127] or person.y in [0,127]))

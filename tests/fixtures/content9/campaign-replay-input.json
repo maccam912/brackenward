@@ -1,0 +1,622 @@
+{
+	"version": 1,
+	"name": "Generated Meadow Reach ordinary first-week campaign",
+	"source_note": "Captured on 13 October from tools/simulate.gd first_week policy after implementing physical table dining, seed 104729, meadow_reach, Standard, 10 days. Start tick 1800, source end tick 73800. The ordinary_play_only source passed the scenario, invariants and exact snapshot roundtrip. All 62 original public commands received accepted receipts, without resources, work or weather injections. This fixture retains all 62 commands before tick 72000, in original ID order at before_tick = execution tick - 1. Arguments retain ColonyState.pack encoding. The fixed campaign identity replaces the source test-session identity. Commands at tick 72000 or later are excluded. Source report SHA256 d5dcb4325269532905701bafb46f91eb9a59b9ecb0e9669578ac0ab6a0d05b6b; source final canonical 82f04c289584476f8b840b5464e29552d44e71e94da1ab43ae2ca32888a7cb10. Physical walks to table seats intentionally change research and production timings, so the previous fixed schedule no longer met its Farming prerequisite. This is a fresh ordinary-command capture, not changed expected receipts. The original pre-dining foreign save remains separately covered by dining compatibility tests.",
+	"campaign_id": "save10-replay-v1",
+	"seed": 104729,
+	"site": "meadow_reach",
+	"mode": "Standard",
+	"start_tick": 1800,
+	"checkpoints": [
+		7200,
+		72000
+	],
+	"commands": [
+		{
+			"before_tick": 1800,
+			"kind": "preference",
+			"args": {
+				"category": "Cooking",
+				"citizen": 1,
+				"value": 3
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 1800,
+			"kind": "preference",
+			"args": {
+				"category": "Growing",
+				"citizen": 3,
+				"value": 3
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 1800,
+			"kind": "preference",
+			"args": {
+				"category": "Gathering",
+				"citizen": 3,
+				"value": 2
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 1800,
+			"kind": "preference",
+			"args": {
+				"category": "Research",
+				"citizen": 4,
+				"value": 3
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 1800,
+			"kind": "field",
+			"args": {
+				"crop": "turnip",
+				"tiles": [
+					{
+						"$tile": [
+							53,
+							73
+						]
+					},
+					{
+						"$tile": [
+							52,
+							73
+						]
+					},
+					{
+						"$tile": [
+							51,
+							73
+						]
+					},
+					{
+						"$tile": [
+							50,
+							73
+						]
+					},
+					{
+						"$tile": [
+							49,
+							73
+						]
+					},
+					{
+						"$tile": [
+							48,
+							73
+						]
+					},
+					{
+						"$tile": [
+							47,
+							73
+						]
+					},
+					{
+						"$tile": [
+							46,
+							73
+						]
+					},
+					{
+						"$tile": [
+							53,
+							72
+						]
+					},
+					{
+						"$tile": [
+							52,
+							72
+						]
+					},
+					{
+						"$tile": [
+							51,
+							72
+						]
+					},
+					{
+						"$tile": [
+							50,
+							72
+						]
+					}
+				]
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 1800,
+			"kind": "research_select",
+			"args": {
+				"definition": "storecraft"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 2100,
+			"kind": "gather",
+			"args": {
+				"target": "1497"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 2100,
+			"kind": "gather",
+			"args": {
+				"target": "111"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 2100,
+			"kind": "build",
+			"args": {
+				"definition": "table",
+				"rotation": 0,
+				"x": 60,
+				"y": 60
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 2400,
+			"kind": "lodge",
+			"args": {
+				"x": 62,
+				"y": 60
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 2700,
+			"kind": "gather",
+			"args": {
+				"target": "1298"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 2700,
+			"kind": "gather",
+			"args": {
+				"target": "107"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 2700,
+			"kind": "build",
+			"args": {
+				"definition": "research_desk",
+				"rotation": 0,
+				"x": 58,
+				"y": 62
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 3000,
+			"kind": "recipe_order",
+			"args": {
+				"definition": "cook_meals",
+				"filters": [
+					"grain",
+					"vegetable",
+					"berry",
+					"mushroom"
+				],
+				"mode": "Maintain",
+				"priority": 2,
+				"target": "10",
+				"value": 16
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 3300,
+			"kind": "gather",
+			"args": {
+				"target": "112"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 3300,
+			"kind": "gather",
+			"args": {
+				"target": "1479"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 3600,
+			"kind": "gather",
+			"args": {
+				"target": "92"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 3900,
+			"kind": "gather",
+			"args": {
+				"target": "99"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 3900,
+			"kind": "gather",
+			"args": {
+				"target": "114"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 4500,
+			"kind": "gather",
+			"args": {
+				"target": "1278"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 4500,
+			"kind": "gather",
+			"args": {
+				"target": "1458"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 4800,
+			"kind": "gather",
+			"args": {
+				"target": "73"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 4800,
+			"kind": "gather",
+			"args": {
+				"target": "69"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 4800,
+			"kind": "gather",
+			"args": {
+				"target": "83"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 4800,
+			"kind": "gather",
+			"args": {
+				"target": "87"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 5100,
+			"kind": "gather",
+			"args": {
+				"target": "67"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 5400,
+			"kind": "gather",
+			"args": {
+				"target": "85"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 9000,
+			"kind": "gather",
+			"args": {
+				"target": "1688"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 9000,
+			"kind": "gather",
+			"args": {
+				"target": "82"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 9000,
+			"kind": "research_select",
+			"args": {
+				"definition": "farming"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 9000,
+			"kind": "build",
+			"args": {
+				"definition": "granary",
+				"rotation": 0,
+				"x": 59,
+				"y": 65
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 9600,
+			"kind": "gather",
+			"args": {
+				"target": "1707"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 9600,
+			"kind": "gather",
+			"args": {
+				"target": "68"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 9900,
+			"kind": "gather",
+			"args": {
+				"target": "106"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 10500,
+			"kind": "gather",
+			"args": {
+				"target": "1496"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 10800,
+			"kind": "gather",
+			"args": {
+				"target": "98"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 11100,
+			"kind": "gather",
+			"args": {
+				"target": "1260"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 11400,
+			"kind": "research_queue",
+			"args": {
+				"definition": "woodcraft"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 11700,
+			"kind": "gather",
+			"args": {
+				"target": "1498"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 11700,
+			"kind": "gather",
+			"args": {
+				"target": "1520"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 12300,
+			"kind": "gather",
+			"args": {
+				"target": "1809"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 15600,
+			"kind": "gather",
+			"args": {
+				"target": "71"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 15600,
+			"kind": "gather",
+			"args": {
+				"target": "66"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 15600,
+			"kind": "gather",
+			"args": {
+				"target": "84"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 15600,
+			"kind": "gather",
+			"args": {
+				"target": "86"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 17400,
+			"kind": "research_queue",
+			"args": {
+				"definition": "weaving"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 17700,
+			"kind": "gather",
+			"args": {
+				"target": "89"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 18300,
+			"kind": "gather",
+			"args": {
+				"target": "94"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 18900,
+			"kind": "gather",
+			"args": {
+				"target": "96"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 19800,
+			"kind": "gather",
+			"args": {
+				"target": "104"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 24000,
+			"kind": "gather",
+			"args": {
+				"target": "1519"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 24000,
+			"kind": "gather",
+			"args": {
+				"target": "1538"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 24000,
+			"kind": "research_queue",
+			"args": {
+				"definition": "masonry"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 24600,
+			"kind": "gather",
+			"args": {
+				"target": "100"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 24600,
+			"kind": "gather",
+			"args": {
+				"target": "101"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 30300,
+			"kind": "research_queue",
+			"args": {
+				"definition": "herbalism"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 33000,
+			"kind": "research_queue",
+			"args": {
+				"definition": "trailcraft"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 40500,
+			"kind": "research_queue",
+			"args": {
+				"definition": "commonlife"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 46200,
+			"kind": "research_queue",
+			"args": {
+				"definition": "metalwork"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 52200,
+			"kind": "raid_offer",
+			"args": {
+				"pay": {
+					"wood": 16
+				},
+				"target": "3835"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 54300,
+			"kind": "research_queue",
+			"args": {
+				"definition": "signalcraft"
+			},
+			"expected_receipt": "accepted"
+		},
+		{
+			"before_tick": 66300,
+			"kind": "research_queue",
+			"args": {
+				"definition": "valley_charter"
+			},
+			"expected_receipt": "accepted"
+		}
+	],
+	"provenance": {
+		"scope": "Same 62 accepted v8 public actions, times and quantities. Retargeted payment only to the actually observed v9 budget-2 raid at tick52200; no grants or state edits.",
+		"observed_snapshot_sha256": "5fc1d6fac5a182ebc66137632ba77ffe88152afe46f65b7eebfd6905dcccf60a",
+		"original_input_sha256": "b30efdf262f4c5bec25832f25bf2125daf37647cf8aeba5d29b15dbc172214a5"
+	}
+}

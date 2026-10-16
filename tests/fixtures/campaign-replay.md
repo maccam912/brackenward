@@ -123,3 +123,15 @@ Recording and independent non-recording verification must both pass. Native
 CI on other hosts remains separate from this local baseline and continuation.
 Frozen `content7-work/` snapshots and a 600-tick journal verify preservation of
 acknowledged v7 jobs/cargo/needs/history before v8 scheduling begins.
+
+
+15 October content v9 Last-hauling fallback: `content9/` records the new
+starting-resident defaults and ordinary-work ordering separately from v8.
+All 62 public commands, execution times, quantities and accepted receipts stay
+fixed except that the payment references the actually observed budget-2 raid
+3835 instead of 3850. Its tick-52200 observation digest is retained in input
+provenance. Last hauling cannot bypass scheduled leisure through urgency or
+aging. No earlier input, golden or save is replaced. Frozen v8 work/default
+snapshots and a 600-tick journal retain every acknowledged preference, task,
+quantity and field before future scheduling changes. The new baseline save is
+locally generated; other-host CI and physical Android remain separate gates.

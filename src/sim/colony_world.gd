@@ -2,7 +2,7 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v8"
+const CONTENT_VERSION: String = "colony-v9"
 const SCHEMA_REVISION: int = 23
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
@@ -116,11 +116,8 @@ func _init(catalog: Dictionary, session: String = "m1-test") -> void:
 		for skill in SKILLS:
 			skills[skill] = levels[index].get(skill, 0)
 			xp[skill] = THRESHOLDS[skills[skill]] * 1000
-		var preferences: Dictionary = {}
-		for category in CATEGORIES:
-			preferences[category] = 1 if category in ["Research", "Guard"] else 2
 		var preferred: String = ["Cooking", "Building", "Gathering", "Research"][index]
-		preferences[preferred] = 3
+		var preferences: Dictionary = default_preferences(preferred)
 		if index == 0:
 			preferences.Care = 3
 		citizens.append(citizen_record(index+1,["Mira","Oren","Tavi","Sela"][index],Vector2i(65+index,65),skills,xp,traits[index],preferred,preferences,["Vegetable","Grain","Berry","Mushroom"][index],"spear" if index in [0,3] else "bow"))
@@ -964,7 +961,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		return
 	if citizen.break_until > tick or (hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
 		if not taking_break:
-			var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _score(j,citizen)[0]==3)
+			var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and not _hauling_fallback(j,citizen) and _task_priority(j)==3)
 			_sort_jobs(urgent,citizen)
 			var urgent_storage: Dictionary={}
 			for job in urgent:
@@ -1006,14 +1003,20 @@ func _care_destination(citizen: Dictionary) -> Dictionary:
 	return ColonyCare.destination(self,citizen)
 
 func _score(job: Dictionary, citizen: Dictionary) -> Array:
-	return [mini(3, job.priority + (tick - job.created) / 7200), citizen.preferences.get(job.category, 0),
+	return [int(not _hauling_fallback(job,citizen)), _task_priority(job), citizen.preferences.get(job.category, 0),
 		1 if citizen.preferred == job.category else 0, citizen.skills.get(job.skill, 0),
 		-absi(citizen.x - job.x) - absi(citizen.y - job.y), -job.id]
+
+func _task_priority(job: Dictionary) -> int:
+	return mini(3,job.priority+(tick-job.created)/7200)
+
+func _hauling_fallback(job: Dictionary, citizen: Dictionary) -> bool:
+	return not job.emergency and job.category=="Hauling" and citizen.preferences.get("Hauling",0)==1
 
 func _sort_jobs(candidates: Array, citizen: Dictionary) -> void:
 	# Valid priorities/preferences are 0..3, preferred is 0..1, skills 0..5,
 	# and Manhattan distance on this 128x128 map is 0..254. Pack the existing
-	# first five tuple terms once, preserving the final immutable-ID tie.
+	# leading fallback flag and five tuple terms, preserving the final ID tie.
 	var scores: Dictionary = {}
 	for job in candidates:
 		scores[job.id]=Vector2i(_job_rank(job,citizen),-job.id)
@@ -1022,7 +1025,7 @@ func _sort_jobs(candidates: Array, citizen: Dictionary) -> void:
 		return aa.x>bb.x if aa.x!=bb.x else aa.y>bb.y)
 
 func _job_rank(job: Dictionary, citizen: Dictionary) -> int:
-	var rank: int = mini(3,job.priority+(tick-job.created)/7200)
+	var rank: int = int(not _hauling_fallback(job,citizen))*4+_task_priority(job)
 	rank=rank*4+citizen.preferences.get(job.category,0)
 	rank=rank*2+int(citizen.preferred==job.category)
 	rank=rank*6+citizen.skills.get(job.skill,0)
@@ -1887,6 +1890,13 @@ func can_step(from: Vector2i, to: Vector2i) -> bool:
 	if generator_version == 0: return true
 	if terrain_state.bridges.has(from) or terrain_state.bridges.has(to): return true
 	return absi(elevation(from)-elevation(to)) <= 1
+
+static func default_preferences(preferred: String) -> Dictionary:
+	var result: Dictionary = {}
+	for category in CATEGORIES: result[category]=1 if category in ["Hauling","Research","Guard"] else 2
+	result[preferred]=3
+	result.Hauling=1
+	return result
 
 static func citizen_record(id: int, name: String, point: Vector2i, skills: Dictionary, xp: Dictionary, traits: Array, preferred: String, preferences: Dictionary, food: String, weapon: String) -> Dictionary:
 	var result: Dictionary = {"story_memory_until":0,"away":false,"expedition":0,"camp_sleeping":false,"id": id, "name": name, "x": point.x, "y": point.y,

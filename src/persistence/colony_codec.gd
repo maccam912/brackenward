@@ -25,7 +25,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		if legacy.has("error"): return legacy
 		return restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
-	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
+	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
 		return {"error":"Unsupported save version %s / content %s. This build supports envelope 5, content %s and earlier colony migration. Original files retained." % [str(envelope.get("version","?")).left(16),str(envelope.get("content","?")).left(64),ColonyWorld.CONTENT_VERSION]}
 	if envelope.generator_version is float and envelope.generator_version==floor(envelope.generator_version) and envelope.generator_version>ColonyGeneration.VERSION:
 		return {"error":"Campaign uses generator version %d; this build supports up to %d. Update Brackenward to open it. Original files retained." % [int(envelope.generator_version),ColonyGeneration.VERSION]}
@@ -71,7 +71,7 @@ static func _restore(data: Dictionary, snapshot_name: String, initialize_weather
 		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/colony_v1.json")
 		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released catalog; original files retained"}
 		data = ColonyMigrations.catalog_v1(data,world.definitions,previous.items.keys())
-	if data.get("content") in ["colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7"]:
+	if data.get("content") in ["colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8"]:
 		var previous_version: String = data.content
 		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/%s.json" % previous_version.replace("-","_"))
 		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released %s catalog; original files retained" % previous_version.trim_prefix("colony-")}

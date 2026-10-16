@@ -1,5 +1,29 @@
 # Implementation evidence
 
+Hauling-priority feedback (15 October 2026): `0.7.82-m7`, content `colony-v9`,
+unchanged schema 23 / envelope 5. Starting residents and newcomers default
+Hauling to Last while retaining their other specialties/preferences. Ordinary
+Last hauling is a true fallback after every other enabled, feasible task,
+including other Last work; age/Urgent priority cannot lift it above that work
+or scheduled leisure. Failed higher-tier reservations still permit useful
+hauling. Off, manually raised Normal/First, pinned work, emergencies and
+fetching a job's own supplies retain their explicit behavior. Work preferences
+explain the rule. Existing saves retain every work setting; set Hauling to Last
+under Work → resident to opt existing residents into the fallback behavior.
+
+Local validation passes 15 affected suites / 2,544 assertions, including
+scheduler 468, native UI 716, population 58 and persistence 510. Content,
+English messages (5), GDScript strings (7) and merchant/map audit tooling (19)
+pass. Frozen v8 snapshots and a 600-tick journal preserve exact original fields,
+preferences and bytes with untouched migration backups; all v3-v7 audits also
+pass. New v9 recording and independent verification accept all 62 public
+commands, match ticks 7,200/72,000 and continue saved state identically. Only
+the observed payment target changes from v8 raid 3850 to v9 raid 3835; every
+earlier fixture remains unchanged. `reports/hauling-v9-validation.json` records
+the exact source hashes and local scopes. Current-v9 remote CI/publication,
+physical-phone and long-campaign balance checks remain pending separately.
+
+
 Player-feedback checkpoint (15 October 2026): `0.7.81-m7`, content
 `colony-v8`, unchanged campaign schema 23 / envelope 5. Ordinary hunger now
 finishes the current carried load, recipe/gathering/crop action, or whole work
