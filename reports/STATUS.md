@@ -1,5 +1,16 @@
 # Implementation evidence
 
+Forecast presentation (16 October 2026): `0.7.106-m7`, unchanged content/schema/
+envelope. Separate day cards and seven original static weather symbols clarify
+conditions while retaining dates, temperature, exact consequences and flood
+exposure/action controls. Native normal/150% phone views were inspected. UI passes
+814 checks, including every weather at both text sizes, distinct rendered symbols,
+unchanged world state and the nested flood action. The existing action test now
+searches within the day card; an invalid test-only byte-array hash call was fixed
+before the passing run. Content/font and string/message checks pass. Evidence:
+`weather-390x844*`, `weather-1100x720.png`, `forecast-*` in visual-polish.
+Physical-device forecast-card review remains unverified. Polishing continues.
+
 Utility building art (16 October 2026): `0.7.105-m7`, unchanged content/schema/
 envelope. Seven utility structures now have distinct original construction: open
 racks, slatted granaries, timber barns, stone cellars/wells, planked piers and

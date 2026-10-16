@@ -24,6 +24,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	menu_feedback(game,check)
 	await menu_lifetime(game,check)
 	await status_spacing(game,check)
+	await weather_cards(game,check)
 	var initial: String = game.world.canonical_hash()
 	for state in ["normal","hover","pressed","disabled"]:
 		var text: String = {"normal":"font_color","hover":"font_hover_color","pressed":"font_pressed_color","disabled":"font_disabled_color"}[state]
@@ -202,3 +203,36 @@ static func status_spacing(game: GameSession, check: Callable) -> void:
 	tree.root.size=old_size;game.logical_scale=old_logical;game.test_insets=old_insets;game.text_scale=old_scale
 	game.notice_label.text=old_notice;game._build_theme();game._layout()
 	await tree.process_frame;await tree.process_frame
+
+static func weather_cards(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree()
+	var original_size: Vector2i=tree.root.size
+	var original_scale: float=game.text_scale
+	var original_weather: String=game.world.weather
+	var original_days: Array=game.world.weather_state.days.duplicate(true)
+	var hashes: Array=[]
+	for kind in ColonyWeather.KINDS:
+		game.world.weather=kind
+		var day: int=game.world.tick/7200
+		game.world.weather_state.days=[{"day":day-1,"kind":"snow","mask":[]},{"day":day,"kind":kind,"mask":[]},{"day":day+1,"kind":"flood","mask":ColonyWeather.flood_mask(game.world)},{"day":day+2,"kind":"rain","mask":[]},{"day":day+3,"kind":"clear","mask":[]}]
+		var baseline: String=game.world.canonical_hash()
+		for scale in [1.0,1.5]:
+			tree.root.size=Vector2i(360,640);game.text_scale=scale;game._build_theme();game.show_weather()
+			await tree.process_frame;await tree.process_frame;await tree.process_frame
+			var cards: Array=game.sheet_body.get_children().filter(func(node:Node)->bool:return node is PanelContainer)
+			var fits: bool=cards.size()==4
+			for card in cards:fits=fits and card.size.x<=game.sheet_body.size.x+1
+			var all_text: String=""
+			for node in game.sheet_body.find_children("*","Label",true,false):all_text+=node.text+"\n"
+			check.call("WEATHER/UI_%s_%d_cards_fit_and_keep_forecast_consequences_without_world_mutation" % [kind,roundi(scale*100)],fits and all_text.contains(ColonyFonts.display(ColonyWeather.describe(kind))) and all_text.contains("Currently exposed:") and game.world.canonical_hash()==baseline)
+			if scale==1.0 and DisplayServer.get_name()!="headless":
+				var icon: WeatherBadge=cards[0].find_children("*","Control",true,false).filter(func(node:Node)->bool:return node is WeatherBadge)[0]
+				await RenderingServer.frame_post_draw
+				var pixels: PackedByteArray=tree.root.get_texture().get_image().get_region(Rect2i(icon.get_global_rect())).get_data()
+				hashes.append(hash(pixels))
+	if DisplayServer.get_name()!="headless":
+		var unique: Dictionary={}
+		for value in hashes:unique[value]=true
+		check.call("WEATHER/UI_all_seven_native_weather_symbols_are_distinct",unique.size()==7)
+	game.world.weather=original_weather;game.world.weather_state.days=original_days
+	game.text_scale=original_scale;game._build_theme();game.close_sheet(false);tree.root.size=original_size

@@ -2147,13 +2147,27 @@ func show_key_capture(action: String) -> void:
 	button(ColonyText.text("ui.action.cancel"),show_controls,sheet_body)
 	listening_binding=action
 
+func _weather_card(title: String, weather: String) -> VBoxContainer:
+	var panel: PanelContainer=PanelContainer.new();sheet_body.add_child(panel)
+	panel.name="Forecast_"+weather
+	var box: StyleBoxFlat=_box(Color("2C4440"),Color("4D6656"))
+	box.content_margin_top=10;box.content_margin_bottom=10
+	panel.add_theme_stylebox_override("panel",box)
+	var body: VBoxContainer=VBoxContainer.new();panel.add_child(body)
+	var heading: HBoxContainer=HBoxContainer.new();body.add_child(heading)
+	heading.add_child(WeatherBadge.new(weather))
+	var caption: Label=label(title,heading)
+	caption.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+	label(ColonyWeather.describe(weather),body)
+	return body
+
 func show_weather() -> void:
 	_tutorial_action("weather")
 	show_sheet("Weather forecast","ui.sheet.weather_forecast")
-	label("Today: %s, %d C\n%s" % [world.weather.replace("_"," "),ColonyLiving.temperature(world),ColonyWeather.describe(world.weather)],sheet_body)
+	_weather_card("Today: %s, %d C" % [world.weather.replace("_"," "),ColonyLiving.temperature(world)],world.weather)
 	for entry in world.weather_state.days:
 		if entry.day <= world.tick / 7200: continue
-		label("%s %d Y%d: %s\n%s" % [["Spring","Summer","Autumn","Winter"][(entry.day/8)%4],entry.day%8+1,entry.day/32+1,entry.kind.replace("_"," "),ColonyWeather.describe(entry.kind)],sheet_body)
+		var card: VBoxContainer=_weather_card("%s %d Y%d: %s" % [["Spring","Summer","Autumn","Winter"][(entry.day/8)%4],entry.day%8+1,entry.day/32+1,entry.kind.replace("_"," ")],entry.kind)
 		if entry.kind == "flood":
 			var food: int = 0
 			var crop: int = 0
@@ -2161,13 +2175,13 @@ func show_weather() -> void:
 				if ColonyWeather.vulnerable(world,stack,entry.mask): food += stack.count / 2
 			for field in world.fields:
 				if field.ripe_tick > 0 and entry.mask.has(Vector2i(field.x,field.y)): crop += field.yield_count / 2
-			label("Currently exposed: %d food units and %d ripe crop units. Move food or harvest before 06:00. This count assumes current positions and ripeness." % [food,crop],sheet_body)
+			label("Currently exposed: %d food units and %d ripe crop units. Move food or harvest before 06:00. This count assumes current positions and ripeness." % [food,crop],card)
 			button(ColonyText.text("ui.action.view_flood_area"),func() -> void:
 				view.forecast_mask.assign(entry.mask)
 				view.camera_tile = Vector2(38,64)
 				view.tile_size = 16
 				close_sheet()
-				notice = "Striped low ground floods from 06:00 to 18:00 on the forecast date. High ground is safe.",sheet_body)
+				notice = "Striped low ground floods from 06:00 to 18:00 on the forecast date. High ground is safe.",card)
 	if not view.forecast_mask.is_empty():
 		button(ColonyText.text("ui.action.hide_flood_preview"),func() -> void:
 			view.forecast_mask.clear()

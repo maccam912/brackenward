@@ -935,6 +935,8 @@ Floodwater presentation (0.7.104): actual flooded tiles draw a translucent shall
 
 Utility building art (0.7.105): racks have open shelves, granaries have enclosed slatted bins and a grain carving, barns have open timber framing, cellars have stone stair openings, wells have masonry rings/rope windlasses, piers have planks/posts/coiled rope, and watchposts have braced raised platforms. Fixtures do not imply stored quantities; live supplies remain separate. All twenty-eight existing rotation regions, atlas dimensions, anchors and catalog footprints are preserved.
 
+Forecast cards (0.7.106): the weather sheet groups today and each future date in separate compact cards with original static sun, rain, fog, snow, drought, flood and cold-snap symbols. Date, condition, temperature where available and exact gameplay consequences remain text. Future flood exposure counts and the view-area action remain inside that day's card. Symbols use presentation drawing primitives, add no saved fields and remain identical with reduced motion. Cards wrap at phone widths and 150% text without horizontal scrolling.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

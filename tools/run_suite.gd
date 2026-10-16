@@ -654,8 +654,8 @@ func ui() -> void:
 	entry.kind = "flood"
 	entry.mask = ColonyWeather.flood_mask(colony_game.world)
 	colony_game.show_weather()
-	for child in colony_game.sheet_body.get_children():
-		if child is Button and child.text == "View flood area": child.pressed.emit()
+	for child in colony_game.sheet_body.find_children("*","Button",true,false):
+		if child.text == "View flood area": child.pressed.emit()
 	check("WEATHER/UI_flood_preview_uses_forecast_mask",colony_game.view.forecast_mask == entry.mask and colony_game.sheet == null and colony_game.runner.speed == 0)
 	if DisplayServer.get_name() != "headless":
 		await process_frame
