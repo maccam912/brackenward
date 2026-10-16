@@ -109,6 +109,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	terrain_edges(view,check)
 	seasonal_landscape(view,check)
 	soil_fringe(view,check)
+	construction_silhouette(view,check)
 	offscreen_props(view,check)
 	beacon_flame(view,check)
 	await renewable_resources(view,check)
@@ -329,3 +330,25 @@ static func floodwater(view: WorldView, check: Callable) -> void:
 	for chunk in view.environment.ground_chunks.values():
 		drained=drained and not chunk.commands.any(func(command:Array)->bool:return command[0] in ["floodwater","flood_edge"])
 	check.call("ART/UI_simulator_recession_removes_every_cached_water_command",drained and world.canonical_hash()==baseline)
+
+static func construction_silhouette(view: WorldView, check: Callable) -> void:
+	var world: ColonyWorld=ColonyTests.world()
+	world.queue_command("build",{"definition":"table","x":74,"y":63,"rotation":1})
+	for tick in range(1000):
+		world.step()
+		if world.stacks.any(func(s:Dictionary)->bool:return s.location=="escrow" and s.count>0):break
+	var jobs: Array=world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.kind=="build")
+	check.call("ART/UI_construction_fixture_has_actual_delivered_materials",jobs.size()==1 and world.stacks.any(func(s:Dictionary)->bool:return s.location=="escrow" and s.count>0) and world.invariant_errors().is_empty())
+	if jobs.is_empty():return
+	var job: Dictionary=jobs[0];var baseline: String=world.canonical_hash()
+	view.world=world;view.refresh_terrain();view.center_camera(Vector2(74.5,63.5));view._process(0)
+	var commands: Array=view.environment.ground_chunks[Vector2i(4,3)].commands
+	var ghosts: Array=commands.filter(func(c:Array)->bool:return c[0]=="building/table/1" and c[2].a<0.5)
+	var actual_delivery: Dictionary=world.stacks.filter(func(stack:Dictionary)->bool:return stack.location=="escrow" and stack.count>0)[0]
+	var delivery_chunk: Vector2i=Vector2i(actual_delivery.x/16,actual_delivery.y/16)
+	var delivery_commands: Array=view.environment.ground_chunks[delivery_chunk].commands
+	var wood: bool=delivery_commands.any(func(c:Array)->bool:return str(c[0]).begins_with("item/wood/"))
+	check.call("ART/UI_rotated_plan_uses_exact_art_bounds_and_retains_real_deliveries",ghosts.size()==1 and ghosts[0][1]==Rect2(Vector2(160,228),Vector2(16,44)) and wood and world.canonical_hash()==baseline)
+	world.queue_command("cancel",{"target":job.id});world.step();baseline=world.canonical_hash();view._process(0)
+	commands=view.environment.ground_chunks[Vector2i(4,3)].commands
+	check.call("ART/UI_canceled_construction_removes_ghost_and_preserves_returned_goods",not commands.any(func(c:Array)->bool:return c[0]=="building/table/1" and c[2].a<0.5) and world.canonical_hash()==baseline and world.invariant_errors().is_empty())

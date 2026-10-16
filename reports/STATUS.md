@@ -1,5 +1,15 @@
 # Implementation evidence
 
+Construction silhouettes (16 October 2026): `0.7.117-m7`, unchanged content/
+schema/envelope. Acknowledged plans show faint actual building art while retaining
+dashed footprints/progress. Real delivered goods replace the generic delivery
+square. Six native plans inspected; canonical state unchanged. UI passes 882
+checks, including a real rotated table delivery and cancellation, exact sprite
+bounds and preserved inventory/invariants. The delivery assertion follows its
+actual adjacent work position across the chunk boundary. Content/font validation
+passes. Evidence: `construction-*`, `blueprints-*` in visual-polish. Weekly usage
+is 36% remaining; original reset unchanged. Polishing continues.
+
 Craft-station detail (16 October 2026): `0.7.116-m7`, unchanged content/schema/
 envelope. Four craft stations gain original readable construction/working fixtures
 in all rotations. Exactly sixteen regions change; all other pixels and bounds

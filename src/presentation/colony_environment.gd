@@ -32,7 +32,6 @@ var revealed_rooms: Dictionary = {}
 var roof_tiles: Dictionary = {}
 var visual_clock: float = 0.0
 var active_jobs: Array = []
-var escrow: Dictionary = {}
 var heat_points: Array[Vector2] = []
 var weather_clock: float = 0.0
 var station_outputs: Dictionary = {}
@@ -309,6 +308,14 @@ func _refresh_ground(chunks: Rect2i) -> void:
 		var semantic: String = "building/%s/%d" % [structure.definition,structure.rotation]
 		var rectangle: Rect2 = EnvironmentArt.rectangle(semantic)
 		_push(commands,point,semantic,Rect2(Vector2(point)*16-Vector2(0,12),rectangle.size),tint)
+	# A faint planned silhouette belongs below actual deliveries and actors.
+	# Dashed footprint/progress cues remain full-bright in the feedback layer.
+	for job in active_jobs:
+		if job.kind!="build":continue
+		var point: Vector2i=Vector2i(job.x,job.y)
+		var semantic: String="building/%s/%d" % [job.definition,job.rotation]
+		var rectangle: Rect2=EnvironmentArt.rectangle(semantic)
+		_push(commands,point,semantic,Rect2(Vector2(point)*16-Vector2(0,12),rectangle.size),tint*Color(1,1,1,0.28))
 	for field in world.fields:
 		var point: Vector2i = Vector2i(field.x,field.y)
 		var semantic: String = "crop/%s/%d" % [field.crop,EnvironmentArt.crop_stage(field,world.definitions.crops[field.crop])]
@@ -326,9 +333,8 @@ func _refresh_ground(chunks: Rect2i) -> void:
 	var carts: Dictionary = {}
 	for structure in world.structures:
 		if structure.definition=="supply_cart": carts[structure.id]=true
-	var piles: Dictionary = {};var outputs: Dictionary = {};escrow.clear();station_outputs.clear()
+	var piles: Dictionary = {};var outputs: Dictionary = {};station_outputs.clear()
 	for stack in world.nonempty_stacks():
-		if stack.location=="escrow": escrow[stack.owner]=escrow.get(stack.owner,0)+stack.count
 		if stack.location=="carry" or (stack.location=="store" and carts.has(stack.owner)): continue
 		if stack.location=="output" and props.has(stack.owner) and props[stack.owner].record.health>0:
 			if not outputs.has(stack.owner): outputs[stack.owner]={}
@@ -449,7 +455,6 @@ func _draw_feedback() -> void:
 			var top: Vector2 = view.tile_to_screen(Vector2(job.x,job.y))
 			feedback_layer.draw_rect(Rect2(top,Vector2(view.tile_size,4)),Color("263C3B"))
 			feedback_layer.draw_rect(Rect2(top,Vector2(view.tile_size*float(job.work)/job.required,4)),Color("F3E8CC"))
-			if escrow.get(job.id,0)>0: feedback_layer.draw_rect(Rect2(top+Vector2(2,7),Vector2(7,6)),Color("B96C50"))
 		elif job.kind=="move_furniture":
 			for point in ColonyMaintenance.move_footprint(world,job): feedback_layer.draw_rect(Rect2(view.tile_to_screen(Vector2(point)),Vector2.ONE*view.tile_size).grow(-1),Color("E9BA67"),false,2)
 	for field in world.fields:

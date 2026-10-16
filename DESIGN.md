@@ -957,6 +957,9 @@ Held-tool facing (0.7.115): the equipment overlay mirrors horizontally with west
 
 Craft-station detail (0.7.116): workbenches have timber joinery and a vise, looms have warp threads and woven fabric, herbal benches have tied leaves and a mortar, and research desks have open pages and a quill. These are original fixtures rather than stored goods. Only sixteen rotation regions change; all atlas bounds and other pixels remain exact.
 
+Construction silhouettes (0.7.117): acknowledged unfinished build jobs add 28%-opacity art for their actual definition and rotation to the cached ground commands. Dashed footprint outlines and exact progress bars remain full-bright. Actual escrow stacks retain their item art at their real delivery/work position; the old generic orange delivery square is removed. Cancellation/completion removes the plan with the unfinished job. These drawings never create structures, change collision or alter reservations.
+
+
 
 
 
