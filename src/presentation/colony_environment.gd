@@ -222,7 +222,7 @@ func _refresh_resources(chunks: Rect2i) -> void:
 	for y in range(chunks.position.y,chunks.end.y):
 		for x in range(chunks.position.x,chunks.end.x):
 			for resource in resource_index.get(Vector2i(x,y),[]):
-				if resource.remaining<=0 and resource.definition!="tree": continue
+				if resource.remaining<=0 and resource.definition!="tree" and resource.definition not in EnvironmentArt.RENEWABLE_RESOURCES: continue
 				ordered.append(resource)
 	# Live records still redraw every changed tick. Membership, locations and
 	# depth partitions usually stay fixed, so avoid their sort/group allocations.

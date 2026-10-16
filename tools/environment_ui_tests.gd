@@ -110,6 +110,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	seasonal_landscape(view,check)
 	offscreen_props(view,check)
 	beacon_flame(view,check)
+	await renewable_resources(view,check)
 	view.queue_free();await tree.process_frame;await tree.process_frame
 	tree.root.size=original_size;previous.visible=visible;previous.set_process(processing);previous.view.set_process(old_view_process)
 
@@ -211,3 +212,39 @@ static func beacon_flame(view: WorldView, check: Callable) -> void:
 		check.call("ART/UI_%s_beacon_fire_is_anchored_at_the_raised_basket" % state,prop.flame!=null and prop.flame.visible and prop.flame.position==Vector2(0,-46) and world.canonical_hash()==baseline)
 	beacon.health=0;world.tick+=1;view._process(0)
 	check.call("ART/UI_destroyed_beacon_hides_its_ceremony_fire",not prop.flame.visible)
+
+static func renewable_resources(view: WorldView, check: Callable) -> void:
+	var world: ColonyWorld=ColonyTests.world();world.tick=3600
+	world.resources.clear();world.structures.clear();world.citizens.clear();world.stacks.clear();world.stores.clear()
+	for kind in ["berry_bush","herb_patch","mushroom_patch","stone_node"]:
+		world.resources.append({"id":world._id(),"definition":kind,"x":48+world.resources.size()*4,"y":52,"remaining":world.definitions.resources[kind].yield_count,"regrow_at":0})
+	view.world=world;view.refresh_terrain();view.tile_size=48;view.center_camera(Vector2(54,52));view._process(0)
+	var ready: Image
+	var region: Rect2i=Rect2i(Vector2i(view.tile_to_screen(Vector2(47.5,51.5))),Vector2i(14*48,72))
+	if DisplayServer.get_name()!="headless":
+		ready=(await screenshot(view.get_tree())).get_region(region)
+		ready.save_png("res://reports/regrowth-ready.png")
+	for resource in world.resources:
+		resource.remaining=0;resource.regrow_at=3602 if resource.definition!="stone_node" else 0
+	world.resource_query_dirty=true;world.tick=3601
+	var baseline: String=world.canonical_hash();view._process(0)
+	var visible: Array=[]
+	for row in view.environment.resource_rows.values():
+		for resource in row.records:visible.append(resource.definition)
+	visible.sort()
+	check.call("ART/UI_harvested_renewables_remain_visible_but_exhausted_stone_disappears",visible==["berry_bush","herb_patch","mushroom_patch"] and world.canonical_hash()==baseline)
+	if DisplayServer.get_name()!="headless":
+		var depleted: Image=(await screenshot(view.get_tree())).get_region(region)
+		depleted.save_png("res://reports/regrowth-depleted.png")
+		var changed: bool=true
+		for index in range(3):
+			var crop: Rect2i=Rect2i(index*4*48,0,72,72)
+			changed=changed and ready.get_region(crop).get_data()!=depleted.get_region(crop).get_data()
+		check.call("ART/UI_native_harvested_shapes_differ_from_ready_fruit_flowers_and_caps",changed)
+	world.tick=3602;ColonyAgriculture.advance(world)
+	baseline=world.canonical_hash();view._process(0)
+	check.call("ART/UI_actual_regrowth_restores_ready_resource_art_without_render_mutation",world.resources.slice(0,3).all(func(r:Dictionary)->bool:return r.remaining>0 and r.regrow_at==0 and not EnvironmentArt.resource_semantic(world,r).contains("depleted")) and world.resources[3].remaining==0 and world.canonical_hash()==baseline)
+	if DisplayServer.get_name()!="headless":
+		var restored: Image=(await screenshot(view.get_tree())).get_region(region)
+		# Exclude the finite stone, which correctly stays exhausted.
+		check.call("ART/UI_regrown_resource_pixels_exactly_match_original_ready_pixels",ready.get_region(Rect2i(0,0,12*48,72)).get_data()==restored.get_region(Rect2i(0,0,12*48,72)).get_data())

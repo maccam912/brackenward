@@ -1,5 +1,24 @@
 # Implementation evidence
 
+Natural resource clarity (16 October 2026): `0.7.101-m7`, unchanged content/
+schema/envelope. Five resource sprites now distinguish berries, leafy herbs,
+layered clay, faceted stone and iron. Three appended depleted sprites keep
+harvested renewable patches recognizable without ripe produce. Exhausted finite
+deposits remain hidden. Resource cards explain growing days/winter pauses, and
+gathering labels use catalog names instead of internal IDs. The atlas now has
+300 regions at the unchanged 1024x418 size; every earlier rectangle is preserved.
+
+Pinned native UI passes 766 checks and persistence/art passes 511. Native checks
+cover depleted membership, visibly changed pixels, actual simulator regrowth,
+exact restoration of ready pixels and unchanged rendering state. The old full-
+rebuild comparison initially expected harvested patches to disappear; its
+independent catalog-based visibility rule now reflects the intended contract.
+Content/font, string/message and fixture-checkout checks pass. Native source,
+gathering-menu, large-text resource-card and developed-colony views were inspected.
+Evidence: `resources-*`, `regrowth-*`, `mature-resources-*` in the visual-polish
+folder and `reports/regrowth-{ready,depleted}.png`. Weekly usage is 54% remaining;
+physical Android remains unverified.
+
 Connected construction art (16 October 2026): `0.7.100-m7`, unchanged content/
 schema/envelope. Fences use open rails and posts; palisades use pointed stakes;
 timber and stone walls have restrained material details. Floors and bridges have

@@ -917,6 +917,8 @@ Building render reuse (0.7.95): off-screen props retain live records and synchro
 
 Ground contact and beacon alignment (0.7.96): people/animals have small baked translucent shadows within their original frame bounds, preserving opaque art and portrait bytes. The beacon ceremony flame is anchored at source y=14 in its raised basket rather than the generic furnace base. Inactive and destroyed beacons remain unlit; the existing Active/Complete ceremony rule is unchanged.
 
+Natural resource clarity (0.7.101): berries, leafy herbs, layered clay, faceted stone and iron have distinct silhouettes. Harvested renewable patches remain visible as fruitless foliage, cut leaves or mushroom remnants; exhausted finite deposits stay hidden. Real remaining quantities choose these sprites, and actual regrowth restores the original ready art. Resource cards show remaining growing days and winter pauses, using catalog display names. Three appended depleted regions bring the shared atlas to 300 regions without changing earlier bounds.
+
 Connected construction art (0.7.100): open two-rail fences and pointed palisades are visibly distinct from timber and stone walls. Material details retain the connected centerlines, corners, mixed junctions and destroyed-wall gaps. Wooden floors and bridges use staggered plank joints inside their existing eight atlas regions. All interiors remain visible.
 
 Cultivated field art (0.7.99): subdued brown soil with two furrows supports all five existing growth stages. Barley stalks, flax flowers, leafy vegetables, and cavecap silhouettes differ as they mature; ripe produce remains visually distinct. All thirty crop and three soil regions retain their original bounds and stage-selection rules.

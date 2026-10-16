@@ -1530,10 +1530,13 @@ func _sync_placement_world() -> void:
 	placement_commands.clear()
 
 func _resource_sheet(resource: Dictionary) -> void:
-	show_details(resource.definition.capitalize())
+	show_details(_catalog_name(resource.definition))
 	var definition: Dictionary = world.definitions.resources[resource.definition]
-	label(ColonyText.text("ui.resource.remaining",{"count":resource.remaining,"item":definition.item,"work":int(definition.work_milli/1000),"basis":ColonyText.text("ui.resource.work.per_unit" if definition.per_unit else "ui.resource.work.per_harvest")}), sheet_body)
+	label(ColonyText.text("ui.resource.remaining",{"count":resource.remaining,"item":_catalog_name(definition.item).to_lower(),"work":int(definition.work_milli/1000),"basis":ColonyText.text("ui.resource.work.per_unit" if definition.per_unit else "ui.resource.work.per_harvest")}), sheet_body)
 	label(ColonyText.text("ui.help.resource_sheet.a_gatherer_works_beside_the_resource_the"), sheet_body)
+	if resource.remaining==0 and resource.regrow_at>0 and resource.definition in EnvironmentArt.RENEWABLE_RESOURCES:
+		label(ColonyText.text("ui.resource.regrowth",{"days":"%.1f" % (maxi(0,resource.regrow_at-world.tick)/7200.0)}),sheet_body)
+		if resource.definition!="mushroom_patch":label(ColonyText.text("ui.resource.regrowth_winter"),sheet_body)
 	if resource.definition=="tree":
 		label(ColonyText.text("ui.help.resource_sheet.tree_passage"),sheet_body)
 		if ColonyNature.door_approach(world,Vector2i(resource.x,resource.y)):
@@ -1575,7 +1578,7 @@ func _work_sheet() -> void:
 		return
 	label(ColonyText.text("ui.help.work_sheet.choose_a_resource_drag_a_rectangle_then"), sheet_body)
 	for kind in ["tree", "berry_bush", "mushroom_patch", "herb_patch", "stone_node", "clay_bank", "iron_seam"]:
-		illustrated_button(ColonyText.text("ui.work.gather",{"item":world.definitions.resources[kind].item}), func() -> void: begin_gather(kind), sheet_body,"resource/%s/0" % kind)
+		illustrated_button(ColonyText.text("ui.work.gather",{"item":_catalog_name(world.definitions.resources[kind].item).to_lower()}), func() -> void: begin_gather(kind), sheet_body,"resource/%s/0" % kind)
 	button(ColonyText.text("ui.action.paint_forest_zone"),begin_forest,sheet_body)
 	button(ColonyText.text("ui.action.research"),show_research,sheet_body)
 	button(ColonyText.text("ui.action.wildlife"),show_wildlife,sheet_body)

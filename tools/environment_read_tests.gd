@@ -14,7 +14,7 @@ class OriginalEnvironment extends ColonyEnvironment:
 		for y in range(chunks.position.y,chunks.end.y):
 			for x in range(chunks.position.x,chunks.end.x):
 				for resource in resource_index.get(Vector2i(x,y),[]):
-					if resource.remaining<=0 and resource.definition!="tree": continue
+					if resource.remaining<=0 and resource.definition!="tree" and world.definitions.resources[resource.definition].regrow_ticks==0: continue
 					ordered.append(resource)
 		ordered.sort_custom(func(a:Dictionary,b:Dictionary)->bool:return a.y<b.y if a.y!=b.y else a.id<b.id)
 		var previous: String = "";var group_key: String = ""

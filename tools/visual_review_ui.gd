@@ -52,6 +52,10 @@ func capture() -> void:
 	await save_view("person-390x844-text150")
 	game.show_new_colony(2)
 	await save_view("new-colony-390x844-text150")
+	var harvested: Dictionary=game.world.resources.filter(func(r:Dictionary)->bool:return r.definition=="berry_bush")[0]
+	harvested.remaining=0;harvested.regrow_at=game.world.tick+14400
+	game._resource_sheet(harvested)
+	await save_view("harvested-390x844-text150")
 	await game.soundscape.drain()
 	game.queue_free();await process_frame
 	print("VISUAL_UI_REVIEW_COMPLETE");quit()

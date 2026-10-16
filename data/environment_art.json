@@ -1782,6 +1782,24 @@
       378,
       16,
       16
+    ],
+    "resource/berry_bush_depleted/0": [
+      230,
+      378,
+      24,
+      24
+    ],
+    "resource/herb_patch_depleted/0": [
+      256,
+      378,
+      24,
+      24
+    ],
+    "resource/mushroom_patch_depleted/0": [
+      282,
+      378,
+      24,
+      24
     ]
   },
   "source_components": "data/environment_sources.json",

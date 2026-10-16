@@ -1,6 +1,7 @@
 class_name EnvironmentArt
 extends RefCounted
 const ATLAS: Texture2D = preload("res://assets/exported/environment/woodland.png")
+const RENEWABLE_RESOURCES: Array[String]=["berry_bush","herb_patch","mushroom_patch"]
 static var layout: Dictionary = {}
 
 static func rectangles() -> Dictionary:
@@ -41,3 +42,14 @@ static func tree_semantic(id: int, tick: int) -> String:
 	if variant!=0 and season>=2:
 		return "resource/tree_%s/%d" % ["autumn" if season==2 else "winter",variant]
 	return "resource/tree/%d" % variant
+
+static func resource_semantic(world: ColonyWorld, resource: Dictionary) -> String:
+	var kind: String=resource.definition
+	if resource.remaining<=0:
+		if kind=="tree":
+			var state: Dictionary=ColonyNature.tree(world,resource.id)
+			if state.cleared:return ""
+			kind="sapling" if state.planted else "stump"
+		elif kind in RENEWABLE_RESOURCES:kind+="_depleted"
+		else:return ""
+	return tree_semantic(resource.id,world.tick) if kind=="tree" else "resource/%s/0" % kind

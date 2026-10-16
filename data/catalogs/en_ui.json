@@ -540,6 +540,8 @@
   "ui.recipe.priority_choice": "{priority} priority",
   "ui.recipe.repeat_batches": "Repeat batches",
   "ui.resource.growing": "Growing: {days} of eight non-winter days. Winter pauses growth.",
+  "ui.resource.regrowth": "Harvested. Regrows after {days} more growing days.",
+  "ui.resource.regrowth_winter": "Winter pauses regrowth.",
   "ui.resource.remaining": "{count} {item} remaining | {work} WU {basis}",
   "ui.resource.stump": "Stump. Replant for 4 WU, or remove this tree site for 4 WU. Removal gives no wood and prevents forest auto-replanting.",
   "ui.resource.work.per_harvest": "per harvest",

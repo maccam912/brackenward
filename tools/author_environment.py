@@ -114,12 +114,41 @@ def resource(kind, variant):
     elif kind == "stump":
         d.ellipse((7, 16, 17, 22), fill=WOOD, outline=INK);d.ellipse((8, 15, 16, 19), fill="#D3A77D", outline=INK)
         d.line((11, 16, 14, 18), fill=WOOD)
-    elif kind in ("stone_node", "clay_bank", "iron_seam"):
-        for x, y, radius in [(3, 15, 6), (11, 10, 8), (17, 17, 5)]:
-            d.ellipse((max(0, x-radius//2), y-radius//2, min(23, x+radius), min(23, y+radius//2)), fill=CLAY if kind == "clay_bank" else STONE, outline=INK)
-            d.line((x, y-radius//2+1, min(23,x+radius//2), y-radius//2+1), fill=LIGHT if kind == "clay_bank" else CREAM)
-        if kind == "iron_seam":
-            for x in [6, 12, 18]: d.line((x, 13, x+2, 17, x, 19), fill=INK, width=2)
+    elif kind == "clay_bank":
+        # Low layered earth instead of the same round boulders as stone.
+        d.polygon([(1,18),(5,14),(9,14),(10,10),(16,8),(21,11),(22,20),
+                   (17,22),(7,22)],fill=WOOD,outline=INK)
+        d.polygon([(3,17),(8,15),(12,16),(12,11),(17,10),(20,12),
+                   (19,18),(14,20),(5,20)],fill=CLAY)
+        d.line((4,17,8,16,12,17),fill="#D39262")
+        d.line((13,12,17,11,19,12),fill="#D3A77D")
+        d.line((12,18,17,16,20,16),fill="#895B44")
+        d.line((7,21,12,21),fill=CLAY)
+    elif kind in ("stone_node", "iron_seam"):
+        for x,y,w,h in [(1,16,8,6),(8,10,12,10),(16,18,7,5)]:
+            d.polygon([(x,y+2),(x+2,y),(x+w-3,y),(x+w,y+3),
+                       (x+w-1,y+h-1),(x+3,y+h),(x,y+h-2)],fill=SHADE,outline=INK)
+            d.polygon([(x+1,y+2),(x+3,y+1),(x+w-3,y+1),
+                       (x+w-2,y+3),(x+3,y+3)],fill="#CCD1BC")
+            d.polygon([(x+2,y+4),(x+w-2,y+4),(x+w-2,y+h-2),
+                       (x+3,y+h-1)],fill=STONE)
+        if kind=="iron_seam":
+            # Rusty dark mineral facets leave the host rock visible.
+            for x,y in [(11,14),(16,12),(18,20)]:
+                d.polygon([(x-1,y),(x+1,y-1),(x+2,y+1),(x,y+3)],fill=INK)
+                d.line((x,y,x+1,y+1),fill=WOOD)
+                d.point((x,y+2),fill=CLAY)
+    elif kind=="herb_patch":
+        for x,y in [(6,19),(13,14),(18,20)]:
+            d.polygon([(x,y+3),(x-4,y),(x-4,y-3),(x-1,y-1),
+                       (x,y-6),(x+2,y-3),(x+2,y-1),(x+5,y-3),
+                       (x+4,y+1)],fill=DEEP,outline=INK)
+            d.line((x,y+2,x,y-4),fill=MOSS)
+            d.line((x,y+1,x+3,y-1),fill="#93A96B")
+            d.line((x-3,y-2,x-1,y),fill=MOSS)
+            if x==13:
+                d.line((x,y-2,x+1,y-7),fill=MOSS)
+                d.point((x,y-7),fill=CREAM);d.point((x+2,y-7),fill=CREAM)
     else:
         for x, y in [(5, 16), (12, 11), (18, 17)]:
             if kind == "mushroom_patch":
@@ -127,9 +156,33 @@ def resource(kind, variant):
                 d.ellipse((x-4,y-3,x+4,y+1), fill=ROOF, outline=INK)
                 d.point((x-1,y-2), fill=CREAM)
             else:
+                assert kind=="berry_bush",kind
                 d.ellipse((x-4,y-4,x+4,y+4), fill=DEEP, outline=INK)
-                d.line((x-2,y-2,x,y), fill=MOSS)
-                d.rectangle((x+1,y-2,x+2,y-1), fill=CLAY if kind == "berry_bush" else CREAM)
+                d.ellipse((x-3,y-3,x+2,y),fill="#638354")
+                d.line((x-2,y-2,x,y-2),fill=MOSS)
+                for dx,dy in [(1,-1),(-2,1),(2,2)]:
+                    d.point((x+dx,y+dy),fill="#D39262")
+                    d.point((x+dx,y+dy+1),fill=CLAY)
+    return image
+
+
+def depleted_resource(kind):
+    image=Image.new("RGBA",(24,24));d=ImageDraw.Draw(image)
+    d.ellipse((3,19,21,23),fill=(38,60,59,48))
+    if kind=="berry_bush":
+        image=resource(kind,0)
+        colors={tuple(bytes.fromhex(c[1:])) for c in ["#D39262",CLAY]}
+        image.putdata([(*tuple(bytes.fromhex(DEEP[1:])),p[3]) if p[:3] in colors else p for p in image.get_flattened_data()])
+    elif kind=="herb_patch":
+        for x,y in [(6,20),(13,16),(18,21)]:
+            d.line((x-3,y-1,x,y+1,x+3,y-1),fill=DEEP,width=2)
+            d.line((x,y-2,x,y+1),fill=MOSS)
+            d.point((x,y-2),fill="#93A96B")
+    else:
+        assert kind=="mushroom_patch"
+        for x,y in [(5,19),(12,15),(18,20)]:
+            d.line((x-2,y+1,x+2,y+1),fill=WOOD)
+            d.line((x,y-1,x,y),fill="#BDB49A")
     return image
 
 
@@ -535,6 +588,8 @@ def main():
                 light=round(0.3*r+0.59*g+0.11*b)
                 pixels.append((min(255,light+23),min(255,light+21),min(255,light+7),a))
             art.putdata(pixels);images[f"ground/winter_{kind}/{variant}"]=art
+    for kind in ["berry_bush","herb_patch","mushroom_patch"]:
+        images[f"resource/{kind}_depleted/0"]=depleted_resource(kind)
     sheet=Image.new("RGBA",(1024,2048));x=y=row_height=0;layout={}
     for name,art in images.items():
         w,h=art.size
