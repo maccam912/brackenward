@@ -967,6 +967,9 @@ Loose mineral art (0.7.120): stone facets, clay folds, iron-bearing rock and ang
 
 Clothing and containers (0.7.121): cloaks show folds and a clasp; vests show cloth padding and leather trim matching their recipe. Milk jugs and medicine bottles have distinct shapes and overlapping quantity groups. Twelve existing regions change without altering inventories, protection, recipes or bounds.
 
+River variation (0.7.122): a deterministic presentation-only cell hash selects three ripple patterns. Two appended two-frame strips share the existing atlas and TileMap layers. Battery and reduced-motion modes use each pattern's static first frame; Balanced/Smooth retain the existing 0.8-second two-frame cadence. Water coverage, banks, movement, fishing and saves are unchanged.
+
+
 
 
 

@@ -2160,6 +2160,18 @@
       420,
       16,
       16
+    ],
+    "ground/water_strip/1": [
+      378,
+      420,
+      32,
+      16
+    ],
+    "ground/water_strip/2": [
+      412,
+      420,
+      32,
+      16
     ]
   },
   "source_components": "data/environment_sources.json",

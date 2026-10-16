@@ -83,3 +83,7 @@ with original facets, folds, mineral inclusions and angular charred pieces. All
 The 0.7.121 pass replaces cloak, vest, milk and medicine regions with original
 folds, padding, trim, jugs and bottles. Twelve regions change, preserving all
 360 bounds and other pixels. Clothing materials follow the existing recipes.
+
+The 0.7.122 pass appends two original 32x16 two-frame ripple strips. All 360
+previous rectangles and pixels remain identical; the atlas now has 362 regions
+at the same 1024x436 dimensions. Existing GPU layers select the new variants.

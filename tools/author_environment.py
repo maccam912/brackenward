@@ -821,6 +821,15 @@ def main():
             for mask in range(1,16):
                 art=soil_edge(kind,mask)
                 images[f"ground/{season}_{kind}_edge/{mask}"]=winter_ground(art) if season=="winter" else art
+    # Appended two-frame strips keep all prior atlas rectangles stable.
+    for variant in [1,2]:
+        strip=Image.new("RGBA",(32,16),WATER);d=ImageDraw.Draw(strip)
+        for frame in range(2):
+            marks=[(4,7,4)] if variant==1 else [(2,12,3),(10,3,2)]
+            for px,py,length in marks:
+                px+=frame+frame*16
+                d.line((px,py,px+length,py),fill="#80AFBA")
+        images[f"ground/water_strip/{variant}"]=strip
     sheet=Image.new("RGBA",(1024,2048));x=y=row_height=0;layout={}
     for name,art in images.items():
         w,h=art.size

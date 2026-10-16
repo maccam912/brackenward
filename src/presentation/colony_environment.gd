@@ -62,6 +62,18 @@ func _init(owner: Node) -> void:
 				edge.texture=EnvironmentArt.ATLAS;edge.texture_region_size=Vector2i(16,16)
 				edge.margins=Vector2i(EnvironmentArt.rectangle("ground/%s_%s_edge/%d" % ["winter" if season else "summer","rich" if soil else "poor",mask]).position)
 				edge.create_tile(Vector2i.ZERO);tiles.add_source(edge,11+season*30+soil*15+mask-1)
+	# Additional ripple patterns share the same atlas and the existing layers.
+	for variant in range(2):
+		for moving in range(2):
+			var ripples: TileSetAtlasSource=TileSetAtlasSource.new()
+			ripples.texture=EnvironmentArt.ATLAS;ripples.texture_region_size=Vector2i(16,16)
+			ripples.margins=Vector2i(EnvironmentArt.rectangle("ground/water_strip/%d" % (variant+1)).position)
+			ripples.create_tile(Vector2i.ZERO)
+			if moving:
+				ripples.set_tile_animation_columns(Vector2i.ZERO,2)
+				ripples.set_tile_animation_frames_count(Vector2i.ZERO,2)
+				for frame in range(2):ripples.set_tile_animation_frame_duration(Vector2i.ZERO,frame,0.8)
+			tiles.add_source(ripples,71+variant*2+moving)
 	view.terrain.tile_set=tiles
 	static_water=TileMapLayer.new();static_water.tile_set=tiles;view.ground.add_child(static_water)
 	animated_water=TileMapLayer.new();animated_water.tile_set=tiles;view.ground.add_child(animated_water)
@@ -88,14 +100,16 @@ func refresh_terrain() -> void:
 	for y in range(128):
 		for x in range(128):
 			var point: Vector2i = Vector2i(x,y)
-			var water: bool = world.terrain_state.elevation[y*128+x]==0 if world.generator_version>0 else PrototypeWorld.is_water(point)
-			if water:
-				static_water.set_cell(point,1,Vector2i.ZERO);animated_water.set_cell(point,0,Vector2i(9,0))
-				_add_banks(point)
-				continue
 			var pattern: int = x*374761393+y*668265263+(world.seed%65536)*2654435761
 			pattern=((pattern^(pattern>>13))&0x7fffffff)*1274126177
 			pattern=pattern^(pattern>>16)
+			var water: bool = world.terrain_state.elevation[y*128+x]==0 if world.generator_version>0 else PrototypeWorld.is_water(point)
+			if water:
+				var ripple: int=posmod(pattern,3)
+				static_water.set_cell(point,1 if ripple==0 else 69+ripple*2,Vector2i.ZERO)
+				animated_water.set_cell(point,0 if ripple==0 else 70+ripple*2,Vector2i(9,0) if ripple==0 else Vector2i.ZERO)
+				_add_banks(point)
+				continue
 			var variant: int = 1 if posmod(pattern,5)==0 else 0
 			if posmod(pattern>>4,29)==0: variant=2
 			var cell: int = variant

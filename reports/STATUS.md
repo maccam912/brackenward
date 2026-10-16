@@ -1,5 +1,16 @@
 # Implementation evidence
 
+River variation (16 October 2026): `0.7.122-m7`, unchanged content/schema/envelope.
+Three deterministic ripple patterns replace uniform repetition. Two appended
+strips retain every earlier pixel/rectangle and the 1024x436 atlas size. Existing
+TileMap layers and motion settings remain in use. Native before/after and actual
+pixel comparison confirm Balanced animation and unchanged Battery/reduced-motion
+frames; canonical state unchanged. UI passes 891 checks, persistence 511, content/
+font validation passes. Three sites verify exact water coverage and stable pattern
+rebuilds/static first frames. Evidence: water-* in visual-polish. Remote builds
+278/279 passed; newer builds pending. Weekly usage is 29% remaining with original
+reset unchanged. Polishing continues.
+
 Clothing/container art (16 October 2026): `0.7.121-m7`, unchanged content/schema/
 envelope. Cloak folds/clasp, cloth-and-leather vest, milk jugs and medicine bottles
 replace twelve regions; other pixels and all 360 bounds remain unchanged. Native

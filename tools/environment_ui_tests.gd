@@ -135,10 +135,30 @@ static func terrain_edges(view: WorldView, check: Callable) -> void:
 			var cell: Vector2i=Vector2i(rectangle.get_center()/16.0)
 			valid=valid and world.terrain_state.elevation[cell.y*128+cell.x]==0 and Rect2(Vector2(cell)*16,Vector2.ONE*16).encloses(rectangle)
 		check.call("ART/UI_%s_terrain_edges_stay_inside_their_actual_cells_without_saved_changes" % site,valid and world.canonical_hash()==baseline)
+		var ripple_cells: Dictionary={};var ripple_patterns: Dictionary={}
+		var water_valid: bool=true
+		for cell in environment.static_water.get_used_cells():
+			var still_id: int=environment.static_water.get_cell_source_id(cell)
+			var moving_id: int=environment.animated_water.get_cell_source_id(cell)
+			ripple_cells[cell]=[still_id,moving_id]
+			ripple_patterns[still_id]=moving_id
+			water_valid=water_valid and world.terrain_state.elevation[cell.y*128+cell.x]==0
+		water_valid=water_valid and ripple_cells.size()==world.terrain_state.elevation.count(0) and environment.animated_water.get_used_cells().size()==ripple_cells.size()
+		for still_id in ripple_patterns:
+			var moving_id: int=ripple_patterns[still_id]
+			var still_source: TileSetAtlasSource=environment.static_water.tile_set.get_source(still_id)
+			var moving_source: TileSetAtlasSource=environment.animated_water.tile_set.get_source(moving_id)
+			var coordinate: Vector2i=Vector2i(9,0) if moving_id==0 else Vector2i.ZERO
+			var moving_origin: Vector2i=moving_source.margins+coordinate*(moving_source.texture_region_size+moving_source.separation)
+			water_valid=water_valid and moving_source.get_tile_animation_frames_count(coordinate)==2 and still_source.get_tile_animation_frames_count(Vector2i.ZERO)==1 and still_source.margins==moving_origin
+		check.call("ART/UI_%s_ripple_patterns_cover_exact_water_and_share_static_first_frames" % site,water_valid and ripple_patterns.size()==3 and world.canonical_hash()==baseline)
 		var paths: Array=environment.path_rectangles.duplicate(true)
 		var banks: Array=environment.bank_rectangles.duplicate(true)
 		view.refresh_terrain();view._process(0)
 		check.call("ART/UI_%s_terrain_edge_rebuild_is_exact" % site,paths==environment.path_rectangles and banks==environment.bank_rectangles and world.canonical_hash()==baseline)
+		var ripples_stable: bool=true
+		for cell in ripple_cells:ripples_stable=ripples_stable and ripple_cells[cell]==[environment.static_water.get_cell_source_id(cell),environment.animated_water.get_cell_source_id(cell)]
+		check.call("ART/UI_%s_ripple_pattern_rebuild_is_exact" % site,ripples_stable and world.canonical_hash()==baseline)
 
 static func carrying(view: WorldView, check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()
