@@ -27,3 +27,8 @@ travelers remain for frozen prototype tests, rather than serving colony play.
 The palette shader preserves the vertex tint separately because fragment
 `COLOR` already includes the indexed texture. See the official
 [CanvasItem shader reference](https://docs.godotengine.org/en/stable/tutorials/shaders/shader_reference/canvas_item_shader.html#color-and-texture).
+
+The 0.7.96 pass bakes subtle translucent ink contact shadows into the existing
+16x24 pose bounds. The palette shader already preserves texture alpha; no shader
+or scene-node change is needed. All old opaque pixels, 99 pose regions and portrait
+bytes are retained. Contact-sheet recoloring now preserves the source alpha.

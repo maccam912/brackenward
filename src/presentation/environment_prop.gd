@@ -40,7 +40,7 @@ func sync(state: ColonyWorld, structure: Dictionary, tint: Color, reveal_roof: b
 	elif wall_visual!=null: wall_visual.hide()
 	if burning and structure.health>0:
 		if flame==null: flame=_sprite()
-		flame.visible=true;flame.region_rect=EnvironmentArt.rectangle("effect/flame/%d" % fire_frame);flame.offset=Vector2(0,-12);flame.position=Vector2(0,-8)
+		flame.visible=true;flame.region_rect=EnvironmentArt.rectangle("effect/flame/%d" % fire_frame);flame.offset=Vector2(0,-12);flame.position=Vector2(0,14-region_rect.size.y if structure.definition=="beacon" else -8)
 	elif flame!=null: flame.hide()
 	if not output_item.is_empty() and structure.health>0:
 		if output_pile==null: output_pile=_sprite();move_child(output_pile,0)

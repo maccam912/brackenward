@@ -915,6 +915,8 @@ Seasonal landscape (0.7.94): broadleaf variants gain gold/copper autumn crowns a
 
 Building render reuse (0.7.95): off-screen props retain live records and synchronize upon camera return, with a ten-tile origin margin covering the largest footprint and attached effects. Reuse building render state between unchanged ticks unless the camera, viewport, zoom, selection, room reveal or flame frame changes. World replacement and terrain refresh invalidate reuse. This preserves state-driven flames, output piles, obstruction and destruction while avoiding redundant work. Native before/after views must remain pixel-identical.
 
+Ground contact and beacon alignment (0.7.96): people/animals have small baked translucent shadows within their original frame bounds, preserving opaque art and portrait bytes. The beacon ceremony flame is anchored at source y=14 in its raised basket rather than the generic furnace base. Inactive and destroyed beacons remain unlit; the existing Active/Complete ceremony rule is unchanged.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

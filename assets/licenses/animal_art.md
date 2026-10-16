@@ -12,3 +12,7 @@ a 24x24 source canvas with a bottom-center anchor and remain cosmetic: logical
 collision, health, feeding, attacks and work come from the simulation grid/state.
 Goats share their body/horn artwork; merchant packs are a cosmetic overlay with no
 independent inventory, capacity or collision. Juvenile scale changes no world rule.
+
+The 0.7.96 pass adds subtle original translucent contact shadows inside the
+existing 24x24 pose bounds. All previous opaque pixels, species/pose regions and
+foot anchors remain intact, with no extra runtime node or texture.

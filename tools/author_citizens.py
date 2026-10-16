@@ -32,6 +32,7 @@ TRAITS = {
 def pose(body, hair, state, frame, direction):
     image = Image.new("RGBA", (16, 24))
     d = ImageDraw.Draw(image)
+    d.ellipse((2,20,14,23),fill=(0,0,0,48))
 
     def box(rect, color, outline=False):
         d.rectangle(rect, fill=MASK[color], outline=MASK[0] if outline else None)
@@ -122,6 +123,7 @@ def pose(body, hair, state, frame, direction):
         box((10, top + 1 - frame, 11, top + 1 - frame), 6)
     if state in ("sleep", "downed"):
         image = Image.new("RGBA", (16, 24));d = ImageDraw.Draw(image)
+        d.ellipse((1,20,14,23),fill=(0,0,0,48))
         box((1, 15 + breath, 5, 19 + breath), 4, True)
         box((1, 14 + breath, 4, 16 + breath), 2)
         box((5, 14, 14, 21), 1, True)
@@ -134,8 +136,8 @@ def pose(body, hair, state, frame, direction):
 
 def recolor(image, palette):
     result = image.copy()
-    remap = dict(zip(MASK, [tuple(bytes.fromhex(c)) + (255,) for c in palette]))
-    result.putdata([remap.get(pixel, (0, 0, 0, 0)) for pixel in image.get_flattened_data()])
+    remap = dict(zip([color[:3] for color in MASK], [tuple(bytes.fromhex(c)) for c in palette]))
+    result.putdata([remap.get(pixel[:3], (0, 0, 0)) + (pixel[3],) for pixel in image.get_flattened_data()])
     return result
 
 

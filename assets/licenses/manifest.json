@@ -145,7 +145,7 @@
     "source": "tools/author_citizens.py",
     "author": "Brackenward project",
     "license": "Original project asset",
-    "sha256": "c92a2a2b35c57f8322a8b8cdb324e3c8a715c199b3e45316471841a76aa4843a",
+    "sha256": "ab5959b31e77bc0098073e9d75302063c8539d3d1392ba5ec50ac08f01e32197",
     "edited": false,
     "evidence": "assets/licenses/citizen_art.md"
   },
@@ -485,7 +485,7 @@
     "source": "tools/author_animals.py",
     "author": "Brackenward project",
     "license": "Original project asset",
-    "sha256": "7cbdadb53c680ef606403b9fee3a8e166509204986bce1e55d4a621e6e1a42f1",
+    "sha256": "84ba3c6556c4288cc66d5fda04de2f8fcd9b32bed232b0e2d65a59590615d96b",
     "edited": false,
     "evidence": "assets/licenses/animal_art.md"
   },

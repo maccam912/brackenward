@@ -18,5 +18,10 @@ func capture() -> void:
 	view.center_camera(Vector2(59,54));view._process(0)
 	await process_frame;await process_frame;await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://reports/visual-polish/workshop-native.png")
+	var beacon: Dictionary=world.structures.filter(func(s:Dictionary)->bool:return s.definition=="beacon")[0]
+	world.charter_state.ceremony={"state":"Complete","end":world.tick-100};world.tick+=1
+	view.tile_size=64;view.center_camera(Vector2(beacon.x+1.5,beacon.y+1.5));view._process(0)
+	await process_frame;await process_frame;await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("res://reports/visual-polish/beacon-lit.png")
 	view.queue_free();await process_frame
 	print("VISUAL_WORKSHOP_REVIEW_COMPLETE");quit()

@@ -38,6 +38,8 @@ def pose(kind, state, frame, direction):
     def oval(rect, color, outline=True):
         d.ellipse(rect, fill=color, outline=INK if outline else None)
 
+    d.ellipse((6 if small else 2,20,18 if small else 22,23),fill=(38,60,59,48))
+
     if state == "downed":
         oval((4 if small else 2, 15, 20, 21), shade)
         oval((16, 15, 22, 20), coat)

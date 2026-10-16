@@ -1,5 +1,18 @@
 # Implementation evidence
 
+Ground contact and beacon alignment (16 October 2026): `0.7.96-m7`, unchanged
+content/schema/envelope. People and animal sprites have small baked contact shadows
+inside their original frame bounds. Every old opaque pixel is unchanged, atlas
+dimensions/pose regions are identical, and portraits remain byte-identical. The
+beacon ceremony flame now sits in its raised basket; inactive/destroyed beacons
+remain unlit. No extra runtime texture, node, light or saved field was added.
+
+Native camp, animal/visitor and close beacon views were inspected. Pinned native
+UI passes 758 checks, including inactive, Active, Complete and destroyed beacon
+states; persistence/art passes 511 and content/font validation passes. Evidence:
+`reports/visual-polish/grounding-*`, `beacon-lit.png`, and native animal capture.
+Weekly usage is 59% remaining. Physical Android remains unverified; work continues.
+
 Building render reuse (16 October 2026): `0.7.95-m7`, unchanged content/schema/
 envelope. Off-screen buildings defer visual synchronization until camera return.
 Visible building state is reused between unchanged ticks, while camera/zoom/size,

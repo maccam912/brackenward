@@ -109,6 +109,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	terrain_edges(view,check)
 	seasonal_landscape(view,check)
 	offscreen_props(view,check)
+	beacon_flame(view,check)
 	view.queue_free();await tree.process_frame;await tree.process_frame
 	tree.root.size=original_size;previous.visible=visible;previous.set_process(processing);previous.view.set_process(old_view_process)
 
@@ -197,3 +198,16 @@ static func offscreen_props(view: WorldView, check: Callable) -> void:
 	baseline=world.canonical_hash()
 	view.center_camera(Vector2(110,110));view._process(0)
 	check.call("ART/UI_camera_return_shows_offscreen_destruction_without_stale_fire",prop.visible and prop.semantic=="resource/stone_node/0" and not prop.flame.visible and world.canonical_hash()==baseline)
+
+static func beacon_flame(view: WorldView, check: Callable) -> void:
+	var world: ColonyWorld=ColonyTests.world();world.tick=3600
+	var beacon: Dictionary=world._structure("beacon",Vector2i(62,62),0)
+	view.world=world;view.refresh_terrain();view.center_camera(Vector2(63,63));view._process(0)
+	var prop: EnvironmentProp=view.environment.props[beacon.id]
+	check.call("ART/UI_unlit_beacon_does_not_invent_ceremony_fire",prop.flame==null or not prop.flame.visible)
+	for state in ["Active","Complete"]:
+		world.charter_state.ceremony={"state":state,"end":world.tick};world.tick+=1
+		var baseline: String=world.canonical_hash();view._process(0)
+		check.call("ART/UI_%s_beacon_fire_is_anchored_at_the_raised_basket" % state,prop.flame!=null and prop.flame.visible and prop.flame.position==Vector2(0,-46) and world.canonical_hash()==baseline)
+	beacon.health=0;world.tick+=1;view._process(0)
+	check.call("ART/UI_destroyed_beacon_hides_its_ceremony_fire",not prop.flame.visible)
