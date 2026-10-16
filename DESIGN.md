@@ -903,6 +903,8 @@ Path shoulders (0.7.88) add cached 1-3 pixel grass intrusions inside existing pa
 
 Atmosphere and control feedback (0.7.89): live hearth light is centered beneath the fire ring, uses a two-tile-radius additive glow and strengthens from 0.45 in daylight to 1.0 at full night, still capped at sixteen visible heat sprites. Destroyed hearths with remaining fuel show neither flame nor glow. Active top-level menus and the actual selected simulation speed use persistent pressed styling; rejected speed actions restore the actual selection. Quiet-sleep acceleration remains separately named by the clock. Selected-button text contrast is 4.60:1 against the existing purple fill.
 
+People-list portraits (0.7.90) reuse the existing portrait atlas and per-resident palette shader beside each name. Images ignore pointer input, leaving the entire native button actionable. A portrait shrinks or hides when needed to preserve the same name space as the text-only row; user names/tooltips and appearance data remain unchanged. No CPU image recoloring or new asset is required.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

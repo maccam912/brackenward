@@ -21,6 +21,8 @@ func capture() -> void:
 		await save_view("build-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.show_sheet("Work")
 		await save_view("work-%dx%d" % [viewport_size.x,viewport_size.y])
+		game.show_sheet("People")
+		await save_view("people-%dx%d" % [viewport_size.x,viewport_size.y])
 		game.close_sheet(false)
 		game.select_citizen(game.world.citizens[0].id)
 		await save_view("resident-%dx%d" % [viewport_size.x,viewport_size.y])
@@ -32,6 +34,8 @@ func capture() -> void:
 	await save_view("build-390x844-text150")
 	game.show_sheet("Work")
 	await save_view("work-390x844-text150")
+	game.show_sheet("People")
+	await save_view("people-390x844-text150")
 	await game.soundscape.drain()
 	game.queue_free();await process_frame
 	print("VISUAL_UI_REVIEW_COMPLETE");quit()

@@ -1,5 +1,19 @@
 # Implementation evidence
 
+Recognizable People list (16 October 2026): `0.7.90-m7`, unchanged content,
+schema and envelope. Resident rows show their saved clothing/hair/skin portrait
+beside the existing name. The existing portrait atlas/shader is reused; pictures
+ignore input and adapt their width before sacrificing name space. Native button
+text, tooltip, callbacks and M0 compatibility remain intact.
+
+Pinned native UI passes 742 checks. Native People captures in portrait/landscape
+and at 150% text were inspected, with no renderer errors. Content/font validation
+passes. Evidence is in `reports/visual-polish/people-*`. No CPU recolor loop or new
+asset was introduced; physical Android and performance claims remain separate.
+Build 251's repaired extended Windows/generation jobs are still running; Linux
+and ARM Mac replays have passed. Continue visual polish with periodic usage checks.
+
+
 Atmosphere and control feedback (16 October 2026): `0.7.89-m7`, unchanged
 content/schema/envelope. Dawn and dusk briefly warm the world tint while exact
 white daylight and the existing readable cool night endpoint remain. Live hearths

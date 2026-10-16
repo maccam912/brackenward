@@ -255,6 +255,29 @@ func illustrated_button(title: String, callback: Callable, parent: Node, semanti
 		result.add_theme_constant_override("icon_max_width",40 if room>=40 else 24))
 	return result
 
+func resident_button(citizen: Dictionary, callback: Callable, parent: Node) -> Button:
+	var result: Button=button(citizen.name,callback,parent)
+	result.alignment=HORIZONTAL_ALIGNMENT_LEFT
+	var picture: TextureRect=CitizenArt.portrait(citizen.appearance,40)
+	result.add_child(picture)
+	var base: StyleBox=result.get_theme_stylebox("normal")
+	var left: float=base.content_margin_left
+	var margins: float=base.get_minimum_size().x
+	var styles: Array[StyleBoxFlat]=[]
+	for state in ["normal","hover","pressed","hover_pressed","disabled","focus"]:
+		var box: StyleBoxFlat=result.get_theme_stylebox(state).duplicate()
+		box.content_margin_left=left+52
+		result.add_theme_stylebox_override(state,box);styles.append(box)
+	result.resized.connect(func()->void:
+		var text_width: float=result.get_theme_font("font").get_string_size(result.text,HORIZONTAL_ALIGNMENT_LEFT,-1,result.get_theme_font_size("font_size")).x
+		var room: float=result.size.x-margins-text_width-12
+		var side: float=40 if room>=40 else (24 if room>=24 else 0)
+		picture.visible=side>0
+		picture.custom_minimum_size=Vector2.ONE*side;picture.size=Vector2.ONE*side
+		picture.position=Vector2(left,(result.size.y-side)*0.5)
+		for box in styles: box.content_margin_left=left+(side+12 if side>0 else 0))
+	return result
+
 func direction_button(title: String, direction: Vector2, callback: Callable, parent: Node) -> Button:
 	var result: Button = button("",callback,parent)
 	result.name = title
@@ -957,9 +980,10 @@ func show_sheet(title: String, title_key: String = "", literal_title: bool = fal
 			if world is ColonyWorld: button(ColonyText.text("ui.action.newcomer_offers"),show_newcomers,sheet_body)
 			if world is ColonyWorld: button(ColonyText.text("ui.action.injuries_and_care"),show_care,sheet_body)
 			for citizen in world.citizens:
-				button(citizen.name, func() -> void:
-					if world is ColonyWorld: show_person(citizen.id)
-					else:
+				if world is ColonyWorld:
+					resident_button(citizen,func()->void:show_person(citizen.id),sheet_body)
+				else:
+					button(citizen.name, func() -> void:
 						close_sheet()
 						select_citizen(citizen.id), sheet_body)
 			if world is ColonyWorld: label(ColonyText.text("ui.help.people.overview"),sheet_body)
