@@ -18,7 +18,7 @@ static func original(bytes: PackedByteArray) -> Dictionary:
 		if legacy.has("error"): return legacy
 		return ColonyCodec.restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
-	if not ColonyCodec._keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
+	if not ColonyCodec._keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8","colony-v9"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
 		return {"error":"Unsupported save version %s / content %s. This build supports envelope 5, content %s and earlier colony migration. Original files retained." % [str(envelope.get("version","?")).left(16),str(envelope.get("content","?")).left(64),ColonyWorld.CONTENT_VERSION]}
 	if envelope.generator_version is float and envelope.generator_version==floor(envelope.generator_version) and envelope.generator_version>ColonyGeneration.VERSION:
 		return {"error":"Campaign uses generator version %d; this build supports up to %d. Update Brackenward to open it. Original files retained." % [int(envelope.generator_version),ColonyGeneration.VERSION]}
@@ -57,7 +57,7 @@ static func run(check: Callable) -> void:
 	for path: String in paths:
 		var sha: String=FileAccess.get_sha256(path)
 		exact=exact and equivalent(FileAccess.get_file_as_bytes(path)) and FileAccess.get_sha256(path)==sha
-	check.call("SAVE/shared_string_keys_match_complete_357fa04_decoder_and_order_for_47_immutable_fixtures",exact and paths.size()==47)
+	check.call("SAVE/shared_string_keys_match_complete_357fa04_decoder_and_order_for_48_immutable_fixtures",exact and paths.size()==48)
 	var cases: Array=[{},[],true,false,0,1.5,{"id":"7","name":"Sun ☀ 雨😀 {id}","route":[{"$tile":[127,0]}],"tail_ids":["1","2"]},{"id":"01"},{"id":"-1"},{"id":"1234567890123456"},{"$tile":[128,0]},{"$tile":[1,2],"extra":true},{"$map":[["1",{"id":"7"}],["2",["nested"]]]},{"$map":[["1",true],["1",false]]},{"$map":[["01",true]]},{"$map":[["1"]]},{"$map":false},{"name":null}]
 	var nested: Variant=true
 	for index in range(34):nested=[nested]

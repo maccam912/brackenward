@@ -1,5 +1,50 @@
 # Implementation evidence
 
+
+Player survival/building feedback (15 October 2026): `0.7.83-m7`, content
+`colony-v10`, schema 24 / envelope 5. Hungry residents stop unrelated work
+when no reachable portion is available, prefer enabled food supply tasks over
+pinned construction, and retain marked work that reopens door access to food.
+Tired residents head to their safe assigned bed, including at rest 100 or lower;
+old unexplained ground-collapse sleeps redirect there on the next assignment
+check. The explicit unreachable-bed fallback remains. Hungry cooks/foragers can
+finish making food above critical rest without a release/reacquire loop.
+
+The existing clock now names Dawn/Day/Dusk/Night and the world has a visibly
+cooler night tint with smooth dawn/dusk transitions and full-bright essential
+cues. Walls/palisades default to hollow rectangle painting; Shape switches to
+lines, taps remain one cell, and exact perimeter costs/omissions are previewed.
+Doors placed on planned walls cancel the wall/helpers and return unconsumed
+materials. Built walls receive real demolition work before door construction;
+progress, cancellation, recovered materials and saved dependencies are tested.
+A stump card offers Remove stump for 4 WU of Gathering, without wood yield.
+Removed sites disappear and cannot be automatically replanted by forest zones.
+
+Schema migration only adds the false tree-site flag and declared headers;
+existing acknowledged state and source fixtures remain intact. New replay
+fixtures retain 80 public commands from a fresh ordinary first-week run.
+The old v9 timed raid-payment trace is retained unchanged; its incident timing
+differs under the new resident schedule, so its receipts were not rewritten.
+
+Final sequential local validation passes all 28 core suites / 3,048 checks
+(27 headless suites / 2,316 plus native GUI / 732), and tutorial flows on all
+three sites. Python discovery passes 142 tests; content/font/message validation
+passes. The fresh replay verifies all 80 original accepted commands, canonical
+checkpoints at 7,200/72,000, saved continuation and every retained older
+acknowledgement audit. A ten-day ordinary first-week campaign advances 72,000
+ticks with zero zero-fullness ticks, minimum health 100 and a passing goal.
+Android APK export/metadata succeeds at 0.7.83-m7 (local debug code 119), and
+four cached Kotlin test results pass. The macOS export launches through its
+real Compatibility renderer and exits after 60 smoke frames with audio drained.
+`reports/needs-v83-evidence.json` and `needs-final-*` logs retain these scopes.
+Native rendered outline previews were inspected in portrait/landscape at 150%
+text; sampled night readability passes. No phone performance claim is made.
+
+Push this verified batch with its numbered development tag. Remote CI and APK
+publication are checked after the push; physical Android behavior remains for
+the user's testing. M7 performance, localization and human/device release gates
+remain open.
+
 Isolated desktop output fix (15 October 2026): run `38847287321` failed the
 first Windows export because its `build/` output directory did not exist.
 The former sequential job obtained that directory from the Android build;

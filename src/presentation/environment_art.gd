@@ -23,6 +23,12 @@ static func pile_tier(count: int, limit: int) -> int:
 static func night_color(tick: int) -> Color:
 	var hour: float = float(tick%7200)/300.0
 	var daylight: float = clampf((hour-5.0)/2.0,0.0,1.0) if hour<12 else clampf((19.0-hour)/2.0,0.0,1.0)
-	# A >=0.87 channel multiplier keeps linear luminance above 70% even in
-	# the LDR canvas. Essential overlays use a separate untinted layer.
-	return Color(lerpf(0.87,1.0,daylight),lerpf(0.90,1.0,daylight),lerpf(0.95,1.0,daylight))
+	# Visible cool nights with readable terrain. Essential cues stay untinted.
+	return Color(lerpf(0.60,1.0,daylight),lerpf(0.68,1.0,daylight),lerpf(0.84,1.0,daylight))
+
+static func day_phase(tick: int) -> String:
+	var hour: int=posmod(tick,7200)/300
+	if hour>=5 and hour<7: return "dawn"
+	if hour>=7 and hour<17: return "day"
+	if hour>=17 and hour<19: return "dusk"
+	return "night"

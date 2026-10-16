@@ -212,4 +212,11 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 			if not job.has("queue_state"): job["queue_state"]=""
 		result.schema_revision=23
 		ColonyWorkBudget.migrate(result)
+	if result.get("schema_revision")==23:
+		if not result.get("nature_state") is Dictionary or not result.nature_state.get("trees") is Dictionary: return data
+		result=result.duplicate(true)
+		for state in result.nature_state.trees.values():
+			if not state is Dictionary: return data
+			state["cleared"]=false
+		result.schema_revision=24
 	return result

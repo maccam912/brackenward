@@ -31,10 +31,10 @@ static func command(world: ColonyWorld, args: Dictionary) -> String:
 	var job: Dictionary = world.find(world.jobs,person.job)
 	if job.get("kind")=="sleep" and not person.downed:
 		var point: Vector2i = Vector2i(person.edge_x,person.edge_y) if person.progress>0 else Vector2i(person.x,person.y)
-		var use_bed: bool = not bed.is_empty() and person.rest>100
+		var use_bed: bool = not bed.is_empty()
 		if use_bed: point=Vector2i(bed.x,bed.y)
 		job.target=args.target if use_bed else 0;job.x=point.x;job.y=point.y;job.work_x=point.x;job.work_y=point.y
-		job.state="Moving";job.reason="" if use_bed else ("Exhausted: sleeping on safe ground before the next bed attempt" if not bed.is_empty() else "No assigned bed: sleeping on safe ground")
+		job.state="Moving";job.reason="" if use_bed else "No assigned bed: sleeping on safe ground"
 		person.route.clear();person.route_goal.clear()
 	world.emit_fact({"tick":world.tick,"actor":person.id,"job":0,"kind":"bed_assigned","text":person.name+(" has no assigned bed and will sleep on safe ground." if bed.is_empty() else " is assigned to "+ColonyChronicle.display_name(world,bed.id)+". They walk there when they need sleep.")},{"participants":[person.id] if bed.is_empty() else [person.id,bed.id]})
 	return "accepted"

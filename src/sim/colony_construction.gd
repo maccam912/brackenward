@@ -2,6 +2,50 @@ class_name ColonyConstruction
 extends RefCounted
 const PAINTABLE: Array = ["wood_wall","stone_wall","door","fence","pen_gate","palisade","wood_floor","stone_path","bridge"]
 const OVERLAYS: Array = ["wood_floor","stone_path"]
+const WALLS: Array = ["wood_wall","stone_wall","palisade"]
+
+static func paint_tiles(start: Vector2i, end: Vector2i, outline: bool, line: bool) -> Array[Vector2i]:
+	if line:
+		if absi(end.x-start.x)>=absi(end.y-start.y): end.y=start.y
+		else: end.x=start.x
+	var result: Array[Vector2i]=[]
+	for y in range(mini(start.y,end.y),maxi(start.y,end.y)+1):
+		for x in range(mini(start.x,end.x),maxi(start.x,end.x)+1):
+			if not outline or x in [start.x,end.x] or y in [start.y,end.y]: result.append(Vector2i(x,y))
+	return result
+
+## A door may replace one ordinary wall, never furniture or another door.
+static func replacement(world: ColonyWorld, kind: String, point: Vector2i) -> Dictionary:
+	var result: Dictionary={}
+	if kind!="door": return result
+	for structure in world.structures:
+		if structure.health>0 and structure.definition in WALLS and Vector2i(structure.x,structure.y)==point: result.structure=structure;break
+	for job in world.unfinished_jobs():
+		if job.kind=="build" and job.definition in WALLS and Vector2i(job.x,job.y)==point: result.plan=job;break
+	return result
+
+static func prepare_replacement(world: ColonyWorld, door: Dictionary) -> void:
+	var source: Dictionary=replacement(world,door.definition,Vector2i(door.x,door.y))
+	if source.has("plan"): world._release(source.plan,true)
+	if not source.has("structure"): return
+	var wall: Dictionary=source.structure
+	var demolition: Dictionary={}
+	for job in world.unfinished_jobs():
+		if job.target!=wall.id or job.kind not in ["repair","move_furniture","demolish"]: continue
+		if job.kind=="demolish": demolition=job
+		else: world._release(job,true)
+	var owned: int=0
+	if demolition.is_empty():
+		world._command({"kind":"demolish","args":{"target":wall.id}})
+		for job in world.unfinished_jobs():
+			if job.kind=="demolish" and job.target==wall.id: demolition=job;owned=job.id;break
+	door.memo={"wall":wall.id,"demolition":owned}
+
+static func cancel_replacement(world: ColonyWorld, job: Dictionary) -> void:
+	if job.memo.get("demolition",0)>0:
+		var demolition: Dictionary=world.find(world.jobs,job.memo.demolition)
+		job.memo.demolition=0
+		world._release(demolition,true)
 
 static func initial_state() -> Dictionary:
 	return {"groups":[]}
@@ -56,6 +100,7 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 		var definition: Dictionary = world.definitions.buildings[blueprint.definition]
 		var job: Dictionary = world._job("build","Building","Build",0,Vector2i(blueprint.x,blueprint.y),definition.work_milli)
 		job.definition=blueprint.definition;job.rotation=blueprint.rotation;job.inputs=definition.materials.duplicate()
+		prepare_replacement(world,job)
 		if not group.is_empty():
 			job.order=group.id;group.members.append(job.id)
 			if group.members.size()<=5: group.first.append(job.id)
@@ -63,6 +108,9 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 	return "accepted" if omitted==0 else "Accepted %d blueprints; %d blocked cells remain unsubmitted" % [blueprints.size(),omitted]
 
 static func ready(world: ColonyWorld, job: Dictionary) -> bool:
+	if job.kind=="build" and job.memo.has("wall"):
+		var wall: Dictionary=world.find(world.structures,job.memo.wall)
+		if not wall.is_empty() and wall.health>0: return world._block(job,"Waiting for wall demolition before building the door")
 	if job.kind=="build" and job.order>0:
 		var group: Dictionary = world.find(world.construction_state.groups,job.order)
 		if not group.is_empty() and group.closing==job.id and group.first.any(func(id:int)->bool:return world.find(world.jobs,id).get("state") not in ["Complete","Canceled"]): return world._block(job,"Lodge beds and door finish before its last enclosing wall")

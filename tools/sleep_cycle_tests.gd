@@ -39,6 +39,7 @@ static func run(check: Callable) -> void:
 	check.call("SLEEP/feasible_food_keeps_priority_over_ordinary_rest",world.find(world.jobs,chef.job).get("kind")=="eat" and world.invariant_errors().is_empty())
 	world=fixture();chef=world.citizens[0];chef.fullness=0
 	var job: Dictionary=world._job("sleep","","",0,Vector2i(chef.x,chef.y),0);job.worker=chef.id;job.state="Working";chef.job=job.id
+	world.find(world.structures,chef.bed).user=0;chef.bed=0
 	var before: String=world.canonical_hash();world._assign(chef)
 	check.call("SLEEP/no_feasible_food_preserves_existing_sleep",world.canonical_hash()==before and chef.job==job.id)
 
@@ -49,6 +50,7 @@ static func paced_world(kind: String, rest: int, at_tick: int = 6900) -> ColonyW
 	var person: Dictionary=world.citizens[0];var job: Dictionary=world.find(world.jobs,person.job)
 	person.rest=rest;person.rest_rem=0
 	if kind=="ground":
+		world.find(world.structures,person.bed).user=0;person.bed=0
 		person.x=90;person.y=80;person.edge_x=90;person.edge_y=80
 		job.target=0;job.x=90;job.y=80;job.work_x=90;job.work_y=80
 	else:
@@ -91,7 +93,7 @@ static func pacing(check: Callable) -> void:
 	var rest_job: Dictionary=hungry._job("sleep","","",0,Vector2i(chef.x,chef.y),0)
 	rest_job.worker=chef.id;rest_job.state="Working";chef.job=rest_job.id;chef.fullness=0;chef.rest=299
 	hungry._assign(chef)
-	check.call("REST/hungry_sleeper_recovers_minimum_rest_before_work",chef.job==rest_job.id and rest_job.state=="Working")
+	check.call("REST/hungry_sleeper_recovers_minimum_rest_before_work",chef.job==rest_job.id and rest_job.target==chef.bed and rest_job.state=="Moving")
 	chef.rest=300;hungry._create_work();hungry._assign(chef)
 	check.call("REST/hungry_sleeper_can_prepare_food_after_minimum_rest",hungry.find(hungry.jobs,chef.job).get("kind")=="cook" and rest_job.state=="Canceled" and hungry.invariant_errors().is_empty(),str([hungry.find(hungry.jobs,chef.job).get("kind"),rest_job.state,hungry.invariant_errors()]))
 	for index in range(600): hungry.step()

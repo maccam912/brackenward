@@ -17,6 +17,7 @@ var nav: GridContainer
 var speeds: HBoxContainer
 var map_tools: VBoxContainer
 var placement: VBoxContainer
+var shape_button: Button
 var preview_label: Label
 var confirm_button: Button
 var placement_nudges: HBoxContainer
@@ -373,6 +374,12 @@ func _build_placement() -> void:
 		view.preview_rotation = (view.preview_rotation + 1) % 4
 		view.fit_build_preview(), placement)
 	rotation_button.visible = false
+	shape_button=button(ColonyText.text("ui.placement.outline"),func()->void:
+		view.preview_outline=not view.preview_outline
+		view.preview_line=not view.preview_outline
+		shape_button.text=ColonyText.text("ui.placement.outline" if view.preview_outline else "ui.placement.line")
+		placement_cache_key="",placement)
+	shape_button.visible=false
 	placement_wide_row = HBoxContainer.new()
 	placement_wide_row.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	placement.add_child(placement_wide_row)
@@ -521,7 +528,7 @@ func _refresh_clock() -> void:
 	var stock: String = ColonyText.text("ui.clock.stock",{"meals":world.available("meal"),"wood":world.available("wood")}) if world is ColonyWorld else ColonyText.plural("ui.clock.travelers",world.citizens.size())
 	var speed_name: String = ColonyText.text("ui.clock.quiet_sleep",{"speed":runner.playback_speed()}) if runner.sleep_fast_forward else ColonyText.speed_label(runner.speed)
 	clock_label.tooltip_text=ColonyText.text("ui.help.quiet_sleep",{"speed":runner.speed}) if runner.sleep_fast_forward else ""
-	clock_label.text=ColonyText.text("ui.clock.status",{"season":season_name,"day":(world.tick/7200)%8+1,"year":world.tick/230400+1,"hour":"%02d" % ((world.tick%7200)/300),"minute":"%02d" % ((world.tick%300)/5),"stock":stock,"speed":speed_name})
+	clock_label.text=ColonyText.text("ui.clock.status",{"season":season_name,"phase":ColonyText.text({"dawn":"ui.clock.dawn","day":"ui.clock.day","dusk":"ui.clock.dusk","night":"ui.clock.night"}[EnvironmentArt.day_phase(world.tick)]),"day":(world.tick/7200)%8+1,"year":world.tick/230400+1,"hour":"%02d" % ((world.tick%7200)/300),"minute":"%02d" % ((world.tick%300)/5),"stock":stock,"speed":speed_name})
 
 func _start_background_save(full_snapshot: bool) -> void:
 	var started: int = Time.get_ticks_usec()
@@ -613,11 +620,12 @@ func begin_placement() -> void:
 	view.follow_id = 0
 	view.preview_visible = true
 	view.preview_definition = ""
-	view.preview_line=false;view.preview_lodge=false;view.rejected_build_tiles.clear()
+	view.preview_line=false;view.preview_outline=false;view.preview_lodge=false;view.rejected_build_tiles.clear()
 	moving_target=0;paint_build_definition="";placement_cache_key="";placement_cache.clear()
 	view.preview_resource = ""
 	placement_kind = "stockpile"
 	rotation_button.visible = false
+	shape_button.visible=false
 	view.gestures.mode = "paint"
 	placement.visible = true
 	notice = ColonyText.text("ui.placement.area_notice")
@@ -738,6 +746,7 @@ func _map_intent(action: Dictionary) -> void:
 		for job in world.unfinished_jobs():
 			if job.kind=="build" and job.state not in ["Complete","Canceled"] and world.footprint(job).has(action.tile): candidates.append({"kind":"job","object":job,"rank":4,"distance":0.0})
 		for resource in world.resources:
+			if resource.definition=="tree" and ColonyNature.tree(world,resource.id).cleared: continue
 			if Vector2i(resource.x,resource.y)==action.tile: candidates.append({"kind":"resource","object":resource,"rank":5,"distance":0.0})
 		for field in world.fields:
 			if Vector2i(field.x,field.y)==action.tile: candidates.append({"kind":"field","object":field,"rank":5,"distance":0.0})
@@ -1356,6 +1365,9 @@ func begin_build(kind: String) -> void:
 	if kind in ColonyConstruction.PAINTABLE:
 		begin_placement();placement_kind="build_area";paint_build_definition=kind
 		view.preview_line=kind not in ColonyConstruction.OVERLAYS
+		if kind in ColonyConstruction.WALLS:
+			view.preview_outline=true;view.preview_line=false
+			shape_button.visible=true;shape_button.text=ColonyText.text("ui.placement.outline")
 		rotation_button.visible=false
 		notice=ColonyText.text("ui.placement.paint_notice",{"building":_catalog_name(kind)})
 		_layout();return
@@ -1388,7 +1400,7 @@ func _preview_text() -> String:
 			placement_cache_key=key;placement_cache={"error":ColonyConstruction.lodge_error(world,view.preview_start)}
 		return ColonyText.text("ui.placement.lodge",{"status":ColonyText.text("ui.placement.valid_lodge") if placement_cache.error.is_empty() else placement_cache.error})
 	if placement_kind=="build_area":
-		var key: String = "%s|%s|%s|%d|%d" % [paint_build_definition,view.preview_start,view.preview_end,world.tick,world.next_command_id]
+		var key: String = "%s|%s|%s|%s|%d|%d" % [paint_build_definition,view.preview_start,view.preview_end,view.preview_outline,world.tick,world.next_command_id]
 		if key!=placement_cache_key:
 			placement_cache_key=key;placement_cache=_paint_preview()
 		view.rejected_build_tiles=placement_cache.rejected
@@ -1465,6 +1477,8 @@ func _resource_sheet(resource: Dictionary) -> void:
 		button(ColonyText.text("ui.action.clear_sapling" if state.planted else "ui.action.replant_tree"),func()->void:
 			_submit("clear_sapling" if state.planted else "replant_tree",{"target":resource.id})
 			close_sheet(),sheet_body)
+		button(ColonyText.text("ui.action.remove_stump"),func()->void:
+			_submit("clear_stump",{"target":resource.id});close_sheet(),sheet_body)
 
 	if resource.remaining > 0:
 		button(ColonyText.text("ui.action.gather"), func() -> void:
@@ -2530,7 +2544,7 @@ func begin_forest() -> void:
 
 func show_forest(zone: Dictionary) -> void:
 	show_sheet("Forest zone","ui.sheet.forest_zone")
-	var trees: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition == "tree" and zone.tiles.has(Vector2i(r.x,r.y)))
+	var trees: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition == "tree" and not ColonyNature.tree(world,r.id).cleared and zone.tiles.has(Vector2i(r.x,r.y)))
 	var mature: int = trees.filter(func(r:Dictionary)->bool:return r.remaining > 0).size()
 	label("%d mature / %d tree sites. Automatic cutting keeps at least %d mature, rounded up. Explicit cuts may go below the reserve. Replanting costs 4 WU; maturity takes eight non-winter days." % [mature,trees.size(),(trees.size()*zone.reserve+99)/100],sheet_body)
 	button("Reserve: %d%%" % zone.reserve,func()->void:

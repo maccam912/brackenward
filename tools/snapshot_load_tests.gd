@@ -17,7 +17,7 @@ static func original(bytes: PackedByteArray) -> Dictionary:
 		if legacy.has("error"): return legacy
 		return ColonyCodec.restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
-	if not ColonyCodec._keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
+	if not ColonyCodec._keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8","colony-v9"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
 		return {"error":"Unsupported save version %s / content %s. This build supports envelope 5, content %s and earlier colony migration. Original files retained." % [str(envelope.get("version","?")).left(16),str(envelope.get("content","?")).left(64),ColonyWorld.CONTENT_VERSION]}
 	if envelope.generator_version is float and envelope.generator_version==floor(envelope.generator_version) and envelope.generator_version>ColonyGeneration.VERSION:
 		return {"error":"Campaign uses generator version %d; this build supports up to %d. Update Brackenward to open it. Original files retained." % [int(envelope.generator_version),ColonyGeneration.VERSION]}
@@ -50,7 +50,7 @@ static func run(check: Callable) -> void:
 	for path in paths:
 		var sha: String=FileAccess.get_sha256(path)
 		exact=exact and equivalent(FileAccess.get_file_as_bytes(path)) and FileAccess.get_sha256(path)==sha
-	check.call("SAVE/owned_external_decode_matches_complete_487bb1d_for_47_immutable_fixtures",exact and paths.size()==47)
+	check.call("SAVE/owned_external_decode_matches_complete_487bb1d_for_48_immutable_fixtures",exact and paths.size()==48)
 	var world: ColonyWorld=ColonyTests.world();world.citizens[0].name="Sun ☀ 雨😀 \"quoted\" \\ {id}"
 	var bytes: PackedByteArray=ColonyCodec.encode(world,"Saved ☀ 雨😀 \\ \"quoted\"",42)
 	check.call("SAVE/owned_external_decode_keeps_unicode_names_snapshot_metadata_and_complete_state",equivalent(bytes))

@@ -279,3 +279,8 @@ priority_catalog=json.loads((root / 'data/catalogs/colony_v9.json').read_text())
 assert priority_catalog['version']=='colony-v9'
 assert {**priority_catalog,'version':'colony-v8'}==work_catalog, 'Hauling defaults and fallback must retain all catalog values'
 print('Validated fallback-hauling content v9; every catalog definition except version matches v8.')
+
+needs_catalog=json.loads((root / "data/catalogs/colony_v10.json").read_text())
+assert needs_catalog["version"]=="colony-v10"
+assert {**needs_catalog,"version":"colony-v9"}==priority_catalog
+print("Validated needs/construction content v10; catalog definitions retained exactly.")

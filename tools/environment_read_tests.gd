@@ -96,9 +96,9 @@ static func run(previous: GameSession, check: Callable) -> void:
 	resource.remaining=0;world.tick+=1
 	await compare(tree,fast,original,"depleted_resource",check)
 	var resource_tree: Dictionary=world.resources.filter(func(r:Dictionary)->bool:return r.definition=="tree")[0]
-	resource_tree.remaining=0;world.nature_state.trees[resource_tree.id]={"planted":true,"age":40000};world.navigation_dirty=true;world.tick+=1
+	resource_tree.remaining=0;world.nature_state.trees[resource_tree.id]={"planted":true,"age":40000,"cleared":false};world.navigation_dirty=true;world.tick+=1
 	await compare(tree,fast,original,"live_sapling_stage",check)
-	resource_tree.remaining=8;world.nature_state.trees[resource_tree.id]={"planted":false,"age":57600};world.navigation_dirty=true;world.tick+=1
+	resource_tree.remaining=8;world.nature_state.trees[resource_tree.id]={"planted":false,"age":57600,"cleared":false};world.navigation_dirty=true;world.tick+=1
 	await compare(tree,fast,original,"mature_tree_same_membership",check)
 	world._structure("hearth",Vector2i(70,64),0);world.tick+=1
 	await compare(tree,fast,original,"new_actor_depth_breakpoint",check)

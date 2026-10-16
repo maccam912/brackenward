@@ -1,0 +1,23 @@
+{
+	"architecture": "arm64",
+	"checkpoints": [
+		{
+			"canonical_hash": "f75c11ef9d1e51d19664546e74e0583ee5344c78435afd9cba3c89956f8c0424",
+			"snapshot_roundtrip": true,
+			"tick": "7200"
+		},
+		{
+			"canonical_hash": "f95db2e8de91caa2cab7fb5604ed562838eb15d1386636fffff3c0f0b705d037",
+			"snapshot_roundtrip": true,
+			"tick": "72000"
+		}
+	],
+	"content_hash": "3ab18315f8e2b60190bd542dec41bd9a58a21daafb3eafb2a07c73d9491f88d5",
+	"engine": "4.7.2-stable (official)",
+	"initial_hash": "9a10b3713f5410f7f0d452171c1f0fa01ebe16cf0bc0b20f21f2543fc77a5b94",
+	"input_sha256": "487894b29772069642377c006f8122bc8e63feebe0790aa0727e29c9a705eb6d",
+	"platform": "macOS",
+	"save_fixture_sha256": "05e68e06ec06ea88aa3c46e81291fe17ee1cae5aecdd8c34484723004cc02c49",
+	"schema_revision": 24,
+	"version": 1
+}

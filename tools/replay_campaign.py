@@ -58,7 +58,7 @@ def main():
            any(not re.fullmatch(r"[a-f0-9]{64}", item["canonical_hash"]) for item in evidence["checkpoints"]) or \
            "REPLAY PASS:" not in clean:
             raise RuntimeError("Replay did not produce complete passing evidence")
-        if int(evidence.get("schema_revision", 0)) == 23:
+        if int(evidence.get("schema_revision", 0)) >= 23:
             audit = report.with_name(report.stem + "-schema22-audit.json")
             audit.unlink(missing_ok=True)
             run_engine(binary, ["--script", "tools/check_budget_replay_preservation.gd", "--",

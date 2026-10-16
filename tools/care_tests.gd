@@ -145,7 +145,7 @@ static func run(check: Callable) -> void:
 	for stack in w.stacks:
 		if w.definitions.items[stack.item].fullness > 0: w._record("consumed",stack.item,stack.count); stack.count = 0
 	w._assign(patient)
-	check.call("CARE/hard_rest_refuses_work_even_without_food",w.find(w.jobs,patient.job).kind == "sleep" and w.find(w.jobs,patient.job).target == 0)
+	check.call("CARE/hard_rest_refuses_work_even_without_food",w.find(w.jobs,patient.job).kind == "sleep" and w.find(w.jobs,patient.job).target == patient.bed)
 	w = ColonyTests.world()
 	patient = w.citizens[1]
 	ColonyCare.hurt(w,patient,90,true)

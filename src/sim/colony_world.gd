@@ -2,8 +2,8 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v9"
-const SCHEMA_REVISION: int = 23
+const CONTENT_VERSION: String = "colony-v10"
+const SCHEMA_REVISION: int = 24
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -400,6 +400,7 @@ func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job
 	if unlock != "initial" and not researched.has(unlock):
 		return "Requires " + unlock.capitalize() + " research"
 	var blueprint: Dictionary = {"definition": kind, "x": anchor.x, "y": anchor.y, "rotation": rotation}
+	var replacement: Dictionary = ColonyConstruction.replacement(self,kind,anchor)
 	if kind == "fishing_pier":
 		var water: int = footprint(blueprint).filter(func(p:Vector2i)->bool:return inside(p) and is_water(p)).size()
 		if water != 2: return "Pier needs two land cells and two adjacent river cells"
@@ -407,10 +408,10 @@ func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job
 		if not inside(point): return "Outside map"
 		if kind == "bridge" and not is_water(point): return "Bridge needs an unbridged river tile"
 		var overlay_under_structure: bool = kind in ColonyConstruction.OVERLAYS and not is_water(point) and structures.any(func(s:Dictionary)->bool:return footprint(s).has(point)) and not resources.any(func(r:Dictionary)->bool:return r.remaining>0 and definitions.resources[r.definition].solid and Vector2i(r.x,r.y)==point)
-		if not walkable(point) and not overlay_under_structure and not (kind in ["bridge","fishing_pier"] and is_water(point)):
+		if not walkable(point) and not overlay_under_structure and not (replacement.get("structure",{}).get("id",0)>0 and point==anchor) and not (kind in ["bridge","fishing_pier"] and is_water(point)):
 			return "Blocked terrain"
 		for structure in structures:
-			if structure.health<=0 or structure.id==excluded_structure: continue
+			if structure.health<=0 or structure.id==excluded_structure or structure.id==replacement.get("structure",{}).get("id",0): continue
 			if kind in ColonyConstruction.OVERLAYS and structure.definition=="bridge" and footprint(structure).has(point): return "Bridge already provides its deck"
 			if (kind in ColonyConstruction.OVERLAYS)!=(structure.definition in ColonyConstruction.OVERLAYS): continue
 			if footprint(structure).has(point):
@@ -420,7 +421,7 @@ func placement_error(kind: String, anchor: Vector2i, rotation: int, excluded_job
 				return "Field occupies this tile: clear its order first"
 		for job in jobs:
 			if job.id!=excluded_job and job.kind=="move_furniture" and job.state not in ["Complete","Canceled"] and ColonyMaintenance.move_footprint(self,job).has(point): return "Reserved furniture move destination"
-			if job.id != excluded_job and job.kind == "build" and job.state not in ["Complete", "Canceled"] and footprint(job).has(point) and ((kind in ColonyConstruction.OVERLAYS)==(job.definition in ColonyConstruction.OVERLAYS)):
+			if job.id != excluded_job and job.id!=replacement.get("plan",{}).get("id",0) and job.kind == "build" and job.state not in ["Complete", "Canceled"] and footprint(job).has(point) and ((kind in ColonyConstruction.OVERLAYS)==(job.definition in ColonyConstruction.OVERLAYS)):
 				return "Another blueprint occupies this tile"
 	if definitions.buildings[kind].solid:
 		var blocked: Array[Vector2i] = footprint(blueprint)
@@ -486,6 +487,7 @@ func _command(command: Dictionary) -> String:
 			job.definition = args.definition
 			job.rotation = args.rotation
 			job.inputs = definition.materials.duplicate()
+			ColonyConstruction.prepare_replacement(self,job)
 		"gather":
 			var resource: Dictionary = find(resources, args.target)
 			if resource.is_empty() or resource.remaining == 0:
@@ -537,7 +539,7 @@ func _command(command: Dictionary) -> String:
 		"build_area", "lodge": return ColonyConstruction.command(self,command.kind,args)
 		"pen", "breeding", "slaughter": return ColonyDomestic.command(self,command.kind,args)
 		"hunt": return ColonyWildlife.command(self,args)
-		"forest", "forest_policy", "replant_tree", "clear_sapling": return ColonyNature.command(self,command.kind,args)
+		"forest", "forest_policy", "replant_tree", "clear_sapling", "clear_stump": return ColonyNature.command(self,command.kind,args)
 		"care_mode", "treat_now", "burial": return ColonyCare.command(self,command.kind,args)
 		"station_enabled":
 			var station: Dictionary = find(structures,args.target)
@@ -874,9 +876,22 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	var needs_sleep: bool = ColonyRest.wants_sleep(citizen,tick,preparing)
 	var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
 	# Release for sleep only when the same search can actually start sleeping.
-	var sleep_eligible: bool = needs_sleep and (citizen.fullness > 350 or citizen.rest <= 100)
+	var sleep_eligible: bool = needs_sleep
 	var current: Dictionary = find(jobs, citizen.job)
+	# Recover an old collapse sleep in place as soon as an assigned bed exists.
+	# An explicitly unreachable bed keeps its explained safe-ground fallback.
+	if current.get("kind")=="sleep" and current.target==0 and (current.reason.is_empty() or current.reason.begins_with("Exhausted:")):
+		var assigned_bed: Dictionary=find(structures,citizen.bed)
+		if not assigned_bed.is_empty() and assigned_bed.health>0 and ColonyDanger.safe(self,Vector2i(assigned_bed.x,assigned_bed.y)):
+			current.target=assigned_bed.id;current.x=assigned_bed.x;current.y=assigned_bed.y
+			current.work_x=assigned_bed.x;current.work_y=assigned_bed.y;current.state="Moving"
+			citizen.route.clear();citizen.route_goal.clear()
 	var hunger_food: Dictionary = {};var hunger_food_checked: bool = false
+	var food_work_only: bool = citizen.fullness<=food_threshold
+	# A hungry cook/forager may finish making food while above critical rest.
+	# Unrelated work never postpones sleep just because the food stores are empty.
+	var food_work_available: bool = food_work_only and open_jobs.any(func(j:Dictionary)->bool:return (j.worker==0 or j.worker==citizen.id) and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _food_supply_work(j))
+	if food_work_available and citizen.rest>100: sleep_eligible=false
 	var taking_break: bool = citizen.break_until > tick
 	var draft_ready: bool = citizen.drafted and not taking_break and citizen.fullness > 0 and citizen.rest > 100 and (citizen.health > 40 or citizen.stand_fast)
 	var treatment_wait: bool = not draft_ready and citizen.fullness > 0 and citizen.rest > 100 and _has_treatment(open_jobs,citizen.id)
@@ -886,7 +901,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		return
 	if not current.is_empty():
 		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and _has_emergency(open_jobs)
-		var ordinary_food: bool = not draft_ready and not current.emergency and citizen.fullness<=food_threshold and current.kind!="eat" and (current.kind!="sleep" or citizen.rest>100)
+		var ordinary_food: bool = not draft_ready and not current.emergency and citizen.fullness<=food_threshold and current.kind!="eat" and (current.kind!="sleep" or citizen.rest>=ColonyRest.TIRED)
 		if ordinary_food or (citizen.fullness==0 and current.kind!="eat"):
 			# Query the exact food that releasing this job would expose, without
 			# dropping its cargo unless a reachable meal can actually be taken.
@@ -901,8 +916,9 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 			# then eat before collecting another input or starting the next phase.
 			if current.state=="Fetching": current.state="Delivering"
 			needs_food=false
-		var hungry_sleeper: bool = current.kind=="sleep" and citizen.fullness<=350 and citizen.rest>=ColonyRest.TIRED
-		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
+		var seek_food_work: bool = food_work_only and hunger_food.is_empty() and current.kind not in PERSONAL_JOBS and not _food_supply_work(current)
+		var hungry_sleeper: bool = current.kind=="sleep" and food_work_available and citizen.rest>=ColonyRest.TIRED
+		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or seek_food_work or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
 		if urgent_self_care or break_interrupt or (emergency and not current.emergency) or change_to_defense or ordinary_needs:
 			_release(current, false)
@@ -930,8 +946,8 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		citizen.activity = "Hungry: gather berries or mushrooms and enable Cooking"
 	if sleep_eligible:
 		var bed: Dictionary = find(structures, citizen.bed)
-		var point: Vector2i = Vector2i(citizen.x, citizen.y) if bed.is_empty() or citizen.rest <= 100 else Vector2i(bed.x, bed.y)
-		if citizen.rest <= 100: bed = {}
+		if not bed.is_empty() and (bed.health<=0 or not ColonyDanger.safe(self,Vector2i(bed.x,bed.y))): bed={}
+		var point: Vector2i = Vector2i(citizen.x, citizen.y) if bed.is_empty() else Vector2i(bed.x, bed.y)
 		var sleep_job: Dictionary = _job("sleep", "", "", 0 if bed.is_empty() else bed.id, point, 0)
 		sleep_job.worker = citizen.id
 		sleep_job.state = "Moving"
@@ -959,7 +975,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		depart_job.state = "Moving"
 		citizen.job = depart_job.id
 		return
-	if citizen.break_until > tick or (hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
+	if citizen.break_until > tick or (not food_work_only and hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
 		if not taking_break:
 			var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and not _hauling_fallback(j,citizen) and _task_priority(j)==3)
 			_sort_jobs(urgent,citizen)
@@ -973,7 +989,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		leisure.worker = citizen.id
 		citizen.job = leisure.id
 		return
-	if citizen.pinned_job > 0:
+	if citizen.pinned_job > 0 and not food_work_only:
 		var pinned: Dictionary = find(jobs,citizen.pinned_job)
 		if not pinned.is_empty() and pinned.worker == 0 and (citizen.preferences.get(pinned.category,0) > 0 or pinned.kind == "treat") and _reserve(pinned,citizen):
 			citizen.job = pinned.id
@@ -984,6 +1000,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	for job in open_jobs:
 		if job.worker != 0 or job.state in ["Complete", "Canceled"] or tick < job.retry or citizen.preferences.get(job.category, 0) == 0:
 			continue
+		if food_work_only and not _food_supply_work(job): continue
 		candidates.append(job)
 	var queue: ColonyJobQueue = ColonyJobQueue.new(candidates,self,citizen)
 	var storage_context: Dictionary = {}
@@ -998,6 +1015,21 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 			return
 	if citizen.fullness > 350:
 		citizen.activity = "Idle: designate resources or place a blueprint"
+	else:
+		citizen.activity = "Hungry: gather berries or mushrooms and enable Cooking"
+
+func _food_supply_work(job: Dictionary) -> bool:
+	# Reopening a marked door approach can be necessary to reach stored food.
+	if job.kind in ["demolish","clear_sapling","clear_stump"]: return ColonyNature.door_approach(self,Vector2i(job.x,job.y))
+	if job.kind in ["cook","harvest","fish","butcher","collect_animal","slaughter"]: return true
+	if job.kind=="gather":
+		var resource: Dictionary=find(resources,job.target)
+		return not resource.is_empty() and (definitions.items[definitions.resources[resource.definition].item].fullness>0 or (resource.definition=="tree" and ColonyNature.door_approach(self,Vector2i(resource.x,resource.y))))
+	if job.kind=="craft": return job.output.keys().any(func(item:String)->bool:return definitions.items[item].fullness>0)
+	if job.kind=="haul":
+		var source: Dictionary=find(stacks,job.source)
+		return not source.is_empty() and definitions.items[source.item].fullness>0
+	return false
 
 func _care_destination(citizen: Dictionary) -> Dictionary:
 	return ColonyCare.destination(self,citizen)
@@ -1073,7 +1105,7 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 	if job.kind in ["build","build_helper"] and not ColonyConstruction.ready(self,job): return false
 	if job.kind in ["stock_feed","lead_animal","collect_animal","slaughter"] and not ColonyDomestic.reserve(self,job,citizen): return false
 	if job.kind in ["hunt","escort_hunt","butcher"] and not ColonyWildlife.reserve(self,job,citizen): return false
-	if job.kind in ["plant_tree","clear_sapling","fish"] and not ColonyNature.reserve(self,job): return false
+	if job.kind in ["plant_tree","clear_sapling","clear_stump","fish"] and not ColonyNature.reserve(self,job): return false
 	if job.kind in ["rescue","treat","feed","bury"] and not ColonyCare.reserve(self,job,citizen): return false
 	if job.kind in ["cook","craft"]: ColonyProduction.replace_food(self,job)
 	if job.kind == "research" and job.definition != production_state.project: return _block(job,"Project inactive: choose it in Research to resume")
@@ -1100,7 +1132,7 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 		var food: Dictionary = find(stacks,job.source)
 		if food.is_empty(): return _block(job,"Food moved or spoiled: choose another portion")
 		positions.append(ColonySocial.meal_seat(self,citizen,Vector2i(food.x,food.y)))
-	elif job.kind in ["repair","demolish", "gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "fish", "hunt", "escort_hunt", "butcher", "stock_feed", "lead_animal", "collect_animal", "slaughter", "enemy_treat"]:
+	elif job.kind in ["repair","demolish", "gather", "cook", "fuel", "prepare", "sow", "harvest", "replant", "mediate", "craft", "research", "treat", "feed", "bury", "plant_tree", "clear_sapling", "clear_stump", "fish", "hunt", "escort_hunt", "butcher", "stock_feed", "lead_animal", "collect_animal", "slaughter", "enemy_treat"]:
 		positions = _perimeter(footprint(find(structures, job.target))) if job.kind in ["repair","demolish","cook","fuel","craft","research","fish"] else _perimeter([point])
 	else:
 		positions.append(point)
@@ -1502,7 +1534,7 @@ func _finish(citizen: Dictionary, job: Dictionary) -> void:
 		"equip": ColonyEquipment.complete(self,citizen,job)
 		"stock_feed", "collect_animal", "slaughter": ColonyDomestic.complete(self,job)
 		"butcher": ColonyWildlife.butcher(self,job)
-		"plant_tree", "clear_sapling", "fish": ColonyNature.complete(self,job)
+		"plant_tree", "clear_sapling", "clear_stump", "fish": ColonyNature.complete(self,job)
 		"treat", "feed", "bury": ColonyCare.complete(self,citizen,job)
 		"prepare", "sow", "harvest", "replant": ColonyAgriculture.complete(self, citizen, job)
 		"gather":
@@ -1615,7 +1647,14 @@ func _release(job: Dictionary, cancel: bool) -> void:
 		var exchange: Dictionary = find(trade_state.exchanges,job.target)
 		if not exchange.is_empty() and exchange.state=="Packing": exchange.state="Canceled"
 	if job.kind=="move_furniture": ColonyMaintenance.release_move(self,job,cancel)
-	if cancel and job.kind == "build": ColonyConstruction.cancel_helpers(self,job)
+	if cancel and job.kind == "build":
+		ColonyConstruction.cancel_helpers(self,job)
+		ColonyConstruction.cancel_replacement(self,job)
+	if cancel and job.kind=="demolish" and find(structures,job.target).get("health",0)>0:
+		for door in unfinished_jobs():
+			if door.kind=="build" and door.memo.get("demolition",0)==job.id:
+				door.memo.demolition=0
+				_release(door,true)
 	if job.kind == "hunt": danger_cache_tick = -1
 	if cancel and job.kind == "hunt":
 		for escort in jobs:

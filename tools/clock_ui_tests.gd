@@ -25,7 +25,7 @@ static func run(game: GameSession, check: Callable) -> void:
 	var initial: String=game.clock_label.text
 	for frame in range(120): game._refresh_clock()
 	check.call("PERF/UI_unchanged_clock_reads_stock_once",counted.stock_reads==2 and game.clock_label.text==initial)
-	check.call("TEXT/UI_new_colony_clock_keeps_exact_english",initial=="Spring 1 Y1  06:00\nMeals 24  Wood 40 | Paused",initial)
+	check.call("TEXT/UI_new_colony_clock_keeps_exact_english",initial=="Spring 1 Y1  06:00 Dawn\nMeals 24  Wood 40 | Paused",initial)
 	game.runner.set_speed(4);game._refresh_clock()
 	check.call("PERF/UI_speed_changes_without_waiting_for_a_tick",game.clock_label.text.ends_with(" | 4x") and counted.tick==1800)
 	game.runner.pause();game._refresh_clock()
@@ -33,18 +33,18 @@ static func run(game: GameSession, check: Callable) -> void:
 	check.call("PERF/UI_clock_queries_preserve_all_simulation_state",counted.canonical_hash()==canonical)
 	counted._make_stack("meal",3,"ground",0,Vector2i(66,63),true);counted.tick+=5
 	game._refresh_clock()
-	check.call("PERF/UI_next_tick_refreshes_time_and_real_stock",game.clock_label.text=="Spring 1 Y1  06:01\nMeals 27  Wood 40 | Paused",game.clock_label.text)
+	check.call("PERF/UI_next_tick_refreshes_time_and_real_stock",game.clock_label.text=="Spring 1 Y1  06:01 Dawn\nMeals 27  Wood 40 | Paused",game.clock_label.text)
 	var replacement: ColonyWorld=ColonyTests.world();replacement.tick=counted.tick
 	replacement._make_stack("meal",7,"ground",0,Vector2i(66,63),true)
 	game._replace_world(replacement);game.close_sheet();game._refresh_clock()
-	check.call("PERF/UI_world_adoption_at_same_tick_refreshes_stock",game.clock_label.text=="Spring 1 Y1  06:01\nMeals 31  Wood 40 | Paused",game.clock_label.text)
+	check.call("PERF/UI_world_adoption_at_same_tick_refreshes_stock",game.clock_label.text=="Spring 1 Y1  06:01 Dawn\nMeals 31  Wood 40 | Paused",game.clock_label.text)
 	var labels: Array=[]
 	for season in range(4):
 		replacement.tick=season*57600+23*300+59*5;game._refresh_clock();labels.append(game.clock_label.text.get_slice("\n",0))
 	replacement.tick=230400;game._refresh_clock()
-	check.call("TEXT/UI_calendar_seasons_and_year_rollover",labels==["Spring 1 Y1  23:59","Summer 1 Y1  23:59","Autumn 1 Y1  23:59","Winter 1 Y1  23:59"] and game.clock_label.text.begins_with("Spring 1 Y2  00:00"),str(labels))
+	check.call("TEXT/UI_calendar_seasons_and_year_rollover",labels==["Spring 1 Y1  23:59 Night","Summer 1 Y1  23:59 Night","Autumn 1 Y1  23:59 Night","Winter 1 Y1  23:59 Night"] and game.clock_label.text.begins_with("Spring 1 Y2  00:00 Night"),str(labels))
 	for count in [0,1,4]:
 		var prototype: PrototypeWorld=PrototypeWorld.new();prototype.citizens.resize(count)
 		game.world=prototype;game.runner=SimRunner.new(prototype);game._refresh_clock()
-		check.call("TEXT/UI_prototype_traveler_plural_%d" % count,game.clock_label.text=="Spring 1 Y1  06:00\n%d %s | Paused" % [count,"traveler" if count==1 else "travelers"],game.clock_label.text)
+		check.call("TEXT/UI_prototype_traveler_plural_%d" % count,game.clock_label.text=="Spring 1 Y1  06:00 Dawn\n%d %s | Paused" % [count,"traveler" if count==1 else "travelers"],game.clock_label.text)
 	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()

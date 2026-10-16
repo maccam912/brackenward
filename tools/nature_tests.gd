@@ -19,7 +19,7 @@ static func run(check: Callable) -> void:
 	world.tick = 230400; ColonyWeather.initialize(world); ColonyNature.advance(world)
 	check.call("FOREST/eight_nonwinter_days_restores_eight_wood_tree",resource.remaining == 8 and not state.planted and state.age == ColonyNature.MATURITY)
 	world = ColonyTests.world(); resource = world.resources[0]; resource.remaining = 0
-	world.nature_state.trees[resource.id] = {"planted":true,"age":500}
+	world.nature_state.trees[resource.id] = {"planted":true,"age":500,"cleared":false}
 	world.queue_command("clear_sapling",{"target":resource.id})
 	for i in range(300): world.step()
 	check.call("FOREST/clearing_young_tree_yields_no_wood",not ColonyNature.tree(world,resource.id).planted and world.total("wood") == 44 and world.jobs.any(func(j:Dictionary)->bool:return j.kind == "clear_sapling" and j.required == 2000 and j.state == "Complete"))

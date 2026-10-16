@@ -2,12 +2,16 @@ class_name SchemaCompatibility
 extends RefCounted
 ## Audit only: compare every acknowledged gameplay field under an old header.
 static func normalize(world: ColonyWorld, original: Dictionary, allow_declared_deferral: bool = false) -> Dictionary:
-	if original.get("schema_revision") not in [20,21,22,23]: return {}
+	if original.get("schema_revision") not in [20,21,22,23,24]: return {}
 	var result: Dictionary = world.payload().duplicate(true)
 	result.content=original.content;result.content_hash=original.content_hash;result.schema_revision=original.schema_revision
 	if original.schema_revision<22:
 		for person in result.citizens: person.erase("appearance")
-	if original.schema_revision==23: return result
+	if original.schema_revision<24:
+		for state in result.nature_state.trees.values():
+			if state.get("cleared",true): return {}
+			state.erase("cleared")
+	if original.schema_revision>=23: return result
 	var original_jobs: Dictionary = {}
 	if allow_declared_deferral:
 		for job in original.jobs: original_jobs[job.id]=job

@@ -1,7 +1,7 @@
 class_name AssignmentViewReference
 extends ColonyWorld
 ## Complete f887763 assignment-search oracle, retaining its callback filter.
-## Updated only for the v8 hunger checkpoints; the older query strategy remains independent.
+## Updated for v10 needs rules; the older query strategy remains independent.
 func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	work_budget.mark_dirty()
 	if citizen.away: return
@@ -22,9 +22,22 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	var needs_sleep: bool = ColonyRest.wants_sleep(citizen,tick,preparing)
 	var hour: int = ((tick % 7200) / 300 + (12 if citizen.shift == "Night shift" else 0)) % 24
 	# Release for sleep only when the same search can actually start sleeping.
-	var sleep_eligible: bool = needs_sleep and (citizen.fullness > 350 or citizen.rest <= 100)
+	var sleep_eligible: bool = needs_sleep
 	var current: Dictionary = find(jobs, citizen.job)
+	# Recover an old collapse sleep in place as soon as an assigned bed exists.
+	# An explicitly unreachable bed keeps its explained safe-ground fallback.
+	if current.get("kind")=="sleep" and current.target==0 and (current.reason.is_empty() or current.reason.begins_with("Exhausted:")):
+		var assigned_bed: Dictionary=find(structures,citizen.bed)
+		if not assigned_bed.is_empty() and assigned_bed.health>0 and ColonyDanger.safe(self,Vector2i(assigned_bed.x,assigned_bed.y)):
+			current.target=assigned_bed.id;current.x=assigned_bed.x;current.y=assigned_bed.y
+			current.work_x=assigned_bed.x;current.work_y=assigned_bed.y;current.state="Moving"
+			citizen.route.clear();citizen.route_goal.clear()
 	var hunger_food: Dictionary = {};var hunger_food_checked: bool = false
+	var food_work_only: bool = citizen.fullness<=food_threshold
+	# A hungry cook/forager may finish making food while above critical rest.
+	# Unrelated work never postpones sleep just because the food stores are empty.
+	var food_work_available: bool = food_work_only and open_jobs.any(func(j:Dictionary)->bool:return (j.worker==0 or j.worker==citizen.id) and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _food_supply_work(j))
+	if food_work_available and citizen.rest>100: sleep_eligible=false
 	var taking_break: bool = citizen.break_until > tick
 	var draft_ready: bool = citizen.drafted and not taking_break and citizen.fullness > 0 and citizen.rest > 100 and (citizen.health > 40 or citizen.stand_fast)
 	var treatment_wait: bool = not draft_ready and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.kind == "treat" and j.target == citizen.id and j.state not in ["Complete","Canceled"])
@@ -34,7 +47,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		return
 	if not current.is_empty():
 		var emergency: bool = citizen.health > 20 and citizen.break_until <= tick and citizen.fullness > 0 and citizen.rest > 100 and open_jobs.any(func(j:Dictionary)->bool:return j.emergency and j.worker == 0 and j.state not in ["Complete","Canceled"] and tick >= j.retry)
-		var ordinary_food: bool = not draft_ready and not current.emergency and citizen.fullness<=food_threshold and current.kind!="eat" and (current.kind!="sleep" or citizen.rest>100)
+		var ordinary_food: bool = not draft_ready and not current.emergency and citizen.fullness<=food_threshold and current.kind!="eat" and (current.kind!="sleep" or citizen.rest>=ColonyRest.TIRED)
 		if ordinary_food or (citizen.fullness==0 and current.kind!="eat"):
 			# Query the exact food that releasing this job would expose, without
 			# dropping its cargo unless a reachable meal can actually be taken.
@@ -47,8 +60,9 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		if needs_food and citizen.fullness>0 and not food_checkpoint and _finishing_food_iteration(citizen,current):
 			if current.state=="Fetching": current.state="Delivering"
 			needs_food=false
-		var hungry_sleeper: bool = current.kind=="sleep" and citizen.fullness<=350 and citizen.rest>=ColonyRest.TIRED
-		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
+		var seek_food_work: bool = food_work_only and hunger_food.is_empty() and current.kind not in PERSONAL_JOBS and not _food_supply_work(current)
+		var hungry_sleeper: bool = current.kind=="sleep" and food_work_available and citizen.rest>=ColonyRest.TIRED
+		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or seek_food_work or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
 		if urgent_self_care or break_interrupt or (emergency and not current.emergency) or change_to_defense or ordinary_needs:
 			_release(current, false)
@@ -76,8 +90,8 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		citizen.activity = "Hungry: gather berries or mushrooms and enable Cooking"
 	if sleep_eligible:
 		var bed: Dictionary = find(structures, citizen.bed)
-		var point: Vector2i = Vector2i(citizen.x, citizen.y) if bed.is_empty() or citizen.rest <= 100 else Vector2i(bed.x, bed.y)
-		if citizen.rest <= 100: bed = {}
+		if not bed.is_empty() and (bed.health<=0 or not ColonyDanger.safe(self,Vector2i(bed.x,bed.y))): bed={}
+		var point: Vector2i = Vector2i(citizen.x, citizen.y) if bed.is_empty() else Vector2i(bed.x, bed.y)
 		var sleep_job: Dictionary = _job("sleep", "", "", 0 if bed.is_empty() else bed.id, point, 0)
 		sleep_job.worker = citizen.id
 		sleep_job.state = "Moving"
@@ -105,7 +119,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		depart_job.state = "Moving"
 		citizen.job = depart_job.id
 		return
-	if citizen.break_until > tick or (hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
+	if citizen.break_until > tick or (not food_work_only and hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
 		if not taking_break:
 			var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and not _hauling_fallback(j,citizen) and _task_priority(j)==3)
 			_sort_jobs(urgent,citizen)
@@ -119,7 +133,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		leisure.worker = citizen.id
 		citizen.job = leisure.id
 		return
-	if citizen.pinned_job > 0:
+	if citizen.pinned_job > 0 and not food_work_only:
 		var pinned: Dictionary = find(jobs,citizen.pinned_job)
 		if not pinned.is_empty() and pinned.worker == 0 and (citizen.preferences.get(pinned.category,0) > 0 or pinned.kind == "treat") and _reserve(pinned,citizen):
 			citizen.job = pinned.id
@@ -130,6 +144,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	for job in open_jobs:
 		if job.worker != 0 or job.state in ["Complete", "Canceled"] or tick < job.retry or citizen.preferences.get(job.category, 0) == 0:
 			continue
+		if food_work_only and not _food_supply_work(job): continue
 		candidates.append(job)
 	var queue: ColonyJobQueue = ColonyJobQueue.new(candidates,self,citizen)
 	var storage_context: Dictionary = {}
@@ -144,3 +159,16 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 			return
 	if citizen.fullness > 350:
 		citizen.activity = "Idle: designate resources or place a blueprint"
+	else:
+		citizen.activity = "Hungry: gather berries or mushrooms and enable Cooking"
+
+func _food_supply_work(job: Dictionary) -> bool:
+	if job.kind in ["cook","harvest","fish","butcher","collect_animal","slaughter"]: return true
+	if job.kind=="gather":
+		var resource: Dictionary=find(resources,job.target)
+		return not resource.is_empty() and definitions.items[definitions.resources[resource.definition].item].fullness>0
+	if job.kind=="craft": return job.output.keys().any(func(item:String)->bool:return definitions.items[item].fullness>0)
+	if job.kind=="haul":
+		var source: Dictionary=find(stacks,job.source)
+		return not source.is_empty() and definitions.items[source.item].fullness>0
+	return false

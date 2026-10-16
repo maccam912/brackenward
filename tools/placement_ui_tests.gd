@@ -74,7 +74,47 @@ static func run(game: GameSession, check: Callable) -> void:
 			game.view.camera_tile=Vector2(90.25,80.75)
 	await overlay_camera(game,check)
 	await bed_assignment(game,check)
+	await building_edits(game,check)
 	tree.root.size=original_size;game.size=Vector2(original_size);game.text_scale=original_scale;game._build_theme();game._layout()
+
+static func building_edits(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree()
+	for viewport_size in [Vector2i(390,844),Vector2i(960,600)]:
+		game._replace_world(ColonyTests.world());game.close_sheet();game.close_inspector();game._tutorial_dismiss()
+		tree.root.size=viewport_size;game.size=Vector2(viewport_size);game.text_scale=1.5;game._build_theme();game._layout()
+		game.view.tile_size=32;game.view.center_camera(Vector2(90,80))
+		game.begin_build("wood_wall");await tree.process_frame;await tree.process_frame
+		var start: Vector2=game.view.get_global_transform().affine_inverse()*Vector2(64,maxf(game.shape_button.get_global_rect().end.y,game.confirm_button.get_global_rect().end.y)+16)
+		var end: Vector2=start+Vector2(128,128)
+		var touch: InputEventScreenTouch=InputEventScreenTouch.new();touch.index=0;touch.pressed=true;touch.position=game.view.get_global_transform()*start
+		tree.root.push_input(touch)
+		var drag: InputEventScreenDrag=InputEventScreenDrag.new();drag.index=0;drag.position=game.view.get_global_transform()*end;drag.relative=drag.position-touch.position
+		tree.root.push_input(drag)
+		touch.pressed=false;touch.position=drag.position;tree.root.push_input(touch)
+		game._advance_frame(0);await tree.process_frame
+		var tiles: Array=game.view.preview_tiles()
+		check.call("BUILD/UI_touch_drag_makes_hollow_outline_%d" % viewport_size.x,game.view.preview_outline and tiles.size()==16 and not tiles.has(tiles[0]+Vector2i(2,2)) and game.shape_button.visible and game.shape_button.size.y>=48,str(tiles))
+		check.call("BUILD/UI_outline_toggle_and_confirm_fit_large_text_%d" % viewport_size.x,game.content.get_global_rect().encloses(game.shape_button.get_global_rect()) and game.content.get_global_rect().encloses(game.confirm_button.get_global_rect()))
+		if DisplayServer.get_name()!="headless":
+			await RenderingServer.frame_post_draw
+			tree.root.get_texture().get_image().save_png("res://reports/wall-outline-%d.png" % viewport_size.x)
+		game.shape_button.pressed.emit()
+		check.call("BUILD/UI_line_toggle_retains_corners_and_uses_five_cells_%d" % viewport_size.x,not game.view.preview_outline and game.view.preview_line and game.view.preview_tiles().size()==5)
+		game.shape_button.pressed.emit();game.confirm_placement()
+		check.call("BUILD/UI_outline_submits_exact_perimeter_once_%d" % viewport_size.x,game.world.pending_commands.size()==1 and game.world.pending_commands[0].args.tiles==tiles)
+		var door_tile: Vector2i=tiles[mini(2,tiles.size()-1)]
+		game.begin_build("door");game.view.preview_start=door_tile;game.view.preview_end=game.view.preview_start
+		game.confirm_placement()
+		check.call("BUILD/UI_door_can_replace_paused_wall_confirmation_%d" % viewport_size.x,game.world.pending_commands.size()==2 and not game.placement.visible)
+		game.world.step()
+		check.call("BUILD/UI_queued_wall_becomes_door_without_simultaneous_plans_%d" % viewport_size.x,game.world.receipts.values().all(func(value:String)->bool:return value=="accepted") and game.world.jobs.any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition=="door" and j.x==door_tile.x and j.y==door_tile.y) and not game.world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.kind=="build" and j.definition=="wood_wall" and j.x==door_tile.x and j.y==door_tile.y))
+		var stump: Dictionary=game.world.resources[0];stump.remaining=0;game.world.navigation_dirty=true
+		game._resource_sheet(stump)
+		var remove: Array=game.sheet_body.get_children().filter(func(n:Node)->bool:return n is Button and n.text==ColonyText.text("ui.action.remove_stump"))
+		check.call("FOREST/UI_stump_has_large_removal_action_%d" % viewport_size.x,remove.size()==1 and remove[0].custom_minimum_size.y>=48)
+		remove[0].pressed.emit()
+		check.call("FOREST/UI_remove_queues_public_work_command_%d" % viewport_size.x,game.world.pending_commands.size()==1 and game.world.pending_commands[0].kind=="clear_stump")
+	game._replace_world(ColonyTests.world());game.close_sheet();game._tutorial_dismiss()
 
 static func overlay_camera(game: GameSession, check: Callable) -> void:
 	var tree: SceneTree = game.get_tree()

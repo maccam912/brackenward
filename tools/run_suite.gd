@@ -77,13 +77,16 @@ func run() -> void:
 			GenerationTests.run(check)
 			GenerationRevisionTests.run(check)
 		"nature":
+			StumpRemovalTests.run(check)
 			RegrowthReadTests.run(check)
 			NatureTests.run(check)
 		"wildlife": WildlifeTests.run(check)
 		"domestic":
 			DomesticReadTests.run(check)
 			DomesticTests.run(check)
-		"construction": ConstructionTests.run(check)
+		"construction":
+			ConstructionEditTests.run(check)
+			ConstructionTests.run(check)
 		"equipment": EquipmentTests.run(check)
 		"maintenance": MaintenanceTests.run(check)
 		"population": PopulationTests.run(check)
@@ -101,6 +104,7 @@ func run() -> void:
 			LargeColonyTests.run(check)
 		"chronicle": ChronicleTests.run(check)
 		"scheduler":
+			NeedsPriorityTests.run(check)
 			AssignmentProbeTests.run(check)
 			FoodCandidatesTests.run(check)
 			AssignmentViewTests.run(check)
@@ -758,7 +762,7 @@ func ui() -> void:
 	colony_game.begin_pen();colony_game.confirm_placement();colony_game.confirm_placement()
 	check("PEN/UI_rectangle_confirm_one_atomic_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="pen")
 	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.view.refresh_terrain();colony_game.submitted_command=0
-	colony_game.begin_build("wood_wall");colony_game.view.preview_start=Vector2i(74,54);colony_game.view.preview_end=Vector2i(77,56)
+	colony_game.begin_build("wood_wall");colony_game.shape_button.pressed.emit();colony_game.view.preview_start=Vector2i(74,54);colony_game.view.preview_end=Vector2i(77,56)
 	check("BUILD/UI_drag_uses_axis_aligned_line",colony_game.view.preview_tiles()==[Vector2i(74,54),Vector2i(75,54),Vector2i(76,54),Vector2i(77,54)])
 	check("BUILD/UI_line_shows_count_and_total_cost",colony_game._preview_text().contains("Confirm 4 valid") and colony_game._preview_text().contains("8 wood"))
 	colony_game.confirm_placement();colony_game.confirm_placement()

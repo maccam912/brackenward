@@ -75,7 +75,7 @@ static func run(check: Callable) -> void:
 	for stack in world.stacks:
 		if stack.item=="meal": world._record("consumed","meal",stack.count);stack.count=0
 	world._assign(person)
-	check.call("HUNGER/no_feasible_food_keeps_productive_delivery",person.job==job.id)
+	check.call("HUNGER/no_feasible_food_pauses_unrelated_delivery_with_clear_reason",person.job==0 and job.worker==0 and person.activity.begins_with("Hungry:"))
 	world=held_load();var twin: ColonyWorld=ColonyCodec.decode(ColonyCodec.encode(world)).world
 	for index in range(800): world.step();twin.step()
 	check.call("HUNGER/save_mid_delivery_continues_identically_and_eats",world.canonical_hash()==twin.canonical_hash() and world.citizens[0].fullness>350 and world.invariant_errors().is_empty(),str(world.invariant_errors()))

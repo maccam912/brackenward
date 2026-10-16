@@ -2,7 +2,7 @@ config_version=5
 
 [application]
 config/name="Brackenward"
-config/version="0.7.82-m7"
+config/version="0.7.83-m7"
 config/icon="res://assets/exported/ui/app_icon.svg"
 run/main_scene="res://scenes/game.tscn"
 config/features=PackedStringArray("4.7", "GL Compatibility")

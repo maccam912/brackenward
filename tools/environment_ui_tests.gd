@@ -70,7 +70,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 		world.tick=7200;view._process(0)
 		var night: Image = await screenshot(tree)
 		var ratio: float = pixel_luminance(night.get_pixelv(point))/pixel_luminance(day)
-		check.call("ART/UI_actual_night_ground_keeps_at_least_70_percent_day_luminance",ratio>=0.7,str(ratio))
+		check.call("ART/UI_actual_night_ground_is_readable_and_visibly_darker_than_day",ratio>=0.30 and ratio<=0.65,str(ratio))
 		night.save_png("res://reports/environment-night.png")
 	var second: Dictionary = world.citizens[1];second.x=62;second.y=43;second.edge_x=62;second.edge_y=43
 	world.tick=3600;view._process(0)

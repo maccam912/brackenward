@@ -124,7 +124,7 @@ static func beds_and_doors(check: Callable) -> void:
 static func tree_at(world: ColonyWorld, point: Vector2i, planted: bool = false, mature: bool = false) -> Dictionary:
 	var resource: Dictionary={"id":world._id(),"definition":"tree","x":point.x,"y":point.y,"remaining":8 if mature else 0,"regrow_at":0}
 	world.resources.append(resource)
-	if planted: world.nature_state.trees[resource.id]={"planted":true,"age":100}
+	if planted: world.nature_state.trees[resource.id]={"planted":true,"age":100,"cleared":false}
 	world.navigation_dirty=true;world.reachability_dirty=true
 	return resource
 

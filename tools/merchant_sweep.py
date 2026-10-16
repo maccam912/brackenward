@@ -39,13 +39,13 @@ def initial_hash(initial, mode, golden=None):
     if golden is not None:
         directory = Path(__file__).resolve().parents[1] / "data/catalogs"
         original = read(directory / "colony_v6.json")
-        if golden["content"] != "colony-v6" or initial["content"] not in ("colony-v6", "colony-v7", "colony-v8", "colony-v9"):
+        if golden["content"] != "colony-v6" or initial["content"] not in ("colony-v6", "colony-v7", "colony-v8", "colony-v9", "colony-v10"):
             raise ValueError("Unsupported inspected content headers")
         current = read(directory / (initial["content"].replace("-", "_") + ".json"))
         digest = lambda value: hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
         # Only initial-map identity is compared here, never future crop balance.
         comparable = json.loads(json.dumps(current))
-        if initial["content"] in ("colony-v8", "colony-v9"):
+        if initial["content"] in ("colony-v8", "colony-v9", "colony-v10"):
             turnip = next(c for c in comparable["crops"] if c["id"] == "turnip")
             if turnip["growth"] != 4000:
                 raise ValueError("Unexpected v8 turnip duration")
@@ -54,7 +54,11 @@ def initial_hash(initial, mode, golden=None):
                 or {k: v for k, v in comparable.items() if k != "version"} != {k: v for k, v in original.items() if k != "version"}):
             raise ValueError("Inspected catalog definitions or exact headers differ")
         normalized["content"], normalized["content_hash"] = golden["content"], golden["catalog_sha256"]
-        if initial["content"] == "colony-v9":
+        if initial["content"] == "colony-v10":
+            if initial.get("schema_revision") != 24:
+                raise ValueError("Unexpected v10 schema revision")
+            normalized["schema_revision"] = 23
+        if initial["content"] in ("colony-v9", "colony-v10"):
             normalized["citizens"] = json.loads(json.dumps(initial["citizens"]))
             for person in normalized["citizens"]:
                 if person.get("preferences", {}).get("Hauling") != 1:

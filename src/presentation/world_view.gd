@@ -31,6 +31,7 @@ var preview_visible: bool = false
 var preview_definition: String = ""
 var preview_resource: String = ""
 var preview_line: bool = false
+var preview_outline: bool = false
 var preview_lodge: bool = false
 var rejected_build_tiles: Dictionary = {}
 var preview_rotation: int = 0
@@ -334,6 +335,7 @@ func confirmed_build_error(kind: String, tiles: Array) -> String:
 	refresh_confirmed_orders()
 	for tile in tiles:
 		for definition in confirmed_build_tiles.get(tile,[]):
+			if kind=="door" and definition in ColonyConstruction.WALLS: continue
 			if (kind in ColonyConstruction.OVERLAYS)==(definition in ColonyConstruction.OVERLAYS) or (kind in ColonyConstruction.OVERLAYS and definition=="bridge"):
 				return ColonyText.text("ui.placement.already_confirmed")
 	return ""
@@ -343,15 +345,7 @@ func cancel_gesture() -> void:
 	magnifier = Vector2(-100, -100)
 
 func preview_tiles() -> Array[Vector2i]:
-	var end: Vector2i = preview_end
-	if preview_line:
-		if absi(end.x-preview_start.x)>=absi(end.y-preview_start.y): end.y=preview_start.y
-		else: end.x=preview_start.x
-	var result: Array[Vector2i] = []
-	for y in range(mini(preview_start.y, end.y), maxi(preview_start.y, end.y) + 1):
-		for x in range(mini(preview_start.x, end.x), maxi(preview_start.x, end.x) + 1):
-			result.append(Vector2i(x, y))
-	return result
+	return ColonyConstruction.paint_tiles(preview_start,preview_end,preview_outline,preview_line)
 
 func _update_transform() -> void:
 	if ground == null:

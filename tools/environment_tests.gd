@@ -27,6 +27,6 @@ static func run(check: Callable) -> void:
 	for growth in [0,150,400]: field.growth=growth;stages.append(EnvironmentArt.crop_stage(field,{"growth":1000}))
 	field.ripe_tick=1;stages.append(EnvironmentArt.crop_stage(field,{"growth":1000}))
 	check.call("ART/farm_visuals_follow_real_planting_growth_and_readiness",stages==[0,1,2,3,4])
-	check.call("ART/night_and_dawn_remain_bright_and_midday_is_untinted",EnvironmentArt.night_color(7200).r>=0.87 and EnvironmentArt.night_color(3600)==Color.WHITE and EnvironmentArt.night_color(1800).r>EnvironmentArt.night_color(7200).r)
+	check.call("ART/night_is_visibly_cool_dawn_remains_readable_and_midday_is_untinted",EnvironmentArt.night_color(7200).r>=0.60 and EnvironmentArt.night_color(7200).b>EnvironmentArt.night_color(7200).r and EnvironmentArt.night_color(3600)==Color.WHITE and EnvironmentArt.night_color(1800).r>EnvironmentArt.night_color(7200).r)
 	var sources: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://data/environment_sources.json"))
 	check.call("ART/tiny_town_exact_cc0_license_is_retained",FileAccess.get_sha256("res://assets/licenses/kenney_tiny_town.txt")==sources.license_sha256 and sources.components.size()==19)

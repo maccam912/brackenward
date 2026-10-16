@@ -111,7 +111,7 @@ static func beds(check: Callable) -> void:
 	world.step();loaded=ColonyCodec.decode(ColonyCodec.encode(world))
 	check.call("SAVE/unassigned_sleep_roundtrip_and_conservation",loaded.has("world") and loaded.world.canonical_hash()==world.canonical_hash() and world.invariant_errors().is_empty(),str(loaded.get("error",world.invariant_errors())))
 	person.rest=50
-	check.call("BED/reassignment_preserves_exhausted_nearest_ground_sleep",ColonyBeds.command(world,{"citizen":1,"target":bed.id})=="accepted" and person.bed==bed.id and sleep.target==0 and sleep.reason.contains("Exhausted") and Vector2i(sleep.work_x,sleep.work_y)==Vector2i(person.x,person.y))
+	check.call("BED/reassignment_sends_exhausted_sleeper_to_safe_assigned_bed",ColonyBeds.command(world,{"citizen":1,"target":bed.id})=="accepted" and person.bed==bed.id and sleep.target==bed.id and sleep.reason.is_empty() and Vector2i(sleep.work_x,sleep.work_y)==Vector2i(bed.x,bed.y))
 	world=ColonyTests.world()
 	var request: Dictionary = ColonyPopulation.offer(world)
 	var roll: Dictionary = world._structure("bedroll",Vector2i(74,64),0)

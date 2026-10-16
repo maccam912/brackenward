@@ -6,7 +6,7 @@ static func initial_state(tick: int = 1800) -> Dictionary:
 	return {"trees":{},"forests":[],"fishing":{"day":(tick-1800)/7200,"river":0,"piers":{}}}
 
 static func tree(world: ColonyWorld, id: int) -> Dictionary:
-	return world.nature_state.trees.get(id,{"planted":false,"age":0})
+	return world.nature_state.trees.get(id,{"planted":false,"age":0,"cleared":false})
 
 ## Read-only warning/planner query; planting and maturity rules remain unchanged.
 static func door_approach(world: ColonyWorld, point: Vector2i) -> bool:
@@ -47,7 +47,15 @@ static func command(world: ColonyWorld, kind: String, args: Dictionary) -> Strin
 		return "accepted"
 	var resource: Dictionary = world.find(world.resources,args.target)
 	if resource.is_empty() or resource.definition != "tree" or resource.remaining > 0: return "Choose a stump or sapling"
-	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind in ["plant_tree","clear_sapling"] and j.state not in ["Complete","Canceled"]): return "Tree work already marked"
+	if tree(world,resource.id).cleared: return "This tree site has been removed"
+	if kind=="clear_stump":
+		for job in world.unfinished_jobs():
+			if job.target!=resource.id or job.kind not in ["plant_tree","clear_sapling","clear_stump"]: continue
+			if job.kind=="clear_stump": return "Stump removal already marked"
+			world._release(job,true)
+		world._job("clear_stump","Gathering","Field",resource.id,Vector2i(resource.x,resource.y),4000)
+		return "accepted"
+	if world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind in ["plant_tree","clear_sapling","clear_stump"] and j.state not in ["Complete","Canceled"]): return "Tree work already marked"
 	var state: Dictionary = tree(world,resource.id)
 	if kind == "replant_tree" and state.planted: return "Tree is already growing"
 	if kind == "clear_sapling" and not state.planted: return "No sapling to clear"
@@ -98,7 +106,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 		if not zone.enabled: continue
 		var area: Dictionary = {}
 		for p in zone.tiles: area[p] = true
-		var trees: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition == "tree" and area.has(Vector2i(r.x,r.y)))
+		var trees: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition == "tree" and not tree(world,r.id).cleared and area.has(Vector2i(r.x,r.y)))
 		var minimum: int = (trees.size()*zone.reserve+99)/100
 		var mature: Array = trees.filter(func(r:Dictionary)->bool:return r.remaining > 0)
 		var ordered: Dictionary = {}
@@ -107,7 +115,7 @@ static func create_jobs(world: ColonyWorld) -> void:
 		var queued: int = mature.filter(func(r:Dictionary)->bool:return ordered.has(r.id)).size()
 		for resource in trees:
 			var p: Vector2i = Vector2i(resource.x,resource.y)
-			if resource.remaining == 0 and not tree(world,resource.id).planted and plantable(world,p) and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind == "plant_tree" and j.state not in ["Complete","Canceled"]):
+			if resource.remaining == 0 and not tree(world,resource.id).cleared and not tree(world,resource.id).planted and plantable(world,p) and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind in ["plant_tree","clear_stump"] and j.state not in ["Complete","Canceled"]):
 				var replant: Dictionary = world._job("plant_tree","Growing","Field",resource.id,p,4000)
 				replant.order = zone.id
 		for resource in mature:
@@ -134,13 +142,14 @@ static func reserve(world: ColonyWorld, job: Dictionary) -> bool:
 		if world.nature_state.fishing.river >= 16 or world.nature_state.fishing.piers.get(pier.id,0) >= 8: return world._block(job,"Daily catch limit reached: fish recover at 06:00")
 	else:
 		var resource: Dictionary = world.find(world.resources,job.target)
-		if resource.is_empty() or resource.remaining > 0 or not plantable(world,Vector2i(resource.x,resource.y)): return world._block(job,"Stump tile occupied or tree already mature")
+		if resource.is_empty() or resource.remaining > 0 or tree(world,job.target).cleared or (job.kind!="clear_stump" and not plantable(world,Vector2i(resource.x,resource.y))): return world._block(job,"Stump tile occupied or tree already mature")
 	return true
 
 static func complete(world: ColonyWorld, job: Dictionary) -> void:
 	match job.kind:
-		"plant_tree": world.nature_state.trees[job.target] = {"planted":true,"age":0}
-		"clear_sapling": world.nature_state.trees[job.target] = {"planted":false,"age":0}
+		"plant_tree": world.nature_state.trees[job.target] = {"planted":true,"age":0,"cleared":false}
+		"clear_sapling": world.nature_state.trees[job.target] = {"planted":false,"age":0,"cleared":false}
+		"clear_stump": world.nature_state.trees[job.target] = {"planted":false,"age":0,"cleared":true}
 		"fish":
 			world.nature_state.fishing.river += 2
 			world.nature_state.fishing.piers[job.target] = world.nature_state.fishing.piers.get(job.target,0)+2
@@ -150,7 +159,7 @@ static func validate(data: Variant, resources: Array, structures: Array, tick: i
 	if not data is Dictionary or not ColonyCodec._keys(data,["trees","forests","fishing"]) or not data.trees is Dictionary or not data.forests is Array or data.forests.size() > 16384 or not data.fishing is Dictionary: return false
 	for id in data.trees:
 		var state: Variant = data.trees[id]
-		if not id is int or not state is Dictionary or not ColonyCodec._keys(state,["planted","age"]) or not state.planted is bool or not state.age is int or state.age < 0 or state.age > MATURITY or not resources.any(func(r:Dictionary)->bool:return r.id == id and r.definition == "tree"): return false
+		if not id is int or not state is Dictionary or not ColonyCodec._keys(state,["planted","age","cleared"]) or not state.planted is bool or not state.cleared is bool or not state.age is int or state.age < 0 or state.age > MATURITY or (state.cleared and (state.planted or state.age!=0)) or not resources.any(func(r:Dictionary)->bool:return r.id == id and r.definition == "tree" and (not state.cleared or r.remaining==0)): return false
 	var occupied: Dictionary = {}
 	for zone in data.forests:
 		if not zone is Dictionary or not ColonyCodec._keys(zone,["id","tiles","reserve","enabled"]) or not zone.id is int or not zone.tiles is Array or zone.tiles.is_empty() or zone.tiles.size() > 16384 or zone.reserve not in [50,75,100] or not zone.enabled is bool or not zone.tiles.all(func(p:Variant)->bool:return p is Vector2i): return false
