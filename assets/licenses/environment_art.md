@@ -53,3 +53,8 @@ The 0.7.97 pass replaces generic pile shapes for wood, grain, fiber, cloth and
 leather with original logs, tied sheaves, coils, folded cloth and hide silhouettes;
 brick piles gain a visible joint. Only these eighteen existing item regions change.
 All three quantity tiers, rectangles, atlas dimensions and other art are retained.
+
+The 0.7.105 pass adds original utility construction details for racks, granaries,
+barns, cellars, wells, fishing piers and watchposts. Only their twenty-eight
+rotation regions change. Shelves and bins represent fixtures, not stored goods.
+All source components, atlas rectangles, dimensions and foot anchors are retained.

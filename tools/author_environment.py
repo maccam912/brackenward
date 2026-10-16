@@ -394,6 +394,103 @@ def structure(kind, width, height, rotation, roof=False):
             d.line((cx-7,4,cx+7,4),fill=CREAM)
             for x in [cx-4,cx,cx+4]:d.line((x,5,x,12),fill=WOOD)
         return image
+    if kind in ("rack", "granary", "barn", "cellar", "well", "fishing_pier", "watchpost"):
+        # Original utility silhouettes. Shelves/bins are fixtures, not fake stock.
+        cx=w//2
+        d.ellipse((1,h-8,w-2,h-1),fill=(38,60,59,48))
+        if kind == "rack":
+            for y in [17,27,h-6]:
+                d.rectangle((3,y-3,w-4,y+1),fill="#A47B52",outline=INK)
+                d.line((4,y-2,w-5,y-2),fill="#D3A77D")
+            for x in [2,w-5]:
+                d.rectangle((x,9,x+2,h-2),fill=WOOD,outline=INK)
+                d.line((x+1,10,x+1,h-4),fill="#C4966B")
+            d.line((5,16,w-6,h-7),fill=WOOD)
+            d.rectangle((1,7,w-2,10),fill="#A47B52",outline=INK)
+        elif kind == "granary":
+            d.rectangle((4,15,w-5,h-5),fill=WOOD,outline=INK)
+            for x in range(6,w-6,5):
+                d.rectangle((x,17,x+2,h-8),fill="#A47B52")
+                d.line((x,17,x,h-8),fill="#C4966B")
+            for y in [21,h-12]:d.rectangle((4,y,w-5,y+2),fill=SHADE,outline=INK)
+            d.polygon([(2,15),(cx,3),(w-3,15),(w-3,20),(2,20)],fill=WOOD,outline=INK)
+            d.line((4,14,cx,5,w-5,14),fill="#D3A77D",width=2)
+            d.line((4,18,w-5,18),fill="#C4966B")
+            # A small grain carving identifies the fixed bin, not its contents.
+            d.rectangle((cx-5,26,cx+5,39),fill=INK)
+            d.line((cx,29,cx,37),fill=LIGHT)
+            for y in [29,32,35]:
+                d.line((cx-3,y-1,cx,y+1,cx+3,y-1),fill=LIGHT)
+            for x in [5,w-8]:d.rectangle((x,h-6,x+2,h-2),fill=INK)
+        elif kind == "barn":
+            # Open timber framing keeps residents and stored supplies readable.
+            d.rectangle((2,14,w-3,h-4),fill="#927453",outline=INK)
+            for y in range(16,h-5,5):d.line((3,y,w-4,y),fill="#A47B52")
+            for x in [2,cx-1,w-5]:
+                d.rectangle((x,6,x+2,h-4),fill=WOOD,outline=INK)
+                d.line((x+1,8,x+1,h-5),fill="#C4966B")
+            d.rectangle((1,7,w-2,11),fill=WOOD,outline=INK)
+            d.line((2,8,w-3,8),fill="#D3A77D")
+            for x in [5,w-14]:
+                d.line((x,13,x+8,22),fill=WOOD,width=2)
+                d.rectangle((x,25,x+8,h-9),fill=INK)
+                for y in range(27,h-10,5):d.line((x+1,y,x+7,y),fill="#C4966B")
+            d.rectangle((cx-6,h-6,cx+6,h-3),fill=WOOD,outline=INK)
+        elif kind == "cellar":
+            d.polygon([(2,16),(8,9),(w-9,9),(w-3,16),(w-3,h-3),(2,h-3)],fill=SHADE,outline=INK)
+            d.rectangle((7,16,w-8,h-7),fill=INK)
+            for y in range(20,h-9,5):
+                inset=max(0,(h-12-y)//9)
+                d.rectangle((9+inset,y,w-10-inset,y+2),fill=STONE)
+                d.line((9+inset,y+2,w-10-inset,y+2),fill=SHADE)
+            d.line((4,17,4,h-7),fill="#CCD1BC",width=2)
+            d.line((w-5,17,w-5,h-7),fill=STONE)
+            d.line((5,h-5,w-6,h-5),fill=STONE,width=2)
+            d.line((8,11,w-9,11),fill=MOSS,width=2)
+            for x in range(9,w-10,7):d.line((x,12,x+2,14),fill=DEEP)
+        elif kind == "well":
+            d.ellipse((3,h-24,w-4,h-3),fill=SHADE,outline=INK)
+            for x in [8,16,24]:d.line((x,h-10,x,h-5),fill=INK)
+            d.arc((3,h-25,w-4,h-9),0,180,fill=STONE,width=3)
+            d.ellipse((3,h-27,w-4,h-11),fill=STONE,outline=INK)
+            d.ellipse((7,h-24,w-8,h-15),fill=INK)
+            d.arc((8,h-23,w-9,h-16),0,170,fill=WATER)
+            for x in [3,w-6]:
+                d.rectangle((x,5,x+2,h-17),fill=WOOD,outline=INK)
+                d.line((x+1,6,x+1,h-19),fill="#C4966B")
+            d.rectangle((2,4,w-3,7),fill="#A47B52",outline=INK)
+            d.line((3,5,w-4,5),fill="#D3A77D")
+            d.line((5,12,w-6,12),fill=SHADE,width=2)
+            for x in range(cx-3,cx+4,2):d.line((x,10,x,14),fill=CREAM)
+            d.line((cx,14,cx,h-18),fill=CREAM)
+            d.rectangle((w-10,h-10,w-5,h-4),fill=WOOD,outline=INK)
+            d.arc((w-10,h-14,w-5,h-7),180,360,fill=SHADE)
+        elif kind == "fishing_pier":
+            d.rectangle((2,14,w-3,h-4),fill=WOOD,outline=INK)
+            for y in range(15,h-5,5):
+                d.rectangle((3,y,w-4,y+2),fill="#B08C60")
+                d.line((3,y,w-4,y),fill="#D3A77D")
+            for x in [1,w-4]:
+                for y in [12,h-8]:
+                    d.rectangle((x,y,x+2,y+6),fill=INK)
+                    d.rectangle((x,y,x+2,y+2),fill="#A47B52")
+            d.line((w-9,h-9,w-6,8),fill=WOOD)
+            d.line((w-6,8,w-2,15),fill=CREAM)
+            d.arc((4,h-17,12,h-9),0,330,fill=CREAM)
+            d.arc((6,h-15,10,h-11),0,330,fill="#A47B52")
+        else: # watchpost: raised deck, braced supports and a real ladder.
+            for x in [3,w-6]:
+                d.rectangle((x,8,x+2,h-3),fill=WOOD,outline=INK)
+                d.line((x+1,10,x+1,h-4),fill="#C4966B")
+            d.line((6,25,w-7,h-6),fill=WOOD,width=2)
+            d.line((w-7,25,6,h-6),fill=WOOD,width=2)
+            d.rectangle((1,13,w-2,23),fill=WOOD,outline=INK)
+            for y in [15,18,21]:d.line((2,y,w-3,y),fill="#C4966B")
+            d.rectangle((2,7,w-3,9),fill="#A47B52",outline=INK)
+            for x in [2,w-4]:d.rectangle((x,7,x+1,18),fill=INK)
+            for x in [cx-4,cx+4]:d.line((x,22,x,h-3),fill="#D3A77D")
+            for y in range(24,h-3,5):d.line((cx-4,y,cx+4,y),fill="#C4966B")
+        return image
     # Furniture and stations have a visible front apron and top work surface.
     d.rectangle((2,14,w-3,h-3), fill=WOOD, outline=INK)
     d.rectangle((2,12,w-3,h-8), fill="#C4966B", outline=INK)
@@ -424,26 +521,6 @@ def structure(kind, width, height, rotation, roof=False):
             for y in [8,11]:d.line((3,y,w-4,y),fill="#C4966B")
             d.rectangle((3,15,w-4,h-8),fill="#A47B52",outline=INK)
             d.line((4,16,w-5,16),fill="#D3A77D")
-    elif kind in ("rack", "granary", "barn"):
-        for y in range(14,h-6,9):
-            d.rectangle((3,y,w-4,y+3), fill=CLAY, outline=INK)
-            for x in range(5,w-6,10): d.ellipse((x,y-6,x+7,y+1), fill=LIGHT if kind == "granary" else CREAM, outline=INK)
-        if kind == "barn":
-            for x in [1,w-5]: d.rectangle((x,10,x+3,h-3), fill=WOOD, outline=INK)
-            d.line((2,11,w-3,11), fill=CLAY, width=3)
-            image.alpha_composite(tile("wood_door"),(cx-8,h-18))
-    elif kind == "cellar":
-        d.rectangle((2,12,w-3,h-2), fill=SHADE, outline=INK)
-        d.rectangle((8,16,w-9,h-7), fill=INK)
-        for y in range(18,h-8,5): d.line((9,y,w-10,y), fill=STONE, width=2)
-        d.line((6,13,6,h-3), fill=CREAM)
-    elif kind == "well":
-        d.ellipse((3,h-22,w-4,h-3), fill=STONE, outline=INK);d.ellipse((7,h-20,w-8,h-8), fill=WATER, outline=INK)
-        for x in [4,w-6]: d.rectangle((x,5,x+2,h-14), fill=WOOD, outline=INK)
-        d.rectangle((3,4,w-4,8), fill=CLAY, outline=INK);d.line((cx,8,cx,h-12), fill=CREAM)
-    elif kind == "fishing_pier":
-        for y in range(12,h-3,5): d.line((3,y,w-4,y), fill=WOOD)
-        d.line((w-7,8,w-4,h-10), fill=CREAM);d.arc((w-13,8,w-3,20),0,180,fill=INK)
     elif kind in ("workbench", "loom", "herbal_bench", "research_desk"):
         if kind == "workbench": image.alpha_composite(tile("hammer"), (w//2-8,12));image.alpha_composite(tile("farm_fork"), (2,h-20))
         elif kind == "loom":
@@ -455,10 +532,6 @@ def structure(kind, width, height, rotation, roof=False):
             d.line((cx-5,18,cx-2,18), fill=ROOF);d.line((cx+2,20,cx+5,20), fill=ROOF)
         else:
             for x in range(6,w-5,6): d.ellipse((x-2,16,x+2,20), fill=DEEP, outline=INK);d.line((x,18,x+2,14), fill=MOSS)
-    elif kind == "watchpost":
-        for x in [3,w-6]: d.rectangle((x,4,x+2,h-3), fill=WOOD, outline=INK)
-        d.rectangle((1,9,w-2,16), fill=CLAY, outline=INK)
-        for y in range(19,h-3,5): d.line((cx-3,y,cx+3,y), fill=CREAM)
     else: raise AssertionError("Missing original building artwork: " + kind)
     return image
 

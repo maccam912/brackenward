@@ -1,5 +1,17 @@
 # Implementation evidence
 
+Utility building art (16 October 2026): `0.7.105-m7`, unchanged content/schema/
+envelope. Seven utility structures now have distinct original construction: open
+racks, slatted granaries, timber barns, stone cellars/wells, planked piers and
+braced watchposts. Only their twenty-eight existing rotation regions changed;
+all 300 atlas rectangles/dimensions and other pixels are preserved. Native workshop
+and 103-structure colony captures were inspected. The recorded input snapshot
+remains unchanged and rendering preserves canonical state. Pinned persistence/art
+passes 511 checks; content/font validation passes. Evidence: `utility-*`,
+`workshop-native.png` and `mature-utility-*` in the local visual-polish folder.
+Build 264 remote CI passed; 265-267 were still running. Physical-device review
+of these revised sprites remains unverified. Polishing continues.
+
 Floodwater clarity (16 October 2026): `0.7.104-m7`, unchanged content/schema/
 envelope. Actual water now uses shallow ground tint, static ripples and perimeter
 edges beneath supplies/actors; forecast stripes stay separate and full-bright.

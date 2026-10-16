@@ -933,6 +933,8 @@ Weather atmosphere (0.7.103): current rain/flood cools the landscape, snow/cold 
 
 Floodwater presentation (0.7.104): actual flooded tiles draw a translucent shallow-water surface, small static ripples and an outer bank edge through the existing ground chunks, beneath supplies and actors. Only the authoritative flooded mask is painted. Forecast hatching remains a separate full-bright overlay and can be shown over current water; it does not create actual water. Flood recession removes the cached water commands on the next view update. Map-border neighbors are bounds checked. No flood timing, damage, movement, generation or saved-state rules change.
 
+Utility building art (0.7.105): racks have open shelves, granaries have enclosed slatted bins and a grain carving, barns have open timber framing, cellars have stone stair openings, wells have masonry rings/rope windlasses, piers have planks/posts/coiled rope, and watchposts have braced raised platforms. Fixtures do not imply stored quantities; live supplies remain separate. All twenty-eight existing rotation regions, atlas dimensions, anchors and catalog footprints are preserved.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.
