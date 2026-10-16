@@ -137,10 +137,28 @@ def resource(kind, variant):
             base = tile("conifer_base").crop((0, 8, 16, 16));image.alpha_composite(base, (8, 32))
             canopy = leafy_crown(variant)
             image.alpha_composite(canopy, (4, 8))
-    elif kind == "sapling": image.alpha_composite(tile("sapling"), (4, 8))
+    elif kind == "sapling":
+        # Air between the leaves keeps young growth distinct from mature crowns.
+        d.line((12,22,12,10),fill=INK,width=3)
+        d.line((12,21,12,12),fill=WOOD)
+        d.line((12,15,7,11),fill=INK,width=2)
+        d.line((13,18,18,14),fill=INK,width=2)
+        for points in [[(7,13),(4,10),(4,7),(8,8),(10,11)],
+                       [(12,12),(10,7),(12,3),(15,6),(15,10)],
+                       [(15,17),(16,12),(20,10),(20,14),(18,17)]]:
+            d.polygon(points,fill=DEEP,outline=INK)
+        d.line((5,8,8,10),fill=MOSS)
+        d.line((12,5,12,9),fill=MOSS)
+        d.line((19,12,17,15),fill=MOSS)
     elif kind == "stump":
-        d.ellipse((7, 16, 17, 22), fill=WOOD, outline=INK);d.ellipse((8, 15, 16, 19), fill="#D3A77D", outline=INK)
-        d.line((11, 16, 14, 18), fill=WOOD)
+        d.polygon([(7,16),(16,16),(17,20),(20,22),(15,22),(12,21),
+                   (8,23),(4,22),(7,20)],fill=WOOD,outline=INK)
+        d.line((9,18,8,21),fill="#C4966B")
+        d.line((15,18,16,21),fill="#684735")
+        d.ellipse((6,14,17,19),fill="#D3A77D",outline=INK)
+        d.ellipse((9,15,14,18),outline=WOOD)
+        d.point((11,16),fill="#E1BF91")
+        d.line((15,15,16,15),fill="#E1BF91")
     elif kind == "clay_bank":
         # Low layered earth instead of the same round boulders as stone.
         d.polygon([(1,18),(5,14),(9,14),(10,10),(16,8),(21,11),(22,20),

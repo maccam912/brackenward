@@ -961,6 +961,9 @@ Construction silhouettes (0.7.117): acknowledged unfinished build jobs add 28%-o
 
 Detail hierarchy (0.7.118): healthy stations place their actual recipes, bed assignments or storage actions before Rename and Repair/demolish. Damaged stations keep one early repair action. Research summary fields flow as whole label/value groups; long queues wrap within the safe content width after rotation. Empty queues explicitly say None. Layout lookup verifies the container type so a resident with a matching node name remains safe.
 
+Forest regrowth (0.7.119): open leaf clusters and visible stems distinguish young trees; cut rings and roots identify stumps. Only these two atlas regions change; growth timing, interaction bounds and save data are unchanged. A disposable native tree-stage gallery verifies render-only behavior.
+
+
 
 
 

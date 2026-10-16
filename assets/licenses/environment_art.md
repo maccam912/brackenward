@@ -71,3 +71,7 @@ and every other region remain unchanged. Source drawing code is retained.
 The 0.7.116 pass adds original timber fixtures, loom threads/weave, herbal mortar
 and leaf bundles, and open pages/quill. Sixteen craft-station regions change,
 retaining the inspected hammer/fork components and every atlas rectangle.
+
+The 0.7.119 pass replaces the sapling and stump regions with original open leaf
+clusters, visible stems, cut rings and roots. Every atlas rectangle and all other
+pixels are preserved; retained source components remain untouched.

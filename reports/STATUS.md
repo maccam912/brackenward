@@ -1,5 +1,15 @@
 # Implementation evidence
 
+Forest regrowth art (16 October 2026): `0.7.119-m7`, unchanged content/schema/
+envelope. Original saplings and stumps gain readable stems, leaves, rings and
+roots. Exactly two regions change; all atlas bounds and other pixels remain
+identical. Native tree-stage and mature-colony captures inspected; canonical
+state/input unchanged. Isolated UI suite passes 885 checks, content/font passes.
+An earlier concurrent capture stole focus and caused twelve pause-related UI
+failures; the isolated rerun resolves them. Evidence: regrowth-* in visual-polish
+and the plants contact sheet. Builds 276/277 passed remotely; newer builds pending.
+Weekly usage remains 31% available with original reset. Polishing continues.
+
 Android layout follow-up (16 October 2026): `0.7.118-m7`, unchanged content/
 schema/envelope. Research summary wraps whole label/value groups; healthy station
 recipes precede rename/repair, while damage keeps Repair prominent. Native UI
