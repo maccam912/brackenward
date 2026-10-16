@@ -75,3 +75,7 @@ retaining the inspected hammer/fork components and every atlas rectangle.
 The 0.7.119 pass replaces the sapling and stump regions with original open leaf
 clusters, visible stems, cut rings and roots. Every atlas rectangle and all other
 pixels are preserved; retained source components remain untouched.
+
+The 0.7.120 pass replaces twelve stone, clay, iron-ore and charcoal pile regions
+with original facets, folds, mineral inclusions and angular charred pieces. All
+360 bounds and unrelated pixels remain identical.

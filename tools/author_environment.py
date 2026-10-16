@@ -679,10 +679,26 @@ def item(kind, tier):
             d.polygon([(x+2,y-6),(x+8,y-6),(x+8,y-4),(x+11,y-2),
                        (x+8,y),(x+8,y+1),(x+2,y+1),(x+2,y-1),(x,y-2),(x+2,y-4)],fill=WOOD,outline=INK)
             d.line((x+3,y-5,x+7,y-5),fill="#C4966B")
-        elif kind in ("stone","clay","iron_ore","charcoal"):
-            color={"stone":STONE,"clay":CLAY,"iron_ore":SHADE,"charcoal":INK}[kind]
-            d.ellipse((x,y-5,min(15,x+10),y+1),fill=color,outline=INK)
-            d.line((x+3,y-3,x+7,y-3),fill=CLAY if kind=="wood" else CREAM)
+        elif kind=="clay":
+            d.polygon([(x,y-2),(x+2,y-5),(x+6,y-6),(x+10,y-3),
+                       (x+10,y),(x+6,y+1),(x+1,y+1)],fill=CLAY,outline=INK)
+            d.line((x+2,y-3,x+5,y-4,x+8,y-2),fill="#D39262")
+            d.line((x+3,y-1,x+7,y-1),fill=WOOD)
+        elif kind in ("stone","iron_ore"):
+            d.polygon([(x,y-2),(x+2,y-6),(x+7,y-7),(x+11,y-3),
+                       (x+9,y+1),(x+3,y+1)],fill=STONE,outline=INK)
+            d.polygon([(x+2,y-5),(x+6,y-6),(x+8,y-4),(x+4,y-3)],fill="#CCD1BC")
+            d.line((x+4,y-2,x+8,y-3,x+9,y-1),fill=SHADE)
+            if kind=="iron_ore":
+                d.polygon([(x+6,y-5),(x+9,y-4),(x+8,y-1),(x+5,y-2)],fill=INK)
+                d.line((x+6,y-4,x+8,y-3),fill="#B47A52")
+                d.point((x+3,y-1),fill="#895B44")
+        elif kind=="charcoal":
+            for ox,oy in [(0,0),(5,-1),(2,-4)]:
+                d.polygon([(x+ox,y+oy),(x+ox+1,y+oy-4),
+                           (x+ox+4,y+oy-5),(x+ox+5,y+oy-1),
+                           (x+ox+3,y+oy+1)],fill=INK)
+                d.line((x+ox+2,y+oy-3,x+ox+3,y+oy-1),fill="#526160")
         elif kind in ("iron","brick"):
             color={"iron":STONE,"brick":CLAY}[kind]
             d.rectangle((x,y-5,min(15,x+10),y),fill=color,outline=INK)

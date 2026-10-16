@@ -1,5 +1,14 @@
 # Implementation evidence
 
+Loose mineral art (16 October 2026): `0.7.120-m7`, unchanged content/schema/
+envelope. Stone facets, folded clay, ore inclusions and angular charcoal replace
+twelve generic pile regions. Every atlas rectangle and other pixel is retained.
+Native 84-stack gallery inspected, canonical state unchanged. UI passes 885 checks
+and content/font validation passes. Evidence: minerals-* in visual-polish and
+item contact sheet. Build 281 Android/desktop/UI/main simulation jobs passed;
+longer replay/generation jobs pending. Weekly usage is 30% remaining with original
+reset unchanged. Polishing continues.
+
 Forest regrowth art (16 October 2026): `0.7.119-m7`, unchanged content/schema/
 envelope. Original saplings and stumps gain readable stems, leaves, rings and
 roots. Exactly two regions change; all atlas bounds and other pixels remain

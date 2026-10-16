@@ -963,6 +963,9 @@ Detail hierarchy (0.7.118): healthy stations place their actual recipes, bed ass
 
 Forest regrowth (0.7.119): open leaf clusters and visible stems distinguish young trees; cut rings and roots identify stumps. Only these two atlas regions change; growth timing, interaction bounds and save data are unchanged. A disposable native tree-stage gallery verifies render-only behavior.
 
+Loose mineral art (0.7.120): stone facets, clay folds, iron-bearing rock and angular charcoal distinguish the four material piles at all three quantity tiers. These twelve regions retain existing bounds and quantity contracts.
+
+
 
 
 
