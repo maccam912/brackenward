@@ -1,4 +1,4 @@
-name: Checks, exports and development APK releases
+name: Development APK release and follow-up checks
 
 on:
   push:
@@ -145,7 +145,71 @@ jobs:
             build/
           if-no-files-found: warn
 
+  # Publish after the core build checks, before the extended validation jobs.
+  publish:
+    name: Publish development APK
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [prototype]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: development-apk
+          path: download
+      - name: Publish checked APK for this commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          TAG=$(jq -r '.release_tag' download/build.json)
+          BUILD_NUMBER=$(jq -r '.version_code' download/build.json)
+          APK_FILENAME=$(jq -r '.apk_filename' download/build.json)
+          BUILD_COMMIT=$(jq -r '.commit' download/build.json)
+          if [ "$BUILD_COMMIT" != "$GITHUB_SHA" ] || [ "$TAG" != "v0.0.$BUILD_NUMBER-dev" ]; then
+            echo "APK build metadata differs from the checked source or release version." >&2
+            exit 1
+          fi
+          cat > "$RUNNER_TEMP/release-notes.md" <<EOF
+          Development build $BUILD_NUMBER from commit $GITHUB_SHA.
+
+          Higher build numbers are newer. Download $APK_FILENAME below and sideload it on an Android 10+ arm64 phone. These development APKs share a signing identity and can update one another while preserving app data. Saves from development milestones remain explicitly versioned; do not uninstall the app to update it.
+
+          Automated simulation, UI, Kotlin, APK and desktop-export checks passed in [this run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID). Extended cross-platform replay and map-sweep checks run after publication; inspect their jobs in that run for pending, successful or failed results. Their failures remain visible without delaying this development download. Physical-phone testing remains pending. This is a debug build, not the finished game or a production-signed release.
+
+          build.json identifies the source and build; SHA256SUMS.txt verifies the APK.
+          EOF
+          if ! gh api "repos/$GH_REPO/git/ref/tags/$TAG" >/dev/null 2>&1; then
+            MAIN_SHA=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
+            if [ "$MAIN_SHA" != "$GITHUB_SHA" ]; then
+              echo "This older checked commit needs its exact tag reserved with tools/push_checkpoint.py; no release was published." >&2
+              exit 1
+            fi
+            gh api --method POST "repos/$GH_REPO/git/refs" -f "ref=refs/tags/$TAG" -f "sha=$GITHUB_SHA" >/dev/null
+          fi
+          TAG_SHA=$(gh api "repos/$GH_REPO/git/ref/tags/$TAG" --jq 'select(.object.type == "commit") | .object.sha')
+          if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+            echo "Development tag differs from the checked source; retained unchanged." >&2
+            exit 1
+          fi
+          if ! gh release view "$TAG" >/dev/null 2>&1; then
+            gh release create "$TAG" --verify-tag --title "Build $BUILD_NUMBER (development)" --draft --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
+          fi
+          gh release upload "$TAG" "download/$APK_FILENAME" download/SHA256SUMS.txt download/build.json --clobber
+          gh release edit "$TAG" --draft=false
+          {
+            echo '### Development APK published'
+            echo
+            echo "[Download build $BUILD_NUMBER](https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG)"
+            echo
+            echo 'Extended replay and map-sweep jobs run next and report their own results. The download is ready while those checks run.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
   generation-sweep:
+    needs: [publish]
+    # Also run when publication is skipped on PRs or an earlier job fails.
+    if: ${{ !cancelled() }}
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     env:
@@ -176,6 +240,9 @@ jobs:
 
   native-replay:
     name: Native replay (${{ matrix.name }})
+    needs: [publish]
+    # Preserve real failures; this condition only controls scheduling.
+    if: ${{ !cancelled() }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: ${{ matrix.job_timeout || 35 }}
     strategy:
@@ -238,55 +305,3 @@ jobs:
             reports/generation.xml
             reports/persistence.xml
           if-no-files-found: warn
-
-  publish:
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    needs: [prototype, native-replay, generation-sweep]
-    runs-on: ubuntu-24.04
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/download-artifact@v4
-        with:
-          name: development-apk
-          path: download
-      - name: Publish checked APK for this commit
-        env:
-          GH_TOKEN: ${{ github.token }}
-          GH_REPO: ${{ github.repository }}
-        run: |
-          TAG=$(jq -r '.release_tag' download/build.json)
-          BUILD_NUMBER=$(jq -r '.version_code' download/build.json)
-          APK_FILENAME=$(jq -r '.apk_filename' download/build.json)
-          BUILD_COMMIT=$(jq -r '.commit' download/build.json)
-          if [ "$BUILD_COMMIT" != "$GITHUB_SHA" ] || [ "$TAG" != "v0.0.$BUILD_NUMBER-dev" ]; then
-            echo "APK build metadata differs from the checked source or release version." >&2
-            exit 1
-          fi
-          cat > "$RUNNER_TEMP/release-notes.md" <<EOF
-          Development build $BUILD_NUMBER from commit $GITHUB_SHA.
-
-          Higher build numbers are newer. Download $APK_FILENAME below and sideload it on an Android 10+ arm64 phone. These development APKs share a signing identity and can update one another while preserving app data. Saves from development milestones remain explicitly versioned; do not uninstall the app to update it.
-
-          Automated simulation, UI, Kotlin, APK and desktop-export checks passed in [this run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID). Physical-phone testing remains pending. This is a debug build, not the finished game or a production-signed release.
-
-          build.json identifies the source and build; SHA256SUMS.txt verifies the APK.
-          EOF
-          if ! gh api "repos/$GH_REPO/git/ref/tags/$TAG" >/dev/null 2>&1; then
-            MAIN_SHA=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
-            if [ "$MAIN_SHA" != "$GITHUB_SHA" ]; then
-              echo "This older checked commit needs its exact tag reserved with tools/push_checkpoint.py; no release was published." >&2
-              exit 1
-            fi
-            gh api --method POST "repos/$GH_REPO/git/refs" -f "ref=refs/tags/$TAG" -f "sha=$GITHUB_SHA" >/dev/null
-          fi
-          TAG_SHA=$(gh api "repos/$GH_REPO/git/ref/tags/$TAG" --jq 'select(.object.type == "commit") | .object.sha')
-          if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
-            echo "Development tag differs from the checked source; retained unchanged." >&2
-            exit 1
-          fi
-          if ! gh release view "$TAG" >/dev/null 2>&1; then
-            gh release create "$TAG" --verify-tag --title "Build $BUILD_NUMBER (development)" --draft --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
-          fi
-          gh release upload "$TAG" "download/$APK_FILENAME" download/SHA256SUMS.txt download/build.json --clobber
-          gh release edit "$TAG" --draft=false

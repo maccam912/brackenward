@@ -1,5 +1,24 @@
 # Implementation evidence
 
+Development APK before extended validation (15 October 2026): CI now runs
+the existing core simulation/UI/Kotlin/build/export job, publishes the exact
+commit's APK, then starts the four native replay jobs and the independent
+generation sweep. Extended failures remain real failed checks with their
+existing evidence uploads, and cannot delay an already published download.
+They also run after failed build/publication attempts and skipped PR
+publication unless the workflow is cancelled. The publication summary links
+directly to the download; release notes link to the follow-up check results
+without claiming those checks passed. `DESIGN.md` §23.3 and `README.md` describe
+the ordering and separate certification status. No gameplay, save format,
+core validation, platform coverage, signing or exact-source tag guards changed.
+
+Local validation: actionlint and whitespace checks pass. Parsed-workflow
+checks verify the acyclic build → publish → replay/sweep dependencies, the
+PR/upstream-failure scheduling condition, all four platforms, preserved
+failure reporting, unchanged core jobs/evidence and exact-source release
+guards. Remote execution and APK publication for this checkpoint remain
+pending; they are separate from this local workflow validation.
+
 Hauling-priority feedback (15 October 2026): `0.7.82-m7`, content `colony-v9`,
 unchanged schema 23 / envelope 5. Starting residents and newcomers default
 Hauling to Last while retaining their other specialties/preferences. Ordinary
