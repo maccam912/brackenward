@@ -24,6 +24,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	menu_feedback(game,check)
 	await menu_lifetime(game,check)
 	await status_spacing(game,check)
+	await research_cards(game,check)
 	await weather_cards(game,check)
 	await weather_columns(game,check)
 	await flood_preview_camera(game,check)
@@ -279,3 +280,32 @@ static func weather_columns(game: GameSession, check: Callable) -> void:
 	await tree.process_frame;await tree.process_frame;await tree.process_frame
 	check.call("WEATHER/UI_rotation_reflows_same_cards_without_changing_order_or_world",grid.columns==1 and cards==grid.get_children() and game.world.canonical_hash()==baseline)
 	game.text_scale=original_scale;game._build_theme();game.close_sheet(false);tree.root.size=original_size
+
+static func research_cards(game: GameSession, check: Callable) -> void:
+	var tree: SceneTree=game.get_tree()
+	var original_size: Vector2i=tree.root.size;var original_scale: float=game.text_scale
+	var original: ColonyWorld=game.world
+	var world: ColonyWorld=ColonyTests.world();game._replace_world(world);game._tutorial_dismiss()
+	world.researched.append("storecraft")
+	world.production_state.project="woodcraft";world.production_state.progress.woodcraft=123456
+	world.production_state.queue=["metalwork"]
+	var baseline: String=world.canonical_hash()
+	for entry in [[Vector2i(390,844),1.0,1],[Vector2i(390,844),1.5,1],[Vector2i(1100,720),1.0,2]]:
+		tree.root.size=entry[0];game.text_scale=entry[1];game._build_theme();game.show_research()
+		await tree.process_frame;await tree.process_frame;await tree.process_frame
+		var cards: GridContainer=game.sheet_body.get_node("ResearchCards")
+		var active: PanelContainer=cards.get_node("Research_woodcraft")
+		var complete: PanelContainer=cards.get_node("Research_storecraft")
+		var locked: PanelContainer=cards.get_node("Research_metalwork")
+		var meter: ProgressBar=active.find_child("ResearchProgress",true,false)
+		var done: ProgressBar=complete.find_child("ResearchProgress",true,false)
+		var valid: bool=cards.get_child_count()==12 and cards.columns==entry[2] and cards.size.x<=game.sheet_body.size.x+1
+		for card in cards.get_children():
+			valid=valid and card.size.x<=cards.size.x+1
+			for picture in card.find_children("ObjectPortrait","TextureRect",true,false):
+				valid=valid and picture.texture.region.has_area() and picture.texture.atlas==EnvironmentArt.ATLAS
+		check.call("RESEARCH/UI_cards_wrap_all_twelve_projects_at_%s_text_%s" % [entry[0],entry[1]],valid and world.canonical_hash()==baseline)
+		check.call("RESEARCH/UI_exact_milli_progress_completed_state_and_active_border_%s" % entry[1],meter.value==123456 and meter.max_value==240000 and done.value==done.max_value and active.get_theme_stylebox("panel").border_color==Color("E9BA67") and complete.find_children("*","Button",true,false).is_empty())
+		check.call("RESEARCH/UI_locked_queued_project_keeps_requirements_and_queue_action_%s" % entry[1],locked.find_children("*","Label",true,false).any(func(l:Label)->bool:return l.text.contains("Requires") and l.text.contains("Queue 1")) and locked.find_children("*","Button",true,false).size()==1 and locked.find_children("*","Button",true,false)[0].text=="Queue Metalwork")
+	game.close_sheet(false);game._replace_world(original);game._tutorial_dismiss()
+	game.text_scale=original_scale;game._build_theme();tree.root.size=original_size

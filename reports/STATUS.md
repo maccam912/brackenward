@@ -1,5 +1,15 @@
 # Implementation evidence
 
+Illustrated research cards (16 October 2026): `0.7.112-m7`, unchanged content/
+schema/envelope. Twelve grouped project cards show actual unlock art, exact
+milli-point progress, active/complete/prerequisite states and queue positions.
+Wide layouts use two columns, phone/large-text views one. Native captures inspected
+at 100/150%; UI passes 852 checks, including command application, all twelve
+unlocks, completed/active/locked/queued fixtures and unchanged world state.
+Content/font validation and 12 string/message tests pass. Evidence: `research-*`
+in visual-polish. Weekly usage 39% remaining; original reset unchanged.
+Polishing continues; physical Android remains unverified.
+
 Soft soil transitions (16 October 2026): `0.7.111-m7`, unchanged content/schema/
 envelope. Baked grass fringes soften poor/rich patch edges in summer and winter
 without changing terrain data. All 300 previous atlas regions retain exact bounds

@@ -2392,19 +2392,50 @@ func show_research() -> void:
 	show_sheet("Research","ui.sheet.research")
 	label(ColonyText.text("ui.help.research.one_active_project_up_to_two_desks"),sheet_body)
 	label("Active: "+("None" if world.production_state.project.is_empty() else _catalog_name(world.production_state.project))+"\nQueue: "+", ".join(world.production_state.queue.map(_catalog_name))+"\nBanked insight: %d" % world.production_state.insight,sheet_body)
+	var cards: GridContainer=GridContainer.new();cards.name="ResearchCards";sheet_body.add_child(cards)
+	cards.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	cards.add_theme_constant_override("h_separation",8);cards.add_theme_constant_override("v_separation",8)
+	cards.resized.connect(func()->void:cards.columns=2 if cards.size.x>=600*text_scale else 1)
 	for id in world.definitions.research:
 		var definition: Dictionary = world.definitions.research[id]
 		var missing: Array = definition.prerequisites.filter(func(p:Variant)->bool:return not world.researched.has(p))
-		label("%s | %d/%d points\n%s" % [id.capitalize(),world.production_state.progress.get(id,0)/1000,definition.points,"Complete" if world.researched.has(id) else ("Available" if missing.is_empty() else "Requires "+", ".join(missing))],sheet_body)
-		label("Unlocks: "+", ".join(definition.unlocks.map(_catalog_name)),sheet_body)
-		if not world.researched.has(id):
+		var complete: bool=world.researched.has(id)
+		var active: bool=world.production_state.project==id
+		var state: String="Complete" if complete else ("Studying" if active else ("Available" if missing.is_empty() else "Requires "+", ".join(missing.map(_catalog_name))))
+		var queued: int=world.production_state.queue.find(id)
+		if queued>=0:state+=" | Queue %d" % (queued+1)
+		var panel: PanelContainer=PanelContainer.new();panel.name="Research_"+id;cards.add_child(panel)
+		panel.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		var background: StyleBoxFlat=_box(Color("2C4440"),Color("E9BA67") if active else Color("4D6656"))
+		background.content_margin_top=10;background.content_margin_bottom=10
+		panel.add_theme_stylebox_override("panel",background)
+		var body: VBoxContainer=VBoxContainer.new();panel.add_child(body)
+		var progress: int=definition.points*1000 if complete else world.production_state.progress.get(id,0)
+		illustrated_summary("%s\n%s\n%d/%d points" % [_catalog_name(id),state,progress/1000,definition.points],body,_research_art(definition))
+		var meter: ProgressBar=ProgressBar.new();meter.name="ResearchProgress"
+		meter.max_value=definition.points*1000;meter.value=progress;meter.show_percentage=false;meter.custom_minimum_size.y=6
+		meter.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		var track: StyleBoxFlat=StyleBoxFlat.new();track.bg_color=Color("1E302F");track.set_corner_radius_all(2)
+		var fill: StyleBoxFlat=StyleBoxFlat.new();fill.bg_color=Color("E9BA67") if active else Color("A6B878");fill.set_corner_radius_all(2)
+		meter.add_theme_stylebox_override("background",track);meter.add_theme_stylebox_override("fill",fill);body.add_child(meter)
+		label("Unlocks: "+", ".join(definition.unlocks.map(_catalog_name)),body)
+		if not complete:
 			if missing.is_empty():
 				button("Study "+id.capitalize(),func() -> void:
 					_submit("research_select",{"definition":id})
-					close_sheet(),sheet_body)
+					close_sheet(),body)
 			button("Queue "+id.capitalize(),func() -> void:
 				_submit("research_queue",{"definition":id})
-				close_sheet(),sheet_body)
+				close_sheet(),body)
+
+func _research_art(definition: Dictionary) -> String:
+	for unlock in definition.unlocks:
+		var parts: PackedStringArray=unlock.split(":")
+		if parts[0]=="building":return "building/%s/0" % parts[1]
+		if parts[0]=="recipe":
+			var outputs: Dictionary=world.definitions.recipes[parts[1]].outputs
+			if not outputs.is_empty():return "item/%s/0" % outputs.keys()[0]
+	return ""
 
 func show_station(station: Dictionary) -> void:
 	if station.definition=="hearth" and station.health>0: _tutorial_action("hearth")
