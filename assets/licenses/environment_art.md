@@ -67,3 +67,7 @@ are retained; the atlas now has 360 regions at 1024x436.
 The 0.7.114 pass replaces eighteen food-item regions with original bowls, parcels,
 fruit baskets, rooted vegetables, tied herbs and meat cuts. All 360 atlas bounds
 and every other region remain unchanged. Source drawing code is retained.
+
+The 0.7.116 pass adds original timber fixtures, loom threads/weave, herbal mortar
+and leaf bundles, and open pages/quill. Sixteen craft-station regions change,
+retaining the inspected hammer/fork components and every atlas rectangle.

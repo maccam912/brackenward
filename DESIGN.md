@@ -955,6 +955,9 @@ Food silhouettes (0.7.114): bowls of prepared food, wrapped travel rations, berr
 
 Held-tool facing (0.7.115): the equipment overlay mirrors horizontally with west-facing citizen poses. East, north and south remain unchanged. This keeps tools, spears and bows on the same side as the mirrored hand, without altering facing decisions, animation timing, equipment or work state.
 
+Craft-station detail (0.7.116): workbenches have timber joinery and a vise, looms have warp threads and woven fabric, herbal benches have tied leaves and a mortar, and research desks have open pages and a quill. These are original fixtures rather than stored goods. Only sixteen rotation regions change; all atlas bounds and other pixels remain exact.
+
+
 
 
 

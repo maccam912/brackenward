@@ -23,5 +23,15 @@ func capture() -> void:
 	view.tile_size=64;view.center_camera(Vector2(beacon.x+1.5,beacon.y+1.5));view._process(0)
 	await process_frame;await process_frame;await RenderingServer.frame_post_draw
 	root.get_texture().get_image().save_png("res://reports/visual-polish/beacon-lit.png")
+	var rotations: ColonyWorld=ColonyTests.world()
+	rotations.structures.clear();rotations.resources.clear();rotations.citizens.clear();rotations.stacks.clear();rotations.tick=3600
+	var kinds: Array[String]=["workbench","loom","herbal_bench","research_desk"]
+	for row in range(kinds.size()):
+		for turn in range(4):rotations._structure(kinds[row],Vector2i(40+turn*7,40+row*7),turn)
+	var baseline: String=rotations.canonical_hash()
+	view.world=rotations;view.refresh_terrain();view.tile_size=32;view.center_camera(Vector2(51.5,51.5));view._process(0)
+	await process_frame;await process_frame;await RenderingServer.frame_post_draw
+	root.get_texture().get_image().save_png("res://reports/visual-polish/craft-rotations-native.png")
+	if rotations.canonical_hash()!=baseline:push_error("Craft gallery mutated world");quit(1);return
 	view.queue_free();await process_frame
 	print("VISUAL_WORKSHOP_REVIEW_COMPLETE");quit()

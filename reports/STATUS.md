@@ -1,5 +1,14 @@
 # Implementation evidence
 
+Craft-station detail (16 October 2026): `0.7.116-m7`, unchanged content/schema/
+envelope. Four craft stations gain original readable construction/working fixtures
+in all rotations. Exactly sixteen regions change; all other pixels and bounds
+are preserved. Native workshop and sixteen-rotation galleries inspected, with
+canonical state unchanged. UI passes 879 checks, persistence 511, content/font
+validation passes. Evidence: `craft-*` in visual-polish and building contact sheet.
+Remote build 271 passed; newer builds remain pending. Weekly usage is 37% remaining;
+original reset unchanged. Polishing continues.
+
 Held-tool facing (16 October 2026): `0.7.115-m7`, unchanged content/schema/
 envelope. West-facing tools and weapons now mirror with their resident pose.
 A native 24-pose gallery shows gathering/building/cooking/planting/spear/bow in

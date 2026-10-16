@@ -549,16 +549,55 @@ def structure(kind, width, height, rotation, roof=False):
             d.rectangle((3,15,w-4,h-8),fill="#A47B52",outline=INK)
             d.line((4,16,w-5,16),fill="#D3A77D")
     elif kind in ("workbench", "loom", "herbal_bench", "research_desk"):
-        if kind == "workbench": image.alpha_composite(tile("hammer"), (w//2-8,12));image.alpha_composite(tile("farm_fork"), (2,h-20))
+        # Timber joinery and working fixtures, never decorative inventory counts.
+        for y in range(16,h-8,5):d.line((3,y,w-4,y),fill="#A47B52")
+        d.line((4,h-5,w-5,h-5),fill="#C4966B")
+        for x in [3,w-5]:d.point((x+1,h-5),fill=STONE)
+        if kind == "workbench":
+            d.rectangle((2,8,w-3,13),fill=WOOD,outline=INK)
+            d.line((3,9,w-4,9),fill="#D3A77D")
+            for x in [6,13,22]:d.line((x,10,x,12),fill=INK)
+            image.alpha_composite(tile("hammer"),(w//2-5,15))
+            image.alpha_composite(tile("farm_fork"),(2,h-21))
+            d.rectangle((w-9,h-12,w-4,h-5),fill=SHADE,outline=INK)
+            d.line((w-8,h-11,w-5,h-11),fill=CREAM)
+            d.line((w-6,h-6,w-6,h-2),fill=STONE)
+            d.line((w-9,h-3,w-3,h-3),fill=INK)
         elif kind == "loom":
-            d.rectangle((5,5,w-6,h-7), outline=INK, width=2)
-            for x in range(8,w-7,3): d.line((x,6,x,h-8), fill=CREAM)
-            d.line((7,cy,w-8,cy), fill=ROOF, width=3)
-        elif kind == "research_desk":
-            d.rectangle((cx-7,14,cx+7,h-6), fill=CREAM, outline=INK);d.line((cx,15,cx,h-7), fill=WOOD)
-            d.line((cx-5,18,cx-2,18), fill=ROOF);d.line((cx+2,20,cx+5,20), fill=ROOF)
+            for x in [3,w-6]:
+                d.rectangle((x,5,x+2,h-4),fill=WOOD,outline=INK)
+                d.line((x+1,6,x+1,h-5),fill="#D3A77D")
+            d.rectangle((3,6,w-4,9),fill="#C4966B",outline=INK)
+            for x in range(7,w-6,2):d.line((x,10,x,h-9),fill=CREAM)
+            d.rectangle((6,cy+1,w-7,h-10),fill=ROOF,outline=INK)
+            for y in range(cy+3,h-11,3):d.line((7,y,w-8,y),fill="#BDB8C6")
+            d.line((6,h-9,w-7,h-9),fill=CREAM)
+            d.polygon([(8,cy-3),(w-9,cy-2),(w-7,cy),(9,cy)],fill=WOOD,outline=INK)
+            d.point((w-10,cy-1),fill=CREAM)
         else:
-            for x in range(6,w-5,6): d.ellipse((x-2,16,x+2,20), fill=DEEP, outline=INK);d.line((x,18,x+2,14), fill=MOSS)
+            top=Image.new("RGBA",(32,16));surface=ImageDraw.Draw(top)
+            if kind == "research_desk":
+                surface.polygon([(3,3),(10,2),(13,4),(17,2),(23,3),(23,13),(16,12),(13,14),(10,12),(3,13)],fill=CREAM,outline=INK)
+                surface.line((13,4,13,12),fill=WOOD)
+                for y in [5,8,10]:
+                    surface.line((5,y,10,y-1),fill="#9C9C8A")
+                    surface.line((16,y-1,21,y),fill="#9C9C8A")
+                surface.rectangle((26,9,29,13),fill=INK)
+                surface.line((27,10,28,3),fill=WOOD)
+                surface.polygon([(28,8),(26,4),(28,0),(30,2),(29,6)],fill=CREAM)
+                surface.line((28,2,28,7),fill="#C6C7AD")
+            else:
+                for x in [5,11,17]:
+                    surface.line((x,11,x+1,4),fill=WOOD)
+                    surface.ellipse((x-2,3,x+1,7),fill=MOSS,outline=DEEP)
+                    surface.ellipse((x,6,x+3,9),fill=MOSS,outline=DEEP)
+                    surface.point((x-1,4),fill="#BDC48B")
+                surface.line((3,11,19,11),fill=CREAM)
+                surface.polygon([(22,8),(30,8),(28,13),(24,13)],fill=SHADE,outline=INK)
+                surface.ellipse((22,6,30,10),fill=INK,outline=STONE)
+                surface.line((25,8,29,3),fill=CREAM,width=2)
+            if rotation%2:top=top.transpose(Image.Transpose.ROTATE_90)
+            image.alpha_composite(top,(0,12))
     else: raise AssertionError("Missing original building artwork: " + kind)
     return image
 
