@@ -1,5 +1,25 @@
 # Implementation evidence
 
+Extended CI repair (16 October 2026): Build 247 published after passing all core
+jobs, then its Windows replay failed the frozen v7 producer-byte check while all
+three snapshot rows and the journal fold passed. Actual Git checkout with
+`core.autocrlf=true` reproduces changed SHA-256 values for both v7/v8 producer
+scripts. Their new LF attributes preserve the original expected hashes; recursive
+snapshot/journal attributes prevent newline conversion in nested fixture folders.
+No frozen source, snapshot, expected digest or gameplay field is rewritten.
+
+Three new actual-checkout/UID-presence tests pass with the fix; the old attributes
+reproduce both producer failures and nested-fixture conversion. Native v7/v8
+acknowledgement audits pass, and actionlint passes. The test is part of core CI.
+Build 247's generation job refused a dirty import because the new visual UI
+capture script lacked its committed UID; that UID is included in Build 249.
+A fresh Build 249 worktree, with LFS materialized, stays clean after checked
+Godot import and passes a three-site independent map smoke (three maps only,
+not the full sweep). The first local worktree import before LFS checkout failed;
+its logs remain retained. Full repaired Windows CI and 768-map remote generation
+validation remain pending. Existing failed jobs retain their original results.
+
+
 Foliage and camp materials (16 October 2026): `0.7.87-m7`, unchanged content,
 schema and envelope. Evergreen branches now form a readable tiered silhouette;
 broadleaf crowns use clustered shading inside the retained CC0 silhouette.

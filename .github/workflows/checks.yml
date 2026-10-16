@@ -61,6 +61,7 @@ jobs:
           python3 tools/test_validate_raw_map.py
           python3 tools/test_map_sweep.py
           python3 tools/test_check_suite.py
+          python3 tools/test_fixture_checkout.py
           python3 tools/validate_content.py
       - name: Build/test Kotlin plugin and Android debug APK
         env:
