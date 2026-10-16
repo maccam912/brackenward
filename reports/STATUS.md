@@ -1,5 +1,14 @@
 # Implementation evidence
 
+Distinct food silhouettes (16 October 2026): `0.7.114-m7`, unchanged content/
+schema/envelope. Six food/ingredient types now have original readable shapes in
+all three quantity tiers. Exactly eighteen item regions changed; all 360 atlas
+bounds and every other region retain exact pixels. The native 84-stack gallery
+was inspected and preserves canonical state. UI passes 879 checks; content/font
+validation passes. Evidence: `supplies-native.png`, `food-*` in visual-polish and
+the regenerated item contact sheet. Weekly usage is 38% remaining; original reset
+unchanged. Polishing continues.
+
 Illustrated production recipes (16 October 2026): `0.7.113-m7`, unchanged content/
 schema/envelope. Station recipes now group output art, exact costs and actions.
 Native workbench views inspected at 100/150%; UI passes 879 checks covering all

@@ -951,6 +951,9 @@ Research cards (0.7.112): all twelve projects remain discoverable in catalog ord
 
 Production cards (0.7.113): each station recipe groups its actual output art, unchanged ingredient/output quantities, work cost, research requirement and existing actions. Locked recipes remain visible with the Research action. Normal and 150% phone layouts wrap within their sheet; making one batch retains the exact production command and filters.
 
+Food silhouettes (0.7.114): bowls of prepared food, wrapped travel rations, berry baskets, pale rooted vegetables, tied medicinal leaves and meat cuts have distinct original art in all three pile tiers. Only eighteen item regions change. Atlas bounds, quantity selection, recipes, inventories and all other pixels remain unchanged.
+
+
 
 
 

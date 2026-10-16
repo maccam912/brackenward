@@ -63,3 +63,7 @@ The 0.7.111 pass appends sixty original baked poor/rich soil borders, covering
 fifteen grass-neighbor masks in summer and winter. These use project ground
 colors and the existing winter transform. All 300 previous rectangles and pixels
 are retained; the atlas now has 360 regions at 1024x436.
+
+The 0.7.114 pass replaces eighteen food-item regions with original bowls, parcels,
+fruit baskets, rooted vegetables, tied herbs and meat cuts. All 360 atlas bounds
+and every other region remain unchanged. Source drawing code is retained.

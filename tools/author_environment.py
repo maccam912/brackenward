@@ -646,12 +646,45 @@ def item(kind, tier):
             d.ellipse((2,y-5,12,y),fill=WATER,outline=INK);d.polygon([(11,y-3),(15,y-6),(15,y+1)],fill=WATER,outline=INK);d.point((4,y-3),fill=CREAM)
         elif kind=="mushroom":
             d.rectangle((7,y-4,9,y),fill=CREAM);d.ellipse((3,y-8,13,y-3),fill=ROOF,outline=INK);d.point((6,y-6),fill=CREAM)
+        elif kind=="herb":
+            # A tied leaf bundle, distinct from edible berries and vegetables.
+            for px,top in [(4,y-8),(8,y-10),(12,y-8)]:
+                d.line((8,y+1,px,top+2),fill=DEEP,width=2)
+                d.ellipse((px-2,top,px+1,top+4),fill=MOSS,outline=INK)
+                d.point((px-1,top+1),fill="#BDC48B")
+            d.line((6,y-2,10,y-2),fill=CREAM,width=2)
+        elif kind=="vegetable":
+            for px,py in [(5,y-2),(10,y-3)]:
+                d.ellipse((px-3,py-4,px+3,py+1),fill=CREAM,outline=INK)
+                d.line((px+1,py-2,px+2,py),fill="#C6C7AD")
+                d.line((px,py+1,px,py+2),fill=CREAM)
+                d.polygon([(px,py-4),(px-3,py-7),(px,py-6),(px+2,py-8),(px+2,py-5)],fill=MOSS,outline=DEEP)
+        elif kind=="berry":
+            d.polygon([(2,y-3),(13,y-3),(12,y+1),(3,y+1)],fill=WOOD,outline=INK)
+            for px,py in [(4,y-5),(8,y-6),(11,y-4),(6,y-3)]:
+                d.ellipse((px-2,py-2,px+1,py+1),fill="#A85250",outline=INK)
+                d.point((px-1,py-1),fill="#D98D78")
+            d.line((3,y-1,12,y-1),fill="#C4966B")
+        elif kind=="meat":
+            d.line((5,y-3,2,y),fill=CREAM,width=2)
+            d.point((1,y),fill=CREAM);d.point((2,y+1),fill=CREAM)
+            d.ellipse((4,y-7,13,y),fill="#A85250",outline=INK)
+            d.arc((5,y-6,12,y-1),150,320,fill="#D98D78")
+            d.point((9,y-3),fill=CREAM)
+        elif kind=="meal":
+            d.polygon([(2,y-3),(13,y-3),(11,y+1),(4,y+1)],fill=WOOD,outline=INK)
+            d.ellipse((2,y-6,13,y-1),fill=CREAM,outline=INK)
+            d.ellipse((4,y-5,11,y-2),fill="#D39B58")
+            for px,py in [(5,y-4),(9,y-3)]:d.point((px,py),fill=MOSS)
+            d.point((8,y-4),fill=CLAY)
+        elif kind=="travel_ration":
+            d.polygon([(3,y-6),(11,y-7),(14,y-3),(12,y+1),(3,y),(1,y-3)],fill="#BDA479",outline=INK)
+            d.line((3,y-5,10,y-6,12,y-4),fill=CREAM)
+            d.line((7,y-6,8,y),fill=WOOD,width=2)
+            d.line((2,y-3,13,y-2),fill=WOOD)
+            d.point((8,y-3),fill=CREAM)
         else:
-            color={"vegetable":MOSS,"grain":LIGHT,"berry":CLAY,"herb":DEEP,"meat":WOOD,"meal":MOSS,"travel_ration":CLAY}.get(kind)
-            assert color is not None,kind
-            d.ellipse((2,y-5,13,y),fill=WOOD,outline=INK)
-            for px in [4,8,11]:d.ellipse((px-2,y-7,px+2,y-3),fill=color,outline=INK)
-            if kind in ("grain","travel_ration"):d.line((4,y-2,11,y-2),fill=CREAM)
+            raise AssertionError(kind)
     return image
 
 
