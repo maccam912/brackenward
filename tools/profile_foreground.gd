@@ -16,8 +16,8 @@ class TraceWorld extends AssignmentProfile.AssignmentWorld:
 		tick_us.append(Time.get_ticks_usec()-started)
 	func _create_work() -> void:
 		var started: int = Time.get_ticks_usec();super._create_work();elapsed("create_work",started)
-	func _assign(citizen: Dictionary) -> void:
-		var started: int = Time.get_ticks_usec();super._assign(citizen);elapsed("assign",started)
+	func _assign(citizen: Dictionary, food_checkpoint: bool = false) -> void:
+		var started: int = Time.get_ticks_usec();super._assign(citizen,food_checkpoint);elapsed("assign",started)
 	func _reserve(job: Dictionary, citizen: Dictionary, context: Dictionary = {}) -> bool:
 		var started: int = Time.get_ticks_usec();var result: bool = super._reserve(job,citizen,context);elapsed("reserve/"+job.kind,started);return result
 	func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [], context: Dictionary = {}) -> Dictionary:

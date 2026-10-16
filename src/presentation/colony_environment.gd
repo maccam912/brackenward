@@ -36,6 +36,7 @@ var escrow: Dictionary = {}
 var heat_points: Array[Vector2] = []
 var weather_clock: float = 0.0
 var station_outputs: Dictionary = {}
+var prop_view_signature: Array = []
 
 func _init(owner: Node) -> void:
 	view=owner;world=view.world
@@ -173,7 +174,10 @@ func update(delta: float) -> void:
 	for row in resource_rows.values():
 		if row.tint!=tint or row.selected_bounds!=selected_bounds:
 			row.tint=tint;row.selected_bounds=selected_bounds;row.queue_redraw()
-	_update_props()
+	var flame_frame: int=0 if view.quality=="Battery" or view.reduced_motion else int(visual_clock)%2
+	var signature: Array=[view.camera_center(),view.size,view.tile_size,selected_bounds,view.rooms_overlay,revealed_rooms.duplicate(),flame_frame]
+	if changed or signature!=prop_view_signature:
+		_update_props();prop_view_signature=signature
 	for actor in view.actors: actor.self_modulate=tint
 	for actor in view.extra_actors.values(): actor.self_modulate=tint
 	warm_layer.queue_redraw();roof_layer.queue_redraw();feedback_layer.queue_redraw()
@@ -196,7 +200,7 @@ func _refresh_props() -> void:
 		if structure.definition in FLOORS and structure.health>0: continue
 		wanted[structure.id]=true
 		if not props.has(structure.id):
-			var prop: EnvironmentProp = EnvironmentProp.new();prop.name="Building_%d" % structure.id;prop.record=structure;prop.renderer=view
+			var prop: EnvironmentProp = EnvironmentProp.new();prop.name="Building_%d" % structure.id;prop.record=structure;prop.world=world;prop.renderer=view
 			prop.set_meta("world_id",structure.id);prop.set_meta("role","building")
 			view.actor_layer.add_child(prop);props[structure.id]=prop;view.extra_order_changed=true
 		props[structure.id].record=structure
@@ -331,8 +335,14 @@ func _update_props() -> void:
 			var worker: Dictionary = world.find(world.citizens,job.worker)
 			moving[job.target]=Vector2(worker.edge_x-worker.x,worker.edge_y-worker.y)*float(worker.progress)/10000.0
 	var frame: int = 0 if view.quality=="Battery" or view.reduced_motion else int(visual_clock)%2
+	var visible_bounds: Rect2=Rect2(Vector2.ZERO,view.size).grow(view.tile_size*10)
 	for prop in props.values():
 		var structure: Dictionary = prop.record
+		var origin: Vector2=Vector2(structure.x,structure.y)+moving.get(structure.id,Vector2.ZERO)
+		prop.visible=visible_bounds.has_point(view.tile_to_screen(origin))
+		# Records remain live; returning to view synchronizes the current state.
+		# Ten tiles cover the largest footprint plus tall art and attached effects.
+		if not prop.visible:continue
 		var reveal: bool = view.rooms_overlay or revealed_rooms.has(-structure.id)
 		var burning: bool = structure.health>0 and structure.definition=="hearth" and structure.fuel>0
 		if structure.definition in ["charcoal_kiln","brick_kiln","smelter","smithy"] and hot.has(structure.id): burning=structure.health>0
@@ -346,7 +356,6 @@ func _update_props() -> void:
 		if station_outputs.has(structure.id): output_item=station_outputs[structure.id][0];output_tier=station_outputs[structure.id][1]
 		prop.sync(world,structure,tint,reveal,inside,burning,frame,moving.get(structure.id,Vector2.ZERO),output_item,output_tier)
 		if burning and structure.definition=="hearth": heat_points.append(Vector2(structure.x+1,structure.y+1.5)*16)
-		prop.visible=Rect2(Vector2.ZERO,view.size).grow(view.tile_size*6).has_point(view.tile_to_screen(prop.position/16.0))
 	for fire in ColonyFire.active(world):
 		for point in ColonyFire.footprint(world,fire): heat_points.append((Vector2(point)+Vector2.ONE*0.5)*16)
 

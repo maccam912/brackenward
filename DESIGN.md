@@ -913,6 +913,8 @@ Workshop and landmark art (0.7.93) gives the cart a recessed bed, canvas bundles
 
 Seasonal landscape (0.7.94): broadleaf variants gain gold/copper autumn crowns and full-height bare winter branches; evergreen variants retain their green needles. Winter uses nine dormant-grass variants on the same atlas. The actual season selects art, with cached terrain rebuilt only on a season change or existing refresh. Returning spring restores the original grass. Paths, water, crops, stumps, tree quantities and collision remain unchanged; no snow/ice rule is inferred from this decoration. The atlas adds thirteen regions while preserving every prior rectangle. Native season checks cover winter entry and spring return without saved-state changes.
 
+Building render reuse (0.7.95): off-screen props retain live records and synchronize upon camera return, with a ten-tile origin margin covering the largest footprint and attached effects. Reuse building render state between unchanged ticks unless the camera, viewport, zoom, selection, room reveal or flame frame changes. World replacement and terrain refresh invalidate reuse. This preserves state-driven flames, output piles, obstruction and destruction while avoiding redundant work. Native before/after views must remain pixel-identical.
+
 ### 19.2 Characters and animation
 
 Create 8 body/clothing silhouettes with 6 skin colors, 8 hair choices, and 8 coat/scarf colors. These mix independently; there are no body/skill restrictions. Hats and tools, rather than tiny facial changes, distinguish jobs at normal zoom. Selected citizens have a 64 × 64 pixel portrait showing the same clothing/hair/skin choices. Every trait uses an original pictogram and a text label.

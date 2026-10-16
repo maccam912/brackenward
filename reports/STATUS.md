@@ -1,5 +1,27 @@
 # Implementation evidence
 
+Building render reuse (16 October 2026): `0.7.95-m7`, unchanged content/schema/
+envelope. Off-screen buildings defer visual synchronization until camera return.
+Visible building state is reused between unchanged ticks, while camera/zoom/size,
+selection, room reveal and flame-frame changes invalidate the cache. Live records
+and world references remain current. The foreground profiler now accepts/forwards
+the existing food-checkpoint argument; its stale override previously failed parse.
+
+Pinned UI passes 754 checks, including off-screen fuel/destruction, camera return,
+zoom without ticks and independent flame frames. Four native camera views are
+pixel-identical to the original renderer. Content/font and fixture checkout checks
+pass. Evidence: `reports/visual-polish/cull-*`, `render-cache-*`, `render-stress-*`.
+
+Sequential 60-second native CPU probes used the same synthetic 20-resident,
+400-structure input and advanced 600 ticks each. Close-view culling alone reduced
+prop-update p95 from 1637 to 914 microseconds. The final fully zoomed-out run reduced
+view-update median from 2348 to 937 microseconds and prop-sync calls from 1800 to
+722; p95 remained similar (4744 vs 4797 microseconds). An earlier culling candidate
+added overhead and was replaced. Reports retain unchanged-source/input evidence
+and no invariant/storage errors. These are local callback timings, not GPU,
+physical Android, ordinary-play balance or full-frame performance certification.
+The remaining simulation/frame spikes and physical release gates remain open.
+
 Seasonal landscape (16 October 2026): `0.7.94-m7`, unchanged content/schema/
 envelope. Broadleaf trees turn gold/copper in autumn and show full-height bare
 branches in winter; evergreens retain needles. Winter grass uses quiet dormant

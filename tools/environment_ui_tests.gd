@@ -62,6 +62,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	branch.health=0;world.tick+=1;view._process(0)
 	check.call("ART/UI_destroyed_wall_disconnects_and_leaves_a_gap",environment.props[top_wall.id].wall_mask==10 and (environment.props[branch.id].wall_visual==null or not environment.props[branch.id].wall_visual.visible))
 	var hearth: Dictionary = world.structures.filter(func(s:Dictionary)->bool:return s.definition=="hearth")[0]
+	view.center_camera(Vector2(hearth.x+1,hearth.y+1))
 	hearth.fuel=0;world.tick+=1;view._process(0)
 	check.call("ART/UI_cold_hearth_has_no_false_flame",environment.props[hearth.id].flame==null or not environment.props[hearth.id].flame.visible)
 	hearth.fuel=4;world.tick+=1;view._process(0)
@@ -77,6 +78,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	view.reduced_motion=true;view._process(1)
 	check.call("ART/UI_reduced_motion_stops_decorative_water_and_animation_clocks",environment.static_water.visible and not environment.animated_water.visible and environment.visual_clock==0 and environment.weather_clock==0)
 	view.reduced_motion=false
+	view.center_camera(Vector2(56,47))
 	world.tick=3600;view._process(0)
 	if DisplayServer.get_name()!="headless":
 		var point: Vector2i = Vector2i(view.tile_to_screen(Vector2(60.2,44.2)))
@@ -106,6 +108,7 @@ static func run(previous: GameSession, check: Callable) -> void:
 	await carrying(view,check)
 	terrain_edges(view,check)
 	seasonal_landscape(view,check)
+	offscreen_props(view,check)
 	view.queue_free();await tree.process_frame;await tree.process_frame
 	tree.root.size=original_size;previous.visible=visible;previous.set_process(processing);previous.view.set_process(old_view_process)
 
@@ -167,3 +170,30 @@ static func seasonal_landscape(view: WorldView, check: Callable) -> void:
 		for point in world.terrain_state.paths:
 			if world.terrain_state.elevation[point.y*128+point.x]!=0:exact=exact and view.terrain.get_cell_source_id(point)==0
 		check.call("ART/UI_season_%d_changes_only_grass_presentation_and_keeps_paths_water_state" % season,exact and water_count>0 and world.canonical_hash()==baseline)
+
+static func offscreen_props(view: WorldView, check: Callable) -> void:
+	var world: ColonyWorld=ColonyTests.world();world.tick=3600
+	var hearth: Dictionary=world._structure("hearth",Vector2i(110,110),0);hearth.fuel=0
+	view.world=world;view.refresh_terrain();view.center_camera(Vector2(64,64));view._process(0)
+	var prop: EnvironmentProp=view.environment.props[hearth.id]
+	check.call("ART/UI_offscreen_building_keeps_live_record_without_visible_sync",not prop.visible and prop.world==world and prop.record==hearth and prop.semantic.is_empty())
+	hearth.fuel=4;world.tick+=1
+	var baseline: String=world.canonical_hash()
+	view.center_camera(Vector2(110,110));view._process(0)
+	check.call("ART/UI_camera_return_synchronizes_current_fuel_and_same_building_node",prop.visible and prop.flame!=null and prop.flame.visible and prop==view.environment.props[hearth.id] and world.canonical_hash()==baseline)
+	var original_quality: String=view.quality;var original_motion: bool=view.reduced_motion;var original_speed: int=view.simulation_speed
+	view.quality="Balanced";view.reduced_motion=false;view.simulation_speed=1
+	view.environment.visual_clock=0;view._process(0)
+	var first_frame: Rect2=prop.flame.region_rect
+	view._process(0.3)
+	check.call("ART/UI_flame_frame_advances_without_a_simulation_tick",prop.flame.region_rect!=first_frame and world.canonical_hash()==baseline)
+	view.quality=original_quality;view.reduced_motion=original_motion;view.simulation_speed=original_speed
+	view.center_camera(Vector2(64,64));view._process(0)
+	var original_zoom: float=view.tile_size
+	view.tile_size=2;view._process(0)
+	check.call("ART/UI_zoom_change_resynchronizes_offscreen_props_without_a_tick",prop.visible and prop.flame.visible)
+	view.tile_size=original_zoom;view._process(0)
+	hearth.health=0;world.tick+=1;view._process(0)
+	baseline=world.canonical_hash()
+	view.center_camera(Vector2(110,110));view._process(0)
+	check.call("ART/UI_camera_return_shows_offscreen_destruction_without_stale_fire",prop.visible and prop.semantic=="resource/stone_node/0" and not prop.flame.visible and world.canonical_hash()==baseline)
