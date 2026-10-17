@@ -1,5 +1,23 @@
 # Implementation evidence
 
+Desktop release downloads (17 October 2026): GitHub Actions now publishes
+Windows x86-64 ZIPs, macOS universal ZIPs and Linux x86-64 tarballs alongside
+the Android APK on each checked numbered development prerelease. Isolated
+export directories keep platform PCKs/support files together. The Linux smoke
+launch now exercises the extracted download; publication compares exact
+Android/desktop provenance and verifies all four downloads' combined checksums.
+macOS uses built-in ad-hoc signing; notarization remains a separate gate.
+
+Validation: a fresh tracked-source copy imports and exports all three release
+targets. The actual workflow packaging/verification commands pass, Windows
+contains its executable/PCK, Linux retains mode 0755, and macOS retains its
+universal Intel/ARM executable and passes strict/deep signature verification.
+The extracted macOS app passes its isolated sixty-frame graphical/audio-drained
+launch. Matching provenance and combined checksums pass; differing source
+metadata is rejected. All 23 stamping/checkpoint/checked-engine Python tests,
+workflow lint and diff checks pass. Remote Linux launch/publication are pending
+for this checkpoint; Windows exported-app playtesting remains unverified.
+
 Farm controls and starvation recovery (16 October 2026): `0.7.124-m7`, content
 `colony-v12`, unchanged schema 24/envelope 5. Build now offers every initial or
 researched crop, including Farming's barley/squash/flax; the chosen crop follows

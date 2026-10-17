@@ -6,6 +6,8 @@ A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runn
 
 Native daylight view of a recorded colony. [Android screenshots and verification](reports/ANDROID_VISUAL_REVIEW.md) show the exported phone layouts; [preview provenance](reports/visual-polish-final-evidence.json) records this capture.
 
+Checked main-branch commits publish [numbered development releases](https://github.com/maccam912/brackenward/releases) with Android APKs, Windows x86-64 ZIPs, macOS universal ZIPs (Intel and Apple Silicon), and Linux x86-64 tarballs. Extract the complete desktop archive before launching; the Windows/Linux executables require their neighboring PCK files. Linux archives retain executable permissions. The macOS app uses an ad-hoc signature without notarization; follow [Godot's macOS launch instructions](https://docs.godotengine.org/en/stable/tutorials/export/running_on_macos.html) if Gatekeeper blocks it. Each release includes shared source provenance in `build.json` and checksums for all four downloads in `SHA256SUMS.txt`.
+
 Use Godot **4.7.2 Standard**, Compatibility renderer. The editor and export-template archives are SHA-512 pinned in `toolchain.lock.json`. Git LFS is required for fonts and raster/binary media.
 
 ```sh

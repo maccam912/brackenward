@@ -1,4 +1,4 @@
-name: Development APK release and follow-up checks
+name: Development releases and follow-up checks
 
 on:
   push:
@@ -240,7 +240,7 @@ jobs:
           if-no-files-found: warn
 
   desktop:
-    name: Desktop exports and launch
+    name: Desktop release packages and Linux launch
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     env:
@@ -267,26 +267,50 @@ jobs:
         run: |
           python3 tools/stamp_build.py
           python3 tools/checked_godot.py -- --headless --editor --import
-      - name: Export desktop prototypes
+      - name: Export desktop releases
         run: |
-          mkdir -p build
-          python3 tools/checked_godot.py -- --headless --export-release Windows build/brackenward.exe
-          python3 tools/checked_godot.py -- --headless --export-release macOS build/brackenward-macos.zip
-          python3 tools/checked_godot.py -- --headless --export-release Linux build/brackenward-linux
+          mkdir -p build/desktop/{windows,macos,linux}
+          python3 tools/checked_godot.py -- --headless --export-release Windows build/desktop/windows/brackenward.exe
+          python3 tools/checked_godot.py -- --headless --export-release macOS build/desktop/macos/brackenward.zip
+          python3 tools/checked_godot.py -- --headless --export-release Linux build/desktop/linux/brackenward
+      - name: Package numbered desktop downloads
+        run: |
+          BUILD_NUMBER=$(jq -r '.version_code' data/build.json)
+          PREFIX=$(printf 'brackenward-build-%06d' "$BUILD_NUMBER")
+          mkdir -p build/desktop-download
+          # Ship each executable with its PCK and any generated support files.
+          test -s build/desktop/windows/brackenward.exe
+          test -s build/desktop/windows/brackenward.pck
+          test -x build/desktop/linux/brackenward
+          test -s build/desktop/linux/brackenward.pck
+          (cd build/desktop/windows && zip -r "../../desktop-download/$PREFIX-windows-x86_64.zip" .)
+          cp build/desktop/macos/brackenward.zip "build/desktop-download/$PREFIX-macos-universal.zip"
+          tar -C build/desktop/linux -czf "build/desktop-download/$PREFIX-linux-x86_64.tar.gz" .
+          cp data/build.json build/desktop-download/build.json
+          (cd build/desktop-download && sha256sum ./*.zip ./*.tar.gz > SHA256SUMS.txt)
+      - name: Launch extracted Linux download from an empty working directory
+        run: |
+          mkdir -p "$RUNNER_TEMP/brackenward-linux-download"
+          tar -xzf build/desktop-download/*-linux-x86_64.tar.gz -C "$RUNNER_TEMP/brackenward-linux-download"
           mkdir -p "$RUNNER_TEMP/brackenward-exported-smoke"
-          xvfb-run -a python3 tools/checked_godot.py --executable build/brackenward-linux --working-directory "$RUNNER_TEMP/brackenward-exported-smoke" --require-smoke-exit -- --audio-driver Dummy --quit-after 1200 -- --native-smoke-frames 60
+          xvfb-run -a python3 tools/checked_godot.py --executable "$RUNNER_TEMP/brackenward-linux-download/brackenward" --working-directory "$RUNNER_TEMP/brackenward-exported-smoke" --require-smoke-exit -- --audio-driver Dummy --quit-after 1200 -- --native-smoke-frames 60
+      - uses: actions/upload-artifact@v4
+        with:
+          name: development-desktop
+          path: build/desktop-download/
+          if-no-files-found: error
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: desktop-exports
           path: |
-            build/
+            build/desktop/
             data/build.json
           if-no-files-found: warn
 
   # Publish after the core build checks, before the extended validation jobs.
   publish:
-    name: Publish development APK
+    name: Publish Android and desktop development releases
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: [prototype, simulation, ui, desktop]
     runs-on: ubuntu-24.04
@@ -297,13 +321,25 @@ jobs:
         with:
           name: development-apk
           path: download
-      - name: Publish checked APK for this commit
+      - uses: actions/download-artifact@v4
+        with:
+          name: development-desktop
+          path: download/desktop
+      - name: Verify matching source and combine download checksums
+        run: |
+          cmp download/build.json download/desktop/build.json
+          (cd download/desktop && sha256sum --check SHA256SUMS.txt)
+          cp download/desktop/*.zip download/desktop/*.tar.gz download/
+          cat download/desktop/SHA256SUMS.txt >> download/SHA256SUMS.txt
+          (cd download && sha256sum --check SHA256SUMS.txt)
+      - name: Publish checked Android and desktop builds for this commit
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
         run: |
           TAG=$(jq -r '.release_tag' download/build.json)
           BUILD_NUMBER=$(jq -r '.version_code' download/build.json)
+          DESKTOP_PREFIX=$(printf 'brackenward-build-%06d' "$BUILD_NUMBER")
           APK_FILENAME=$(jq -r '.apk_filename' download/build.json)
           BUILD_COMMIT=$(jq -r '.commit' download/build.json)
           BUILD_KIND=$(jq -r '.kind' download/build.json)
@@ -314,11 +350,16 @@ jobs:
           cat > "$RUNNER_TEMP/release-notes.md" <<EOF
           Development build $BUILD_NUMBER from commit $GITHUB_SHA.
 
+          Desktop downloads (extract the complete archive before launching):
+          - Windows 10/11 x86-64: $DESKTOP_PREFIX-windows-x86_64.zip, run brackenward.exe.
+          - macOS 13+ Intel and Apple Silicon: $DESKTOP_PREFIX-macos-universal.zip, move Brackenward.app to Applications. This development app has an ad-hoc signature and is not notarized; see [Godot's macOS launch instructions](https://docs.godotengine.org/en/stable/tutorials/export/running_on_macos.html).
+          - Linux x86-64: $DESKTOP_PREFIX-linux-x86_64.tar.gz, run ./brackenward from the extracted folder.
+
           Higher build numbers are newer. Download $APK_FILENAME below and sideload it on an Android 10+ arm64 phone. These development APKs share a signing identity and can update one another while preserving app data. Saves from development milestones remain explicitly versioned; do not uninstall the app to update it.
 
           Automated simulation, UI, Kotlin, APK and desktop-export checks passed in [this run](https://github.com/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID). Extended cross-platform replay and map-sweep checks run after publication; inspect their jobs in that run for pending, successful or failed results. Their failures remain visible without delaying this development download. Physical-phone testing remains pending. This APK uses Godot/Android release mode with debugging disabled, signed with the existing development certificate so it can update earlier debug APKs. It remains an unfinished development prerelease; production signing and store distribution are later gates.
 
-          build.json identifies the source and build; SHA256SUMS.txt verifies the APK.
+          build.json identifies the shared source and build; SHA256SUMS.txt verifies the APK and all three desktop archives. Desktop exports and the extracted Linux graphical launch passed; exported Windows/macOS gameplay testing remains separate from the native-editor replay checks.
           EOF
           if ! gh api "repos/$GH_REPO/git/ref/tags/$TAG" >/dev/null 2>&1; then
             MAIN_SHA=$(gh api "repos/$GH_REPO/git/ref/heads/main" --jq '.object.sha')
@@ -336,10 +377,10 @@ jobs:
           if ! gh release view "$TAG" >/dev/null 2>&1; then
             gh release create "$TAG" --verify-tag --title "Build $BUILD_NUMBER (development)" --draft --prerelease --notes-file "$RUNNER_TEMP/release-notes.md"
           fi
-          gh release upload "$TAG" "download/$APK_FILENAME" download/SHA256SUMS.txt download/build.json --clobber
+          gh release upload "$TAG" "download/$APK_FILENAME" download/*.zip download/*.tar.gz download/SHA256SUMS.txt download/build.json --clobber
           gh release edit "$TAG" --draft=false
           {
-            echo '### Development APK published'
+            echo '### Android and desktop development builds published'
             echo
             echo "[Download build $BUILD_NUMBER](https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG)"
             echo
