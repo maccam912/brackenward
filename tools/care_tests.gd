@@ -72,10 +72,10 @@ static func run(check: Callable) -> void:
 	var walking: Dictionary = w.citizens[0]
 	walking.x = 74; walking.y = 63; walking.edge_x = 74; walking.edge_y = 63
 	walking.carrying_patient = patient.id; patient.carried_by = walking.id
-	for i in range(13): w._walk(walking,Vector2i(75,63))
+	for i in range(6): w._walk(walking,Vector2i(75,63))
 	check.call("CARE/carrier_slowed_twenty_five_percent",walking.x == 74)
 	w._walk(walking,Vector2i(75,63))
-	check.call("CARE/carrier_reaches_tile_on_tick_fourteen",walking.x == 75)
+	check.call("CARE/carrier_reaches_tile_on_tick_seven",walking.x == 75)
 	w = ColonyTests.world()
 	patient = w.citizens[1]
 	ColonyCare.hurt(w,patient,90,true); ColonyCare.create_jobs(w)

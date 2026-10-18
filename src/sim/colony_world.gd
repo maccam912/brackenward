@@ -2,7 +2,7 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v12"
+const CONTENT_VERSION: String = "colony-v13"
 const SCHEMA_REVISION: int = 24
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
@@ -1426,8 +1426,9 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 		citizen.route.pop_front()
 		citizen.edge_x = edge.x
 		citizen.edge_y = edge.y
-	# Carry the fractional progress in a common denominator across terrain changes.
-	citizen.move_base_rem += 1200000 / tile_move_cost(Vector2i(citizen.edge_x,citizen.edge_y))
+	# Carry the fractional progress across terrain changes. V13 doubles human
+	# progress per tick while retaining shared terrain weights and every ratio.
+	citizen.move_base_rem += 2400000 / tile_move_cost(Vector2i(citizen.edge_x,citizen.edge_y))
 	var speed: int = citizen.move_base_rem / 120
 	citizen.move_base_rem %= 120
 	if citizen.traits.has("Restless"):

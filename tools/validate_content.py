@@ -294,3 +294,14 @@ recovery_catalog=json.loads((root / "data/catalogs/colony_v12.json").read_text()
 assert recovery_catalog["version"]=="colony-v12"
 assert {k:v for k,v in recovery_catalog.items() if k!="version"}=={k:v for k,v in sleep_catalog.items() if k!="version"}
 print("Validated starvation-recovery content v12; catalog definitions retained exactly.")
+
+
+pacing_catalog=json.loads((root / "data/catalogs/colony_v13.json").read_text())
+assert pacing_catalog["version"]=="colony-v13"
+normalized_pacing=json.loads(json.dumps(pacing_catalog));normalized_pacing["version"]="colony-v12"
+for current, previous in zip(normalized_pacing["research"],recovery_catalog["research"]):
+    assert current["id"]==previous["id"] and current["points"]==previous["points"]*6
+    current["points"]=previous["points"]
+assert normalized_pacing==recovery_catalog, "Only version and sixfold research costs may differ from v12"
+assert sum(r["points"] for r in pacing_catalog["research"])==28200
+print("Validated pacing content v13; all twelve research costs are six times v12, other definitions retained.")

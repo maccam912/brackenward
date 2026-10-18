@@ -1,0 +1,2899 @@
+{
+	"campaign_id": "colony-v13-pacing-replay",
+	"checkpoints": [
+		7200,
+		72000
+	],
+	"commands": [
+		{
+			"args": {
+				"category": "Cooking",
+				"citizen": 1,
+				"value": 3
+			},
+			"before_tick": 1800,
+			"expected_receipt": "accepted",
+			"kind": "preference"
+		},
+		{
+			"args": {
+				"category": "Growing",
+				"citizen": 3,
+				"value": 3
+			},
+			"before_tick": 1800,
+			"expected_receipt": "accepted",
+			"kind": "preference"
+		},
+		{
+			"args": {
+				"category": "Gathering",
+				"citizen": 3,
+				"value": 2
+			},
+			"before_tick": 1800,
+			"expected_receipt": "accepted",
+			"kind": "preference"
+		},
+		{
+			"args": {
+				"category": "Research",
+				"citizen": 4,
+				"value": 3
+			},
+			"before_tick": 1800,
+			"expected_receipt": "accepted",
+			"kind": "preference"
+		},
+		{
+			"args": {
+				"crop": "turnip",
+				"tiles": [
+					{
+						"$tile": [
+							53,
+							73
+						]
+					},
+					{
+						"$tile": [
+							52,
+							73
+						]
+					},
+					{
+						"$tile": [
+							51,
+							73
+						]
+					},
+					{
+						"$tile": [
+							50,
+							73
+						]
+					},
+					{
+						"$tile": [
+							49,
+							73
+						]
+					},
+					{
+						"$tile": [
+							48,
+							73
+						]
+					},
+					{
+						"$tile": [
+							47,
+							73
+						]
+					},
+					{
+						"$tile": [
+							46,
+							73
+						]
+					},
+					{
+						"$tile": [
+							53,
+							72
+						]
+					},
+					{
+						"$tile": [
+							52,
+							72
+						]
+					},
+					{
+						"$tile": [
+							51,
+							72
+						]
+					},
+					{
+						"$tile": [
+							50,
+							72
+						]
+					}
+				]
+			},
+			"before_tick": 1800,
+			"expected_receipt": "accepted",
+			"kind": "field"
+		},
+		{
+			"args": {
+				"definition": "storecraft"
+			},
+			"before_tick": 1800,
+			"expected_receipt": "accepted",
+			"kind": "research_select"
+		},
+		{
+			"args": {
+				"target": "88"
+			},
+			"before_tick": 2100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "114"
+			},
+			"before_tick": 2100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 2100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 2100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"definition": "table",
+				"rotation": 0,
+				"x": 60,
+				"y": 60
+			},
+			"before_tick": 2100,
+			"expected_receipt": "accepted",
+			"kind": "build"
+		},
+		{
+			"args": {
+				"target": "93"
+			},
+			"before_tick": 2400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 2400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"x": 62,
+				"y": 60
+			},
+			"before_tick": 2400,
+			"expected_receipt": "accepted",
+			"kind": "lodge"
+		},
+		{
+			"args": {
+				"target": "112"
+			},
+			"before_tick": 2700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "115"
+			},
+			"before_tick": 2700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 2700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 2700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"definition": "research_desk",
+				"rotation": 0,
+				"x": 58,
+				"y": 62
+			},
+			"before_tick": 2700,
+			"expected_receipt": "accepted",
+			"kind": "build"
+		},
+		{
+			"args": {
+				"target": "1288"
+			},
+			"before_tick": 3000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"definition": "cook_meals",
+				"filters": [
+					"grain",
+					"vegetable",
+					"berry",
+					"mushroom"
+				],
+				"mode": "Maintain",
+				"priority": 2,
+				"target": "10",
+				"value": 16
+			},
+			"before_tick": 3000,
+			"expected_receipt": "accepted",
+			"kind": "recipe_order"
+		},
+		{
+			"args": {
+				"target": "88"
+			},
+			"before_tick": 3000,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1510"
+			},
+			"before_tick": 3300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 3300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "93"
+			},
+			"before_tick": 3300,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "95"
+			},
+			"before_tick": 3600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "97"
+			},
+			"before_tick": 3600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 3600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "112"
+			},
+			"before_tick": 3600,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 3900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "114"
+			},
+			"before_tick": 3900,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "105"
+			},
+			"before_tick": 4200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 4200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "97"
+			},
+			"before_tick": 4200,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "117"
+			},
+			"before_tick": 4500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "95"
+			},
+			"before_tick": 4500,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "71"
+			},
+			"before_tick": 4800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "70"
+			},
+			"before_tick": 4800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "83"
+			},
+			"before_tick": 4800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "82"
+			},
+			"before_tick": 4800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"definition": "hearth",
+				"rotation": 0,
+				"x": 63,
+				"y": 63
+			},
+			"before_tick": 4800,
+			"expected_receipt": "accepted",
+			"kind": "build"
+		},
+		{
+			"args": {
+				"target": "115"
+			},
+			"before_tick": 4800,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1529"
+			},
+			"before_tick": 5100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 5100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "105"
+			},
+			"before_tick": 5100,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 5400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1288"
+			},
+			"before_tick": 5400,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "90"
+			},
+			"before_tick": 5700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1510"
+			},
+			"before_tick": 5700,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"definition": "cook_meals",
+				"filters": [
+					"grain",
+					"vegetable",
+					"berry",
+					"mushroom"
+				],
+				"mode": "Maintain",
+				"priority": 2,
+				"target": "3436",
+				"value": 16
+			},
+			"before_tick": 6000,
+			"expected_receipt": "accepted",
+			"kind": "recipe_order"
+		},
+		{
+			"args": {
+				"target": "1529"
+			},
+			"before_tick": 6000,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "68"
+			},
+			"before_tick": 6600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "69"
+			},
+			"before_tick": 6600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "85"
+			},
+			"before_tick": 6600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "87"
+			},
+			"before_tick": 6600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 6600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 9600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "107"
+			},
+			"before_tick": 9900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1188"
+			},
+			"before_tick": 9900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 9900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "90"
+			},
+			"before_tick": 9900,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 10200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 10200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "117"
+			},
+			"before_tick": 10200,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "104"
+			},
+			"before_tick": 10500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "113"
+			},
+			"before_tick": 10500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 10500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "107"
+			},
+			"before_tick": 10500,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1188"
+			},
+			"before_tick": 10800,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1236"
+			},
+			"before_tick": 11100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1425"
+			},
+			"before_tick": 11100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 11100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 11100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "104"
+			},
+			"before_tick": 11100,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "113"
+			},
+			"before_tick": 11400,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1474"
+			},
+			"before_tick": 11700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1236"
+			},
+			"before_tick": 11700,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1655"
+			},
+			"before_tick": 12000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1814"
+			},
+			"before_tick": 12000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 12000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1425"
+			},
+			"before_tick": 12000,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 12300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1474"
+			},
+			"before_tick": 12300,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1835"
+			},
+			"before_tick": 12600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 12600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1814"
+			},
+			"before_tick": 12600,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "89"
+			},
+			"before_tick": 12900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 12900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1655"
+			},
+			"before_tick": 12900,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "74"
+			},
+			"before_tick": 13500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "66"
+			},
+			"before_tick": 13500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "86"
+			},
+			"before_tick": 13500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "84"
+			},
+			"before_tick": 13500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 13800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 16500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 16800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 16800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "89"
+			},
+			"before_tick": 16800,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "91"
+			},
+			"before_tick": 17100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "92"
+			},
+			"before_tick": 17100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 17100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 17100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1835"
+			},
+			"before_tick": 17100,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 17400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "91"
+			},
+			"before_tick": 17400,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 17700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 18000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "92"
+			},
+			"before_tick": 18000,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 18300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 18300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 18600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 18600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 18900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 18900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 19200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 19200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 19500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 19800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 19800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"definition": "farming"
+			},
+			"before_tick": 20100,
+			"expected_receipt": "accepted",
+			"kind": "research_select"
+		},
+		{
+			"args": {
+				"definition": "granary",
+				"rotation": 0,
+				"x": 59,
+				"y": 65
+			},
+			"before_tick": 20100,
+			"expected_receipt": "accepted",
+			"kind": "build"
+		},
+		{
+			"args": {
+				"definition": "door",
+				"rotation": 0,
+				"x": 55,
+				"y": 61
+			},
+			"before_tick": 20400,
+			"expected_receipt": "accepted",
+			"kind": "build"
+		},
+		{
+			"args": {
+				"definition": "wood_wall",
+				"tiles": [
+					{
+						"$tile": [
+							52,
+							56
+						]
+					},
+					{
+						"$tile": [
+							53,
+							56
+						]
+					},
+					{
+						"$tile": [
+							54,
+							56
+						]
+					},
+					{
+						"$tile": [
+							55,
+							56
+						]
+					},
+					{
+						"$tile": [
+							56,
+							56
+						]
+					},
+					{
+						"$tile": [
+							57,
+							56
+						]
+					},
+					{
+						"$tile": [
+							58,
+							56
+						]
+					},
+					{
+						"$tile": [
+							59,
+							56
+						]
+					},
+					{
+						"$tile": [
+							52,
+							57
+						]
+					},
+					{
+						"$tile": [
+							59,
+							57
+						]
+					},
+					{
+						"$tile": [
+							52,
+							58
+						]
+					},
+					{
+						"$tile": [
+							59,
+							58
+						]
+					},
+					{
+						"$tile": [
+							52,
+							59
+						]
+					},
+					{
+						"$tile": [
+							59,
+							59
+						]
+					},
+					{
+						"$tile": [
+							52,
+							60
+						]
+					},
+					{
+						"$tile": [
+							59,
+							60
+						]
+					},
+					{
+						"$tile": [
+							52,
+							61
+						]
+					},
+					{
+						"$tile": [
+							53,
+							61
+						]
+					},
+					{
+						"$tile": [
+							54,
+							61
+						]
+					},
+					{
+						"$tile": [
+							56,
+							61
+						]
+					},
+					{
+						"$tile": [
+							57,
+							61
+						]
+					},
+					{
+						"$tile": [
+							58,
+							61
+						]
+					},
+					{
+						"$tile": [
+							59,
+							61
+						]
+					}
+				]
+			},
+			"before_tick": 20400,
+			"expected_receipt": "accepted",
+			"kind": "build_area"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 20700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 21000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 21000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "71"
+			},
+			"before_tick": 23700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "70"
+			},
+			"before_tick": 23700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 24000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"accept": true,
+				"target": "3837"
+			},
+			"before_tick": 24000,
+			"expected_receipt": "accepted",
+			"kind": "newcomer"
+		},
+		{
+			"args": {
+				"target": "68"
+			},
+			"before_tick": 24300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "69"
+			},
+			"before_tick": 24300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 24300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "98"
+			},
+			"before_tick": 24600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "101"
+			},
+			"before_tick": 24600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 24600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 24900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "111"
+			},
+			"before_tick": 25200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 25200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "101"
+			},
+			"before_tick": 25200,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 25500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1137"
+			},
+			"before_tick": 25800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1384"
+			},
+			"before_tick": 25800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 25800,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "98"
+			},
+			"before_tick": 25800,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "67"
+			},
+			"before_tick": 26100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "73"
+			},
+			"before_tick": 26100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 26100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "111"
+			},
+			"before_tick": 26100,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1137"
+			},
+			"before_tick": 26400,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 26700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1384"
+			},
+			"before_tick": 26700,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1489"
+			},
+			"before_tick": 27000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1509"
+			},
+			"before_tick": 27000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 27000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 27300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 27900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 27900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"crop": "cavecap",
+				"tiles": [
+					{
+						"$tile": [
+							53,
+							57
+						]
+					},
+					{
+						"$tile": [
+							54,
+							57
+						]
+					},
+					{
+						"$tile": [
+							55,
+							57
+						]
+					},
+					{
+						"$tile": [
+							56,
+							57
+						]
+					},
+					{
+						"$tile": [
+							57,
+							57
+						]
+					},
+					{
+						"$tile": [
+							58,
+							57
+						]
+					},
+					{
+						"$tile": [
+							53,
+							58
+						]
+					},
+					{
+						"$tile": [
+							54,
+							58
+						]
+					},
+					{
+						"$tile": [
+							55,
+							58
+						]
+					},
+					{
+						"$tile": [
+							56,
+							58
+						]
+					},
+					{
+						"$tile": [
+							57,
+							58
+						]
+					},
+					{
+						"$tile": [
+							58,
+							58
+						]
+					},
+					{
+						"$tile": [
+							53,
+							59
+						]
+					},
+					{
+						"$tile": [
+							54,
+							59
+						]
+					},
+					{
+						"$tile": [
+							55,
+							59
+						]
+					},
+					{
+						"$tile": [
+							56,
+							59
+						]
+					},
+					{
+						"$tile": [
+							57,
+							59
+						]
+					},
+					{
+						"$tile": [
+							58,
+							59
+						]
+					},
+					{
+						"$tile": [
+							53,
+							60
+						]
+					},
+					{
+						"$tile": [
+							54,
+							60
+						]
+					},
+					{
+						"$tile": [
+							55,
+							60
+						]
+					},
+					{
+						"$tile": [
+							56,
+							60
+						]
+					},
+					{
+						"$tile": [
+							57,
+							60
+						]
+					},
+					{
+						"$tile": [
+							58,
+							60
+						]
+					}
+				]
+			},
+			"before_tick": 27900,
+			"expected_receipt": "accepted",
+			"kind": "field"
+		},
+		{
+			"args": {
+				"target": "1489"
+			},
+			"before_tick": 28200,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "83"
+			},
+			"before_tick": 28500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "82"
+			},
+			"before_tick": 28500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1509"
+			},
+			"before_tick": 28500,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "74"
+			},
+			"before_tick": 30900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "72"
+			},
+			"before_tick": 30900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 32100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 32100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 32400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 32700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 32700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 33000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 33300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 33600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 33600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 33900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 33900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 34200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 34200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 35100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 35400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 35400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1584"
+			},
+			"before_tick": 38400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "94"
+			},
+			"before_tick": 38400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 38400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 38400,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 38700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 38700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1584"
+			},
+			"before_tick": 38700,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 39000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 39000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "94"
+			},
+			"before_tick": 39000,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 39300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 39300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 39600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 39600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 39900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 39900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 40200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 40200,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 41100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 41100,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 42300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 42300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"pay": {
+					"wood": 16
+				},
+				"target": "4704"
+			},
+			"before_tick": 52200,
+			"expected_receipt": "accepted",
+			"kind": "raid_offer"
+		},
+		{
+			"args": {
+				"accept": true,
+				"target": "4733"
+			},
+			"before_tick": 52800,
+			"expected_receipt": "accepted",
+			"kind": "newcomer"
+		},
+		{
+			"args": {
+				"definition": "woodcraft"
+			},
+			"before_tick": 53700,
+			"expected_receipt": "accepted",
+			"kind": "research_select"
+		},
+		{
+			"args": {
+				"crop": "barley",
+				"tiles": [
+					{
+						"$tile": [
+							49,
+							72
+						]
+					},
+					{
+						"$tile": [
+							48,
+							72
+						]
+					},
+					{
+						"$tile": [
+							47,
+							72
+						]
+					},
+					{
+						"$tile": [
+							46,
+							72
+						]
+					},
+					{
+						"$tile": [
+							53,
+							71
+						]
+					},
+					{
+						"$tile": [
+							52,
+							71
+						]
+					},
+					{
+						"$tile": [
+							51,
+							71
+						]
+					},
+					{
+						"$tile": [
+							50,
+							71
+						]
+					},
+					{
+						"$tile": [
+							49,
+							71
+						]
+					},
+					{
+						"$tile": [
+							48,
+							71
+						]
+					},
+					{
+						"$tile": [
+							47,
+							71
+						]
+					},
+					{
+						"$tile": [
+							46,
+							71
+						]
+					},
+					{
+						"$tile": [
+							53,
+							70
+						]
+					},
+					{
+						"$tile": [
+							52,
+							70
+						]
+					},
+					{
+						"$tile": [
+							51,
+							70
+						]
+					},
+					{
+						"$tile": [
+							50,
+							70
+						]
+					},
+					{
+						"$tile": [
+							49,
+							70
+						]
+					},
+					{
+						"$tile": [
+							48,
+							70
+						]
+					},
+					{
+						"$tile": [
+							47,
+							70
+						]
+					},
+					{
+						"$tile": [
+							46,
+							70
+						]
+					},
+					{
+						"$tile": [
+							53,
+							69
+						]
+					},
+					{
+						"$tile": [
+							52,
+							69
+						]
+					},
+					{
+						"$tile": [
+							51,
+							69
+						]
+					},
+					{
+						"$tile": [
+							50,
+							69
+						]
+					},
+					{
+						"$tile": [
+							49,
+							69
+						]
+					},
+					{
+						"$tile": [
+							48,
+							69
+						]
+					},
+					{
+						"$tile": [
+							47,
+							69
+						]
+					},
+					{
+						"$tile": [
+							46,
+							69
+						]
+					},
+					{
+						"$tile": [
+							53,
+							68
+						]
+					},
+					{
+						"$tile": [
+							52,
+							68
+						]
+					},
+					{
+						"$tile": [
+							51,
+							68
+						]
+					},
+					{
+						"$tile": [
+							50,
+							68
+						]
+					},
+					{
+						"$tile": [
+							49,
+							68
+						]
+					},
+					{
+						"$tile": [
+							48,
+							68
+						]
+					},
+					{
+						"$tile": [
+							47,
+							68
+						]
+					},
+					{
+						"$tile": [
+							46,
+							68
+						]
+					},
+					{
+						"$tile": [
+							53,
+							67
+						]
+					},
+					{
+						"$tile": [
+							52,
+							67
+						]
+					},
+					{
+						"$tile": [
+							51,
+							67
+						]
+					},
+					{
+						"$tile": [
+							50,
+							67
+						]
+					},
+					{
+						"$tile": [
+							49,
+							67
+						]
+					},
+					{
+						"$tile": [
+							48,
+							67
+						]
+					},
+					{
+						"$tile": [
+							47,
+							67
+						]
+					},
+					{
+						"$tile": [
+							46,
+							67
+						]
+					},
+					{
+						"$tile": [
+							53,
+							66
+						]
+					},
+					{
+						"$tile": [
+							52,
+							66
+						]
+					},
+					{
+						"$tile": [
+							51,
+							66
+						]
+					},
+					{
+						"$tile": [
+							50,
+							66
+						]
+					},
+					{
+						"$tile": [
+							49,
+							66
+						]
+					},
+					{
+						"$tile": [
+							48,
+							66
+						]
+					},
+					{
+						"$tile": [
+							47,
+							66
+						]
+					},
+					{
+						"$tile": [
+							46,
+							66
+						]
+					},
+					{
+						"$tile": [
+							60,
+							58
+						]
+					},
+					{
+						"$tile": [
+							61,
+							59
+						]
+					},
+					{
+						"$tile": [
+							56,
+							62
+						]
+					},
+					{
+						"$tile": [
+							55,
+							63
+						]
+					},
+					{
+						"$tile": [
+							58,
+							66
+						]
+					},
+					{
+						"$tile": [
+							60,
+							68
+						]
+					},
+					{
+						"$tile": [
+							60,
+							57
+						]
+					},
+					{
+						"$tile": [
+							61,
+							58
+						]
+					},
+					{
+						"$tile": [
+							62,
+							59
+						]
+					},
+					{
+						"$tile": [
+							55,
+							62
+						]
+					},
+					{
+						"$tile": [
+							54,
+							63
+						]
+					},
+					{
+						"$tile": [
+							55,
+							64
+						]
+					}
+				]
+			},
+			"before_tick": 53700,
+			"expected_receipt": "accepted",
+			"kind": "field"
+		},
+		{
+			"args": {
+				"crop": "flax",
+				"tiles": [
+					{
+						"$tile": [
+							57,
+							66
+						]
+					},
+					{
+						"$tile": [
+							58,
+							67
+						]
+					},
+					{
+						"$tile": [
+							62,
+							67
+						]
+					},
+					{
+						"$tile": [
+							59,
+							68
+						]
+					},
+					{
+						"$tile": [
+							61,
+							68
+						]
+					},
+					{
+						"$tile": [
+							60,
+							69
+						]
+					},
+					{
+						"$tile": [
+							60,
+							56
+						]
+					},
+					{
+						"$tile": [
+							61,
+							57
+						]
+					},
+					{
+						"$tile": [
+							62,
+							58
+						]
+					},
+					{
+						"$tile": [
+							63,
+							59
+						]
+					},
+					{
+						"$tile": [
+							54,
+							62
+						]
+					},
+					{
+						"$tile": [
+							53,
+							63
+						]
+					}
+				]
+			},
+			"before_tick": 53700,
+			"expected_receipt": "accepted",
+			"kind": "field"
+		},
+		{
+			"args": {
+				"crop": "turnip",
+				"tiles": [
+					{
+						"$tile": [
+							54,
+							64
+						]
+					},
+					{
+						"$tile": [
+							55,
+							65
+						]
+					},
+					{
+						"$tile": [
+							56,
+							66
+						]
+					},
+					{
+						"$tile": [
+							57,
+							67
+						]
+					},
+					{
+						"$tile": [
+							63,
+							67
+						]
+					},
+					{
+						"$tile": [
+							58,
+							68
+						]
+					},
+					{
+						"$tile": [
+							59,
+							69
+						]
+					},
+					{
+						"$tile": [
+							61,
+							69
+						]
+					},
+					{
+						"$tile": [
+							60,
+							70
+						]
+					},
+					{
+						"$tile": [
+							60,
+							55
+						]
+					},
+					{
+						"$tile": [
+							61,
+							56
+						]
+					},
+					{
+						"$tile": [
+							62,
+							57
+						]
+					}
+				]
+			},
+			"before_tick": 53700,
+			"expected_receipt": "accepted",
+			"kind": "field"
+		},
+		{
+			"args": {
+				"x": 56,
+				"y": 71
+			},
+			"before_tick": 53700,
+			"expected_receipt": "accepted",
+			"kind": "lodge"
+		},
+		{
+			"args": {
+				"target": "99"
+			},
+			"before_tick": 54000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "100"
+			},
+			"before_tick": 54000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "103"
+			},
+			"before_tick": 54300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "99"
+			},
+			"before_tick": 54300,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "100"
+			},
+			"before_tick": 54600,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "103"
+			},
+			"before_tick": 54900,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "109"
+			},
+			"before_tick": 55500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "110"
+			},
+			"before_tick": 55500,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "109"
+			},
+			"before_tick": 56100,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "110"
+			},
+			"before_tick": 56400,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "116"
+			},
+			"before_tick": 56700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1273"
+			},
+			"before_tick": 56700,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1273"
+			},
+			"before_tick": 59700,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1383"
+			},
+			"before_tick": 60000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1603"
+			},
+			"before_tick": 60000,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"definition": "hearth",
+				"rotation": 0,
+				"x": 57,
+				"y": 74
+			},
+			"before_tick": 60000,
+			"expected_receipt": "accepted",
+			"kind": "build"
+		},
+		{
+			"args": {
+				"target": "116"
+			},
+			"before_tick": 60000,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1709"
+			},
+			"before_tick": 60300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 60300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 60300,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1383"
+			},
+			"before_tick": 60300,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1773"
+			},
+			"before_tick": 60600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 60600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 60600,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1603"
+			},
+			"before_tick": 60600,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "118"
+			},
+			"before_tick": 60900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "121"
+			},
+			"before_tick": 60900,
+			"expected_receipt": "accepted",
+			"kind": "gather"
+		},
+		{
+			"args": {
+				"target": "1709"
+			},
+			"before_tick": 60900,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"target": "1773"
+			},
+			"before_tick": 61200,
+			"expected_receipt": "accepted",
+			"kind": "replant_tree"
+		},
+		{
+			"args": {
+				"definition": "cook_meals",
+				"filters": [
+					"grain",
+					"vegetable",
+					"berry",
+					"mushroom"
+				],
+				"mode": "Maintain",
+				"priority": 2,
+				"target": "5368",
+				"value": 24
+			},
+			"before_tick": 61500,
+			"expected_receipt": "accepted",
+			"kind": "recipe_order"
+		},
+		{
+			"args": {
+				"definition": "weaving"
+			},
+			"before_tick": 70200,
+			"expected_receipt": "accepted",
+			"kind": "research_select"
+		}
+	],
+	"mode": "Standard",
+	"seed": 104729,
+	"site": "meadow_reach",
+	"start_tick": 1800,
+	"version": 1
+}

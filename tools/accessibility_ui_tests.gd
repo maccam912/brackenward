@@ -305,7 +305,7 @@ static func research_cards(game: GameSession, check: Callable) -> void:
 			for picture in card.find_children("ObjectPortrait","TextureRect",true,false):
 				valid=valid and picture.texture.region.has_area() and picture.texture.atlas==EnvironmentArt.ATLAS
 		check.call("RESEARCH/UI_cards_wrap_all_twelve_projects_at_%s_text_%s" % [entry[0],entry[1]],valid and world.canonical_hash()==baseline)
-		check.call("RESEARCH/UI_exact_milli_progress_completed_state_and_active_border_%s" % entry[1],meter.value==123456 and meter.max_value==240000 and done.value==done.max_value and active.get_theme_stylebox("panel").border_color==Color("E9BA67") and complete.find_children("*","Button",true,false).is_empty())
+		check.call("RESEARCH/UI_exact_milli_progress_completed_state_and_active_border_%s" % entry[1],meter.value==123456 and meter.max_value==1440000 and done.value==done.max_value and active.get_theme_stylebox("panel").border_color==Color("E9BA67") and complete.find_children("*","Button",true,false).is_empty())
 		check.call("RESEARCH/UI_locked_queued_project_keeps_requirements_and_queue_action_%s" % entry[1],locked.find_children("*","Label",true,false).any(func(l:Label)->bool:return l.text.contains("Requires") and l.text.contains("Queue 1")) and locked.find_children("*","Button",true,false).size()==1 and locked.find_children("*","Button",true,false)[0].text=="Queue Metalwork")
 	world.production_state.queue=["masonry","metalwork","signalcraft","valley_charter"]
 	game.text_scale=1.5;game._build_theme();tree.root.size=Vector2i(1100,720);game.show_research()

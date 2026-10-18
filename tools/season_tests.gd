@@ -75,9 +75,9 @@ static func run(check: Callable) -> void:
 		var reached: bool = false
 		for i in range(cost):
 			w.path_requests = 0
-			reached = w._walk(actor,Vector2i(81,80))
+			reached = w._walk(actor,Vector2i(82,80))
 			if i < cost-1 and reached: break
-		check.call("MOVE/exact_%s_tile_ticks" % kind,reached and actor.x == 81 and actor.move_base_rem == 0)
+		check.call("MOVE/exact_%s_two_tile_ticks" % kind,reached and actor.x == 82 and actor.move_base_rem == 0)
 	w = ColonyTests.world()
 	w.queue_command("field",{"crop":"turnip","tiles":[Vector2i(74,54)]})
 	for i in range(300): w.step()

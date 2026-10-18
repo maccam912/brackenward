@@ -324,7 +324,7 @@ static func legacy_upgrade(check: Callable) -> void:
 	var original: Dictionary = ColonyState.unpack(JSON.parse_string(envelope.payload))
 	var loaded: Dictionary = ColonyCodec.decode(before)
 	var normalized: Dictionary = SchemaCompatibility.normalize(loaded.world,original) if loaded.has("world") else {}
-	check.call("SAVE/schema22_working_colony_preserves_every_acknowledged_gameplay_field",loaded.has("world") and loaded.world.schema_revision==24 and loaded.world.CONTENT_VERSION=="colony-v12" and JSON.stringify(ColonyState.pack(normalized),"",true).sha256_text()=="437b533de5a1e1a4d5b9348d0ee9b9171bc4f60d2a16c1da628c3e3a721e7d33" and FileAccess.get_sha256(path)=="eac9462f2633de6d5f9c805ce755876876dbf262e7032cb57a688830b6414b36",str(loaded.get("error","")))
+	check.call("SAVE/schema22_working_colony_preserves_every_acknowledged_gameplay_field",loaded.has("world") and loaded.world.schema_revision==24 and loaded.world.CONTENT_VERSION=="colony-v13" and JSON.stringify(ColonyState.pack(normalized),"",true).sha256_text()=="437b533de5a1e1a4d5b9348d0ee9b9171bc4f60d2a16c1da628c3e3a721e7d33" and FileAccess.get_sha256(path)=="eac9462f2633de6d5f9c805ce755876876dbf262e7032cb57a688830b6414b36",str(loaded.get("error","")))
 	original.stores[0].filters.reverse()
 	envelope.payload=JSON.stringify(ColonyState.pack(original),"",true);envelope.sha256=envelope.payload.sha256_text()
 	loaded=ColonyCodec.decode(JSON.stringify(envelope,"",true).to_utf8_buffer())

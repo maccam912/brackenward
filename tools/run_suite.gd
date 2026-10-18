@@ -68,6 +68,8 @@ func run() -> void:
 		"seasons": SeasonTests.run(check)
 		"people": SocialTests.run(check)
 		"production":
+			PacingTests.research(check)
+			NotificationTests.run(check)
 			ProductionReadTests.run(check)
 			ProductionTests.run(check)
 		"care":
@@ -136,6 +138,7 @@ func run() -> void:
 	quit(0 if failures.is_empty() and not cases.is_empty() else 1)
 
 func unit() -> void:
+	PacingTests.movement(check)
 	# Fixed real seconds prove the new baseline independently of runner constants.
 	for fps in [30,60]:
 		for selected in [1,2,4]:
@@ -144,8 +147,8 @@ func unit() -> void:
 			var completed: int=0
 			for frame in range(fps): completed+=paced_runner.advance_frame(1.0/float(fps))
 			var reference: PrototypeWorld=PrototypeWorld.new()
-			for tick in range(40*selected): reference.step()
-			check("SIM01/new_baseline_%dx_at_%dfps" % [selected,fps],completed==40*selected and paced_world.canonical_hash()==reference.canonical_hash() and is_zero_approx(paced_runner.accumulator) and paced_runner.speed==selected)
+			for tick in range(20*selected): reference.step()
+			check("SIM01/new_baseline_%dx_at_%dfps" % [selected,fps],completed==20*selected and paced_world.canonical_hash()==reference.canonical_hash() and is_zero_approx(paced_runner.accumulator) and paced_runner.speed==selected)
 	NavigationTests.run(check)
 	var rng: ParkMiller = ParkMiller.new(1)
 	check("SIM02/park_miller_golden", [rng.next(), rng.next(), rng.next()] == [48271, 182605794, 1291394886])
@@ -182,9 +185,9 @@ func unit() -> void:
 	runner.set_speed(4)
 	check("M0/tick_cap", runner.advance_frame(1.0) == 8)
 	var queued_ticks: int = runner.world.tick
-	for i in range(19):
+	for i in range(9):
 		runner.advance_frame(0.0)
-	check("M0/backlog_not_dropped", runner.world.tick == queued_ticks + 152 and is_zero_approx(runner.accumulator))
+	check("M0/backlog_not_dropped", runner.world.tick == queued_ticks + 72 and is_zero_approx(runner.accumulator))
 	runner.pause()
 	var paused_tick: int = runner.world.tick
 	runner.advance_frame(3600)
@@ -209,7 +212,7 @@ func integration() -> void:
 		world.queue_designation([Vector2i(74, 54), Vector2i(75, 54)])
 		var runner: SimRunner = SimRunner.new(world)
 		runner.set_speed(speed)
-		for frame in range(72000 / speed):
+		for frame in range(144000 / speed):
 			runner.advance_frame(0.025)
 		hashes.append(world.canonical_hash())
 	check("SIM01/prototype_72000_ticks_speeds", hashes[0] == hashes[1] and hashes[1] == hashes[2], str(hashes))
@@ -1001,6 +1004,7 @@ func ui() -> void:
 	await AppearanceUITests.run(colony_game,check)
 	await FontUITests.run(colony_game,check)
 	await AccessibilityUITests.run(colony_game,check)
+	await NotificationTests.ui(colony_game,check)
 	await AudioUITests.run(colony_game,check)
 	await AnimalUITests.run(colony_game,check)
 	await DiagnosticsUITests.run(colony_game,check)

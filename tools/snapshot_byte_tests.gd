@@ -62,7 +62,7 @@ static func run(check: Callable) -> void:
 		var actual: PackedByteArray=ColonySnapshotEnvelope.wrap_bytes(saved,candidate.snapshot.encoded_payload,"bytes fixture",42,timestamp)
 		var decoded: Dictionary=ColonyCodec.decode(actual)
 		exact=exact and actual==expected and candidate.snapshot.encoded_payload==baseline.snapshot.text.to_utf8_buffer() and candidate.snapshot.digest==hash_before and is_same(candidate.snapshot.payload,capture) and candidate.snapshot.matches(saved) and decoded.has("world") and decoded.world.canonical_hash()==hash_before and saved.canonical_hash()==hash_before and FileAccess.get_sha256(path)==input_sha
-	check.call("SAVE/byte_preparation_and_normal_envelope_match_all_50_recursive_immutable_fixtures",exact and paths.size()==50)
+	check.call("SAVE/byte_preparation_and_normal_envelope_match_all_51_recursive_immutable_fixtures",exact and paths.size()==51)
 
 static func collect(folder: String, paths: Array[String]) -> void:
 	for name in DirAccess.get_files_at(folder):

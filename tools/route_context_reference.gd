@@ -1,8 +1,11 @@
 class_name RouteContextReference
 extends ColonyWorld
+## Default retains the original rate; route-policy comparisons explicitly use v13 pacing.
+var movement_multiplier: int=1
 
 static func clone_world(source: ColonyWorld, original: bool=false) -> ColonyWorld:
 	var result: ColonyWorld=RouteContextReference.new(source.definitions) if original else ColonyWorld.new(source.definitions)
+	if original: result.movement_multiplier=2
 	for field in source.payload():
 		if field in ["content","content_hash"]:continue
 		var value: Variant=source.get(field)
@@ -61,7 +64,7 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 		citizen.edge_x = edge.x
 		citizen.edge_y = edge.y
 	# Carry the fractional progress in a common denominator across terrain changes.
-	citizen.move_base_rem += 1200000 / tile_move_cost(Vector2i(citizen.edge_x,citizen.edge_y))
+	citizen.move_base_rem += (1200000*movement_multiplier) / tile_move_cost(Vector2i(citizen.edge_x,citizen.edge_y))
 	var speed: int = citizen.move_base_rem / 120
 	citizen.move_base_rem %= 120
 	if citizen.traits.has("Restless"):

@@ -1,7 +1,7 @@
 class_name SimRunner
 extends RefCounted
 # Playback labels are relative to this baseline; authoritative ticks stay 0.1 simulated seconds.
-const BASE_PLAYBACK_RATE: int = 4
+const BASE_PLAYBACK_RATE: int = 2
 const QUIET_SLEEP_SPEED: int = 12
 const SLEEP_SPEED_STEPS: Array[int] = [12,8,6]
 const SLEEP_BATCH_BUDGET_US: int = 8000

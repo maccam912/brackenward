@@ -10,7 +10,7 @@ static func run(check: Callable) -> void:
 	w._make_stack("meal",1,"ground",0,Vector2i(66,64),true)
 	check.call("PRODUCTION/new_food_after_empty_history_immediately_counted",ColonyProduction.policy_stock(w,"meal")==stock_before+1 and FoodForecast.calculate(w).portions==forecast_before.portions+1)
 	w=ColonyTests.world()
-	check.call("CATALOG/all_definitions_and_research_total",w.definitions.items.size() == 28 and w.definitions.buildings.size() == 34 and w.definitions.recipes.size() == 13 and w.definitions.research.values().reduce(func(total:int,r:Dictionary)->int:return total+r.points,0) == 4700)
+	check.call("CATALOG/all_definitions_and_research_total",w.definitions.items.size() == 28 and w.definitions.buildings.size() == 34 and w.definitions.recipes.size() == 13 and w.definitions.research.values().reduce(func(total:int,r:Dictionary)->int:return total+r.points,0) == 28200)
 	check.call("GEAR/starting_equipment_in_conservation_ledger",w.total("toolkit") == 4 and w.total("cloak") == 4 and w.total("bow") == 2 and w.total("spear") == 2 and w.invariant_errors().is_empty())
 	var simple: Dictionary = w.citizens[1]
 	var rate_job: Dictionary = w._job("build","Building","Build",0,Vector2i(74,63),100000)
@@ -55,18 +55,20 @@ static func run(check: Callable) -> void:
 		var researcher: Dictionary = w.citizens[3]
 		var job: Dictionary = w._job("research","Research","Study",desk.id,Vector2i(desk.x,desk.y),w.definitions.research[project].points*1000)
 		job.definition = project; job.state = "Working"; job.worker = researcher.id; researcher.job = job.id
-		for tick in range(15000):
+		for tick in range(w.definitions.research[project].points*10+1):
 			if job.state == "Complete": break
 			ColonyProduction.research_work(w,researcher,job)
 		check.call("RESEARCH/completes_"+project,result == "accepted" and w.researched.has(project) and w.production_state.progress[project] == w.definitions.research[project].points*1000)
 		all_points += w.definitions.research[project].points
-	check.call("RESEARCH/exact_4700_points_and_productive_xp",all_points == 4700 and w.citizens[3].xp.Study == 7100000 and w.citizens[3].skills.Study == 5)
+	check.call("RESEARCH/exact_28200_points_and_productive_xp",all_points == 28200 and w.citizens[3].xp.Study == 30600000 and w.citizens[3].skills.Study == 5)
 	w = ColonyTests.world()
 	desk = w._structure("research_desk",Vector2i(74,63),0)
 	for person in w.citizens: person.preferences.Research = 0
 	w.citizens[3].preferences.Research = 3
 	w.queue_command("research_select",{"definition":"storecraft"})
-	for tick in range(3000): w.step()
+	for tick in range(21600):
+		w.step()
+		if w.researched.has("storecraft"): break
 	check.call("RESEARCH/real_scheduler_walks_and_finishes_project",w.researched.has("storecraft") and w.jobs.any(func(j:Dictionary)->bool:return j.kind == "research" and j.state == "Complete") and w.invariant_errors().is_empty())
 	var legacy: Dictionary = ColonyCodec.decode(FileAccess.get_file_as_bytes("res://tests/fixtures/m3-social.brackenward"))
 	check.call("SAVE/M3_social_to_complete_catalog_and_equipment",legacy.has("world") and legacy.world.citizens[0].preferences.Gathering == 3 and legacy.world.total("toolkit") == 4 and legacy.world.invariant_errors().is_empty(),str(legacy.get("error","")))
@@ -76,6 +78,7 @@ static func run(check: Callable) -> void:
 	ColonyProduction.command(w,"research_select",{"definition":"storecraft"})
 	ColonyProduction.command(w,"research_queue",{"definition":"farming"})
 	ColonyProduction.command(w,"research_queue",{"definition":"weaving"})
+	ColonyProduction.add_insight(w,4500)
 	check.call("RESEARCH/insight_carries_through_prerequisite_queue",w.researched == ["storecraft","farming","weaving"] and w.production_state.insight == 100 and w.production_state.project == "" and w.citizens[3].xp.Study == 2400000)
 	check.call("RESEARCH/curious_discovery_memory",w.production_state.discoveries.get(4) == w.tick+14400)
 	w = ColonyTests.world()
@@ -88,7 +91,7 @@ static func run(check: Callable) -> void:
 	ColonyProduction.command(w,"research_select",{"definition":"farming"})
 	check.call("RESEARCH/switch_releases_worker_keeps_work",retained.worker == 0 and retained.work == original_progress and w.production_state.progress.storecraft == original_progress)
 	ColonyProduction.command(w,"research_select",{"definition":"storecraft"})
-	ColonyProduction.add_insight(w,240)
+	ColonyProduction.add_insight(w,w.definitions.research.storecraft.points)
 	check.call("RESEARCH/inactive_contributor_xp_awarded_once",retained.state == "Complete" and w.citizens[3].xp.Study == 2400000+original_progress and w.researched.count("storecraft") == 1)
 	ColonyProduction.command(w,"research_select",{"definition":"masonry"})
 	var queued: Array[String] = ["farming","herbalism","woodcraft"]

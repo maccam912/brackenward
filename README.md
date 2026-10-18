@@ -1,6 +1,8 @@
 # Brackenward
 
-A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.123-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content/generator versions. Physical Android testing is deferred to the user and does not block further implementation.
+A woodland colony simulation built from [DESIGN.md](DESIGN.md). The current runnable checkpoint is **M7 in progress: release art, accessibility and polish**, version `0.7.124-m7`. Four residents gather, haul, cook, build, eat, and sleep using real inventories, reservations and work progress. Automated full Charter campaigns pass on all three Standard sites and Pine Hearthside under their pinned content/generator versions. Physical Android testing is deferred to the user and does not block further implementation.
+
+Current local pacing gives a full day six real minutes at 1x, three at 2x and ninety seconds at 4x, before optional quiet-sleep acceleration. Resident travel is twice as fast per game tick, keeping its prior on-screen pace while the clock runs slower. Early research targets two to three game days for one dedicated researcher. Research completion cards and a neutral idle-bench status are available on the map; Journal > Updates retains this session's notices. See [implementation evidence](reports/STATUS.md) for validation and device/release status.
 
 ![Current colony artwork](reports/visual-polish-final-colony.png)
 

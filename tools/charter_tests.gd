@@ -110,7 +110,8 @@ static func run(check: Callable) -> void:
 	check.call("SUPPER/cancel_preserves_eaten_food_consumption",world.total("meal")==24-eaten and world.charter_state.supper.attended.is_empty() and world.charter_state.last_supper==0 and world.charter_state.supper.reason.contains("stay consumed") and world.invariant_errors().is_empty(),str(world.invariant_errors()))
 	world=supper_world();_command(world,"start_supper")
 	for person in world.citizens:
-		person.x=100;person.y=100;person.edge_x=100;person.edge_y=100
+		# Even the faster v13 walk cannot cover 132 tiles before this window closes.
+		person.x=0;person.y=0;person.edge_x=0;person.edge_y=0;person.traits=["Kind","Homebody"]
 	while world.tick<6000: world.step()
 	check.call("SUPPER/long_travel_cannot_teleport_or_fake_attendance",world.charter_state.supper.state=="Failed" and world.charter_state.supper.attended.is_empty() and world.charter_state.supper.eaten.is_empty() and world.total("meal")==24 and world.charter_state.supper.reason.contains("Evening window ended") and world.invariant_errors().is_empty())
 	world=supper_world();_command(world,"start_supper")

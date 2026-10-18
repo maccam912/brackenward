@@ -127,16 +127,16 @@ A 3–5 minute session should allow inspecting a problem, issuing a plan, and ob
 | --- | --- |
 | Simulation rate | 10 fixed ticks per simulated second |
 | One game hour | 300 ticks = 30 simulated seconds |
-| One game day | 7,200 ticks = 720 simulated seconds = 3 real minutes at 1× |
+| One game day | 7,200 ticks = 720 simulated seconds = 6 real minutes at 1× |
 | Season | 8 days; Spring, Summer, Autumn, Winter |
 | Year | 32 days |
-| Speeds | Paused, 1×, 2×, 4×; 40/80/160 fixed ticks per real second respectively; simulation rules identical at every speed |
+| Speeds | Paused, 1×, 2×, 4×; 20/40/80 fixed ticks per real second respectively; simulation rules identical at every speed |
 | Work unit, WU | One simulated second of productive work by skill 0 at rate 100% |
 | Tile | 2 fictional meters; movement uses grid distances, not physics meters |
 | Need units | 0–1,000 internally, shown as rounded percentages |
 | Health | 0–100 integer points |
 
-Playback has a fourfold baseline: the current 1× matches the former 4×, 2× matches the former 8×, and 4× matches the former 16×. Quiet-sleep labels use the same baseline (12×/8×/6× request 480/320/240 ticks per real second). The eight-tick frame cap and adaptive overload protection still apply. Authoritative tick length, calendar, work and needs arithmetic, and saved state remain unchanged.
+Playback has a twofold baseline: each manual speed runs at half the preceding build, so current 4× matches the preceding 2×. A full day lasts 6 real minutes at 1×, 3 at 2× and 90 seconds at 4×. Quiet-sleep labels use the same baseline (12×/8×/6× request 240/160/120 ticks per real second). The eight-tick frame cap and adaptive overload protection still apply. Authoritative tick length, calendar and per-tick work/need rates remain unchanged; resident travel and research costs use the rules in §§6.4 and 11.2. Save schema and envelope versions stay unchanged.
 
 Durations in days or hours always mean game time unless explicitly marked real time. “Day 1” is the first calendar day. Simulation time begins at tick 1,800, corresponding to 06:00. Daily counters reset at 00:00, not on loading or resuming.
 
@@ -221,6 +221,10 @@ On any loss or blocked task, the player can tap **Why** to see the relevant caus
 ### 4.4 Alerts and accessibility
 
 Four severities: information (neutral circle), opportunity (leaf), warning (amber triangle), and critical (red octagon). Pair each with text and a distinct silhouette. Merge repeated warnings by cause and affected area; e.g. “6 beds cold” replaces six popups. Reissue only after severity rises or the condition was resolved for at least one game hour. Show at most 3 compact alerts; the rest live in a scrollable list with the critical count always visible.
+
+Research information uses a steady, neutral panel below the status row. Each newly completed project queues one notice naming its actual catalog unlocks, including several projects finished by insight in one simulation frame. Show one expanded notice with Research and Dismiss actions; the circle/count opens the scrollable Updates list, also reachable from Journal. Acknowledging or dismissing a notice does not change simulation speed. Deliberately opening Research or Updates uses the ordinary menu pause/resume policy. Notices never flash, play warning sounds or automatically pause. Updates retains acknowledged discoveries for the current session; existing permanent research facts remain in the Chronicle. Loading or replacing a colony clears this presentation queue and treats already completed research as history.
+
+While an intact research bench exists, keep a tappable research status visible even after notices are dismissed. Show the number of benches actually studying, or Research idle with a neutral explanation: choose a project, waiting for a worker, worker on the way, suspended, unavailable, or all projects complete. A worker traveling to a bench is not studying yet. Shared observation work counts as bench use. Research lists the individual bench states and links to their workstation cards; those cards show the same state. Short landscape layouts retain a single-line status and the update count; the full list scrolls. Large-text actions retain their touch targets, and tutorial cards must not overlap the information panel or speed controls. All of this is derived presentation state and does not change scheduling, research, saves or replay rules.
 
 Include reduced motion, no screen shake, independent music/effects/UI sliders, captions for warning sounds, high-contrast selection, large text, left-handed layout, and haptics off by default. Weather particles and ambient chatter cannot conceal threats or selection. Every hover explanation must also open on tap. Voice reading and complete screen-reader operation are not promised for 1.0; visible text, focus labels, keyboard navigation, and semantic control names are still required so a later accessibility pass has a usable foundation.
 
@@ -367,7 +371,7 @@ A finished batch remains in a station's output buffer until hauled. A station ha
 
 Use four-neighbor A* on the tile grid; Manhattan heuristic, neighbor order north/east/south/west, ties by lowest `f`, then `h`, then tile index `y × 128 + x`. Citizens share tiles and do not physically block each other. Render a small cosmetic offset when sharing. This prevents door congestion and traffic deadlocks without changing resource or work-position reservations.
 
-Base movement takes 10 ticks per tile; stone paths take 8, mud and flooded tiles 15, snow 12. Apply movement traits and health penalties through a fixed-point accumulator. Health <50 makes travel 25% slower. No diagonal shortcuts. Deep river, walls, closed hostile gates, and elevation differences >1 are blocked. Friendly doors are passable; opening has no extra time cost. Bridges replace the water tile's movement cost with 10. Wildlife uses the same terrain graph but cannot open doors or gates.
+Resident movement takes 5 ticks per ordinary tile; stone paths take 4, mud and flooded tiles 7.5, snow 6. These are twice the former movement rates per game tick, preserving the former on-screen walking pace at each now-halved manual speed. Retain terrain cost weights 10/8/15/12 for pathfinding and nonresident movement; multiply the resident base progress numerator by two before traits and penalties. Apply movement traits and health penalties through a fixed-point accumulator. Health <50 makes travel 25% slower. No diagonal shortcuts. Deep river, walls, closed hostile gates, and elevation differences >1 are blocked. Friendly doors are passable; opening has no extra time cost. Bridges use the ordinary terrain weight 10, giving resident crossing time 5 ticks per tile. Wildlife uses the same terrain graph but cannot open doors or gates.
 
 Normal workers avoid tiles within 8 tiles of an active hostile, active fire, or marked dangerous hunt. If no safe route exists, show Unsafe route. A drafted defense order may enter danger, with its predicted risks visible. Civilians flee toward the nearest reachable rally zone or roofed room, with path cost as the tie-breaker. If neither exists, choose the safest reachable tile within 16 tiles, maximizing distance from danger then minimizing travel cost.
 
@@ -603,20 +607,20 @@ The Build menu lists only buildable structures whose unlock is initial or alread
 
 | Research ID | Name | Points | Prerequisites | Exact unlocks |
 | --- | --- | --- | --- | --- |
-| storecraft | Storecraft | 240 | None | Granary, shadecaps |
-| farming | Farming | 300 | None | Well, barley, squash, flax |
-| herbalism | Herbalism | 240 | None | Healing leaf, medicine recipe |
-| woodcraft | Woodcraft | 240 | None | Bow recipe, palisade |
-| masonry | Masonry | 400 | Storecraft | Stone wall, path, cellar, brick kiln, bricks, bridge |
-| weaving | Weaving | 360 | Farming | Loom, cloth, cloak |
-| metalwork | Metalwork | 600 | Masonry, Woodcraft | Charcoal kiln, charcoal, smelter, iron, smithy, forged toolkit, vest, reinforced gate |
-| husbandry | Husbandry | 320 | Farming | Barn, fence, pen gate, animal purchase/taming/breeding |
-| trailcraft | Trailcraft | 360 | Woodcraft | Travel ration recipe, expeditions beyond adjacent regional tiles |
-| commonlife | Commonlife | 240 | Storecraft | Memorial, communal supper charter task |
-| signalcraft | Signalcraft | 600 | Metalwork, Trailcraft | Watchpost, bell, beacon |
-| valley_charter | Valley charter | 800 | Signalcraft, Commonlife | Formal charter ceremony and final checklist |
+| storecraft | Storecraft | 1440 | None | Granary, shadecaps |
+| farming | Farming | 1800 | None | Well, barley, squash, flax |
+| herbalism | Herbalism | 1440 | None | Healing leaf, medicine recipe |
+| woodcraft | Woodcraft | 1440 | None | Bow recipe, palisade |
+| masonry | Masonry | 2400 | Storecraft | Stone wall, path, cellar, brick kiln, bricks, bridge |
+| weaving | Weaving | 2160 | Farming | Loom, cloth, cloak |
+| metalwork | Metalwork | 3600 | Masonry, Woodcraft | Charcoal kiln, charcoal, smelter, iron, smithy, forged toolkit, vest, reinforced gate |
+| husbandry | Husbandry | 1920 | Farming | Barn, fence, pen gate, animal purchase/taming/breeding |
+| trailcraft | Trailcraft | 2160 | Woodcraft | Travel ration recipe, expeditions beyond adjacent regional tiles |
+| commonlife | Commonlife | 1440 | Storecraft | Memorial, communal supper charter task |
+| signalcraft | Signalcraft | 3600 | Metalwork, Trailcraft | Watchpost, bell, beacon |
+| valley_charter | Valley charter | 4800 | Signalcraft, Commonlife | Formal charter ceremony and final checklist |
 
-Total research is 4,700 points. Herbalism's medicine recipe is visible before Weaving; it explicitly shows missing cloth and its two sources, Weaving or trade. Basic treatment works without medicine. Husbandry is optional for the ending. The earliest branches deliberately support several plans: preservation, growing, toolmaking, or trade/exploration.
+Total research is 28,200 points. Costs are six times the preceding catalog: with one starting Study-3 Curious resident, one nearby bench, normal needs and starting supplies, Storecraft and Farming should each take 2–3 elapsed game days. Additional researchers and insight can shorten this; later projects retain their relative higher costs. Herbalism's medicine recipe is visible before Weaving; it explicitly shows missing cloth and its two sources, Weaving or trade. Basic treatment works without medicine. Husbandry is optional for the ending. The earliest branches deliberately support several plans: preservation, growing, toolmaking, or trade/exploration.
 
 ## 12 Weather and hazards
 
@@ -630,7 +634,7 @@ An extreme weather day reserves a major-incident slot for that date. Already ann
 
 ### 12.2 Flooding
 
-The river is static geography; flood simulation is a deterministic overlay. On a Flood day at 06:00, water expands to connected elevation-1 tiles within Manhattan distance 6 of the river. Flood coverage is calculated at forecast time and appears as striped blue terrain when the forecast is tapped. Elevation-2 or higher tiles never flood. Walls do not behave as dams. Flooded tiles remain passable at 15 ticks/tile, there is no drowning, and bridges remain usable.
+The river is static geography; flood simulation is a deterministic overlay. On a Flood day at 06:00, water expands to connected elevation-1 tiles within Manhattan distance 6 of the river. Flood coverage is calculated at forecast time and appears as striped blue terrain when the forecast is tapped. Elevation-2 or higher tiles never flood. Walls do not behave as dams. Flooded tiles remain passable at resident base rate 7.5 ticks/tile, there is no drowning, and bridges remain usable.
 
 Floodwater lasts 12 hours. It pauses crop growth. Ripe crops lose exactly half their current yield, rounded down as a loss, once at flood onset. Loose food on flooded ground and food in an unroofed stockpile there also lose half their units once. Covered racks inside a room, the cart, granaries, cellars, carried food, and worksite escrow inside a roofed room are protected. Floods do not erase buildings or deposits. Preview says which food is vulnerable and how much. Orders to harvest early or move food are offered; crop early harvest at ≥50% growth gives `floor(full yield × progress fraction)`, minimum 1, and resets the tile for replanting. Below 50%, clearing returns no produce and says so.
 
@@ -1204,6 +1208,8 @@ Content `colony-v10` prioritizes food supply and assigned-bed sleep, and adds st
 
 Content `colony-v12` permits injured hungry residents to resume enabled food supply work from recovery and applies half walking/work speed at zero fullness. It retains schema 24, envelope 5 and every v11 catalog definition except version. Validate the exact v11 catalog hash, change only content headers, retain all acknowledged fields and original fixtures, and apply new scheduling/rates only to future ticks. Whole-plot clearing adds a validated pending command with no new persistent fields. Retain v11 replay files and add independent v12 canonical checkpoints/save continuation.
 
+Content `colony-v13` halves playback speed, doubles resident movement progress per game tick and multiplies every research cost by six. Retain schema 24 and envelope 5. Require the exact released v12 catalog hash and preserve every acknowledged gameplay field on load, including completed research, raw partial progress, worker XP, insight, pending commands, current movement edges and remainders. Existing unfinished projects use the larger remaining cost; extend a legacy research job to the new requirement only when it next contributes work. Validate both the exact historical and current research task costs so completed historical tasks stay loadable. Do not rescale old work or grant XP. Keep all v12 replay fixtures immutable and add a fresh v13 command capture with independent canonical checkpoints and save continuation.
+
 Content `colony-v11` adds optional bedtime feeding, half metabolism during actual sleep, and protected routine sleep until rest 700 with a fullness-100 food exception. Schema 24 / envelope 5 and every catalog definition except the version remain unchanged. Validate the exact v10 catalog hash, migrate only content headers, retain prior acknowledged fields and fixtures byte-for-byte, and apply the new rules only to future ticks. Retain v10 replay files and add independent v11 canonical checkpoints and save continuation.
 
 
@@ -1397,7 +1403,7 @@ Every simulation failure writes a minimal reproducible fixture: seed/site/versio
 | SIM16 | Eight turnip tiles, normal soil, no interruptions | 32 vegetable after 4 growth days, equivalent to 16 meals; prepare/sow/harvest require 32/8/16 WU respectively |
 | SIM17 | Crop at drought with and without well, poor vs rich soil | Growth ratios match 50/100% and 75/125%; winter/out-of-season pauses are explained |
 | SIM18 | Hearth heating 24 winter hours with occupied room and no cooking | Exactly 4 wood consumed; separate cooking batch adds its own fuel cost |
-| SIM19 | Every research node completed in valid topological order | Exactly 4,700 base points; every listed unlock becomes available once; progress survives switches |
+| SIM19 | Every research node completed in valid topological order | Exactly 28,200 base points; every listed unlock becomes available once; progress survives switches |
 | SIM20 | Full station outputs plus a blocked store | No third batch starts, no inputs disappear, Storage full reason links to affected store |
 | SIM21 | Flood forecast then actual onset | Preview mask equals actual mask; safe tiles unaffected; ripe food loss exactly once; protected storage keeps its contents |
 | SIM22 | Dangerous station scheduled to overheat, then clear its perimeter | Incident resolves without ignition and without retargeting another station |

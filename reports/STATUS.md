@@ -1,5 +1,62 @@
 # Implementation evidence
 
+Longer days and research (17 October 2026): content `colony-v13`, unchanged
+schema 24/envelope 5. Manual 1x/2x/4x now requests 20/40/80 complete ticks per
+real second, half the preceding rates. Full days take 6/3/1.5 real minutes
+before optional quiet-sleep acceleration. The shared sleep baseline is halved;
+manual labels, exact wake/alert stops, eight-tick frame cap and CPU fallback
+remain. Resident movement advances twice as far per logical tick, retaining the
+former on-screen walking pace while the clock advances more slowly. Terrain,
+Restless, injury, starvation and patient-carry ratios retain integer remainders.
+Animals and other movement systems keep their existing per-tick rules.
+
+All twelve research costs are six times v12 (28,200 points total). Storecraft
+and Farming pass real scheduler checks for 2–3 elapsed game days with one
+starting Study-3 Curious resident, a nearby bench, normal needs and starting
+supplies. Later projects retain their relative higher costs; extra staffing and
+insight can shorten study. Research help explains this target. Completed
+projects, raw partial work, XP, insight, queues, movement edges and remainders
+survive old-save loading exactly. An unfinished legacy research task extends
+to its new requirement on its next productive tick, keeping old completed task
+records valid and granting no XP on import.
+
+Validation: all 28 native suites pass 3,400 checks; the three generated-site
+opening tutorials pass 66 more. All 145 Python tests and content/font checks
+pass. Fifty pre-existing save fixtures retain their original bytes; all 51
+recursive fixtures, including the new v13 snapshot, pass the independent codec
+audits. A fresh 241-command adaptive public-command trace verifies canonical
+checkpoints at ticks 7200 and 72000, 234 invariant checkpoints and exact save
+continuation in a separate native replay. Prior v12 commands/snapshots/goldens
+remain immutable. Rain fractions, mid-edge continuation, patient carrying,
+long supper travel, quiet sleep, research menus and notification controls pass.
+Prepared as development Build 292 (`v0.0.292-dev`); remote CI and APK/desktop
+publication are pending. Physical Android testing and full Charter/winter
+campaigns have not been rerun under v13.
+
+Research information (17 October 2026): a neutral HUD panel announces newly
+completed research and its actual unlocks, one queued card at a time. Research
+and Dismiss actions acknowledge individual notices; the circle/count and
+Journal > Updates open the current session's history. Existing discoveries
+remain in the Chronicle after loading. Notices do not use warning styling,
+warning sounds or automatic pauses, and do not replace command/error feedback.
+
+An intact research bench keeps a tappable status visible: actual studying
+bench count, or an idle explanation for project selection, waiting, travel,
+suspension, unavailability or completed research. Research and workstation
+panels show individual bench states, including shared study. Short landscape
+screens retain compact controls; large-text layouts keep actions accessible
+and avoid tutorial/speed overlap. Authoritative rules, content/schema versions,
+save bytes and replay fixtures are unchanged.
+
+Validation: 62 production/research checks and 12 Python message/string checks
+pass; content/font validation passes. The focused graphical notification checks
+pass, including real queued research completion, cascade/deduplication, camera
+preservation, acknowledgement/history, ordinary menu speed restoration and
+loaded/replaced campaigns. Portrait/landscape captures at 100/150% text were
+inspected (`reports/notifications-*`). The full isolated graphical UI suite
+passes all 999 checks. Included in the same Build 292 checkpoint; remote
+publication and physical Android testing remain separate from these local checks.
+
 Desktop release downloads (17 October 2026): GitHub Actions now publishes
 Windows x86-64 ZIPs, macOS universal ZIPs and Linux x86-64 tarballs alongside
 the Android APK on each checked numbered development prerelease. Isolated

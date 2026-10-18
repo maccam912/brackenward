@@ -13,6 +13,10 @@ var clock_world_id: int = 0
 var clock_tick: int = -1
 var clock_speed: int = -1
 var notice_label: Label
+var notifications: ColonyNotifications = ColonyNotifications.new()
+var notification_panel: NotificationPanel
+var notification_tick: int = -1
+var notification_signature: String = ""
 var nav: GridContainer
 var speeds: HBoxContainer
 var map_tools: VBoxContainer
@@ -161,6 +165,10 @@ func _ready() -> void:
 	_build_map_tools()
 	_build_placement()
 	_build_guidance()
+	notifications.reset(world)
+	notification_panel=NotificationPanel.new();content.add_child(notification_panel)
+	notification_panel.build(self)
+	_refresh_notifications()
 	resized.connect(_resize)
 	_layout()
 	show_sheet("Welcome","ui.sheet.welcome")
@@ -497,6 +505,7 @@ func _advance_frame(delta: float) -> void:
 	if not runner.notice.is_empty(): notice=runner.notice;runner.notice=""
 	if runner.speed>0 and notice==ColonyText.text("ui.notice.paused"): notice=ColonyText.text("ui.notice.running")
 	view.simulation_speed=runner.playback_speed()*SimRunner.BASE_PLAYBACK_RATE
+	if notification_tick!=world.tick: _refresh_notifications()
 	guidance_elapsed += delta
 	if world is ColonyWorld:
 		var signature: String = world.session_id+JSON.stringify(_tutorial_state())
@@ -609,6 +618,35 @@ func _refresh_clock() -> void:
 	var speed_name: String = ColonyText.text("ui.clock.quiet_sleep",{"speed":runner.playback_speed()}) if runner.sleep_fast_forward else ColonyText.speed_label(runner.speed)
 	clock_label.tooltip_text=ColonyText.text("ui.help.quiet_sleep",{"speed":runner.speed}) if runner.sleep_fast_forward else ""
 	clock_label.text=ColonyText.text("ui.clock.status",{"season":season_name,"phase":ColonyText.text({"dawn":"ui.clock.dawn","day":"ui.clock.day","dusk":"ui.clock.dusk","night":"ui.clock.night"}[EnvironmentArt.day_phase(world.tick)]),"day":(world.tick/7200)%8+1,"year":world.tick/230400+1,"hour":"%02d" % ((world.tick%7200)/300),"minute":"%02d" % ((world.tick%300)/5),"stock":stock,"speed":speed_name})
+
+func _refresh_notifications() -> void:
+	notifications.observe(world)
+	notification_tick=world.tick
+	if is_instance_valid(notification_panel):
+		var benches: Array=ColonyNotifications.benches(world) if world is ColonyWorld else []
+		var signature: String=JSON.stringify([benches,notifications.entries,text_scale,world.production_state.project if world is ColonyWorld else ""])
+		if signature==notification_signature: return
+		notification_signature=signature
+		notification_panel.refresh()
+		_layout()
+
+func _research_completion_text(project: String) -> String:
+	return ColonyText.text("ui.updates.research_complete",{"project":_catalog_name(project),"unlocks":", ".join(world.definitions.research[project].unlocks.map(_catalog_name))})
+
+func _research_bench_text(bench: Dictionary) -> String:
+	var keys: Dictionary={"working":"ui.research.status.shared" if bench.shared else "ui.research.status.active","waiting":"ui.research.status.waiting","choose":"ui.research.status.choose","traveling":"ui.research.status.traveling","suspended":"ui.research.status.suspended","unavailable":"ui.research.status.unavailable","finished":"ui.research.status.finished"}
+	return ColonyText.text(keys[bench.state])
+
+func show_updates() -> void:
+	show_sheet("Updates","ui.updates.title")
+	if notifications.entries.is_empty(): label(ColonyText.text("ui.updates.empty"),sheet_body)
+	for index in range(notifications.entries.size()-1,-1,-1):
+		var entry: Dictionary=notifications.entries[index]
+		entry.read=true
+		label(_research_completion_text(entry.project),sheet_body)
+		button(ColonyText.text("ui.updates.view_research"),show_research,sheet_body)
+	button(ColonyText.text("ui.action.chronicle"),show_chronicle,sheet_body)
+	_refresh_notifications()
 
 func _start_background_save(full_snapshot: bool) -> void:
 	var started: int = Time.get_ticks_usec()
@@ -1027,6 +1065,7 @@ func show_sheet(title: String, title_key: String = "", literal_title: bool = fal
 			if world is ColonyWorld: show_valley()
 		"Journal":
 			if world is ColonyWorld:
+				button(ColonyText.text("ui.updates.title"),show_updates,sheet_body)
 				button(ColonyText.text("ui.action.chronicle"),show_chronicle,sheet_body)
 				button(ColonyText.text("ui.action.charter"),show_charter,sheet_body)
 				button(ColonyText.text("ui.action.pin_a_moment"),show_pin_moment,sheet_body)
@@ -1172,6 +1211,11 @@ func _layout() -> void:
 		view.focus_offset = Vector2(-164, 0) if wide else Vector2(0, -120)
 	else:
 		view.focus_offset = Vector2.ZERO
+	if is_instance_valid(notification_panel):
+		notification_panel.place(status_bottom)
+		if notification_panel.visible and width<600:
+			map_tools.position.y=notification_panel.position.y+notification_panel.size.y+8
+			map_tools.visible=map_tools.visible and map_tools.position.y+map_tools.size.y<speeds.position.y
 	_layout_guidance()
 	speeds.move_to_front()
 
@@ -1222,6 +1266,10 @@ func _replace_world(state: RefCounted) -> void:
 	durable_at=save_clock
 	journal_elapsed=0.0
 	world = state
+	notifications.reset(world)
+	notification_tick=-1
+	notification_signature=""
+	if is_instance_valid(notification_panel): notification_panel.refresh()
 	tutorial_suggestions.clear()
 	diagnostics.tick=world.tick;diagnostics.speed=0
 	# Every caller supplies a loaded, imported or newly adopted campaign. The
@@ -2426,6 +2474,13 @@ func show_research() -> void:
 	_tutorial_action("research")
 	show_sheet("Research","ui.sheet.research")
 	label(ColonyText.text("ui.help.research.one_active_project_up_to_two_desks"),sheet_body)
+	var benches: Array[Dictionary]=ColonyNotifications.benches(world)
+	for bench in benches:
+		var station: Dictionary=world.find(world.structures,bench.id)
+		label(ColonyText.text("ui.research.bench",{"name":ColonyChronicle.display_name(world,bench.id),"state":_research_bench_text(bench)}),sheet_body)
+		button(ColonyText.text("ui.research.view_bench"),func()->void:show_station(station),sheet_body)
+	if benches.any(func(bench:Dictionary)->bool:return bench.state=="waiting"):
+		label(ColonyText.text("ui.research.idle_help"),sheet_body)
 	var queued_names: String="None" if world.production_state.queue.is_empty() else ", ".join(world.production_state.queue.map(_catalog_name))
 	var summary: HFlowContainer=HFlowContainer.new();summary.name="ResearchSummary";sheet_body.add_child(summary)
 	summary.add_theme_constant_override("h_separation",16)
@@ -2517,6 +2572,8 @@ func show_station(station: Dictionary) -> void:
 		var fish: Dictionary = world.nature_state.fishing
 		label("Fishing: 12 WU for two fish. Pier %d/8, entire river %d/16 caught this day. Limits recover at 06:00; output must be hauled and cooked." % [fish.piers.get(station.id,0),fish.river],sheet_body)
 	if station.definition == "research_desk":
+		var benches: Array[Dictionary]=ColonyNotifications.benches(world,station.id)
+		if not benches.is_empty(): label(_research_bench_text(benches[0]),sheet_body)
 		button(ColonyText.text("ui.action.research_projects"),show_research,sheet_body)
 	for recipe in world.definitions.recipes.values():
 		if recipe.station != station.definition: continue
@@ -3459,7 +3516,15 @@ func _layout_guidance() -> void:
 		if inspector==null: view.focus_offset=Vector2.ZERO
 		return
 	var width: float = minf(480,content.size.x-16)
-	var available: float = maxf(80,speeds.position.y-view.position.y-16)
+	var top: float=view.position.y
+	var with_notifications: bool=is_instance_valid(notification_panel) and notification_panel.visible
+	if with_notifications:
+		top=maxf(top,notification_panel.position.y+notification_panel.size.y)
+	var available: float = speeds.position.y-top-16 if with_notifications else maxf(80,speeds.position.y-top-16)
+	if with_notifications and available<maxf(96,guidance_panel.get_combined_minimum_size().y):
+		guidance_panel.hide()
+		if inspector==null: view.focus_offset=Vector2.ZERO
+		return
 	guidance_panel.reset_size()
 	var desired: float = 128*text_scale if not guidance_card.is_empty() else 140*text_scale
 	guidance_panel.size=Vector2(width,minf(desired,available))

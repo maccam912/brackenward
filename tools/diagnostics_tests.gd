@@ -56,12 +56,12 @@ static func tick_observation(check: Callable) -> void:
 		reference.set_speed(speed);runner.set_speed(speed)
 		var expected: int=reference.advance_frame(0.05);var actual: int=runner.advance_frame(0.05)
 		var row: Dictionary=data.samples.get("simulation_tick:%d" % speed,{})
-		exact=exact and actual==expected and actual==speed*2 and ticks==range(1801,1801+actual) and row.get("count")==actual and row.get("sum_us")==actual*17 and observed.payload()==plain.payload() and runner.speed==reference.speed and runner.accumulator==reference.accumulator
+		exact=exact and actual==expected and actual==speed and ticks==range(1801,1801+actual) and row.get("count")==actual and row.get("sum_us")==actual*17 and observed.payload()==plain.payload() and runner.speed==reference.speed and runner.accumulator==reference.accumulator
 	check.call("PERF/tick_observer_counts_each_completed_tick_without_changing_state_speed_or_backlog",exact)
 	var runner: SimRunner=SimRunner.new(ColonyTests.world());var calls: Array=[0]
 	runner.tick_observer=func(_elapsed:int,_tick:int,_speed:int)->void:calls[0]+=1
 	runner.set_speed(1)
-	check.call("PERF/missing_presentation_clock_does_not_fabricate_zero_tick_timings",runner.advance_frame(0.05)==2 and calls[0]==0)
+	check.call("PERF/missing_presentation_clock_does_not_fabricate_zero_tick_timings",runner.advance_frame(0.05)==1 and calls[0]==0)
 
 static func process_memory_sample(check: Callable) -> void:
 	var game: GameSession=GameSession.new();var bridge: MemoryBridge=MemoryBridge.new()

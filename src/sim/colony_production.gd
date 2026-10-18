@@ -147,6 +147,9 @@ static func research_work(world: ColonyWorld, citizen: Dictionary, job: Dictiona
 		return
 	var progress: int = world.production_state.progress.get(job.definition,0)
 	var maximum: int = world.definitions.research[job.definition].points*1000
+	# Retain old saved work on load, then extend an unfinished legacy task when
+	# it next contributes under the current research costs.
+	job.required=maxi(job.required,maximum)
 	var work: int = mini(world._rate(citizen,job),maximum-progress)
 	world.production_state.progress[job.definition] = progress+work
 	job.work += work
