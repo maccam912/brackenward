@@ -361,7 +361,7 @@ Ordinary hunger (fullness above 0 and at or below the food threshold) waits for 
 
 Reserve input quantities, destination capacity, and the work position atomically before assignment succeeds. If any reservation fails, roll back all of them. Reservations have job IDs, not timers; explicitly release them on cancel, death, departure, expedition dispatch, and task abandonment. Revalidation runs each second and on navigation/inventory changes. A blocked job is retried after its dependency changes or after 5 seconds, not every tick. Prevent duplicate jobs with a key of `(order ID, target ID, operation, batch index)`.
 
-Materials are carried in visible stacks. A resident carries at most 8 units; all inventory units have hauling weight 1. Repeated trips are planned automatically. Inputs deposited at a worksite become an escrow stockpile owned by that job. Consumption occurs atomically at batch completion; work begins only after all batch inputs are present. Cancellation before completion returns all unconsumed inputs and discards that batch's partial WU. Construction consumes delivered inputs only when its individual structure completes; cancellation returns escrow and removes the blueprint. No item is reserved by two jobs.
+Materials are carried in visible stacks. A resident carries at most 8 units, or 80 with an equipped wheelbarrow; all inventory units have hauling weight 1. Repeated trips are planned automatically. Inputs deposited at a worksite become an escrow stockpile owned by that job. Consumption occurs atomically at batch completion; work begins only after all batch inputs are present. Cancellation before completion returns all unconsumed inputs and discards that batch's partial WU. Construction consumes delivered inputs only when its individual structure completes; cancellation returns escrow and removes the blueprint. No item is reserved by two jobs. Wheelbarrows combine compatible piles or batches at the same pickup point, preserving each stack's age and reservations. Storage capacity, ground-pile limits and filters still apply; take a smaller load when the destination has less room. The multiplier covers local hauling, construction and recipe inputs, payment deliveries, and retained furniture materials. Eating still takes one portion, patient rescue still requires both hands, firefighting still carries one water load, and expedition travel-pack limits are unchanged.
 
 Fetching a job's own materials belongs to that job's category, even when the worker's Hauling category is Off. Independent haulers may deliver to its escrow through child delivery jobs owned by the same parent reservation; they cannot reserve those items a second time. The parent tracks exact delivered quantities and one shared batch progress/receipt. Ordinary job interruption retains progress; cancellation of the underlying order discards partial WU. Pending XP is granted only when the task eventually completes.
 
@@ -413,6 +413,7 @@ IDs are lowercase snake_case and never reused. One edible raw unit restores 250 
 | spear | Spear | 1 | Permanent | 6 | Melee weapon |
 | cloak | Woolless cloak | 1 | Permanent | 8 | +12 degrees of comfort; made of cloth |
 | vest | Padded vest | 1 | Permanent | 10 | Reduces incoming attack damage by 2 |
+| wheelbarrow | Wheelbarrow | 1 | Permanent | 8 | Equipped transport; 10 times normal local carrying capacity |
 
 “Permanent” items do not decay. Rot deletes the expired unit and records spoilage; it does not spawn a new compost item. The cook chooses ingredients before they expire. Worksite escrow and animal feed remain subject to the same freshness rules as their physical location. Seeds are not inventory: known crops can always be sown in valid seasons; sowing WU represents selecting and preparing seed stock.
 
@@ -436,7 +437,7 @@ Compute spoilage-aware runway with a sorted queue of accessible batches and thei
 
 Hearth: make meals until home reserve reaches `2 × home residents × 2 days`, using oldest allowed ingredients; never consume travel rations as recipe inputs. Home reserve counts prepared meals only, so raw food does not halt cooking. Gathered raw produce remains available for emergency eating. Herbal bench: make medicine until stock is 4. No other station creates orders automatically on construction. Orders have a recipe, Repeat N or Maintain quantity, input filters, and priority. Maintain counts available plus in-progress output once, to avoid duplicate batches.
 
-Equipment is assigned by slot: one toolkit, one weapon, one cloak, one vest. Auto-equip replacements is on, upgrades is off; player can enable upgrades per slot. Every inventory transfer occurs physically through the wearer or a delivery. Equipping takes 2 WU. Tools never wear out. A missing toolkit halves Build/Craft/Field work rate but never makes emergency shelter or food gathering impossible. Care, Cooking, Study, and Hauling do not need one.
+Equipment is assigned by slot: one toolkit, one weapon, one cloak, one vest, and one transport item (wheelbarrow). Auto-equip replacements is on, upgrades is off; player can enable upgrades per slot. Every inventory transfer occurs physically through the wearer or a delivery. Equipping takes 2 WU. Tools never wear out. Wheelbarrows use the same physical pickup/equip jobs and replacement policies; each crafted wheelbarrow supports one citizen. They are automatically equipped into empty transport slots, or can be assigned through People -> Equipment. That panel displays the current 8/80-item capacity. The barrow is visible on supply trips and stored or unequipped barrows provide no bonus. A missing toolkit halves Build/Craft/Field work rate but never makes emergency shelter or food gathering impossible. Care, Cooking, Study, and Hauling do not need one.
 
 ## 8 Construction and rooms
 
@@ -584,6 +585,7 @@ All input counts below are consumed together at completion. Any recipe with alte
 | cook_meals | hearth | Any 4 food units from vegetable/grain/berry/mushroom/meat/fish/milk/egg; wood 1 | meal 2 | 8 | Initial |
 | dry_rations | hearth | Any 4 units from grain/vegetable/berry/meat/fish; wood 1 | travel_ration 2 | 12 | Trailcraft |
 | make_toolkit | workbench | wood 2, stone 1 | toolkit 1 | 10 | Initial |
+| make_wheelbarrow | workbench | wood 6 | wheelbarrow 1 | 14 | Wheelbarrows |
 | make_spear | workbench | wood 2, stone 2 | spear 1 | 10 | Initial |
 | make_bow | workbench | wood 3, fiber 2 | bow 1 | 14 | Woodcraft |
 | burn_charcoal | charcoal_kiln | wood 4 | charcoal 4 | 16 | Metalwork |
@@ -607,6 +609,7 @@ The Build menu lists only buildable structures whose unlock is initial or alread
 
 | Research ID | Name | Points | Prerequisites | Exact unlocks |
 | --- | --- | --- | --- | --- |
+| wheelbarrows | Wheelbarrows | 1440 | None | Wheelbarrow recipe at the initial carpenter's bench |
 | storecraft | Storecraft | 1440 | None | Granary, shadecaps |
 | farming | Farming | 1800 | None | Well, barley, squash, flax |
 | herbalism | Herbalism | 1440 | None | Healing leaf, medicine recipe |
@@ -620,7 +623,7 @@ The Build menu lists only buildable structures whose unlock is initial or alread
 | signalcraft | Signalcraft | 3600 | Metalwork, Trailcraft | Watchpost, bell, beacon |
 | valley_charter | Valley charter | 4800 | Signalcraft, Commonlife | Formal charter ceremony and final checklist |
 
-Total research is 28,200 points. Costs are six times the preceding catalog: with one starting Study-3 Curious resident, one nearby bench, normal needs and starting supplies, Storecraft and Farming should each take 2–3 elapsed game days. Additional researchers and insight can shorten this; later projects retain their relative higher costs. Herbalism's medicine recipe is visible before Weaving; it explicitly shows missing cloth and its two sources, Weaving or trade. Basic treatment works without medicine. Husbandry is optional for the ending. The earliest branches deliberately support several plans: preservation, growing, toolmaking, or trade/exploration.
+Total research is 29,640 points across thirteen projects, including the early prerequisite-free Wheelbarrows branch. The existing twelve projects retain six times their v12 costs: with one starting Study-3 Curious resident, one nearby bench, normal needs and starting supplies, Storecraft and Farming should each take 2–3 elapsed game days. Additional researchers and insight can shorten this; later projects retain their relative higher costs. Herbalism's medicine recipe is visible before Weaving; it explicitly shows missing cloth and its two sources, Weaving or trade. Basic treatment works without medicine. Husbandry is optional for the ending. The earliest branches deliberately support several plans: preservation, growing, toolmaking, or trade/exploration.
 
 ## 12 Weather and hazards
 
@@ -708,7 +711,7 @@ When no living residents remain, pause permanently into an epilogue with Load sa
 
 The valley is a 9 × 9 four-neighbor grid. Home is (4,4). All regional terrain and route danger are known; site names and reward ranges appear when a site is selected. No fog conceals information needed to price a trip. Each edge costs 6 game hours in either direction. Route length is the shortest edge count, ties north/east/south/west. Expeditions may go at most 4 edges from home. Adjacent sites are available initially; longer routes require Trailcraft. The regional map has no impassable edge in 1.0, so restoring a road changes relations and story rather than unexpectedly trapping travelers.
 
-One expedition may be away at a time. Select 2–4 healthy residents (health ≥70, fullness ≥500, rest ≥500), leaving at least 2 residents at home. These are hard dispatch requirements shown in the preview. Choose up to 2 eligible pack goats and cargo from accessible stores. Each resident uses an included travel pack with 12 cargo capacity, distinct from the 8-unit local work carry limit; each goat adds 12. No equipment slot consumes this cargo capacity. Goats require 2 grain/vegetable units per full or partial trip day; these feed units occupy cargo. A goat on expedition produces no milk.
+One expedition may be away at a time. Select 2–4 healthy residents (health ≥70, fullness ≥500, rest ≥500), leaving at least 2 residents at home. These are hard dispatch requirements shown in the preview. Choose up to 2 eligible pack goats and cargo from accessible stores. Each resident uses an included travel pack with 12 cargo capacity, distinct from the 8-unit local work carry limit (80 with an equipped wheelbarrow); each goat adds 12. No equipment slot consumes this cargo capacity. Goats require 2 grain/vegetable units per full or partial trip day; these feed units occupy cargo. A goat on expedition produces no milk.
 
 Total trip time is outbound edges × 6 hours + site time + inbound edges × 6 hours, plus any explicitly chosen optional delay. Durations abstract rest stops; they do not secretly increase when travelers sleep. Pack `2 × residents × (ceil(planned hours/24) + 1)` travel rations, representing the whole trip plus one reserve day. Dispatch cannot use ordinary meals. The prep panel shows food required, cargo remaining at the site and on return, skills removed from home, the home food forecast without them, and all possible losses.
 
@@ -1350,7 +1353,7 @@ Build these milestones in order when implementation is authorized. Each one must
 | M1 One visible work loop | Pure simulator, IDs/PRNG/commands, deterministic tile movement, gather/haul/cook/build, four initial citizens, stockpiles, simple needs, first tutorial actions | A citizen gathers real wood, hauls it, builds a bed, eats a real cooked meal, and sleeps; resource conservation and job cancellation tests pass; same trace at 1× and 4× matches |
 | M2 A sustainable small colony | Full jobs/preferences, rooms, crops, storage/spoilage, heating, all personal needs, basic saves and journal recovery | Four-person reference colony survives 8 days without starvation under the scripted competent plan; all blocked-work reasons have actionable UI; Android interrupted-save suite passes before more progression is added |
 | M3 People and seasonal consequences | Traits, relationships, personal requests, weather/floods/fire, care, complete local animals and medicine | One winter scenario, one rescue/friendship chain, one flood mitigation, and one recoverable fire work and are truthfully journaled; no unexplained health loss in event audit |
-| M4 Production and regional life | Full catalogs/research, trade/relations, expeditions/choices, regional map, migration | All 12 research nodes and 13 recipes validated; all 8 site types can be completed/failed/recalled without duplication; at least one viable vegetarian route; no all-residents-away state |
+| M4 Production and regional life | Full catalogs/research, trade/relations, expeditions/choices, regional map, migration | All 13 research nodes and 14 recipes validated; all 8 site types can be completed/failed/recalled without duplication; at least one viable vegetarian route; no all-residents-away state |
 | M5 Defense and storyteller | Full local combat, raid objectives, negotiation, incident spacing, pressure, chronological story output | Same announced raid can be defended, paid, or allowed to steal under tests; no downed executions; major-event spacing and truthful causality checks pass over multi-season runs |
 | M6 Whole campaign | All charter stages, supper, ceremony, epilogue, continue play, mature onboarding, save migrations, desktop exports | At least one charter completed on each site in Standard; Hearthside and vegetarian charter traces pass; cross-platform replay/save results match; actual native launch on all four launch platforms |
 | M7 Release quality | Original missing art/animation/audio, final media manifest, accessibility settings, balance/playtest fixes, optimized rendering, release builds | All release gates in §§25–26, physical Android matrix, 30-minute stress soak, save upgrade/import matrix, license audit, and clean release install/update pass |
@@ -1403,7 +1406,7 @@ Every simulation failure writes a minimal reproducible fixture: seed/site/versio
 | SIM16 | Eight turnip tiles, normal soil, no interruptions | 32 vegetable after 4 growth days, equivalent to 16 meals; prepare/sow/harvest require 32/8/16 WU respectively |
 | SIM17 | Crop at drought with and without well, poor vs rich soil | Growth ratios match 50/100% and 75/125%; winter/out-of-season pauses are explained |
 | SIM18 | Hearth heating 24 winter hours with occupied room and no cooking | Exactly 4 wood consumed; separate cooking batch adds its own fuel cost |
-| SIM19 | Every research node completed in valid topological order | Exactly 28,200 base points; every listed unlock becomes available once; progress survives switches |
+| SIM19 | Every research node completed in valid topological order | Exactly 29,640 base points; every listed unlock becomes available once; progress survives switches |
 | SIM20 | Full station outputs plus a blocked store | No third batch starts, no inputs disappear, Storage full reason links to affected store |
 | SIM21 | Flood forecast then actual onset | Preview mask equals actual mask; safe tiles unaffected; ripe food loss exactly once; protected storage keeps its contents |
 | SIM22 | Dangerous station scheduled to overheat, then clear its perimeter | Incident resolves without ignition and without retargeting another station |
@@ -1620,3 +1623,8 @@ All paths in this local inventory are relative to `/Users/maccam912/Downloads/Ke
 | `Audio/RPG Audio/Audio/doorOpen_1.ogg`, `doorClose_1.ogg` | Same pack license | Doors |
 
 The local UI Pack and Roguelike Characters Pack also have CC0 licenses, but their art is not part of the approved release palette or animation plan. Their availability does not imply they should be mixed into Brackenward. Asset import should start from the smaller list above, author the missing material, and verify each shipped file's provenance.
+
+
+### Wheelbarrow implementation checkpoint (18 October 2026)
+
+Content `colony-v14`, schema 25, envelope 5 adds a prerequisite-free 1,440-point Wheelbarrows project and a carpenter's bench recipe consuming six wood and 14 WU. Each physical wheelbarrow automatically equips one citizen through the normal 2 WU equipment transaction. Equipped local carrying capacity is 80 units instead of 8, including mixed work inputs and furniture bundles. Compatible co-located piles can fill one load; partial storage capacity and individual pile limits reduce the delivery size. Save migration adds only an empty transport slot and its default replacement policy, preserving old gear, orders, inventory and acknowledged progress. Historical catalogs and fixture bytes remain unchanged; a fresh v14 replay owns its own checkpoints. See reports/STATUS.md for validation and publication evidence.

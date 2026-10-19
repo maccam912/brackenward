@@ -219,4 +219,15 @@ static func upgrade_current(data: Dictionary, template: ColonyWorld) -> Dictiona
 			if not state is Dictionary: return data
 			state["cleared"]=false
 		result.schema_revision=24
+	if result.get("schema_revision")==24:
+		if not result.get("citizens") is Array or not result.get("equipment_state") is Dictionary: return data
+		result=result.duplicate(true)
+		for person in result.citizens:
+			if not person is Dictionary or not person.get("equipment") is Dictionary or not result.equipment_state.get(person.id) is Dictionary: return data
+			# Older migrations can already supply the new default policy.
+			if person.equipment.has("transport"): return data
+			person.equipment["transport"]=""
+			if not result.equipment_state[person.id].has("transport"):
+				result.equipment_state[person.id]["transport"]={"replacements":true,"upgrades":false,"preferred":""}
+		result.schema_revision=25
 	return result

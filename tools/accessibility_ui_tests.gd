@@ -297,12 +297,12 @@ static func research_cards(game: GameSession, check: Callable) -> void:
 		var locked: PanelContainer=cards.get_node("Research_metalwork")
 		var meter: ProgressBar=active.find_child("ResearchProgress",true,false)
 		var done: ProgressBar=complete.find_child("ResearchProgress",true,false)
-		var valid: bool=cards.get_child_count()==12 and cards.columns==entry[2] and cards.size.x<=game.sheet_body.size.x+1
+		var valid: bool=cards.get_child_count()==world.definitions.research.size() and cards.columns==entry[2] and cards.size.x<=game.sheet_body.size.x+1
 		for card in cards.get_children():
 			valid=valid and card.size.x<=cards.size.x+1
 			for picture in card.find_children("ObjectPortrait","TextureRect",true,false):
-				valid=valid and picture.texture.region.has_area() and picture.texture.atlas==EnvironmentArt.ATLAS
-		check.call("RESEARCH/UI_cards_wrap_all_twelve_projects_at_%s_text_%s" % [entry[0],entry[1]],valid and world.canonical_hash()==baseline)
+				valid=valid and picture.texture.region.has_area() and picture.texture.atlas==EnvironmentArt.texture_for(picture.get_meta("semantic"))
+		check.call("RESEARCH/UI_cards_wrap_all_thirteen_projects_at_%s_text_%s" % [entry[0],entry[1]],valid and world.canonical_hash()==baseline)
 		check.call("RESEARCH/UI_exact_milli_progress_completed_state_and_active_border_%s" % entry[1],meter.value==123456 and meter.max_value==1440000 and done.value==done.max_value and active.get_theme_stylebox("panel").border_color==Color("E9BA67") and complete.find_children("*","Button",true,false).is_empty())
 		check.call("RESEARCH/UI_locked_queued_project_keeps_requirements_and_queue_action_%s" % entry[1],locked.find_children("*","Label",true,false).any(func(l:Label)->bool:return l.text.contains("Requires") and l.text.contains("Queue 1")) and locked.find_children("*","Button",true,false).size()==1 and locked.find_children("*","Button",true,false)[0].text=="Queue Metalwork")
 	world.production_state.queue=["masonry","metalwork","signalcraft","valley_charter"]

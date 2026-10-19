@@ -3,7 +3,7 @@ extends RefCounted
 ## Exact original 8c0e060 destination query; keep sorting, ties and return shape.
 class OriginalWorld extends ColonyWorld:
 	func _init(catalog: Dictionary) -> void: super(catalog)
-	func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [], context: Dictionary = {}) -> Dictionary:
+	func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [], context: Dictionary = {}, _partial: bool = false) -> Dictionary:
 		var candidates: Array[Dictionary] = []
 		if context.is_empty(): context=_storage_context()
 		for store in stores:

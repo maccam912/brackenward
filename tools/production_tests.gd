@@ -10,7 +10,7 @@ static func run(check: Callable) -> void:
 	w._make_stack("meal",1,"ground",0,Vector2i(66,64),true)
 	check.call("PRODUCTION/new_food_after_empty_history_immediately_counted",ColonyProduction.policy_stock(w,"meal")==stock_before+1 and FoodForecast.calculate(w).portions==forecast_before.portions+1)
 	w=ColonyTests.world()
-	check.call("CATALOG/all_definitions_and_research_total",w.definitions.items.size() == 28 and w.definitions.buildings.size() == 34 and w.definitions.recipes.size() == 13 and w.definitions.research.values().reduce(func(total:int,r:Dictionary)->int:return total+r.points,0) == 28200)
+	check.call("CATALOG/all_definitions_and_research_total",w.definitions.items.size() == 29 and w.definitions.buildings.size() == 34 and w.definitions.recipes.size() == 14 and w.definitions.research.values().reduce(func(total:int,r:Dictionary)->int:return total+r.points,0) == 29640)
 	check.call("GEAR/starting_equipment_in_conservation_ledger",w.total("toolkit") == 4 and w.total("cloak") == 4 and w.total("bow") == 2 and w.total("spear") == 2 and w.invariant_errors().is_empty())
 	var simple: Dictionary = w.citizens[1]
 	var rate_job: Dictionary = w._job("build","Building","Build",0,Vector2i(74,63),100000)
@@ -50,7 +50,7 @@ static func run(check: Callable) -> void:
 	w.queue_command("research_select",{"definition":"metalwork"})
 	w.step()
 	check.call("RESEARCH/prerequisites_visible_and_enforced",w.production_state.project.is_empty() and w.receipts[1].contains("Masonry"))
-	for project in ["storecraft","farming","herbalism","woodcraft","masonry","weaving","metalwork","husbandry","trailcraft","commonlife","signalcraft","valley_charter"]:
+	for project in ["wheelbarrows","storecraft","farming","herbalism","woodcraft","masonry","weaving","metalwork","husbandry","trailcraft","commonlife","signalcraft","valley_charter"]:
 		var result: String = ColonyProduction.command(w,"research_select",{"definition":project})
 		var researcher: Dictionary = w.citizens[3]
 		var job: Dictionary = w._job("research","Research","Study",desk.id,Vector2i(desk.x,desk.y),w.definitions.research[project].points*1000)
@@ -60,7 +60,7 @@ static func run(check: Callable) -> void:
 			ColonyProduction.research_work(w,researcher,job)
 		check.call("RESEARCH/completes_"+project,result == "accepted" and w.researched.has(project) and w.production_state.progress[project] == w.definitions.research[project].points*1000)
 		all_points += w.definitions.research[project].points
-	check.call("RESEARCH/exact_28200_points_and_productive_xp",all_points == 28200 and w.citizens[3].xp.Study == 30600000 and w.citizens[3].skills.Study == 5)
+	check.call("RESEARCH/exact_29640_points_and_productive_xp",all_points == 29640 and w.citizens[3].xp.Study == 32040000 and w.citizens[3].skills.Study == 5)
 	w = ColonyTests.world()
 	desk = w._structure("research_desk",Vector2i(74,63),0)
 	for person in w.citizens: person.preferences.Research = 0

@@ -129,11 +129,11 @@ static func fetch_bundle(world: ColonyWorld, citizen: Dictionary, job: Dictionar
 		var held: int = 0
 		for stack in world.stacks:
 			if stack.location=="carry" and stack.owner==citizen.id: held += stack.count
-		var quantity: int = mini(8-held,source.count)
+		var quantity: int = mini(world.carry_capacity(citizen)-held,source.count)
 		var carried: Dictionary = world._make_stack(source.item,quantity,"carry",citizen.id,Vector2i(citizen.x,citizen.y),false)
 		carried.age=source.age;carried.age_rem=source.age_rem;carried.tags=source.tags.duplicate();carried.job=job.id
 		source.count -= quantity
-		if held+quantity>=8 or not world.stacks.any(func(s:Dictionary)->bool:return s.location=="move_bundle" and s.owner==job.id and s.count>0): job.state="Delivering"
+		if held+quantity>=world.carry_capacity(citizen) or not world.stacks.any(func(s:Dictionary)->bool:return s.location=="move_bundle" and s.owner==job.id and s.count>0): job.state="Delivering"
 	return true
 
 static func complete_move(world: ColonyWorld, job: Dictionary) -> void:

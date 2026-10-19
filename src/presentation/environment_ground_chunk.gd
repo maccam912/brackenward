@@ -21,5 +21,5 @@ func _draw() -> void:
 			if command[0]=="zone":draw_rect(command[1],Color(0.15,0.23,0.23,0.3),false,0.5)
 		else:
 			var rectangle: Rect2 = EnvironmentArt.rectangle(command[0])
-			draw_texture_rect_region(EnvironmentArt.ATLAS,command[1],rectangle,command[2])
+			draw_texture_rect_region(EnvironmentArt.texture_for(command[0]),command[1],rectangle,command[2])
 	if renderer!=null: renderer.account_draw(Time.get_ticks_usec()-started)

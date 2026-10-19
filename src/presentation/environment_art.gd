@@ -1,6 +1,7 @@
 class_name EnvironmentArt
 extends RefCounted
 const ATLAS: Texture2D = preload("res://assets/exported/environment/woodland.png")
+const WHEELBARROW: Texture2D = preload("res://assets/exported/ui/wheelbarrow.svg")
 const RENEWABLE_RESOURCES: Array[String]=["berry_bush","herb_patch","mushroom_patch"]
 static var layout: Dictionary = {}
 
@@ -8,7 +9,11 @@ static func rectangles() -> Dictionary:
 	if layout.is_empty(): layout=JSON.parse_string(FileAccess.get_file_as_string("res://data/environment_art.json")).rectangles
 	return layout
 
+static func texture_for(semantic: String) -> Texture2D:
+	return WHEELBARROW if semantic.begins_with("item/wheelbarrow/") else ATLAS
+
 static func rectangle(semantic: String) -> Rect2:
+	if semantic.begins_with("item/wheelbarrow/"): return Rect2(0,0,16,24)
 	var values: Array = rectangles()[semantic]
 	return Rect2(values[0],values[1],values[2],values[3])
 

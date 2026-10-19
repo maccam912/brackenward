@@ -1,5 +1,31 @@
 # Implementation evidence
 
+Wheelbarrows (18 October 2026): `0.7.125-m7`, content `colony-v14`,
+schema 25, unchanged envelope 5. A starting Wheelbarrows project costs 1,440
+research points with no prerequisites. The initial carpenter's bench makes one
+wheelbarrow from six wood and 14 WU. Each physical barrow automatically equips
+one citizen through the normal 2 WU wearer transaction; People > Equipment can
+assign/remove it and shows the current carrying capacity. Equipped citizens
+carry 80 item units instead of 8 for local hauling, work deliveries, trade
+payments and retained furniture materials. Compatible piles at one pickup point
+can fill the same load, with each age/tag record preserved. Partial destinations
+reduce the load to available store or ground-pile space. Eating, rescue,
+firefighting water and off-map expedition capacity retain their existing rules.
+The barrow, item portraits and total carried counts are visible. Migration adds
+only an empty transport slot and default replacement policy to old campaigns.
+
+Validation: all 28 native suites pass 3,429 checks, including 1,002 graphical
+UI checks and 25 focused wheelbarrow simulation checks. The three generated-site
+opening tutorials pass 66 checks. All 145 Python tests and content/font/media
+validation pass. All 51 historical snapshots retain their original bytes; all
+52 recursive snapshots pass the codec checks. A separate native replay verifies
+241 public commands, canonical checkpoints at ticks 7,200/72,000, exact save
+continuation and all prior acknowledgement migration audits. Native portrait
+and landscape captures were inspected (`reports/visual-polish/wheelbarrows/`).
+Android debug packaging, macOS universal export/signature verification and its
+isolated sixty-frame, audio-drained startup check pass locally. Remote CI,
+numbered APK/desktop publication and physical Android testing remain separate.
+
 Camera toolbar removal (18 October 2026): removed the on-screen zoom buttons
 and camera pan arrows, including their notification/layout positioning. Drag
 panning, pinch zoom, desktop controls and placement nudges/Pan mode retain their

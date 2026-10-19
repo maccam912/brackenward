@@ -25,7 +25,7 @@ static func decode(bytes: PackedByteArray) -> Dictionary:
 		if legacy.has("error"): return legacy
 		return restore(ColonyMigrations.from_m2(legacy.world.payload(),ColonyCatalog.load_data().content_hash,ColonyCatalog.load_data().items.keys()),legacy.get("snapshot_name",""),true)
 	var keys: Array = ["format","version","content","content_hash","snapshot_name","engine","generator_version","campaign_id","sequence","timestamp","payload","sha256"]
-	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8","colony-v9","colony-v10","colony-v11","colony-v12"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
+	if not _keys(envelope,keys) or envelope.format != FORMAT or (envelope.version!=3 and envelope.version!=4 and envelope.version!=VERSION) or (envelope.content != ColonyWorld.CONTENT_VERSION and envelope.content not in ["colony-v1","colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8","colony-v9","colony-v10","colony-v11","colony-v12","colony-v13"] and not (envelope.version == 3 and envelope.content == "m3-people-seasons-1")):
 		return {"error":"Unsupported save version %s / content %s. This build supports envelope 5, content %s and earlier colony migration. Original files retained." % [str(envelope.get("version","?")).left(16),str(envelope.get("content","?")).left(64),ColonyWorld.CONTENT_VERSION]}
 	if envelope.generator_version is float and envelope.generator_version==floor(envelope.generator_version) and envelope.generator_version>ColonyGeneration.VERSION:
 		return {"error":"Campaign uses generator version %d; this build supports up to %d. Update Brackenward to open it. Original files retained." % [int(envelope.generator_version),ColonyGeneration.VERSION]}
@@ -71,7 +71,7 @@ static func _restore(data: Dictionary, snapshot_name: String, initialize_weather
 		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/colony_v1.json")
 		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released catalog; original files retained"}
 		data = ColonyMigrations.catalog_v1(data,world.definitions,previous.items.keys())
-	if data.get("content") in ["colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8","colony-v9","colony-v10","colony-v11","colony-v12"]:
+	if data.get("content") in ["colony-v2","colony-v3","colony-v4","colony-v5","colony-v6","colony-v7","colony-v8","colony-v9","colony-v10","colony-v11","colony-v12","colony-v13"]:
 		var previous_version: String = data.content
 		var previous: Dictionary = ColonyCatalog.load_data("res://data/catalogs/%s.json" % previous_version.replace("-","_"))
 		if data.get("content_hash") != previous.content_hash: return {"error":"Unknown released %s catalog; original files retained" % previous_version.trim_prefix("colony-")}
@@ -137,7 +137,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 	if (data.citizens.size()<4 or data.citizens.size()>100000) or data.fields.size() > 16384 or data.structures.size() > 16384 or data.resources.size() > 16384 or data.stacks.size() > 100000 or data.jobs.size() > 100000 or data.pending_commands.size() > 4096 or data.facts.size() > 100000:
 		return "Invalid record counts"
 	if not ColonyWeather.valid_geometry(world,data.weather_state): return "Forecast flood coverage does not match saved geography"
-	if not data.researched.all(func(value:Variant)->bool:return value is String and value in ["woodcraft","storecraft","farming","herbalism","weaving","masonry","metalwork","trailcraft","husbandry","signalcraft","commonlife","valley_charter"]) or data.weather not in ["clear","rain","fog","snow","drought","flood","cold_snap"]:
+	if not data.researched.all(func(value:Variant)->bool:return value is String and world.definitions.research.has(value)) or data.weather not in ["clear","rain","fog","snow","drought","flood","cold_snap"]:
 		return "Unknown research/weather state"
 	for table in [data.citizens,data.structures,data.resources,data.stacks,data.jobs,data.stores,data.fields]:
 		if not table.all(func(r:Variant)->bool:return r is Dictionary and r.get("id") is int and r.id>0): return "Invalid entity reference schema"
@@ -147,7 +147,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if not _record(citizen, world.citizens[0]) or citizen.id<1 or citizen.name.length() > 64:
 			return "Invalid citizen schema"
 		citizen_ids.append(citizen.id)
-		if not _keys(citizen.skills, ColonyWorld.SKILLS) or not _keys(citizen.xp, ColonyWorld.SKILLS) or not _keys(citizen.preferences, ColonyWorld.CATEGORIES) or not _keys(citizen.equipment, ["toolkit", "cloak", "weapon", "vest"]):
+		if not _keys(citizen.skills, ColonyWorld.SKILLS) or not _keys(citizen.xp, ColonyWorld.SKILLS) or not _keys(citizen.preferences, ColonyWorld.CATEGORIES) or not _keys(citizen.equipment, ColonyEquipment.SLOTS.keys()):
 			return "Invalid skills/preferences/equipment"
 		for skill in ColonyWorld.SKILLS:
 			if not citizen.skills[skill] is int or citizen.skills[skill] < 0 or citizen.skills[skill] > 5 or not citizen.xp[skill] is int or citizen.xp[skill] < 0:
@@ -177,6 +177,7 @@ static func _validate(data: Dictionary, world: ColonyWorld) -> String:
 		if citizen.equipment.toolkit not in ["", "toolkit", "forged_toolkit"] or citizen.equipment.cloak not in ["", "cloak"] or citizen.equipment.weapon not in ["", "spear", "bow"]:
 			return "Unknown equipment"
 		if citizen.equipment.vest not in ["","vest"]: return "Unknown vest"
+		if citizen.equipment.transport not in ["","wheelbarrow"]: return "Unknown transport"
 		for point in citizen.route:
 			if not point is Vector2i:
 				return "Invalid route"

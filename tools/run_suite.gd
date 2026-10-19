@@ -611,7 +611,7 @@ func ui() -> void:
 	colony_game.set_speed(1); colony_game.runner.advance_frame(0.1); colony_game._process(0); colony_game.runner.pause()
 	check("PRODUCTION/UI_policy_applies_on_tick",colony_game.world.production_state.orders.size() == 1 and colony_game.world.production_state.orders[0].quantity == 2)
 	colony_game.show_research()
-	check("RESEARCH/UI_lists_all_twelve_unlocks",colony_game.sheet_name == "Research" and colony_game.sheet_body.find_children("*","Label",true,false).filter(func(n:Label)->bool:return n.text.begins_with("Unlocks:")).size() == 12)
+	check("RESEARCH/UI_lists_all_thirteen_unlocks",colony_game.sheet_name == "Research" and colony_game.sheet_body.find_children("*","Label",true,false).filter(func(n:Label)->bool:return n.text.begins_with("Unlocks:")).size() == colony_game.world.definitions.research.size())
 	for child in colony_game.sheet_body.find_children("*","Button",true,false):
 		if child.text == "Study Woodcraft": child.pressed.emit(); break
 	check("RESEARCH/UI_select_is_pending",colony_game.world.pending_commands.size() == 1 and colony_game.world.pending_commands[0].kind == "research_select" and colony_game.world.production_state.project == "")
@@ -806,6 +806,7 @@ func ui() -> void:
 		if child is Button and child.text=="Toolkit upgrades: Off": child.pressed.emit();break
 	check("GEAR/UI_upgrade_is_explicit_policy_command",colony_game.world.pending_commands.size()==1 and colony_game.world.pending_commands[0].kind=="equipment_policy" and colony_game.world.pending_commands[0].args.upgrades)
 	colony_game.world=ColonyTests.world();colony_game.runner=SimRunner.new(colony_game.world);colony_game.view.world=colony_game.world;colony_game.submitted_command=0
+	WheelbarrowTests.ui(colony_game,check)
 	var maintenance_wall: Dictionary = colony_game.world._structure("wood_wall",Vector2i(74,54),0);maintenance_wall.health=129
 	colony_game.show_maintenance(maintenance_wall)
 	check("REPAIR/UI_exact_health_material_and_wu_quote",colony_game.sheet_body.get_children().any(func(n:Node)->bool:return n is Label and n.text.contains("51 health") and n.text.contains("2 wood") and n.text.contains("5.1 WU")))

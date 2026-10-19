@@ -305,3 +305,21 @@ for current, previous in zip(normalized_pacing["research"],recovery_catalog["res
 assert normalized_pacing==recovery_catalog, "Only version and sixfold research costs may differ from v12"
 assert sum(r["points"] for r in pacing_catalog["research"])==28200
 print("Validated pacing content v13; all twelve research costs are six times v12, other definitions retained.")
+
+wheelbarrow_catalog=json.loads((root / "data/catalogs/colony_v14.json").read_text())
+assert wheelbarrow_catalog["version"]=="colony-v14"
+normalized_wheelbarrows=json.loads(json.dumps(wheelbarrow_catalog));normalized_wheelbarrows["version"]="colony-v13"
+for kind, identifier in [("items","wheelbarrow"),("recipes","make_wheelbarrow"),("research","wheelbarrows")]:
+    definitions=[d for d in normalized_wheelbarrows[kind] if d["id"]==identifier]
+    assert len(definitions)==1
+    normalized_wheelbarrows[kind].remove(definitions[0])
+assert normalized_wheelbarrows==pacing_catalog, "Only wheelbarrow definitions may differ from v13"
+wheelbarrow_text=json.loads((root / "data/catalogs/en_colony_v14.json").read_text())
+for kind, identifier in [("items","wheelbarrow"),("recipes","make_wheelbarrow"),("research","wheelbarrows")]:
+    definition=next(d for d in wheelbarrow_catalog[kind] if d["id"]==identifier)
+    assert definition["name_key"] in wheelbarrow_text and definition["description_key"] in wheelbarrow_text
+recipe=next(d for d in wheelbarrow_catalog["recipes"] if d["id"]=="make_wheelbarrow")
+research=wheelbarrow_catalog["research"][0]
+assert recipe["station"]=="workbench" and recipe["materials"]=={"wood":6} and recipe["outputs"]=={"wheelbarrow":1} and recipe["unlock"]=="wheelbarrows"
+assert research["id"]=="wheelbarrows" and research["prerequisites"]==[] and research["points"]==1440 and research["unlocks"]==["recipe:make_wheelbarrow"]
+print("Validated wheelbarrow content v14; early research, wooden recipe, localization and unchanged v13 definitions.")

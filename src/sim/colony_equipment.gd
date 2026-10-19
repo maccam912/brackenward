@@ -1,6 +1,6 @@
 class_name ColonyEquipment
 extends RefCounted
-const SLOTS: Dictionary = {"toolkit":["toolkit","forged_toolkit"],"weapon":["spear","bow"],"cloak":["cloak"],"vest":["vest"]}
+const SLOTS: Dictionary = {"toolkit":["toolkit","forged_toolkit"],"weapon":["spear","bow"],"cloak":["cloak"],"vest":["vest"],"transport":["wheelbarrow"]}
 
 static func initial_state(citizens: Variant) -> Dictionary:
 	var result: Dictionary = {}

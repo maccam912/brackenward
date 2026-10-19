@@ -1,0 +1,8 @@
+{
+  "wheelbarrow.name": "Wheelbarrow",
+  "wheelbarrow.description": "Wooden hauling gear. Automatically equipped; carries 80 items instead of 8 for local hauling and work deliveries.",
+  "make_wheelbarrow.name": "Make wheelbarrow",
+  "make_wheelbarrow.description": "6 wood -> 1 wheelbarrow; 14 WU. Each equipped resident carries ten times the normal local load.",
+  "wheelbarrows.name": "Wheelbarrows",
+  "wheelbarrows.description": "Early wooden transport. Unlocks wheelbarrows at the carpenter's bench; each equipped citizen carries 80 items instead of 8."
+}

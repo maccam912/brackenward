@@ -484,6 +484,11 @@ func citizen_point(citizen: Dictionary) -> Vector2:
 		point.x += float(citizen.progress) / 10000.0 * citizen.direction
 	return point
 
+func wheelbarrow_visible(citizen: Dictionary) -> bool:
+	if citizen.equipment.get("transport","")!="wheelbarrow" or citizen.carrying_patient>0 or citizen.downed: return false
+	var job: Dictionary=world.find(world.jobs,citizen.job)
+	return job.get("kind") not in ["eat","feed","equip"] and job.get("state") in ["Fetching","Delivering","Moving"] and (job.get("kind")=="haul" or not job.get("inputs",{}).is_empty() or job.get("kind")=="move_furniture")
+
 func _draw_carried_items() -> void:
 	if not world is ColonyWorld:
 		return
@@ -497,17 +502,32 @@ func _draw_carried_items() -> void:
 		var point: Vector2 = tile_to_screen(Vector2(body.x+0.5,body.y+0.5))
 		carried_overlay.draw_rect(Rect2(point-Vector2(tile_size*0.4,5),Vector2(tile_size*0.8,10)),Color("716D88"))
 		carried_overlay.draw_line(point-Vector2(0,10),point+Vector2(0,10),Color("F3E8CC"),2)
+	# The barrow belongs to its equipped worker; it is visible on supply trips.
+	for citizen in world.citizens:
+		if not wheelbarrow_visible(citizen): continue
+		var point: Vector2=tile_to_screen(citizen_point(citizen))+Vector2(tile_size*0.28,-tile_size*0.2)
+		var scale: float=tile_size/24.0
+		carried_overlay.draw_texture_rect(EnvironmentArt.WHEELBARROW,Rect2(point-Vector2(5,16)*scale,Vector2(16,24)*scale),false)
+	var loads: Dictionary={}
 	for stack in world.nonempty_stacks():
-		if stack.count <= 0 or stack.location != "carry":
-			continue
-		var citizen: Dictionary = world.find(world.citizens,stack.owner)
-		var point: Vector2 = tile_to_screen(citizen_point(citizen))+Vector2(tile_size*0.48,-tile_size*0.25)
-		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(point):
-			continue
-		var tier: int = EnvironmentArt.pile_tier(stack.count,world.definitions.items[stack.item].stack_limit)
-		var scale: float = tile_size/32.0
-		carried_overlay.draw_texture_rect_region(EnvironmentArt.ATLAS,Rect2(point-Vector2(8,16)*scale,Vector2(16,24)*scale),EnvironmentArt.rectangle("item/%s/%d" % [stack.item,tier]))
-		if citizen.id==selected_id: carried_overlay.draw_string(get_theme_default_font(),point+Vector2(9,5),str(stack.count),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("F3E8CC"))
+		if stack.location!="carry": continue
+		if not loads.has(stack.owner): loads[stack.owner]={}
+		loads[stack.owner][stack.item]=loads[stack.owner].get(stack.item,0)+stack.count
+	for owner in loads:
+		var citizen: Dictionary=world.find(world.citizens,owner)
+		var origin: Vector2=tile_to_screen(citizen_point(citizen))+Vector2(tile_size*0.48,-tile_size*0.25)
+		if not Rect2(Vector2.ZERO,size).grow(tile_size).has_point(origin): continue
+		if wheelbarrow_visible(citizen): origin+=Vector2(tile_size*0.12,-tile_size*0.16)
+		var items: Array=loads[owner].keys();items.sort()
+		for index in range(items.size()):
+			var item: String=items[index]
+			var count: int=loads[owner][item]
+			var tier: int=EnvironmentArt.pile_tier(count,world.definitions.items[item].stack_limit)
+			var scale: float=tile_size/32.0
+			var point: Vector2=origin+Vector2(index%2*3,-index/2*3)*scale
+			var semantic: String="item/%s/%d" % [item,tier]
+			carried_overlay.draw_texture_rect_region(EnvironmentArt.texture_for(semantic),Rect2(point-Vector2(8,16)*scale,Vector2(16,24)*scale),EnvironmentArt.rectangle(semantic))
+			if citizen.id==selected_id: carried_overlay.draw_string(get_theme_default_font(),point+Vector2(9,5+index*14),str(count),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("F3E8CC"))
 	account_draw(Time.get_ticks_usec()-started)
 
 func refresh_terrain() -> void:

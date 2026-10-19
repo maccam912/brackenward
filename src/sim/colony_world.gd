@@ -2,8 +2,8 @@ class_name ColonyWorld
 extends RefCounted
 ## Authoritative M1 simulation. No nodes, rendering, I/O, wall clock or global RNG.
 const SIZE: int = 128
-const CONTENT_VERSION: String = "colony-v13"
-const SCHEMA_REVISION: int = 24
+const CONTENT_VERSION: String = "colony-v14"
+const SCHEMA_REVISION: int = 25
 const CATEGORIES: Array[String] = ["Care", "Cooking", "Growing", "Gathering", "Animals", "Building", "Crafting", "Hauling", "Research", "Guard"]
 const SKILLS: Array[String] = ["Field", "Build", "Craft", "Cooking", "Care", "Study", "Guard"]
 const THRESHOLDS: Array[int] = [0, 400, 1200, 2400, 4000, 6000]
@@ -1167,16 +1167,27 @@ func _reserve(job: Dictionary, citizen: Dictionary, storage_context: Dictionary 
 		if source.is_empty() or source.count == 0:
 			job.state = "Canceled"
 			return false
-		var quantity: int = mini(8, source.count - _reserved(source))
+		var sources: Array = [source]
+		if carry_capacity(citizen)>8:
+			# A wheelbarrow can collect several physical piles/batches at one
+			# pickup point. Keep their ages, tags and reservations separate.
+			sources=_work_inventory().filter(func(s:Dictionary)->bool:return s.count>_reserved(s) and s.item==source.item and s.tags==source.tags and s.location==source.location and s.owner==source.owner and s.x==source.x and s.y==source.y and ColonyFire.usable(self,s))
+		var available_units: int = 0
+		for stack in sources: available_units+=stack.count-_reserved(stack)
+		var quantity: int = mini(carry_capacity(citizen), available_units)
 		if quantity <= 0:
 			return _block(job, "Inputs reserved by another job; waiting for its completion")
-		var destination: Dictionary = _destination(source.item, quantity, point, source.tags, storage_context)
+		var destination: Dictionary = _destination(source.item, quantity, point, source.tags, storage_context, carry_capacity(citizen)>8)
 		if destination.is_empty():
 			return _block(job, "No storage space: paint a stockpile or build a rack")
+		quantity = destination.get("quantity",quantity)
 		job.destination = destination.id
 		job.work_x = destination.tile.x
 		job.work_y = destination.tile.y
-		requests.append({"stack": source.id, "count": quantity})
+		for stack in sources:
+			var count: int=mini(quantity,stack.count-_reserved(stack))
+			if count>0: requests.append({"stack":stack.id,"count":count});quantity-=count
+			if quantity==0: break
 	else:
 		job.work_x = work_position.x
 		job.work_y = work_position.y
@@ -1325,7 +1336,7 @@ func _work_step(citizen: Dictionary, job: Dictionary) -> void:
 				var held: int = 0
 				for existing in _work_inventory():
 					if existing.location == "carry" and existing.owner == citizen.id: held += existing.count
-				var quantity: int = mini(8-held, source.reservations[job.id])
+				var quantity: int = mini(carry_capacity(citizen)-held, source.reservations[job.id])
 				var carried: Dictionary = _make_stack(source.item, quantity, "carry", citizen.id, Vector2i(citizen.x, citizen.y), false)
 				carried.age = source.age
 				carried.age_rem = source.age_rem
@@ -1335,7 +1346,7 @@ func _work_step(citizen: Dictionary, job: Dictionary) -> void:
 				source.reservations[job.id] -= quantity
 				if source.reservations[job.id] == 0:
 					source.reservations.erase(job.id)
-				if held+quantity >= 8 or not _work_inventory().any(func(s:Dictionary)->bool:return s.reservations.get(job.id,0)>0): job.state = "Delivering"
+				if held+quantity >= carry_capacity(citizen) or not _work_inventory().any(func(s:Dictionary)->bool:return s.reservations.get(job.id,0)>0): job.state = "Delivering"
 		"Delivering":
 			if _walk(citizen, Vector2i(job.work_x, job.work_y)):
 				for stack in stacks:
@@ -1719,6 +1730,9 @@ func available(item: String) -> int:
 			result += stack.count - _reserved(stack)
 	return result
 
+static func carry_capacity(citizen: Dictionary) -> int:
+	return 8 * (10 if citizen.equipment.get("transport","")=="wheelbarrow" else 1)
+
 func total(item: String) -> int:
 	var result: int = 0
 	for stack in nonempty_stacks():
@@ -1787,7 +1801,7 @@ func _storage_context() -> Dictionary:
 		result.working_tiles[Vector3i(job.destination,job.work_x,job.work_y)]=true
 	return result
 
-func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [], context: Dictionary = {}) -> Dictionary:
+func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [], context: Dictionary = {}, partial: bool = false) -> Dictionary:
 	var candidates: Array[Dictionary] = []
 	if context.is_empty(): context=_storage_context()
 	for store in stores:
@@ -1795,7 +1809,8 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [],
 		if not store.filters.has(item):
 			continue
 		var occupied: int = context.occupied.get(store.id,0)
-		if occupied + quantity > store.capacity:
+		var store_quantity: int = mini(quantity,store.capacity-occupied) if partial else quantity
+		if store_quantity<=0 or occupied + store_quantity > store.capacity:
 			continue
 		# A stockpile's association cannot change while this read-only query
 		# visits its tiles. A missing structure would otherwise rescan the full
@@ -1803,16 +1818,19 @@ func _destination(item: String, quantity: int, from: Vector2i, tags: Array = [],
 		var individual_piles: bool = find(structures,store.id).is_empty()
 		for tile: Vector2i in store.tiles:
 			var used: int = 0
+			var tile_quantity: int = store_quantity
 			var blocked: bool = false
 			if individual_piles:
 				var key: Vector3i = Vector3i(store.id,tile.x,tile.y)
 				for stack in context.tiles.get(key,[]):
 					blocked=blocked or stack.item!=item or stack.tags!=tags;used+=stack.count
 				blocked=blocked or context.working_tiles.has(key)
-				if used + quantity > definitions.items[item].stack_limit:
+				if partial: tile_quantity=mini(tile_quantity,definitions.items[item].stack_limit-used)
+				if tile_quantity<=0 or used + tile_quantity > definitions.items[item].stack_limit:
 					blocked = true
 			if not blocked:
 				candidates.append({"id": store.id, "tile": tile, "priority": store.priority, "distance": absi(tile.x - from.x) + absi(tile.y - from.y)})
+				if partial: candidates[-1]["quantity"]=tile_quantity
 	candidates.sort_custom(func(a: Dictionary, b: Dictionary) -> bool: return a.priority > b.priority or (a.priority == b.priority and (a.distance < b.distance or (a.distance == b.distance and a.id < b.id))))
 	return {} if candidates.is_empty() else candidates[0]
 
@@ -1856,7 +1874,7 @@ func invariant_errors() -> Array[String]:
 		for stack in stacks:
 			if stack.location == "carry" and stack.owner == citizen.id:
 				carried += stack.count
-		if carried > 8:
+		if carried > carry_capacity(citizen):
 			errors.append("Carry capacity exceeded")
 		if citizen.carrying_patient > 0 and carried > 0: errors.append("Patient carrier must have both hands free")
 		if not inside(Vector2i(citizen.x, citizen.y)) or citizen.fullness not in range(1001) or citizen.rest not in range(1001):
@@ -1942,6 +1960,6 @@ static func citizen_record(id: int, name: String, point: Vector2i, skills: Dicti
 		"shift": "Normal", "pending_shift": "", "pinned_job": 0, "yesterday_leisure": 0, "leisure_memory_until": 0, "warm_until": 0, "leisure_ticks": 0, "leisure_day": 0, "bed_sleep_ticks": 0, "bed_memory_until": 0, "raw_memory_until": 0, "preferred_work": 0, "preferred_memory_until": 0, "mood_terms": {}, "food_tags": [], "food_tags_day": 0, "break_clock": 0, "break_until": 0, "break_cooldown": 0, "departure_clock": 0, "departure_until": 0, "departed": false,
 		"food_tag": food, "fullness": 750, "rest": 900, "morale": 650,
 		"health": 100, "hunger_rem": 0, "rest_rem": 0, "starving_ticks": 0, "job": 0, "bed": 0,
-		"equipment": {"toolkit": "toolkit", "cloak": "cloak", "weapon": weapon, "vest":""}, "activity": "Looking around"}
+		"equipment": {"toolkit": "toolkit", "cloak": "cloak", "weapon": weapon, "vest":"", "transport":""}, "activity": "Looking around"}
 	result.merge(ColonySocial.citizen_defaults());result.merge(ColonyCare.citizen_defaults());result.merge(ColonyCombat.citizen_defaults());result.merge(ColonyDefense.citizen_defaults())
 	return result

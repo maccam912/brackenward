@@ -44,7 +44,7 @@ func sync(state: ColonyWorld, structure: Dictionary, tint: Color, reveal_roof: b
 	elif flame!=null: flame.hide()
 	if not output_item.is_empty() and structure.health>0:
 		if output_pile==null: output_pile=_sprite();move_child(output_pile,0)
-		output_pile.visible=true;output_pile.region_rect=EnvironmentArt.rectangle("item/%s/%d" % [output_item,output_tier])
+		output_pile.visible=true;output_pile.texture=EnvironmentArt.texture_for("item/%s/%d" % [output_item,output_tier]);output_pile.region_rect=EnvironmentArt.rectangle("item/%s/%d" % [output_item,output_tier])
 		output_pile.offset=Vector2(0,-12);output_pile.position=Vector2(region_rect.size.x*0.5-8,-10);output_pile.scale=Vector2.ONE*0.75
 		output_pile.self_modulate=tint*Color(1,1,1,0.4 if obstruction else 1.0)
 	elif output_pile!=null: output_pile.hide()

@@ -246,7 +246,7 @@ func illustrated_button(title: String, callback: Callable, parent: Node, semanti
 	var result: Button=button(title,callback,parent)
 	var picture: AtlasTexture=picture_override
 	if picture==null:
-		picture=AtlasTexture.new();picture.atlas=EnvironmentArt.ATLAS;picture.region=EnvironmentArt.rectangle(semantic)
+		picture=AtlasTexture.new();picture.atlas=EnvironmentArt.texture_for(semantic);picture.region=EnvironmentArt.rectangle(semantic)
 		var side: float=maxf(picture.region.size.x,picture.region.size.y)
 		var padding: Vector2=Vector2.ONE*side-picture.region.size
 		picture.margin=Rect2(padding*0.5,padding)
@@ -269,7 +269,7 @@ func illustrated_summary(text: String, parent: Node, semantic: String, picture_o
 	var picture: TextureRect=TextureRect.new();picture.name="ObjectPortrait"
 	var texture: AtlasTexture=picture_override
 	if texture==null:
-		texture=AtlasTexture.new();texture.atlas=EnvironmentArt.ATLAS;texture.region=EnvironmentArt.rectangle(semantic)
+		texture=AtlasTexture.new();texture.atlas=EnvironmentArt.texture_for(semantic);texture.region=EnvironmentArt.rectangle(semantic)
 	picture.texture=texture;picture.set_meta("semantic",semantic)
 	picture.custom_minimum_size=Vector2(56,56)
 	picture.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;picture.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -2479,6 +2479,7 @@ func show_research() -> void:
 		var body: VBoxContainer=VBoxContainer.new();panel.add_child(body)
 		var progress: int=definition.points*1000 if complete else world.production_state.progress.get(id,0)
 		illustrated_summary("%s\n%s\n%d/%d points" % [_catalog_name(id),state,progress/1000,definition.points],body,_research_art(definition))
+		if id=="wheelbarrows": label(catalog_strings["wheelbarrows.description"],body)
 		var meter: ProgressBar=ProgressBar.new();meter.name="ResearchProgress"
 		meter.max_value=definition.points*1000;meter.value=progress;meter.show_percentage=false;meter.custom_minimum_size.y=6
 		meter.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -2582,7 +2583,9 @@ func _station_secondary_actions(station: Dictionary) -> void:
 
 func _catalog_name(id: String) -> String:
 	var key: String = id.get_slice(":",1) if id.contains(":") else id
-	if catalog_strings.is_empty(): catalog_strings = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogs/en_colony_v2.json"))
+	if catalog_strings.is_empty():
+		catalog_strings = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogs/en_colony_v2.json"))
+		catalog_strings.merge(JSON.parse_string(FileAccess.get_file_as_string("res://data/catalogs/en_colony_v14.json")))
 	return catalog_strings.get(key+".name",key.replace("_"," ").capitalize())
 
 func show_recipe_policy(station: Dictionary, recipe: Dictionary) -> void:
@@ -2891,6 +2894,7 @@ func show_equipment(id: int) -> void:
 	button(ColonyText.text("ui.action.work_preferences"),func()->void:show_work_preferences(id),sheet_body)
 	label(ColonyText.text("ui.help.equipment.the_wearer_fetches_each_item_and_equips"),sheet_body)
 	label(ColonyText.text("ui.help.equipment.missing_toolkit_half_build_craft_field_speed"),sheet_body)
+	label(ColonyText.text("ui.help.equipment.wheelbarrow_capacity",{"capacity":world.carry_capacity(person)}),sheet_body)
 	for slot in ColonyEquipment.SLOTS:
 		var policy: Dictionary = world.equipment_state[id][slot]
 		label(slot.capitalize()+": "+("Empty" if person.equipment[slot].is_empty() else _catalog_name(person.equipment[slot])),sheet_body)

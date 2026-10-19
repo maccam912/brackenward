@@ -2,6 +2,7 @@ class_name EquipmentTests
 extends RefCounted
 
 static func run(check: Callable) -> void:
+	WheelbarrowTests.run(check)
 	var world: ColonyWorld = ColonyTests.world()
 	check.call("GEAR/replacements_on_upgrades_off",world.equipment_state.values().all(func(slots:Dictionary)->bool:return slots.values().all(func(p:Dictionary)->bool:return p.replacements and not p.upgrades)))
 	world._make_stack("forged_toolkit",1,"store",world.stores[0].id,Vector2i(66,63),true)

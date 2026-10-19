@@ -748,5 +748,6 @@
   "ui.updates.research_complete": "{project} research complete\nUnlocked: {unlocks}",
   "ui.updates.title": "Updates",
   "ui.updates.view_research": "View research",
-  "ui.research.view_bench": "View bench"
+  "ui.research.view_bench": "View bench",
+  "ui.help.equipment.wheelbarrow_capacity": "Local carrying capacity: {capacity} items. Wheelbarrows are made at the carpenter's bench after Wheelbarrows research and equipped automatically. They multiply the normal 8-item load by 10 for hauling and work deliveries."
 }

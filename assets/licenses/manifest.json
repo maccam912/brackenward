@@ -509,5 +509,15 @@
     "sha256": "eab2229106dea269232cc4ad759bbe69a4b2d6bbb9841127474404e1c34fe5b0",
     "edited": false,
     "evidence": "assets/licenses/environment_art.md"
+  },
+  {
+    "id": "wheelbarrow",
+    "path": "assets/exported/ui/wheelbarrow.svg",
+    "license": "Original project asset",
+    "evidence": "assets/licenses/wheelbarrow.md",
+    "sha256": "351bb4b0815e13a55355e8b29cef9ffb9c50ba888f5fdd3bb4fbf5a95f6ccf4b",
+    "source": "Original SVG authored for Brackenward",
+    "author": "Brackenward project",
+    "edited": false
   }
 ]

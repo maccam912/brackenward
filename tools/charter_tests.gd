@@ -10,7 +10,7 @@ static func supper_world() -> ColonyWorld:
 	for index in range(4):
 		var base: Dictionary = world.citizens[index]
 		var person: Dictionary = ColonyWorld.citizen_record(world._id(),"Guest %d" % index,Vector2i(64+index,64),base.skills.duplicate(),base.xp.duplicate(),base.traits.duplicate(),base.preferred,base.preferences.duplicate(),base.food_tag,"")
-		person.equipment={"toolkit":"","cloak":"","weapon":"","vest":""}
+		person.equipment={"toolkit":"","cloak":"","weapon":"","vest":"","transport":""}
 		world.citizens.append(person)
 	world.social_state=ColonySocial.initial_state(world.citizens,world.tick)
 	world.equipment_state=ColonyEquipment.initial_state(world.citizens)
