@@ -1,5 +1,24 @@
 # Implementation evidence
 
+CI repair (19 October 2026): run `39242824107` failed the prepared-defense
+audit because its independent initial-map normalizer stopped at v13, and the
+Windows replay because Git converted the v14 command fixture to CRLF. All
+frozen JSON fixtures and recorder scripts now retain LF during checkout, with
+the checkout regression suite also running on every native CI platform. The
+Python map audit accepts only the exact v14 wheelbarrow definitions, empty
+transport equipment/default policies and added storage filter before comparing
+the entire initial state against the unchanged v6 generation golden. Unexpected
+equipment, policies, schema revisions, catalog edits and other gameplay changes
+still fail the comparison.
+
+Validation: all 149 Python tests pass. Expanded Windows-checkout tests reproduce
+21 byte changes under the old attributes and preserve every input after the fix.
+The original failed run's downloaded defense evidence passes the repaired audit;
+a fresh pinned-editor scenario at meadow_reach/104729 also passes both armed
+defense and physically delivered ransom. All 95 tracked fixture files retain
+their original bytes. Workflow lint and diff checks pass. Replacement GitHub
+Actions validation and numbered release publication remain pending.
+
 Depleted villager recovery (18 October 2026): conscious residents at zero
 fullness leave ordinary leisure and may perform enabled food-supply work during
 a morale break. The break timer remains in effect and resumes after eating.

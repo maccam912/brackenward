@@ -460,6 +460,7 @@ jobs:
           python tools/test_checked_godot.py
           python tools/test_stamp_build.py
           python tools/test_check_suite.py
+          python tools/test_fixture_checkout.py
       - name: Install checksum-verified native editor only
         run: python tools/bootstrap.py --editor-only
       - name: Compare canonical replay and imported-save continuation

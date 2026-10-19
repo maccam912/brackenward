@@ -28,13 +28,19 @@ class FixtureCheckoutTests(unittest.TestCase):
             return {name: (root / name).read_bytes() for name in samples}
 
     def test_frozen_producer_hashes_survive_windows_checkout(self):
-        names = ["tools/record_content7_work_fixture.gd",
-                 "tools/record_content8_priority_fixture.gd"]
-        samples = {name: (ROOT / name).read_bytes() for name in names}
+        samples = {path.relative_to(ROOT).as_posix(): path.read_bytes()
+                   for path in (ROOT / "tools").glob("record_*.gd")}
         for name, actual in self.checkout(samples).items():
             with self.subTest(file=name):
                 self.assertEqual(hashlib.sha256(actual).digest(),
                                  hashlib.sha256(samples[name]).digest())
+
+    def test_all_frozen_json_bytes_survive_windows_checkout(self):
+        samples = {path.relative_to(ROOT).as_posix(): path.read_bytes()
+                   for path in (ROOT / "tests/fixtures").rglob("*.json")}
+        for name, actual in self.checkout(samples).items():
+            with self.subTest(file=name):
+                self.assertEqual(actual, samples[name])
 
     def test_nested_snapshot_and_journal_bytes_are_never_normalized(self):
         samples = {"tests/fixtures/nested/a.brackenward": b"first\nsecond\n",

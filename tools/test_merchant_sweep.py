@@ -19,6 +19,57 @@ def fixture():
 
 
 class MerchantAuditChecks(unittest.TestCase):
+    def v14_initial(self):
+        root = Path(__file__).resolve().parents[1]
+        golden = sweep.read(root / "tests/fixtures/generation-v2-goldens.json")
+        catalog = sweep.read(root / "data/catalogs/colony_v14.json")
+        digest = hashlib.sha256(json.dumps(catalog, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+        old = {"content": "colony-v6", "content_hash": golden["catalog_sha256"],
+               "schema_revision": 23, "pending_commands": [], "next_command_id": "1",
+               "citizens": [{"id": "1", "preferences": {"Hauling": 2}, "rest": 900,
+                             "equipment": {"weapon": "spear"}}],
+               "equipment_state": {"$map": [["1", {"weapon": {"preferred": "spear"}}]]},
+               "stores": [{"filters": ["wood", "spear"]}]}
+        current = copy.deepcopy(old)
+        current.update(content="colony-v14", content_hash=digest, schema_revision=25)
+        current["citizens"][0]["preferences"]["Hauling"] = 1
+        current["citizens"][0]["equipment"]["transport"] = ""
+        current["equipment_state"]["$map"][0][1]["transport"] = {"replacements": True, "upgrades": False, "preferred": ""}
+        current["stores"][0]["filters"].append("wheelbarrow")
+        return old, current, golden
+
+    def test_v14_initial_map_normalizes_only_empty_transport_defaults(self):
+        old, current, golden = self.v14_initial()
+        before = copy.deepcopy(current)
+        self.assertEqual(sweep.initial_hash(current, "Standard", golden),
+                         sweep.initial_hash(old, "Standard", golden))
+        self.assertEqual(current, before)
+        current["citizens"][0]["rest"] -= 1
+        self.assertNotEqual(sweep.initial_hash(current, "Standard", golden),
+                            sweep.initial_hash(old, "Standard", golden))
+
+    def test_v14_nondefault_equipment_or_schema_is_not_hidden(self):
+        for edit in (lambda s: s.update(schema_revision=24),
+                     lambda s: s["citizens"][0]["equipment"].update(transport="wheelbarrow"),
+                     lambda s: s["equipment_state"]["$map"][0][1]["transport"].update(upgrades=True)):
+            _, current, golden = self.v14_initial()
+            edit(current)
+            with self.assertRaises(ValueError):
+                sweep.initial_hash(current, "Standard", golden)
+
+    def test_v14_added_catalog_definitions_must_match_reviewed_values(self):
+        for section, field, value in (("items", "barter_value", 9),
+                                      ("recipes", "work_milli", 1),
+                                      ("research", "points", 1)):
+            _, current, golden = self.v14_initial()
+            catalog = sweep.read(Path(__file__).resolve().parents[1] / "data/catalogs/colony_v14.json")
+            catalog[section][-1][field] = value
+            current["content_hash"] = hashlib.sha256(json.dumps(catalog, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
+            original_read = sweep.read
+            with patch("merchant_sweep.read", side_effect=lambda p: catalog if p.name == "colony_v14.json" else original_read(p)):
+                with self.assertRaises(ValueError):
+                    sweep.initial_hash(current, "Standard", golden)
+
     def test_v9_initial_map_normalizes_only_the_declared_hauling_default(self):
         root = Path(__file__).resolve().parents[1]
         golden = sweep.read(root / 'tests/fixtures/generation-v2-goldens.json')

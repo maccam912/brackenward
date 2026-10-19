@@ -39,19 +39,29 @@ def initial_hash(initial, mode, golden=None):
     if golden is not None:
         directory = Path(__file__).resolve().parents[1] / "data/catalogs"
         original = read(directory / "colony_v6.json")
-        if golden["content"] != "colony-v6" or initial["content"] not in ("colony-v6", "colony-v7", "colony-v8", "colony-v9", "colony-v10", "colony-v11", "colony-v12", "colony-v13"):
+        if golden["content"] != "colony-v6" or initial["content"] not in ("colony-v6", "colony-v7", "colony-v8", "colony-v9", "colony-v10", "colony-v11", "colony-v12", "colony-v13", "colony-v14"):
             raise ValueError("Unsupported inspected content headers")
         current = read(directory / (initial["content"].replace("-", "_") + ".json"))
         digest = lambda value: hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False).encode()).hexdigest()
         # Only initial-map identity is compared here, never future crop balance.
         comparable = json.loads(json.dumps(current))
-        if initial["content"] == "colony-v13":
+        if initial["content"] == "colony-v14":
+            additions = {
+                "items": {"id": "wheelbarrow", "name_key": "wheelbarrow.name", "description_key": "wheelbarrow.description", "icon_id": "wheelbarrow", "schema_version": 1, "stack_limit": 1, "fullness": 0, "tags": [], "shelf_ticks": 0, "barter_value": 8},
+                "recipes": {"id": "make_wheelbarrow", "name_key": "make_wheelbarrow.name", "description_key": "make_wheelbarrow.description", "icon_id": "make_wheelbarrow", "schema_version": 1, "station": "workbench", "alternatives": [], "food_count": 0, "materials": {"wood": 6}, "outputs": {"wheelbarrow": 1}, "work_milli": 14000, "skill": "Craft", "unlock": "wheelbarrows"},
+                "research": {"id": "wheelbarrows", "name_key": "wheelbarrows.name", "description_key": "wheelbarrows.description", "icon_id": "wheelbarrows", "schema_version": 1, "points": 1440, "prerequisites": [], "unlocks": ["recipe:make_wheelbarrow"]},
+            }
+            for section, expected in additions.items():
+                if [entry for entry in comparable[section] if entry["id"] == expected["id"]] != [expected]:
+                    raise ValueError("Unexpected v14 wheelbarrow definition")
+                comparable[section].remove(expected)
+        if initial["content"] in ("colony-v13", "colony-v14"):
             previous = read(directory / "colony_v12.json")
             for entry, old in zip(comparable["research"], previous["research"]):
                 if entry["id"] != old["id"] or entry["points"] != old["points"] * 6:
                     raise ValueError("Unexpected v13 research cost")
                 entry["points"] = old["points"]
-        if initial["content"] in ("colony-v8", "colony-v9", "colony-v10", "colony-v11", "colony-v12", "colony-v13"):
+        if initial["content"] in ("colony-v8", "colony-v9", "colony-v10", "colony-v11", "colony-v12", "colony-v13", "colony-v14"):
             turnip = next(c for c in comparable["crops"] if c["id"] == "turnip")
             if turnip["growth"] != 4000:
                 raise ValueError("Unexpected v8 turnip duration")
@@ -60,16 +70,28 @@ def initial_hash(initial, mode, golden=None):
                 or {k: v for k, v in comparable.items() if k != "version"} != {k: v for k, v in original.items() if k != "version"}):
             raise ValueError("Inspected catalog definitions or exact headers differ")
         normalized["content"], normalized["content_hash"] = golden["content"], golden["catalog_sha256"]
-        if initial["content"] in ("colony-v10", "colony-v11", "colony-v12", "colony-v13"):
-            if initial.get("schema_revision") != 24:
-                raise ValueError("Unexpected v10 schema revision")
+        if initial["content"] in ("colony-v10", "colony-v11", "colony-v12", "colony-v13", "colony-v14"):
+            if initial.get("schema_revision") != (25 if initial["content"] == "colony-v14" else 24):
+                raise ValueError("Unexpected inspected schema revision")
             normalized["schema_revision"] = 23
-        if initial["content"] in ("colony-v9", "colony-v10", "colony-v11", "colony-v12", "colony-v13"):
+        if initial["content"] in ("colony-v9", "colony-v10", "colony-v11", "colony-v12", "colony-v13", "colony-v14"):
             normalized["citizens"] = json.loads(json.dumps(initial["citizens"]))
             for person in normalized["citizens"]:
                 if person.get("preferences", {}).get("Hauling") != 1:
                     raise ValueError("Unexpected v9 starting Hauling preference")
                 person["preferences"]["Hauling"] = 2
+        if initial["content"] == "colony-v14":
+            normalized = json.loads(json.dumps(normalized))
+            for person in normalized["citizens"]:
+                if person["equipment"].pop("transport") != "":
+                    raise ValueError("Unexpected v14 starting transport")
+            for _, equipment in normalized["equipment_state"]["$map"]:
+                if equipment.pop("transport") != {"replacements": True, "upgrades": False, "preferred": ""}:
+                    raise ValueError("Unexpected v14 starting transport policy")
+            for store in normalized["stores"]:
+                if store["filters"].count("wheelbarrow") != 1:
+                    raise ValueError("Unexpected v14 starting store filter")
+                store["filters"].remove("wheelbarrow")
     if mode == "Hearthside":
         expected = [{"id": "1", "session": "m1-test", "kind": "care_mode", "args": {"mode": "Hearthside"}}]
         if initial["pending_commands"] != expected or initial["next_command_id"] != "2":
