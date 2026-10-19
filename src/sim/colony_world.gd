@@ -887,7 +887,9 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 	# Unrelated work never postpones sleep just because the food stores are empty.
 	var food_work_available: bool = food_work_only and open_jobs.any(func(j:Dictionary)->bool:return (j.worker==0 or j.worker==citizen.id) and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and _food_supply_work(j))
 	if food_work_available and citizen.rest>100: sleep_eligible=false
-	var taking_break: bool = citizen.break_until > tick
+	# A starvation break must not prevent the resident from obtaining food.
+	# Keep its timer: the break resumes once they have eaten or no food work exists.
+	var taking_break: bool = citizen.break_until > tick and not (citizen.fullness==0 and food_work_available)
 	var draft_ready: bool = citizen.drafted and not taking_break and citizen.fullness > 0 and citizen.rest > 100 and (citizen.health > 40 or citizen.stand_fast)
 	var treatment_wait: bool = not draft_ready and citizen.fullness > 0 and citizen.rest > 100 and _has_treatment(open_jobs,citizen.id)
 	if treatment_wait and current.get("kind") not in ["eat","sleep"]:
@@ -910,7 +912,8 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 			# then eat before collecting another input or starting the next phase.
 			if current.state=="Fetching": current.state="Delivering"
 			needs_food=false
-		var seek_food_work: bool = food_work_only and hunger_food.is_empty() and (current.kind not in PERSONAL_JOBS or (current.kind=="recover" and food_work_available)) and not _food_supply_work(current)
+		var food_recovery: bool = food_work_available and (current.kind=="recover" or (current.kind=="leisure" and citizen.fullness==0 and not taking_break))
+		var seek_food_work: bool = food_work_only and hunger_food.is_empty() and (current.kind not in PERSONAL_JOBS or food_recovery) and not _food_supply_work(current)
 		var hungry_sleeper: bool = current.kind=="sleep" and food_work_available and citizen.rest>=ColonyRest.TIRED and ColonyRest.food_wakes_sleeper(citizen)
 		var ordinary_needs: bool = not draft_ready and not current.emergency and (needs_food or seek_food_work or hungry_sleeper or (sleep_eligible and current.kind not in ["eat","sleep"]))
 		var break_interrupt: bool = taking_break and current.kind not in ["eat","sleep","leisure","recover"]
@@ -969,7 +972,7 @@ func _assign_search(citizen: Dictionary, food_checkpoint: bool = false) -> void:
 		depart_job.state = "Moving"
 		citizen.job = depart_job.id
 		return
-	if citizen.break_until > tick or (not food_work_only and hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
+	if taking_break or (not food_work_only and hour >= 18 and hour < 20 and citizen.leisure_ticks < 600):
 		if not taking_break:
 			var urgent: Array = open_jobs.filter(func(j:Dictionary)->bool:return j.worker==0 and j.state not in ["Complete","Canceled"] and tick>=j.retry and citizen.preferences.get(j.category,0)>0 and not _hauling_fallback(j,citizen) and _task_priority(j)==3)
 			_sort_jobs(urgent,citizen)
@@ -1446,8 +1449,10 @@ func _walk(citizen: Dictionary, goal: Vector2i) -> bool:
 		citizen.move_rem += speed * 1150
 		speed = citizen.move_rem / 1000
 		citizen.move_rem %= 1000
-	if citizen.health < 50 or citizen.fullness==0:
-		var movement_ratio: int=(750 if citizen.health<50 else 1000)*(500 if citizen.fullness==0 else 1000)/1000
+	if citizen.health < 50 or citizen.fullness==0 or citizen.rest==0:
+		# Depletion slows travel without blocking the route to food or sleep.
+		# Apply the needs penalty once when both meters are empty.
+		var movement_ratio: int=(750 if citizen.health<50 else 1000)*(500 if citizen.fullness==0 or citizen.rest==0 else 1000)/1000
 		citizen.injury_rem += speed * movement_ratio
 		speed = citizen.injury_rem / 1000
 		citizen.injury_rem %= 1000

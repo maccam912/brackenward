@@ -17,6 +17,7 @@ static func working_wall(world: ColonyWorld) -> Dictionary:
 	return {}
 
 static func run(check: Callable) -> void:
+	DepletedNeedsTests.run(check)
 	for fullness in [350,0]:
 		var world: ColonyWorld=ColonyTests.world();var wall: Dictionary=working_wall(world)
 		var person: Dictionary=world.find(world.citizens,wall.worker)

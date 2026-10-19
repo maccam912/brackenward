@@ -1,5 +1,21 @@
 # Implementation evidence
 
+Depleted villager recovery (18 October 2026): conscious residents at zero
+fullness leave ordinary leisure and may perform enabled food-supply work during
+a morale break. The break timer remains in effect and resumes after eating.
+Critical rest still sends them to their assigned bed first. At rest zero,
+walking runs at half speed so food and beds remain reachable; simultaneous empty
+food and rest meters apply that movement penalty once, alongside injury effects.
+
+Validation: 781 native checks pass: scheduler 544, unit 48, survival 92, care 55
+and colony 42. The 25 added checks cover real berry/mushroom orders, cooking
+during a break, disabled work preferences, injured movement, bed travel, both
+meters empty, material invariants and exact save continuation during recovery.
+The frozen v14 replay passes 241 commands, ticks 7,200/72,000 and save
+continuation. Content/media validation and seven GDScript string tests pass.
+Logs are retained as `reports/depleted-needs-*.log`; the replay audit is
+`reports/depleted-needs-replay.json`. Physical Android validation remains unrun.
+
 Wheelbarrows (18 October 2026): `0.7.125-m7`, content `colony-v14`,
 schema 25, unchanged envelope 5. A starting Wheelbarrows project costs 1,440
 research points with no prerequisites. The initial carpenter's bench makes one
