@@ -102,27 +102,47 @@ static func advance(world: ColonyWorld) -> void:
 			world.emit_fact({"tick":world.tick,"actor":0,"job":0,"kind":"tree_mature","text":"A replanted tree matured after eight non-winter days."})
 
 static func create_jobs(world: ColonyWorld) -> void:
+	# One call only queues work: neither geometry nor reservations can change.
+	# Build membership/occupancy once, including Queued work, and retain the
+	# original resource and zone order when allocating IDs below.
+	var ordered: Dictionary = {};var replanting: Dictionary = {}
+	var jobs_indexed: bool=false
+	var occupied: Dictionary = {};var indexed: bool = false
 	for zone in world.nature_state.forests:
 		if not zone.enabled: continue
+		if not jobs_indexed:
+			for job in world._work_jobs():
+				if job.state in ["Complete","Canceled"]: continue
+				if job.kind=="gather": ordered[job.target]=true
+				elif job.kind in ["plant_tree","clear_stump"]: replanting[job.target]=true
+			jobs_indexed=true
 		var area: Dictionary = {}
 		for p in zone.tiles: area[p] = true
 		var trees: Array = world.resources.filter(func(r:Dictionary)->bool:return r.definition == "tree" and not tree(world,r.id).cleared and area.has(Vector2i(r.x,r.y)))
 		var minimum: int = (trees.size()*zone.reserve+99)/100
 		var mature: Array = trees.filter(func(r:Dictionary)->bool:return r.remaining > 0)
-		var ordered: Dictionary = {}
-		for job in world.jobs:
-			if job.kind == "gather" and job.state not in ["Complete","Canceled"]: ordered[job.target] = true
 		var queued: int = mature.filter(func(r:Dictionary)->bool:return ordered.has(r.id)).size()
 		for resource in trees:
 			var p: Vector2i = Vector2i(resource.x,resource.y)
-			if resource.remaining == 0 and not tree(world,resource.id).cleared and not tree(world,resource.id).planted and plantable(world,p) and not world.unfinished_jobs().any(func(j:Dictionary)->bool:return j.target == resource.id and j.kind in ["plant_tree","clear_stump"] and j.state not in ["Complete","Canceled"]):
+			if resource.remaining!=0 or tree(world,resource.id).cleared or tree(world,resource.id).planted or replanting.has(resource.id): continue
+			if not indexed:
+				for structure in world.structures:
+					if structure.health>0:
+						for point in world.footprint(structure): occupied[point]=true
+				for field in world.fields: occupied[Vector2i(field.x,field.y)]=true
+				for store in world.stores:
+					for point in store.tiles: occupied[point]=true
+				indexed=true
+			if world.walkable(p) and not (world.generator_version>0 and world.terrain_state.paths.has(p)) and not occupied.has(p):
 				var replant: Dictionary = world._job("plant_tree","Growing","Field",resource.id,p,4000)
 				replant.order = zone.id
+				replanting[resource.id]=true
 		for resource in mature:
 			if queued >= mature.size()-minimum: break
 			if ordered.has(resource.id): continue
 			var cut: Dictionary = world._job("gather","Gathering","Field",resource.id,Vector2i(resource.x,resource.y),16000)
 			cut.definition = "tree"; cut.order = zone.id
+			ordered[resource.id]=true
 			queued += 1
 	var fish: Dictionary = world.nature_state.fishing
 	var pending: Array = world.unfinished_jobs().filter(func(j:Dictionary)->bool:return j.kind == "fish" and j.state not in ["Complete","Canceled"])

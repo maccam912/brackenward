@@ -1,0 +1,300 @@
+{
+  "base_commit": "783de14",
+  "excluded_observation": {
+    "reason": "Native graphical window lost focus; background counter 1 and final speed 0. Correct lifecycle pause; excluded from sustained-playback evidence.",
+    "report": "frame-stalls-foreground-2x.json"
+  },
+  "format": "brackenward-frame-stalls-fix-evidence",
+  "headless_playback": [
+    {
+      "counters": {
+        "backgrounds": 0,
+        "quiet_sleep_limits": 0,
+        "slow_storage_pauses": 0,
+        "speed_reductions": 0,
+        "storage_alerts": 0
+      },
+      "final_speed": 2,
+      "final_tick": 246599,
+      "frames": {
+        "count": 1350,
+        "max_us": 31456,
+        "over_50ms": 0,
+        "p50_us": 1878,
+        "p95_us": 12242
+      },
+      "initial_tick": 244800,
+      "logical_seconds_completed_plus_backlog": 179.99777066666667,
+      "logical_seconds_expected": 179.9977706666668,
+      "logical_time_retained": true,
+      "measured_wall_seconds": 45.00234,
+      "processed_delta_seconds": 44.9994426666667,
+      "remaining_logical_backlog_seconds": 0.0977706666666566,
+      "requested_speed": 2,
+      "save_capture": {
+        "count": 45,
+        "max_us": 19610,
+        "over_50ms": 0,
+        "p50_us": 16877,
+        "p95_us": 18577
+      },
+      "scope": "Headless native session callbacks and real save workers; rendering/GPU/phone performance not measured",
+      "seconds": 45,
+      "snapshot_preparation_capture": {
+        "count": 1,
+        "max_us": 14593,
+        "over_50ms": 0,
+        "p50_us": 14593,
+        "p95_us": 14593
+      },
+      "source_evidence": {
+        "files": 333,
+        "scope": "src, data, scenes, exported media, project settings, profiling/fixture sources and exact executed profiler bytes",
+        "sha256": "5c84fb2edebffac24947c297909f394316b1b6ab1f1573cce42962254d597bf9"
+      },
+      "source_unchanged": true
+    },
+    {
+      "counters": {
+        "backgrounds": 0,
+        "quiet_sleep_limits": 0,
+        "slow_storage_pauses": 0,
+        "speed_reductions": 0,
+        "storage_alerts": 0
+      },
+      "final_speed": 4,
+      "final_tick": 248403,
+      "frames": {
+        "count": 1351,
+        "max_us": 42305,
+        "over_50ms": 0,
+        "p50_us": 3353,
+        "p95_us": 14831
+      },
+      "initial_tick": 244800,
+      "logical_seconds_completed_plus_backlog": 360.3336586666667,
+      "logical_seconds_expected": 360.3336586666664,
+      "logical_time_retained": true,
+      "measured_wall_seconds": 45.033492,
+      "processed_delta_seconds": 45.0417073333333,
+      "remaining_logical_backlog_seconds": 0.0336586666666632,
+      "requested_speed": 4,
+      "save_capture": {
+        "count": 45,
+        "max_us": 24951,
+        "over_50ms": 0,
+        "p50_us": 17829,
+        "p95_us": 20848
+      },
+      "scope": "Headless native session callbacks and real save workers; rendering/GPU/phone performance not measured",
+      "seconds": 45,
+      "snapshot_preparation_capture": {
+        "count": 1,
+        "max_us": 16638,
+        "over_50ms": 0,
+        "p50_us": 16638,
+        "p95_us": 16638
+      },
+      "source_evidence": {
+        "files": 333,
+        "scope": "src, data, scenes, exported media, project settings, profiling/fixture sources and exact executed profiler bytes",
+        "sha256": "5c84fb2edebffac24947c297909f394316b1b6ab1f1573cce42962254d597bf9"
+      },
+      "source_unchanged": true
+    }
+  ],
+  "paired_components": {
+    "engine": "4.7.2-stable (official)",
+    "input_jobs": 15075,
+    "input_sha256": "74a8627c6f3adbf32f28da20c805565d4ec9591aa495c2412b35dce7d1ec7426",
+    "input_tick": 244800,
+    "passed": true,
+    "rows": [
+      {
+        "elapsed_us": 1353172,
+        "error": "",
+        "exact_recovery": true,
+        "method": "full",
+        "pair": 0,
+        "separate_preparation_us": 0,
+        "stage": "snapshot_writer_same_tick"
+      },
+      {
+        "elapsed_us": 156593,
+        "error": "",
+        "exact_recovery": true,
+        "method": "prepared",
+        "pair": 0,
+        "separate_preparation_us": 1177203,
+        "stage": "snapshot_writer_same_tick"
+      },
+      {
+        "elapsed_us": 160072,
+        "error": "",
+        "exact_recovery": true,
+        "method": "prepared",
+        "pair": 1,
+        "separate_preparation_us": 1131754,
+        "stage": "snapshot_writer_same_tick"
+      },
+      {
+        "elapsed_us": 1375408,
+        "error": "",
+        "exact_recovery": true,
+        "method": "full",
+        "pair": 1,
+        "separate_preparation_us": 0,
+        "stage": "snapshot_writer_same_tick"
+      },
+      {
+        "elapsed_us": 1370922,
+        "error": "",
+        "exact_recovery": true,
+        "method": "full",
+        "pair": 2,
+        "separate_preparation_us": 0,
+        "stage": "snapshot_writer_same_tick"
+      },
+      {
+        "elapsed_us": 159214,
+        "error": "",
+        "exact_recovery": true,
+        "method": "prepared",
+        "pair": 2,
+        "separate_preparation_us": 1158533,
+        "stage": "snapshot_writer_same_tick"
+      },
+      {
+        "elapsed_us": 164991,
+        "error": "",
+        "exact_recovery": true,
+        "method": "prepared",
+        "pair": 3,
+        "separate_preparation_us": 1136350,
+        "stage": "snapshot_writer_same_tick"
+      },
+      {
+        "elapsed_us": 1365391,
+        "error": "",
+        "exact_recovery": true,
+        "method": "full",
+        "pair": 3,
+        "separate_preparation_us": 0,
+        "stage": "snapshot_writer_same_tick"
+      },
+      {
+        "elapsed_us": 138309,
+        "method": "original",
+        "pair": 0,
+        "stage": "forest_creation_10_passes"
+      },
+      {
+        "elapsed_us": 5491,
+        "method": "indexed",
+        "pair": 0,
+        "stage": "forest_creation_10_passes"
+      },
+      {
+        "elapsed_us": 5393,
+        "method": "indexed",
+        "pair": 1,
+        "stage": "forest_creation_10_passes"
+      },
+      {
+        "elapsed_us": 109848,
+        "method": "original",
+        "pair": 1,
+        "stage": "forest_creation_10_passes"
+      },
+      {
+        "elapsed_us": 108848,
+        "method": "original",
+        "pair": 2,
+        "stage": "forest_creation_10_passes"
+      },
+      {
+        "elapsed_us": 5424,
+        "method": "indexed",
+        "pair": 2,
+        "stage": "forest_creation_10_passes"
+      },
+      {
+        "elapsed_us": 5362,
+        "method": "indexed",
+        "pair": 3,
+        "stage": "forest_creation_10_passes"
+      },
+      {
+        "elapsed_us": 107899,
+        "method": "original",
+        "pair": 3,
+        "stage": "forest_creation_10_passes"
+      }
+    ],
+    "scope": "Paired native headless CPU/disk observations; forest synthetic, full saves from frozen input; not phone frame, thermal or battery certification",
+    "source": {
+      "src/game_session.gd": "aeb307f6b206ef1cb9bcc10df96ef2cabc22f2aec3ece8032569af4441585aa4",
+      "src/persistence/colony_save_queue.gd": "1fffec0755ac65c334e2ef02ded9071b4b4b4d65731cf35b6ca5f5603927ab90",
+      "src/persistence/colony_store.gd": "44e5a282ecae607a2637624a4becd5698d90473263c1d5c088e4ea3751f91a89",
+      "src/sim/colony_nature.gd": "634b45af0a5897eae6618c3b5e73ca7bac41ef22edf6d82f4762d29faf1c15cc",
+      "tools/forest_creation_reference.gd": "0f6062ced8f7c588e710fa379adea2a50a0c273b76eb11bf711ffe99397edc74",
+      "tools/forest_creation_tests.gd": "6e74a8c5f225ddd2b6984080882ebcbf5516cb5825a5a45d50df0430272591a1",
+      "tools/profile_frame_stalls.gd": "7ec5c202958c7ca9c6fd971091f6e3fe1fb8bb1c56e84b6e9ebf8fea3f7996dd"
+    },
+    "unchanged": true
+  },
+  "player_report": {
+    "build": "0.7.124-m7",
+    "cause_limit": "The aggregate report does not identify the simulation substage or prove why the longest writer was delayed.",
+    "content": "colony-v13",
+    "device_model": "CPH2655",
+    "frame_gaps_over_50ms": {
+      "2x": {
+        "count": 853,
+        "total": 5851
+      },
+      "4x": {
+        "count": 1071,
+        "total": 4032
+      }
+    },
+    "max_save_worker_ms": 8818.757,
+    "recurring_slow_tick_interval": 10,
+    "slow_storage_pauses": 1
+  },
+  "remaining": "Physical phone frame pacing, original colony, thermal/battery/longevity and remote CI/release verification remain separate.",
+  "scope": "Native macOS development evidence with concurrent work on the host; no exact player-save reproduction or physical Android retest",
+  "validation": {
+    "content_fonts_ui_keys": "passed",
+    "native_check_total": 2072,
+    "native_suites": {
+      "nature": {
+        "checks": 38,
+        "failures": 0
+      },
+      "persistence": {
+        "checks": 518,
+        "failures": 0
+      },
+      "scheduler": {
+        "checks": 519,
+        "failures": 0
+      },
+      "ui": {
+        "checks": 997,
+        "failures": 0
+      }
+    },
+    "replay": {
+      "commands": 241,
+      "cross_host_save_continuation": true,
+      "golden_ticks": [
+        7200,
+        72000
+      ],
+      "passed": true,
+      "schema22_and_content3_through8_preservation": true
+    }
+  },
+  "version": 1
+}

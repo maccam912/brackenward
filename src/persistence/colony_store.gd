@@ -75,6 +75,12 @@ func save(world: RefCounted) -> String:
 	recovered = false
 	return ""
 
+func snapshot_rotation_due() -> bool:
+	# Preparation may take several checkpoints on a phone. Start with 16 MiB
+	# recovery-envelope headroom instead of waiting for checkpoint() to hit the
+	# hard bound and encode a full snapshot on the only durable writer.
+	return journal_size_bound>=ColonyCodec.MAX_BYTES-8*ColonyJournal.MAX_RECORD or journal_length>=ColonyJournal.MAX_JOURNAL-8*ColonyJournal.MAX_RECORD
+
 func checkpoint(world: ColonyWorld) -> String:
 	if sequence == 0 or recovered:
 		return save(world)

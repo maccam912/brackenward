@@ -568,14 +568,24 @@ func _advance_frame(delta: float) -> void:
 	if placement.visible: preview_label.text = ColonyFonts.display(_preview_text())
 	if is_instance_valid(soundscape): soundscape.observe()
 	journal_elapsed += delta
+	autosave_elapsed += delta
+	var save_started: bool=false
 	if store is ColonyStore and journal_elapsed >= 1.0 and not save_queue.busy() and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_route!="Delete saves":
 		var new_commands: bool = world.next_command_id!=store.journal_payload.get("next_command_id",world.next_command_id)
-		if world.tick!=store.journal_tick or new_commands: _start_background_save(world.tick==store.journal_tick)
+		if world.tick!=store.journal_tick or new_commands:
+			# Consume a ready preparation in this checkpoint rather than launching
+			# a second foreground capture as soon as this writer finishes.
+			var prepared: bool=save_queue.ready(world)
+			_start_background_save(prepared or world.tick==store.journal_tick)
+			save_started=true
+			if prepared: autosave_elapsed=0.0
 		journal_elapsed = 0.0
-	autosave_elapsed += delta
-	if autosave_elapsed >= 30.0 and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_route!="Delete saves":
+	var rotation_due: bool=store is ColonyStore and store.snapshot_rotation_due()
+	if (autosave_elapsed >= 30.0 or rotation_due) and world.tick != last_saved_tick and not saving_disabled and not recovery_failed and not awaiting_first_colony and sheet_route!="Delete saves":
 		if store is ColonyStore:
-			if not save_queue.preparing() and not save_queue.ready(world): _start_snapshot_preparation()
+			# Keep headroom for ordinary durable checkpoints while the separate
+			# worker prepares a large colony. Capture at most once in this frame.
+			if not save_started and not save_queue.writing_snapshot and not save_queue.preparing() and not save_queue.ready(world): _start_snapshot_preparation()
 			if save_queue.ready(world) and not save_queue.busy():
 				_start_background_save(true)
 				autosave_elapsed = 0.0
