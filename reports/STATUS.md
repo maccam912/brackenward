@@ -1,5 +1,17 @@
 # Implementation evidence
 
+Camera toolbar removal (18 October 2026): removed the on-screen zoom buttons
+and camera pan arrows, including their notification/layout positioning. Drag
+panning, pinch zoom, desktop controls and placement nudges/Pan mode retain their
+existing behavior. README and DESIGN.md now describe touch camera navigation.
+Removed the eight obsolete toolbar-spacing assertions while retaining the
+notice-reflow camera checks.
+
+Validation: pinned editor import, content/font validation, 12 Python
+message/string checks, 48 unit checks and all 991 native graphical UI checks
+pass. Fresh portrait and landscape captures were inspected. Remote CI,
+APK/desktop publication and physical Android testing remain separate.
+
 Longer days and research (17 October 2026): content `colony-v13`, unchanged
 schema 24/envelope 5. Manual 1x/2x/4x now requests 20/40/80 complete ticks per
 real second, half the preceding rates. Full days take 6/3/1.5 real minutes

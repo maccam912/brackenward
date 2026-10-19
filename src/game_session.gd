@@ -19,7 +19,6 @@ var notification_tick: int = -1
 var notification_signature: String = ""
 var nav: GridContainer
 var speeds: HBoxContainer
-var map_tools: VBoxContainer
 var placement: VBoxContainer
 var shape_button: Button
 var preview_label: Label
@@ -162,7 +161,6 @@ func _ready() -> void:
 	_build_status()
 	_build_navigation()
 	_build_speed_controls()
-	_build_map_tools()
 	_build_placement()
 	_build_guidance()
 	notifications.reset(world)
@@ -406,26 +404,6 @@ func _sync_control_selection() -> void:
 	if is_instance_valid(speeds):
 		for control: Button in speeds.get_children():
 			if control.has_meta("speed"): control.set_pressed_no_signal(control.get_meta("speed")==runner.speed)
-
-func _build_map_tools() -> void:
-	map_tools = VBoxContainer.new()
-	map_tools.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	content.add_child(map_tools)
-	var zoom: HBoxContainer = HBoxContainer.new()
-	zoom.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	map_tools.add_child(zoom)
-	button("-", func() -> void: view.zoom_at(0.8, view.size * 0.5), zoom)
-	button("+", func() -> void: view.zoom_at(1.25, view.size * 0.5), zoom)
-	var nudge: GridContainer = GridContainer.new()
-	nudge.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	nudge.columns = 2
-	map_tools.add_child(nudge)
-	for direction in [Vector2.UP, Vector2.DOWN, Vector2.LEFT, Vector2.RIGHT]:
-		var title: String = {Vector2.UP: "Up", Vector2.DOWN: "Down", Vector2.LEFT: "Left", Vector2.RIGHT: "Right"}[direction]
-		direction_button(title, direction, func() -> void:
-			view.follow_id = 0
-			view.camera_tile += direction * 3
-			view._update_transform(), nudge)
 
 func _build_placement() -> void:
 	placement = VBoxContainer.new()
@@ -1176,9 +1154,6 @@ func _layout() -> void:
 	speeds.size = Vector2(speed_width,48)
 	view.position = Vector2(0, header_height)
 	view.size = Vector2(width, maxf(48, height - header_height - navigation_height))
-	map_tools.position = Vector2(8, status_bottom + 8)
-	map_tools.size = Vector2(112, 160)
-	map_tools.visible = sheet == null and not placement.visible
 	placement.position = Vector2(8, status_bottom + 8)
 	if (width >= 600 and height < 500) or (text_scale > 1.0 and height < 700):
 		placement.position.y = 8
@@ -1213,9 +1188,6 @@ func _layout() -> void:
 		view.focus_offset = Vector2.ZERO
 	if is_instance_valid(notification_panel):
 		notification_panel.place(status_bottom)
-		if notification_panel.visible and width<600:
-			map_tools.position.y=notification_panel.position.y+notification_panel.size.y+8
-			map_tools.visible=map_tools.visible and map_tools.position.y+map_tools.size.y<speeds.position.y
 	_layout_guidance()
 	speeds.move_to_front()
 

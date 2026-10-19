@@ -200,8 +200,6 @@ static func status_spacing(game: GameSession, check: Callable) -> void:
 			check.call("SETTINGS/UI_notice_reflow_keeps_map_still_%dx%d_%d" % [viewport_size.x,viewport_size.y,int(scale*100)],point.is_equal_approx(game.view.get_global_transform()*game.view.tile_to_screen(Vector2(64,64))))
 			game.notice_label.text=ColonyText.text("ui.notice.paused")
 			await tree.process_frame;await tree.process_frame;await tree.process_frame
-			var header: Rect2=game.status.get_global_rect();var tools: Rect2=game.map_tools.get_global_rect()
-			check.call("SETTINGS/UI_map_tools_clear_actual_header_%dx%d_%d" % [viewport_size.x,viewport_size.y,int(scale*100)],tools.position.y>=header.end.y+7*game.logical_scale,"header bottom %.1f; tools top %.1f" % [header.end.y,tools.position.y])
 	check.call("SETTINGS/UI_status_reflow_preserves_campaign",game.world.canonical_hash()==baseline)
 	tree.root.size=old_size;game.logical_scale=old_logical;game.test_insets=old_insets;game.text_scale=old_scale
 	game.notice_label.text=old_notice;game._build_theme();game._layout()
