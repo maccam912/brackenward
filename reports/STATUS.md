@@ -5404,3 +5404,45 @@ stop for their testing. This supersedes the earlier autonomous continuation to
 50% weekly remaining. Finish this verified batch and publish it; do not start
 another development batch until the user resumes. M7 performance/localization and
 physical/human release gates remain open; the game is not certified complete.
+
+## Android frame-stutter report: forest creation and early snapshot rotation (18 October 2026)
+
+The supplied 0.7.124-m7/colony-v13 CPH2655 report records 853/5,851 frame gaps
+over 50 ms at 2x and 1,071/4,032 at 4x, recurring slow simulation ticks every ten
+ticks, one storage protection pause and an 8.819-second writer outlier. The report
+does not identify the simulation substage or prove the cause of that writer delay;
+the player's exact save was not available for reproduction.
+
+Forest creation now indexes pending gathering/replanting/removal targets once per
+pass and lazily indexes occupied tiles once. Queued orders, terminal history,
+reserve rounding, original zone/resource order, job IDs and geometry rules remain
+intact. The complete 783de14 forest/fishing pass remains an independent oracle.
+A normally validated fixture with 120 tree sites, 1,200 historical jobs and 400
+pending blueprints compares equal through creation, repeated calls, 500 ordinary
+ticks, policy cancellation, array replacement and save/reload continuation. Four
+alternating paired measurements reduce ten creation passes from median 109.348 ms
+to 5.409 ms, about twenty times faster on this host.
+
+Snapshot preparation now starts at 48 MiB of estimated recovery size or journal
+size, leaving 16 MiB before the existing hard limit. Ordinary checkpoints remain
+available while preparation runs. A ready preparation is consumed by the next
+eligible checkpoint; periodic capture occurs at most once per frame and a full
+snapshot writer suppresses duplicate preparations. The 1.75-second protection
+deadline, acknowledgement, exact catch-up and disk verification are unchanged.
+On a frozen 15,075-job campaign, paired same-tick publication occupies the writer
+for median 159.643 ms versus 1,368.157 ms for a full save; separate preparation
+still costs median 1,147.441 ms and is not claimed as removed CPU work.
+
+Validation: nature 38, scheduler 519, persistence 518 and graphical UI 997 checks
+pass (2,072 total), including gated slow preparation, normal checkpoints during
+preparation, ready-preparation priority, duplicate suppression and exact recovery.
+Content/font/message validation and the 241-command replay pass with both unchanged
+goldens, save continuation and schema/content preservation audits. Separate
+45-second native headless 2x and 4x session runs retain all logical time, requested
+speed and source bytes with no storage pauses, errors, speed reductions or invariant
+failures; maximum session callbacks are 31.456/42.305 ms. A graphical 2x observation
+lost focus and is excluded from sustained-playback evidence. Concurrent work shared
+the host. Raw paired timings, source/input hashes and validation summary are in
+`reports/frame-stalls-evidence.json`. This is not physical Android frame, GPU,
+thermal, battery or longevity certification. Remote CI and release availability
+remain separate.

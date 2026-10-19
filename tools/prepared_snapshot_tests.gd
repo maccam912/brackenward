@@ -53,6 +53,7 @@ static func run(check: Callable) -> void:
 	CampaignTests.remove_tree(root)
 
 static func ui(game: GameSession, check: Callable) -> void:
+	await early_rotation_ui(game,check)
 	game._replace_world(ColonyTests.world());game.close_sheet();game.close_inspector();game._tutorial_dismiss();game.save_local()
 	var queue: GatedQueue = GatedQueue.new();queue.prime(game.world);game.save_queue=queue
 	game.autosave_elapsed=30.0;game.journal_elapsed=0.0;game.durable_at=game.save_clock
@@ -72,6 +73,37 @@ static func ui(game: GameSession, check: Callable) -> void:
 	game.resume_from_background();game.close_sheet()
 	check.call("SAVE/UI_prepared_background_return_stays_paused",game.runner.speed==0 and game.world.canonical_hash()==expected)
 	game.save_queue=ColonySaveQueue.new();game.save_queue.prime(game.world)
+
+static func early_rotation_ui(game: GameSession, check: Callable) -> void:
+	game._replace_world(ColonyTests.world());game.close_sheet();game.close_inspector();game._tutorial_dismiss();game.save_local()
+	game.world.step();game._start_background_save(false);game._finish_background_save(true)
+	var queue: GatedQueue=GatedQueue.new();queue.prime(game.world);game.save_queue=queue
+	game.store.journal_size_bound=ColonyCodec.MAX_BYTES-8*ColonyJournal.MAX_RECORD-1
+	check.call("SAVE/UI_rotation_headroom_keeps_ordinary_small_journals",not game.store.snapshot_rotation_due())
+	game.store.journal_size_bound+=1
+	game.autosave_elapsed=0.0;game.journal_elapsed=0.0;game.durable_at=game.save_clock
+	game.runner.set_speed(2);game.diagnostics.reset();game._process(0.1)
+	check.call("SAVE/UI_large_journal_prepares_before_thirty_second_timer",queue.preparing() and not queue.busy() and game.autosave_elapsed<30.0 and game.runner.speed==2)
+	game.journal_elapsed=1.0;game._process(0.0)
+	while queue.busy():
+		await game.get_tree().process_frame
+		game._finish_background_save()
+	check.call("SAVE/UI_large_journal_still_checkpoints_during_slow_preparation",game.store.journal_tick==queue.captured_tick and queue.preparing() and game.runner.speed==2)
+	queue.prepare_gate.post();queue.poll_preparation(true)
+	game.world.step();game.journal_elapsed=1.0
+	var captures: int=game.diagnostics.samples.get("save_capture:2",{}).get("count",0)
+	game._process(0.0)
+	var expected: String=game.world.canonical_hash()
+	check.call("SAVE/UI_regular_checkpoint_consumes_ready_preparation_once",queue.busy() and queue.writing_snapshot and not queue.ready(game.world) and game.autosave_elapsed==0.0 and game.diagnostics.samples["save_capture:2"].count==captures+1)
+	game._process(0.0)
+	check.call("SAVE/UI_prepared_writer_does_not_capture_a_duplicate_preparation",not queue.preparing() and game.diagnostics.samples["snapshot_capture:2"].count==1)
+	queue.write_gate.post()
+	while queue.busy():
+		await game.get_tree().process_frame
+		game._finish_background_save()
+	var recovered: Dictionary=AsyncSaveTests.load_saved(game.store)
+	check.call("SAVE/UI_early_rotation_recovers_exact_captured_progress",not queue.writing_snapshot and recovered.has("world") and recovered.world.canonical_hash()==expected and not game.store.snapshot_rotation_due())
+	game.runner.pause();game.save_queue=ColonySaveQueue.new();game.save_queue.prime(game.world)
 
 static func failure_and_orphan(root: String, check: Callable) -> void:
 	var world: ColonyWorld = ColonyTests.world()

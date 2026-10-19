@@ -6,6 +6,7 @@ var source_store: ColonyStore
 var source_world: ColonyWorld
 var captured_tick: int = 0
 var original_sequence: int = 0
+var writing_snapshot: bool = false
 var retired_payloads: Array = []
 var capture_cache: ColonyCapture = ColonyCapture.new()
 var preparation_thread: Thread
@@ -108,12 +109,13 @@ func start(store: ColonyStore, world: ColonyWorld, full_snapshot: bool = false, 
 	writer.rejected_journals=store.rejected_journals.duplicate()
 	request.writer=writer
 	source_store=store;source_world=world;captured_tick=world.tick;original_sequence=store.sequence
+	writing_snapshot=full_snapshot
 	request.captured_tick=world.tick;request.captured_speed=measured_speed
 	thread=Thread.new()
 	request.enqueued_us=Time.get_ticks_usec()
 	var error: Error = thread.start(_execute.bind(request))
 	if error!=OK:
-		thread=null;source_store=null;source_world=null
+		thread=null;source_store=null;source_world=null;writing_snapshot=false
 		retired_payloads=request.retired
 		return "Could not start the save worker: "+error_string(error)
 	return ""
@@ -156,7 +158,7 @@ static func _world(captured: Dictionary, catalog: Dictionary) -> ColonyWorld:
 func poll(wait: bool = false) -> Dictionary:
 	if thread==null or (not wait and thread.is_alive()): return {}
 	var result: Dictionary = thread.wait_to_finish()
-	thread=null
+	thread=null;writing_snapshot=false
 	var writer: ColonyStore = result.writer
 	if not source_store.journal_payload.is_empty() and not is_same(source_store.journal_payload,writer.journal_payload):
 		retired_payloads.append(source_store.journal_payload)
